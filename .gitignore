@@ -1,0 +1,27 @@
+# 환경변수 (API 키 등 민감 정보)
+.env
+*.env
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 데이터베이스 파일
+*.db
+*.sqlite
+
+# 로그 파일
+logs/
+*.log
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 분석 결과 CSV
+upbit_analysis_*.csv
