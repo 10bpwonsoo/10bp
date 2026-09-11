@@ -1,0 +1,1207 @@
+# Market Pulse AI — 사전 분석 및 아키텍처 설계서
+
+> 상태: **설계 검토 단계 (구현 착수 전)**
+> 대상 리포지토리: `10bpwonsoo/10bp`
+> 브랜치: `claude/market-pulse-ai-design-r7pmsm`
+> 작성 기준일: 2026-09-11
+
+이 문서는 구현 승인을 받기 위한 사전 분석 결과다. 코드는 아직 작성하지 않았다.
+
+---
+
+## STEP 1. 현재 구조 분석
+
+### 1.1 Repository Tree
+
+단일 커밋(`32b7b36`), Python 파일 24개, 7,908 라인.
+
+```
+/
+├── .env.example              # TELEGRAM_TOKEN, TELEGRAM_CHAT_ID 2개만
+├── .gitignore
+├── README.md
+├── upbit_cursor.py           # 1,093 라인 — 리포트 생성 단일 스크립트
+└── upbit_trading/            # 23 파일 / 6,815 라인
+    ├── config.py             (199)  설정 dataclass
+    ├── data_collector.py     (679)  Upbit/Binance 수집기
+    ├── db_manager.py         (451)  MS SQL Server 접근
+    ├── backtester.py         (521)  백테스트 엔진
+    ├── telegram_commands.py  (557)  텔레그램 명령
+    ├── trader.py             (413)  주문 실행
+    ├── test_sql_load.py      (404)  ※ 테스트 아님 (아래 참조)
+    ├── trading_engine.py     (386)  매매 오케스트레이션
+    ├── run_analysis.py       (375)
+    ├── strategy_historical_low.py (358)
+    ├── strategy_box_range.py (356)
+    ├── notification_manager.py (327)
+    ├── risk_manager.py       (300)
+    ├── scalp_engine.py       (282)
+    ├── test_data_quality.py  (262)  ※ 테스트 아님
+    ├── technical_indicators.py (250)
+    ├── price_momentum.py     (233)
+    ├── config.py / telegram_bot.py (159) / position_tracker.py (158)
+    ├── strategies.py         (58)
+    ├── rate_limiter.py       (51)
+    └── __init__.py           (36)
+```
+
+### 1.2 기존 기술 스택
+
+| 구분 | 사용 기술 | 비고 |
+|---|---|---|
+| 언어 | Python 3.11 | |
+| 데이터 | pandas (10개 파일), numpy (4개) | |
+| DB | **MS SQL Server + SQLAlchemy + pyodbc** | `mssql+pyodbc`, T-SQL `MERGE` 사용 |
+| 마켓 데이터 | pyupbit, requests, yfinance, FinanceDataReader | |
+| 알림 | python-telegram-bot | |
+| 인증 | PyJWT | Upbit 주문 서명용 |
+| 설정 | python-dotenv (optional import) | |
+| 프론트엔드 | **없음** | |
+| 테스트 | **없음** | |
+| CI | **없음** | |
+
+의존성 선언 파일이 존재하지 않는다. `requirements.txt`, `pyproject.toml`, `setup.py`, `conftest.py`, `pytest.ini` 모두 없다. 의존성은 `README.md:54`에 산문으로만 적혀 있고, 그마저도 실제 사용 패키지 11개 중 5개만 나열되어 있다. `sqlalchemy`, `pyodbc`, `PyJWT`, `yfinance`, `FinanceDataReader`, `python-dotenv`가 누락되어 있다.
+
+### 1.3 실행 방법과 현재 환경에서의 실행 가능성
+
+README 기준 실행 절차는 `.env` 작성 후 `python upbit_cursor.py`다. 실제로는 다음 문제로 **현재 개발 컨테이너에서 실행 불가능하다.**
+
+| 항목 | 실측 결과 |
+|---|---|
+| Python | 3.11.15 사용 가능 |
+| Node / npm | 22.22.2 / 10.9.7 사용 가능 |
+| 설치된 서드파티 패키지 | requests, PyYAML, cryptography 정도. **pandas / numpy / sqlalchemy / yfinance 전부 미설치** |
+| PyPI 접근 | 가능 (실측 확인) |
+| npm 레지스트리 접근 | 가능 (실측 확인) |
+| 외부 마켓데이터 API | **전면 차단** |
+
+외부 엔드포인트 접근을 직접 측정한 결과는 다음과 같다.
+
+| 엔드포인트 | 결과 |
+|---|---|
+| query1.finance.yahoo.com | CONNECT rejected (organization policy) |
+| api.stlouisfed.org (FRED) | CONNECT rejected |
+| api.upbit.com | CONNECT rejected |
+| stooq.com | CONNECT rejected |
+| api.anthropic.com | 도달 가능 (HTTP 401, 키 미설정) |
+
+이것이 이번 설계에서 가장 중요한 환경 제약이다. 요구사항 12의 MOCK 모드는 선택 사항이 아니라 이 환경에서 개발을 진행하기 위한 **필수 전제**다.
+
+추가로 DB 접속 기본값이 작성자 개인 PC에 묶여 있다. `CH-PC1\SQLEXPRESS`가 `config.py:68`, `price_momentum.py:17`, `test_sql_load.py:15`, `backtester.py:91` 네 곳에 하드코딩되어 있다.
+
+### 1.4 재사용 가능한 코드
+
+**A등급 — 거의 그대로 사용 가능**
+
+| 파일 | 근거 |
+|---|---|
+| `upbit_trading/technical_indicators.py` | `sma:14`, `ema:19`, `rsi:27`(Wilder), `macd:46`, `bollinger_bands:72`, `stochastic:101`, `atr:126`, `volume_profile:148`, `vwap:180`, `add_all_indicators:196`. pandas/numpy만 의존하고 리포지토리 내 다른 모듈을 하나도 import 하지 않는다. 거래소 비종속. 단 `vwap:188-190`이 세션 리셋 없이 무한 `cumsum`이라 다일자 데이터에서 조용히 틀린다. 이식 시 수정 필요. 현재 이 모듈은 아무도 import 하지 않는 사문화 코드다. |
+| `upbit_trading/rate_limiter.py` | 51라인 슬라이딩 윈도우 리미터. 이름과 달리 Upbit 종속 코드가 0이다. 단 `:36`에서 락을 쥔 채 sleep 하므로 동시 요청이 직렬화된다. 이식 시 락 밖에서 대기하도록 고치고 asyncio 변형을 추가한다. |
+| `upbit_trading/strategies.py`의 `TradeSignal` | `signal / strategy_name / confidence / reason / metadata` 구조(`:30-36`). 이번 프로젝트가 요구하는 설명가능성 계약과 정확히 같은 모양이다. Score 스키마의 선례로 채택한다. |
+| `backtester.py::_normalize_ohlcv` (`:130-159`) | 컬럼명 별칭 20여 개를 표준 `datetime/open/high/low/close/volume`로 정규화. 어떤 데이터 소스든 어댑터 출력 정규화에 그대로 쓴다. |
+| `backtester.py::_calculate_metrics` (`:237-286`) | CAGR, MDD, 승률, Sharpe. 자산 무관하게 동작. P4 히스토리컬 분석에서 사용. |
+| `telegram_bot.py::_split_message` (`:138-159`) | 라인 단위 메시지 분할. 범용. |
+
+**B등급 — 패턴만 차용, 코드는 신규 작성**
+
+| 대상 | 차용할 것 |
+|---|---|
+| `upbit_cursor.py:66-104` `MarketDataCollector` ABC + Crypto/Global/Korean 구현 | Data Adapter Interface의 선례. 단 `async def`만 붙어 있고 내부는 동기 blocking 호출이라 구조 자체는 재작성한다. |
+| `upbit_cursor.py:203-218` `SectorReport.sectors` | XLK~XLU 11개 GICS 섹터 ETF 매핑. Theme→Asset 매핑 시드로 즉시 활용. |
+| `upbit_trading/config.py` | dataclass + `__post_init__`에서 `os.getenv` fallback. **시크릿 하드코딩이 전혀 없다** (아래 1.5 참조). 이 패턴을 유지한다. |
+| `data_collector.py:42-90` `_request` / `_check_rate_limit` | 429는 `retry_delay * attempt * 2`, 5xx는 `retry_delay * attempt`, 그 외 4xx는 즉시 re-raise. 응답 헤더의 잔여 쿼터를 파싱해 선제 sleep. 어댑터 공통 재시도 정책으로 채택. |
+| `db_manager.py:153-170` | 엔진 풀링(`pool_pre_ping`, `pool_recycle`) + `@contextmanager connection()`. Repository 구현 패턴으로 차용. T-SQL DDL과 MERGE는 이식 불가. |
+| `notification_manager.py:53` `notify_signal`, `:262` `notify_error` | `indicators` dict를 임의 key/value로 렌더하는 방식(`:91-95`)이 Alert 포맷터로 적합. |
+| `test_data_quality.py:98-166` | OHLC 무결성 검증(high<low, high<open, low>close 등) + NULL/0 체크. 진짜 함수 `validate_ohlcv(df) -> list[Issue]`로 승격해 데이터 품질 패널에 쓴다. |
+| `price_momentum.py:217-228` | 상승/하락/보합 종목 수, 평균 변동률, 총 거래대금. Breadth 엔진의 씨앗. |
+| `trading_engine.py:76-148` | start/stop/pause/resume + `_main_loop`/`_execute_cycle`. Pipeline Orchestrator 구조 참고. |
+
+**C등급 — 재사용 불가**
+
+`price_momentum.py`, `test_sql_load.py`, `db_manager.py`의 DDL/MERGE는 MS SQL Server에 직결되어 있다. `trader.py`, `trading_engine.py`, `scalp_engine.py`, `strategy_*.py`, `position_tracker.py`, `risk_manager.py`, `telegram_commands.py`는 주문 실행·포지션 관리 계열로 이번 범위 밖이다.
+
+### 1.5 보안 점검 결과
+
+리포지토리 전체를 크리덴셜 형태 리터럴 기준으로 훑었다. **하드코딩된 API 키나 시크릿은 발견되지 않았다.**
+
+| 설정 클래스 | 시크릿 필드 | 환경변수 | 하드코딩 |
+|---|---|---|---|
+| `UpbitConfig:29` | access_key, secret_key | `UPBIT_ACCESS_KEY` / `UPBIT_SECRET_KEY` | 없음 (`""` 기본값) |
+| `BinanceConfig:43` | api_key, secret_key | `BINANCE_API_KEY` / `BINANCE_SECRET_KEY` | 없음 |
+| `DBConfig:56` | username, password | `DB_USERNAME` / `DB_PASSWORD` | 없음 |
+| `TelegramConfig:103` | token, chat_id | `TELEGRAM_TOKEN` / `TELEGRAM_CHAT_ID` | 없음 |
+
+`.env.example`의 값은 플레이스홀더다. `.gitignore:2-4`가 `.env`와 `*.env`를 올바르게 제외한다.
+
+다만 **`README.md:43`이 "`upbit_trading/config.py`에서 업비트 API 키를 설정하라"고 안내한다.** 이대로 따르면 추적 대상 파일에 시크릿이 들어간다. 신규 문서에서는 이 문장을 쓰지 않고, 기존 README도 수정을 권한다.
+
+### 1.6 문제점
+
+1. **의존성 선언 부재.** 매니페스트가 없어 재현 불가. 신규 패키지에서는 `pyproject.toml`을 먼저 만든다.
+2. **환경 하드 바인딩.** MSSQL + ODBC Driver 17 + 개인 PC 호스트명. 리눅스 컨테이너와 해커톤 환경에서 동작하지 않는다.
+3. **레이어 혼재.** 수집·계산·문자열 포맷·텔레그램 전송이 한 함수 안에 있다. `upbit_cursor.py` 1,093라인이 대표적이다. 요구사항 15-3, 15-4와 정면으로 충돌한다.
+4. **테스트 체계 없음.** `def test_*` 0개, `import pytest` 0개, `assert` 0개다. 더 심각한 것은 `test_sql_load.py`가 **함수조차 아닌 최상위 스크립트**라는 점이다. import 되는 순간 master DB에 접속하고(`:38`) `CREATE DATABASE [CryptoDB]`를 실행하며(`:51`) 테이블을 만들고(`:72-186`) 라이브 Upbit API를 호출한다(`:189-244`). 접속 실패 시 `exit(1)`까지 부른다(`:67`). **pytest를 도입하는 순간 이 파일이 수집되어 DB를 생성하고 외부 API를 두드린다.** pytest 설정에서 명시적으로 제외하거나 파일명을 바꿔야 한다.
+5. **깨진 코드.** `backtester.py:495-501`이 `BollingerBandStrategy`, `CombinedStrategy`, `GoldenCrossStrategy`, `MACDStrategy`, `RSIStrategy` 5개를 import 하는데 **전부 존재하지 않는다.** `strategies.py`는 `Signal`, `TradeSignal`, 추상 `Strategy` 3개만 정의한다. `quick_backtest()`는 호출할 때마다 `ImportError`를 낸다.
+6. **중복.** 지표 계산이 3중 중복(`technical_indicators.py`, `run_analysis.py:47-83`, `strategy_box_range.py` 인라인), DB 접속 문자열이 4중 중복, DDL이 2중 중복이다.
+7. **import 시점 부작용.** `config.py:199`가 전역 설정 인스턴스를 만들고, `db_manager.py:154`가 이를 import 시점에 읽는다.
+8. **SQL 식별자 주입 표면.** `db_manager.py:206-240`이 테이블명·컬럼명을 f-string으로 보간한다. 현재는 리터럴만 넘겨 악용 불가하지만, 대시보드 사용자 입력이 닿는 곳에는 절대 노출하면 안 된다.
+9. **비동기 위장.** 수집기는 전부 동기 `requests` + `time.sleep`인데 알림 계층만 `async`다. 백엔드는 이 둘을 스레드풀이나 httpx로 이어야 한다.
+10. **도메인 불일치.** 기존 코드는 "암호화폐 자동매매 실행"이고 신규 요구는 "멀티에셋 시장 인텔리전스 관측"이다. 읽기 전용 분석 시스템에 주문 실행 계열 코드는 필요 없다.
+11. **z-score가 리포지토리 전체에 존재하지 않는다.** `zscore|percentile|rank(` 검색 결과 0건이다. `.std()`는 Sharpe(`backtester.py:270`)와 볼린저(`technical_indicators.py:82`)에만 쓰인다. 이번 프로젝트 정량 레이어의 핵심인 **횡단면 표준화는 전부 신규 구현**이다.
+
+### 1.7 STEP 1 결론
+
+기존 코드를 재작성하지 않는다. `upbit_trading/`은 손대지 않고 그대로 둔다. 신규 `marketpulse/` 패키지를 병렬로 추가하고, A등급 모듈 4개만 복사·수정해 가져온다. 두 시스템은 같은 리포지토리에 공존하되 서로 import 하지 않는다.
+
+---
+
+## STEP 2. 요구사항 분류
+
+분류 기준은 **"이것이 없으면 End-to-End 데모가 성립하는가"**다. 요구사항 13이 기능 수보다 동작하는 데모가 중요하다고 명시했으므로, 이 축으로 정렬한다.
+
+### MUST — 없으면 데모 자체가 성립하지 않음
+
+| ID | 항목 | 근거 |
+|---|---|---|
+| M1 | 7개 핵심 Data Contract (MarketData / NewsEvent / ThemeState / MarketState / Divergence / Alert / Relationship) | 요구 15-12. 모든 레이어가 이 계약 위에 선다 |
+| M2 | Data Adapter Interface + LIVE/DELAYED/MOCK 3모드 | 요구 3, 12. 현 환경에서 외부 API가 전면 차단이라 MOCK 없이는 개발 자체가 불가 |
+| M3 | Mock Data Pipeline (재현 가능한 시나리오) | 요구 12. z-score 계산에 필요한 **롤링 히스토리를 포함**해야 함 |
+| M4 | Market State Engine (deterministic rule) | 요구 2, 6. 프로젝트의 핵심 원칙 |
+| M5 | Theme Engine + Theme Score (가중치 외부화) | 요구 5. "단순 평균 금지" 명시 |
+| M6 | Divergence Engine | 요구 7이 "핵심 차별화 기능"으로 명시 |
+| M7 | Dashboard: Market State / Theme Heatmap / Divergence / Alert 4개 패널 | 요구 10 |
+| M8 | 모든 score의 계산 근거 추적 (contribution breakdown) | 요구 2, 15-6 |
+| M9 | 엔진 단위 테스트 (입력→출력 재현) | 요구 14 |
+| M10 | LLM 장애 시에도 정량 대시보드 정상 동작 | 요구 15-7 |
+
+### SHOULD — 있어야 제품이지만 없어도 데모는 돈다
+
+| ID | 항목 | 근거 |
+|---|---|---|
+| S1 | Sentiment Engine (사전 기반 baseline + LLM 보강) | 요구 5. baseline이 M10의 fallback 경로를 만든다 |
+| S2 | Flow / Price / Volatility Confirmation 4신호 비교 뷰 | 요구 10 |
+| S3 | Alert Engine (레벨이 아닌 "변화" 기반) | 요구 9 |
+| S4 | LLM Event Extractor + structured output validation | 요구 4, 14 |
+| S5 | AI Market Summary | 요구 6. LLM은 설명만 담당 |
+| S6 | Relationship / Impact Map (사전 정의 그래프) | 요구 8 |
+| S7 | What's Moving / Why 패널 | 요구 10 |
+| S8 | freshness / mode 메타데이터 UI 노출 | 요구 12 |
+| S9 | FastAPI API 레이어 | 요구 11 |
+
+### COULD — 시간이 남으면
+
+| ID | 항목 |
+|---|---|
+| C1 | LLM이 제안한 신규 관계 (사전 정의와 분리 저장, 요구 8) |
+| C2 | Real Data Adapter (yfinance / FDR / FRED / ECOS) |
+| C3 | Historical analysis / Backtest / validation |
+| C4 | Portfolio linkage |
+| C5 | Implied volatility, 선물 수급 |
+| C6 | WebSocket 실시간 push |
+| C7 | Novelty score (뉴스 중복 제거) — 계산 방법이 요구사항에 미정의, STEP 7 참조 |
+
+### WON'T — 이번 범위 밖임을 명시
+
+주문 실행, 포지션 관리, 리스크 관리(기존 `upbit_trading` 영역). 사용자 인증, 멀티테넌시.
+
+---
+
+## STEP 3. Architecture 제안
+
+### 3.1 기술 스택 선정과 근거
+
+| 레이어 | 선택 | 근거 |
+|---|---|---|
+| Backend | Python 3.11 + FastAPI + Uvicorn | 기존 자산이 Python/pandas다. 정량 계산을 Python에 두어야 `technical_indicators.py`를 재사용할 수 있다 |
+| Data Contract | **Pydantic v2** | 데이터 계약 정의와 LLM structured output 검증을 **같은 도구 하나로** 해결한다. 요구 14의 "LLM 출력은 반드시 structured output validation을 거친다"가 스키마 정의의 부산물로 공짜로 따라온다 |
+| Quant | pandas + numpy | 설치 검증 완료 (pandas 3.0.5 / numpy 2.4.6) |
+| Frontend | React 19 + TypeScript + Vite + TailwindCSS + Recharts | Node 22 확인. 고밀도 그리드 레이아웃을 빠르게 만들려면 Tailwind가 유리 |
+| Storage (정의) | YAML | 테마·관계·가중치는 git diff로 변경 이력이 보여야 한다 |
+| Storage (시계열) | SQLite + Parquet | MSSQL은 이 환경에서 뜨지 않는다. SQLite는 zero-config. Repository 인터페이스로 감싸 Postgres/Timescale 교체를 흡수 |
+| AI | Anthropic Claude | 키는 환경변수. 모델 선택과 비용은 STEP 7 참조 |
+| Cache | in-process TTL cache | P0~P3. Redis는 P4 옵션 |
+
+스택 선정에서 실제로 고민한 지점은 프론트엔드다. **Streamlit을 검토했고 기각했다.** 30분이면 뜨지만 요구 10의 "10~20초 안에 시장 상태 파악", "정보 밀도와 즉시성"을 만족하는 레이아웃 제어가 불가능하다. 다만 데모 리스크 대비책으로 **CLI 텍스트 출력을 P0에 함께 만든다** (STEP 7-7 참조). 프론트가 무너져도 데모는 돈다.
+
+설치 가능성을 사전 검증했다. `fastapi 0.141.1 / uvicorn 0.52.4 / pydantic 2.13.5 / pandas 3.0.5 / numpy 2.4.6 / pytest 9.1.1 / httpx 0.28.1` 포함 20개 패키지가 충돌 없이 해석된다.
+
+### 3.2 데이터 흐름
+
+```
+[Scheduler / Orchestrator]                         tick = 60s
+        │
+        ├─(1)─▶ MarketAdapterRegistry ──▶ mode: LIVE | DELAYED | MOCK
+        │         Equity / Rates / FX / Commodity /
+        │         Volatility / Flow / Breadth Adapter
+        │            └─▶ List[MarketDataPoint] + DataMeta
+        │
+        └─(2)─▶ NewsAdapterRegistry
+                  RSS / File / Mock
+                     └─▶ List[RawNewsItem]
+                             │
+                             ▼
+                  [Normalization Layer]
+                   MarketSnapshot(as_of, points{}, meta{})
+                             │
+        ┌────────────────────┴────────────────────┐
+        ▼                                         ▼
+┌────────────────────────┐          ┌──────────────────────────┐
+│ QUANT LAYER            │          │ AI LAYER (optional)      │
+│ (deterministic)        │          │                          │
+│                        │          │ EventExtractor (LLM)     │
+│ FeatureEngine          │          │   → NewsEvent (validated)│
+│  · 수익률 1d/5d/20d     │          │   ✗ 실패 ⇒ RuleExtractor │
+│  · rolling z-score     │          │ Classifier (theme 태깅)  │
+│  · realized vol, RSI   │          │                          │
+│  · breadth, MA 이격     │          │  ※ 이 레이어가 통째로     │
+│ FactorEngine           │          │    죽어도 아래는 동작한다  │
+│  · 11개 factor score   │          └──────────┬───────────────┘
+│ MarketStateEngine      │                     │
+│  · rule → label + conf │                     │
+└───────────┬────────────┘                     │
+            └──────────────┬────────────────────┘
+                           ▼
+                 [FUSION LAYER]
+                   ThemeEngine          뉴스側 + 시장側 결합
+                   ConfirmationEngine   cross-asset 확인
+                   DivergenceEngine     내러티브 vs 실제 괴리
+                   RelationshipEngine   Event→Theme→Macro→Asset→Sector
+                   AlertEngine          직전 스냅샷 대비 Δ
+                           │
+                           ▼
+                 [NarrativeEngine] (LLM, optional)
+                   deterministic 결과만 입력.
+                   숫자를 새로 만들지 못하게 입력을 고정한다.
+                           │
+                           ▼
+                 [SnapshotStore]  SQLite + Parquet
+                           │
+                           ▼
+                 [FastAPI]
+                   GET /api/v1/snapshot        ← 대시보드는 이것 하나만 호출
+                   GET /api/v1/market-state
+                   GET /api/v1/themes
+                   GET /api/v1/divergences
+                   GET /api/v1/alerts
+                   GET /api/v1/impact-map
+                   GET /api/v1/news
+                   GET /api/v1/health          ← mode, freshness, coverage
+                           │
+                           ▼
+                 [React Dashboard]  5s polling (P4: WebSocket)
+```
+
+### 3.3 핵심 설계 결정 3가지
+
+**① Snapshot-first — 엔진은 순수 함수다.**
+
+모든 엔진의 시그니처를 `f(MarketSnapshot, List[NewsEvent], Optional[PreviousSnapshot]) -> Result` 형태로 고정한다. 전역 상태도, I/O도, 시계도 엔진 안에 없다. 이 결정 하나가 요구 14의 재현성을 구조적으로 보장한다. 같은 입력을 넣으면 언제나 같은 출력이 나오고, 과거 스냅샷을 그대로 재생할 수 있고, 테스트에 네트워크가 필요 없다.
+
+**② LLM은 파이프라인 바깥의 enrichment다.**
+
+LLM이 닿는 지점은 단 두 곳이다. 뉴스에서 `NewsEvent`를 추출하는 곳과, 확정된 결과를 자연어로 설명하는 곳. 두 지점 모두 실패해도 `IntelligenceSnapshot`은 생성된다. 추출은 키워드 기반 `RuleExtractor`가 항상 fallback으로 대기하고, 설명은 템플릿 문장으로 대체된다. 요구 15-7이 이 구조의 직접적 근거다.
+
+**③ 모든 합성 점수는 값이 아니라 `ScoreBreakdown`을 반환한다.**
+
+`(value, method, contributions[], inputs_hash)` 4-tuple이다. UI에서 숫자에 hover 하면 "Oil z=+2.1에 가중치 0.35를 곱한 0.735, Rates z=+1.5에 0.30을 곱한 0.45 ..."가 그대로 나온다. 요구 2와 15-6을 데이터 구조 차원에서 강제한다.
+
+---
+
+## STEP 4. 핵심 Data Schema 정의
+
+### 4.0 공통 타입
+
+```python
+DataMode = Literal["LIVE", "DELAYED", "MOCK"]
+
+class DataMeta:
+    source: str                  # "yfinance" | "mock:scenario_baseline" | "fdr"
+    mode: DataMode
+    retrieved_at: datetime       # UTC
+    as_of: datetime              # 데이터 기준 시각 (UTC)
+    freshness_sec: int           # retrieved_at - as_of
+    is_stale: bool               # freshness_sec > threshold
+    quality: Literal["OK", "PARTIAL", "STALE", "MISSING"]
+
+class ScoreContribution:
+    key: str                     # "BRENT"
+    raw_value: float             # 2.34 (%)
+    normalized: float            # 2.1 (z) 또는 0~1
+    weight: float                # 0.35
+    contribution: float          # normalized * weight
+    note: str                    # "60일 롤링 대비"
+
+class ScoreBreakdown:
+    value: float
+    method: str                  # "weighted_z_tanh_v1"
+    contributions: List[ScoreContribution]
+    missing_inputs: List[str]    # 재정규화된 항목
+    inputs_hash: str             # sha256 — 재현성 검증용
+    computed_at: datetime
+```
+
+`inputs_hash`는 정렬된 `key=value` 문자열의 SHA-256이다. 테스트에서 "같은 입력 → 같은 해시 → 같은 값"을 단언한다. 요구 14의 재현성을 기계적으로 검증하는 장치다.
+
+### 4.1 MarketData
+
+```python
+AssetClass = Literal["equity","rate","fx","commodity","volatility",
+                     "flow","breadth","credit"]
+
+class Instrument:                # 레지스트리 (config/instruments.yaml)
+    id: str                      # "KOSPI","US10Y","USDKRW","BRENT","VIX"
+    name: str
+    asset_class: AssetClass
+    region: Optional[str]        # "KR" | "US" | "CN" | "GLOBAL"
+    unit: Literal["price","percent","index","bp","krw_bn","count","ratio"]
+    currency: Optional[str]
+    higher_is_risk_on: Optional[bool]   # VIX는 False — 방향성 해석에 필수
+    calendar: str                # "KRX" | "NYSE" | "24H" — 휴장 처리용
+    tags: List[str]
+
+class MarketDataPoint:
+    instrument_id: str
+    as_of: datetime
+    value: float
+    prev_close: Optional[float]
+    change: Optional[float]
+    change_pct: Optional[float]
+    change_bp: Optional[float]   # rates 전용 (금리는 %가 아니라 bp로 말한다)
+    volume: Optional[float]
+    meta: DataMeta
+
+class MarketFeature:             # FeatureEngine 산출
+    instrument_id: str
+    as_of: datetime
+    ret_1d, ret_5d, ret_20d: Optional[float]
+    z_1d, z_5d, z_20d: Optional[float]
+    zscore_window: int           # 기본 60
+    realized_vol_20d: Optional[float]
+    rsi_14: Optional[float]
+    ma_dist_20, ma_dist_60: Optional[float]
+    percentile_1y: Optional[float]
+    meta: DataMeta
+
+class MarketSnapshot:
+    as_of: datetime
+    mode: DataMode
+    points: Dict[str, MarketDataPoint]
+    features: Dict[str, MarketFeature]
+    coverage: float              # 요구 instrument 중 확보 비율
+    missing: List[str]
+```
+
+`unit`과 `change_bp`를 분리한 이유는 금리 때문이다. US10Y가 4.2%에서 4.35%로 갔을 때 "3.6% 상승"이라고 표시하면 현업에서 쓸 수 없다. "15bp 상승"이어야 한다. `higher_is_risk_on`은 factor 계산에서 부호를 자동 결정한다.
+
+### 4.2 NewsEvent
+
+```python
+TimeHorizon = Literal["intraday","short","medium","long"]
+Direction   = Literal["up","down","neutral"]
+
+class Entity:
+    name: str
+    type: Literal["company","country","person","organization",
+                  "commodity","currency","index"]
+    ticker: Optional[str]
+
+class AssetImpact:
+    instrument_id: Optional[str] # Instrument 레지스트리와 연결되면 채움
+    label: str                   # "Brent","Airlines" — 미연결이어도 표시는 가능
+    direction: Direction
+    magnitude: Literal["low","medium","high"]
+    confidence: float            # 0~1
+    rationale: str
+
+class RawNewsItem:
+    id, title, body, url, publisher: str
+    published_at: datetime
+    language: str
+    meta: DataMeta
+
+class NewsEvent:
+    id: str
+    source_item_ids: List[str]   # 여러 기사가 한 이벤트로 병합될 수 있다
+    event: str
+    event_type: Literal["geopolitical","macro","policy","earnings",
+                        "supply","regulation","flow","other"]
+    themes: List[str]            # Theme 레지스트리 FK
+    entities: List[Entity]
+    sentiment: int               # -100 ~ +100
+    impact_score: int            # 0 ~ 100
+    novelty_score: int           # 0 ~ 100
+    time_horizon: TimeHorizon
+    affected_assets: List[AssetImpact]
+    direction: Dict[str, Direction]        # 요구 4 원문 스키마 유지
+    second_order: List[RelationshipEdge]   # Oil↑ → Inflation↑ → Rates↑
+    reason: str
+    source: str
+    timestamp: datetime
+
+    # --- 출처 추적 (요구 15-11) ---
+    extractor: Literal["llm","rule","manual"]
+    extractor_model: Optional[str]
+    validation: ValidationReport  # {schema_ok, errors[], clamped_fields[]}
+    confidence: float             # 0~1
+```
+
+`extractor` 필드가 중요하다. LLM이 만든 것인지 룰이 만든 것인지 사람이 넣은 것인지가 데이터에 남는다. `clamped_fields`는 LLM이 sentiment를 150으로 뱉었을 때 100으로 자른 사실을 기록한다. 조용히 고치지 않고 기록한다.
+
+`second_order`가 요구 4의 "Oil↑ → Inflation Expectation↑ → Rates↑ → Growth Equity Valuation↓" 연쇄를 표현하는 자리다.
+
+### 4.3 ThemeState
+
+```python
+class Theme:                     # 레지스트리 (config/themes.yaml)
+    id: str                      # "ai","semiconductor","oil","geopolitical_risk"
+    name: str
+    aliases: List[str]
+    keywords: List[str]          # RuleExtractor가 쓴다
+    parent: Optional[str]
+    instruments: List[ThemeInstrument]   # {instrument_id, weight, direction}
+    macro_factors: List[str]
+
+class ThemeState:
+    theme_id: str
+    as_of: datetime
+
+    theme_score: float           # -100 ~ +100
+    breakdown: ScoreBreakdown
+
+    news_sentiment: float        # -100 ~ +100
+    news_volume: float           # z-score
+    news_momentum: float
+    price_momentum: float
+    flow_momentum: float
+    volatility: float
+
+    cross_asset_confirmation: Literal["HIGH","MEDIUM","LOW","CONFLICT"]
+    confirmation_score: float    # -100 ~ +100
+    confidence: float            # 0 ~ 100
+    confidence_breakdown: ScoreBreakdown
+
+    last_change: float           # 직전 스냅샷 대비 Δ
+    last_change_window: str      # "1h"
+
+    supporting_events: List[str]      # NewsEvent.id
+    supporting_instruments: List[str]
+    data_quality: Literal["OK","PARTIAL","INSUFFICIENT"]
+```
+
+요구 5의 예시(`AI: Sentiment +78 / News Momentum +65 / Price +52 / Flow +71 / Confirmation HIGH / Confidence 82%`)가 이 스키마에 1:1로 대응한다.
+
+### 4.4 MarketState
+
+```python
+StateLabel = Literal["RISK_ON","RISK_OFF","GROWTH_SHOCK","INFLATION_SHOCK",
+                     "LIQUIDITY_STRESS","POLICY_DRIVEN","GEOPOLITICAL_RISK",
+                     "NEUTRAL"]
+
+class FactorScore:
+    factor: str    # Growth|Inflation|Rates|USD|Liquidity|RiskAppetite|
+                   # Credit|Volatility|China|KoreaFlow|KoreaBreadth
+    score: float                 # z 단위, 대략 -3 ~ +3
+    breakdown: ScoreBreakdown
+    data_quality: Literal["OK","PARTIAL","INSUFFICIENT"]
+
+class RuleMatch:
+    rule_id: str
+    expression: str              # "Inflation >= 1.0"
+    passed: bool
+    observed: float              # 2.05
+
+class StateHypothesis:
+    label: StateLabel
+    score: float                 # 0 ~ 1
+    matched_rules: List[RuleMatch]
+
+class DriverItem:
+    instrument_id: str
+    label: str                   # "Oil"
+    z: float                     # +2.1
+    direction: Literal["up","down","flat"]
+    arrow: str                   # "↑↑" | "↑" | "→" | "↓"
+
+class MarketState:
+    as_of: datetime
+    primary_label: StateLabel
+    secondary_label: Optional[StateLabel]
+    confidence: float            # 0 ~ 100
+    confidence_breakdown: ScoreBreakdown
+    factors: Dict[str, FactorScore]        # 11개 전부
+    hypotheses: List[StateHypothesis]      # 전체 순위
+    main_drivers: List[DriverItem]
+    cross_asset_confirmation: ConfirmationResult
+    narrative: Optional[str]
+    narrative_source: Literal["llm","template","none"]
+
+class ConfirmationResult:
+    confirmed: List[str]
+    unconfirmed: List[str]
+    conflicting: List[str]
+    score: float                 # -1 ~ +1
+    verdict: Literal["HIGH","MEDIUM","LOW"]
+    note: str
+```
+
+요구 6이 "하나의 Label만 보여주기보다"라고 했으므로 `hypotheses` 전체 순위와 `factors` 11개를 **항상 함께** 반환한다. 단일 라벨은 편의 필드일 뿐이다.
+
+`narrative`가 `None`이어도 UI는 완전히 동작해야 한다. `narrative_source`가 `"none"`이면 프론트가 해당 영역을 접는다.
+
+### 4.5 Divergence
+
+```python
+DivergenceType = Literal[
+    "NEWS_VS_PRICE","NEWS_VS_FLOW","PRICE_VS_FLOW","THEME_VS_ASSET",
+    "RISK_VS_VOL","OIL_VS_INFLATION_EXP","BREADTH_VS_INDEX"]
+
+class DivergenceLeg:
+    name: str                    # "News Sentiment"
+    value: float                 # +82
+    z: Optional[float]
+    direction: Literal["up","down","flat"]
+
+class Divergence:
+    id: str
+    type: DivergenceType
+    as_of: datetime
+
+    severity: float              # 0 ~ 100
+    severity_band: Literal["LOW","MEDIUM","HIGH","CRITICAL"]
+    duration_periods: int        # 연속 감지 횟수
+    first_detected_at: datetime
+
+    related_theme: Optional[str]
+    related_assets: List[str]
+
+    legs: List[DivergenceLeg]    # 재현용 원자료
+    gap: float                   # 표준화된 격차
+    rule_id: str
+
+    explanation: str             # 템플릿 — LLM 없이 생성된다
+    llm_commentary: Optional[str]
+```
+
+요구 7의 예시(`AI Divergence: News +82 / Price +61 / Flow -34`)는 `legs` 3개로 표현되고, `explanation`은 템플릿으로 "AI 관련 뉴스와 가격은 긍정적이나 외국인 수급이 동반되지 않고 있음"을 생성한다. LLM은 여기서 필요 없다.
+
+### 4.6 Alert
+
+```python
+AlertType = Literal[
+    "THEME_SENTIMENT_SPIKE","NEWS_VOLUME_SPIKE","PRICE_ZSCORE_SPIKE",
+    "FLOW_REVERSAL","VOL_SPIKE","DIVERGENCE_OPENED","STATE_CHANGE",
+    "DATA_QUALITY"]
+
+class AlertTrigger:
+    rule_id: str
+    metric: str                  # "news_volume_3h"
+    current: float               # 38
+    baseline: float              # 10
+    delta: float                 # 28
+    delta_pct: float             # 280.0
+    threshold: float             # 150.0
+    window: str                  # "3h"
+
+class Alert:
+    id: str
+    as_of: datetime
+    type: AlertType
+    severity: float              # 0 ~ 100
+    severity_band: Literal["INFO","WARN","HIGH","CRITICAL"]
+    title: str
+    message: str
+    trigger: AlertTrigger
+    related_theme: Optional[str]
+    related_assets: List[str]
+    related_events: List[str]
+    dedupe_key: str
+    first_fired_at: datetime
+    last_fired_at: datetime
+    fire_count: int
+    state: Literal["NEW","ONGOING","RESOLVED"]
+```
+
+요구 9가 "단순 수준보다 변화를 중요하게 본다"고 했으므로 `baseline`과 `delta`를 **필수 필드**로 둔다. 값만 있고 기준선이 없는 알림은 만들 수 없게 스키마가 막는다. `dedupe_key`와 `fire_count`가 같은 알림의 반복 발화를 억제한다. 기존 코드에는 중복 제거 장치가 전혀 없었다.
+
+### 4.7 Relationship
+
+```python
+NodeType = Literal["EVENT","THEME","MACRO_FACTOR","ASSET","SECTOR"]
+
+class RelationshipNode:
+    id: str
+    type: NodeType
+    label: str
+    ref_id: Optional[str]        # NewsEvent.id / Theme.id / Instrument.id
+
+class RelationshipEdge:
+    id: str
+    source_id: str
+    target_id: str
+    direction: Literal["positive","negative","ambiguous"]
+    strength: float              # 0 ~ 1
+    confidence: float            # 0 ~ 1
+    lag: Literal["immediate","hours","days","weeks"]
+    reason: str
+
+    # --- 요구 8, 15-11의 핵심 ---
+    origin: Literal["predefined","llm_proposed","statistical"]
+    status: Literal["active","candidate","rejected"]
+    evidence: List[str]
+    created_at: datetime
+    verified_by: Optional[str]
+
+class ImpactMap:
+    as_of: datetime
+    root_event_id: Optional[str]
+    nodes: List[RelationshipNode]
+    edges: List[RelationshipEdge]
+    max_depth: int
+```
+
+`origin`과 `status`가 LLM 추론 관계를 사전 정의 관계와 분리한다. UI에서 `predefined`는 실선, `llm_proposed`는 점선과 다른 색으로 그린다. 불확실한 시장 관계를 확정 사실처럼 제시하지 않는다는 요구 15-11이 데이터 구조에 박혀 있다.
+
+### 4.8 IntelligenceSnapshot (API 최상위 응답)
+
+```python
+class IntelligenceSnapshot:
+    as_of: datetime
+    mode: DataMode
+    market_state: MarketState
+    themes: List[ThemeState]
+    divergences: List[Divergence]
+    alerts: List[Alert]
+    impact_maps: List[ImpactMap]
+    events: List[NewsEvent]
+    whats_moving: List[MovingItem]    # {label, z, change, kind}
+    data_health: DataHealth           # {coverage, stale[], llm_status,
+                                      #  engine_timings_ms{}}
+    engine_versions: Dict[str, str]
+```
+
+대시보드는 `GET /api/v1/snapshot` 한 번으로 화면 전체를 그린다. 패널마다 호출을 나누면 패널 간 시점이 어긋나 "Market State는 10:00 기준인데 Theme은 10:01 기준"인 상태가 생긴다. 시장 분석 도구에서 이것은 치명적이다.
+
+---
+
+## STEP 5. Scoring Methodology
+
+### 5.0 4가지 원칙
+
+1. **모든 원자료는 롤링 z-score로 표준화한다.** 유가는 %, 금리는 bp, VIX는 포인트다. 단위가 다른 것을 그대로 더하면 의미가 없다.
+2. **가중치는 코드가 아니라 `config/scoring.yaml`에 둔다.** 요구 5, 15-9.
+3. **결측은 0으로 채우지 않는다.** 가중치를 재정규화하고 confidence를 깎는다. 0으로 채우면 "데이터가 없음"이 "중립임"이라는 거짓 정보로 둔갑한다. 이것이 정량 시스템에서 가장 흔한 조용한 오류다.
+4. **모든 합성 점수는 contributions 배열을 동봉한다.** 요구 15-6.
+
+### 5.1 표준화 함수
+
+```
+z(x) = (x_t - mean(x, W)) / std(x, W)
+    W = 60 (일봉) / 120 (인트라데이)
+    clamp(z, -4, +4)
+
+squash(z) = 100 * tanh(z / 2)      →  -100 ~ +100
+```
+
+**왜 tanh인가.** 선형 스케일링은 극단치에서 포화되지 않는다. 한 자산이 +6σ로 튀면 그 자산 하나가 전체 점수를 지배한다. tanh는 ±2σ 부근에서 ±76 정도로 부드럽게 포화되어 outlier에 견고하다. 동시에 단조 증가하고 미분 가능해서 해석이 직관적이다. clamp는 z 계산 단계에서 한 번 더 안전장치를 둔 것이다.
+
+`squash(2) ≈ 76`, `squash(3) ≈ 91`, `squash(1) ≈ 46`. 요구사항 예시의 "+78" 같은 값이 대략 2σ 수준에 대응하도록 스케일을 맞췄다.
+
+### 5.2 Factor Score
+
+각 factor는 사전 정의된 instrument 묶음의 **부호 가중 z 평균**이다.
+
+```
+F_j = Σ_i (s_ij · w_ij · z_i) / Σ_i w_ij        (available i만, 재정규화)
+    s_ij ∈ {+1, -1}   방향 부호
+```
+
+`config/factors.yaml` 초기값:
+
+| Factor | 구성 |
+|---|---|
+| Inflation | +0.35·z(Brent) +0.25·z(WTI) +0.20·z(Copper) +0.20·z(BE10Y) |
+| Rates | +0.40·z(US10Y_bp) +0.30·z(US2Y_bp) +0.30·z(KR10Y_bp) |
+| Growth | +0.30·z(Copper/Gold) +0.30·z(Russell) +0.25·z(YieldCurve) +0.15·z(KOSPI) |
+| RiskAppetite | +0.30·z(SPX) +0.25·z(NDX) −0.25·z(VIX) −0.20·z(CreditSpread) |
+| USD | +0.60·z(DXY) +0.40·z(USDKRW) |
+| Volatility | +0.60·z(VIX) +0.40·z(RealizedVol20d) |
+| Credit | +1.00·z(HY_OAS) |
+| Liquidity | −0.50·z(CreditSpread) −0.30·z(MOVE) +0.20·z(거래대금) |
+| China | +0.50·z(HSCEI) +0.30·z(Copper) +0.20·z(CNH) |
+| KoreaFlow | +0.60·z(외국인순매수) +0.40·z(기관순매수) |
+| KoreaBreadth | +0.60·z(상승종목비율) +0.40·z(신고가−신저가) |
+
+**왜 통계 추정이 아니라 사전 정의 부호 가중인가.** 해커톤 기간에 PCA나 회귀로 factor를 추정하면 표본이 부족해 결과가 불안정하고, 무엇보다 **설명이 안 된다.** "PC1이 0.7이라 Risk-Off입니다"는 운용자에게 아무 정보가 아니다. 사전 정의 부호는 매크로 상식과 일치하고, YAML에서 즉시 조정할 수 있으며, 모든 기여도가 그대로 보인다. 통계적 추정은 P4의 validation 단계에서 이 초기값을 검증하는 용도로 쓴다.
+
+### 5.3 Market State Score
+
+**require + support 2단 구조의 룰 기반 스코어링.**
+
+```yaml
+# config/state_rules.yaml
+INFLATION_SHOCK:
+  require:
+    - Inflation >= 1.0
+  support:
+    - {expr: "Rates >= 0.8",         weight: 0.30}
+    - {expr: "Volatility >= 0.5",    weight: 0.20}
+    - {expr: "RiskAppetite <= -0.5", weight: 0.30}
+    - {expr: "Growth <= 0.0",        weight: 0.20}
+```
+
+```
+score(label) = 0                              if require 미충족
+             = 0.5 + 0.5 · Σ(w_k · passed_k)  otherwise
+```
+
+**왜 require gate가 필요한가.** 순수 가중합만 쓰면 핵심 조건 없이도 라벨이 켜진다. 인플레이션 지표가 전혀 안 움직였는데 금리와 변동성만으로 "Inflation Shock"이 뜨면 그 시스템은 신뢰를 잃는다. require가 오탐을 막고, support가 강도를 준다. 그리고 어떤 룰이 통과·실패했는지 `matched_rules`에 `{expr, passed, observed}`로 그대로 남아 "왜 Inflation Shock인가"에 즉답할 수 있다.
+
+`primary = argmax(score)`, `secondary = 2등` (단 score ≥ 0.5일 때만).
+
+**요구 14의 검증 케이스가 이 룰로 어떻게 재현되는지:**
+
+입력 `Oil +2σ, Rates +1.5σ, VIX +1.5σ, Equity −1.2σ` →
+Inflation factor ≈ +1.2 (Brent·WTI 기여), Rates ≈ +1.5, Volatility ≈ +0.9, RiskAppetite ≈ −1.1 →
+`INFLATION_SHOCK`: require(Inflation ≥ 1.0) 통과, support 4개 전부 통과 → score 1.0
+`RISK_OFF`: require(RiskAppetite ≤ −0.8) 통과, support 일부 → score ≈ 0.85
+결과: primary = INFLATION_SHOCK, secondary = RISK_OFF. 이것을 `tests/test_market_state.py`에 골든 케이스로 고정한다.
+
+### 5.4 Confidence Score
+
+```
+Conf = 100 · (0.40·Separation + 0.25·Confirmation
+            + 0.20·Coverage   + 0.15·Persistence)
+
+Separation   = clamp((s₁ − s₂) / 0.5, 0, 1)     1등과 2등의 격차
+Confirmation = cross-asset 확인 비율 (5.5 참조)
+Coverage     = 확보 instrument 비중
+Persistence  = 직전 N틱 중 같은 라벨이 나온 비율
+```
+
+**설계 근거.** 신뢰도는 "얼마나 강한가"가 아니라 "얼마나 확실한가"다. 강도는 factor z가 이미 표현하고 있으므로 confidence에 다시 넣으면 같은 정보를 두 번 세는 것이다. 대신 서로 **독립적인 불확실성의 원천 4가지**를 넣었다.
+
+- 1등과 2등이 붙어 있으면(Risk-Off 0.82 vs Growth Shock 0.79) 어느 쪽인지 확신할 수 없다 → Separation
+- 유가는 올랐는데 USD와 금이 반응하지 않으면 확신할 수 없다 → Confirmation
+- 데이터의 40%가 비어 있으면 확신할 수 없다 → Coverage
+- 한 틱 나타났다 사라지면 확신할 수 없다 → Persistence
+
+Separation에 가장 큰 가중치를 준 것은, 라벨 자체가 틀릴 가능성이 가장 직접적인 불확실성이기 때문이다.
+
+### 5.5 Confirmation Score
+
+사전 정의된 **기대 반응표**를 사용한다. 예를 들어 Inflation Shock의 기대 반응은 `Oil↑, BE↑, Rates↑, Gold↑, GrowthEquity↓, USD↑`다.
+
+```
+confirmed_i   ⟺ sign(z_i) == expected_i  and  |z_i| >= 0.5
+conflicting_i ⟺ sign(z_i) != expected_i  and  |z_i| >= 1.0
+unconfirmed_i ⟺ |z_i| < 0.5
+
+Confirmation = (#confirmed − #conflicting) / #expected
+verdict: ≥0.6 HIGH / ≥0.3 MEDIUM / else LOW
+```
+
+이 구조가 요구 6의 문장을 **자동으로** 만들어낸다. USD의 |z|가 0.4라면 `unconfirmed` 목록에 들어가고, 그 사실이 Confirmation을 떨어뜨리고, Confirmation이 Confidence를 떨어뜨린다. 그리고 템플릿이 `unconfirmed` 목록을 읽어 "유가는 강하게 상승했으나 USD 반응은 제한적이므로 글로벌 Risk-Off 전이는 아직 제한적"을 생성한다. **LLM 없이 이 문장이 나온다.** LLM은 이것을 더 매끄럽게 다듬을 뿐이다.
+
+conflicting의 임계(1.0)를 confirmed(0.5)보다 높게 둔 이유는 비대칭이다. "기대와 반대로 강하게 움직였다"는 주장은 "기대대로 조금 움직였다"보다 강한 주장이므로 더 높은 증거를 요구한다.
+
+### 5.6 Sentiment Score
+
+**2단 구조 — baseline은 항상 동작한다.**
+
+```
+Baseline (LLM 불필요): 극성 사전 + 부정어 처리 → -100 ~ +100
+LLM (가용 시):         NewsEvent.sentiment
+
+S_item = α · S_llm + (1−α) · S_lex,    α = 0.7  (LLM 검증 통과 시)
+                                       α = 0    (그 외)
+```
+
+Theme 단위 집계에서 **단순 평균을 쓰지 않는다** (요구 5 명시). 시간 감쇠 · 영향도 · 출처 3중 가중이다.
+
+```
+w_k = exp(−ln2 · age_hours_k / H) · (impact_k / 100) · src_weight_k
+    H = 6h (intraday) / 24h (daily)
+
+ThemeSentiment = Σ(w_k · S_k) / Σ(w_k)
+```
+
+**왜 지수 감쇠인가.** 뉴스의 시장 관련성은 지수적으로 줄어든다. 단순 평균은 3일 전 기사와 10분 전 기사를 같은 무게로 취급해 급변을 완전히 놓친다. 반감기 6시간은 장중 이슈의 수명에 대한 실무적 감각을 반영한 초기값이며 YAML에서 조정한다. 영향도 가중은 사소한 기사 20건이 헤드라인 1건을 희석하는 것을 막는다.
+
+**News Volume / Momentum:**
+
+```
+NewsVolume_z = z(최근 3h 건수  vs  직전 7일 "같은 시간대" 건수)
+NewsMomentum = squash( z(Σ S·w, 3h) − z(Σ S·w, 직전 24h) )
+```
+
+Volume의 기준선을 "같은 시간대"로 잡은 것이 중요하다. 장중과 새벽의 뉴스량 차이가 몇 배에 달하므로, 단순 이동평균을 기준선으로 쓰면 **매일 개장 때마다 가짜 스파이크**가 뜬다. 알림 엔진이 매일 아침 오탐을 내는 시스템은 쓰이지 않는다.
+
+### 5.7 Theme Score
+
+```
+ThemeScore = 100 · tanh( Σ(w_c · n_c) / Σ|w_c| )
+    n_c = (각 component의 z) / 2
+```
+
+| Component | 기본 weight |
+|---|---|
+| price_momentum | **0.30** |
+| news_sentiment | 0.25 |
+| flow_momentum | 0.20 |
+| news_momentum | 0.15 |
+| volatility | **−0.10** |
+
+**가중치 설계 근거.** price_momentum이 가장 크다. 가격은 유일하게 조작할 수 없는 실제 체결 정보이고, 뉴스는 후행하거나 과장될 수 있다. news_sentiment를 가격보다 낮게 둔 것은 이 시스템의 입장 때문이다. **"뉴스가 시장을 움직인다"가 아니라 "시장이 뉴스를 검증한다."** 요구 1의 "뉴스의 내러티브와 실제 가격·수급이 일치하는가"라는 질문 자체가 시장 쪽에 무게를 두고 있다.
+
+volatility에 음수 가중치를 준 것은 의도적이다. 테마 변동성 급등은 일반적으로 테마의 건전성이 아니라 불안정성을 뜻한다. 급등 자체를 긍정으로 읽으면 붕괴 직전 테마가 최고점을 받는다.
+
+테마의 price/flow momentum은 theme→instrument 매핑의 가중 평균이다.
+
+```
+price_momentum_theme = Σ(w_i · d_i · z_i) / Σ(w_i)      d_i = ±1 방향
+```
+
+**Theme Confirmation:**
+
+```
+signals = [news_sentiment, price_momentum, flow_momentum]
+|signal| >= 20 인 것만 유효 신호로 카운트
+Confirmation = 100 · (agree − disagree) / valid_count
+HIGH ≥ 60 / MEDIUM ≥ 25 / LOW ≥ −25 / CONFLICT < −25
+```
+
+**Theme Confidence:**
+
+```
+Conf = 100 · (0.35·Confirmation_norm + 0.25·Coverage
+            + 0.20·NewsSufficiency   + 0.20·Stability)
+
+NewsSufficiency = min(1, n_events / 5)
+Stability       = 1 − min(1, stdev(theme_score, 최근 6틱) / 40)
+```
+
+**NewsSufficiency가 왜 필요한가.** 기사 1건으로 만든 +78과 기사 20건으로 만든 +78은 같은 확신도가 아니다. 전자는 한 기자의 의견이고 후자는 시장의 관심이다. 포화점 5건은 해커톤 mock 데이터 규모에 맞춘 실용적 선택이며 YAML에서 조정한다.
+
+### 5.8 Divergence Severity
+
+```
+gap = |n_A − n_B|                      두 신호 모두 -100~+100 표준화
+severity = 100 · tanh(gap / 80) · persistence_mult · materiality
+
+persistence_mult = min(1.5, 1 + 0.1·(duration_periods − 1))
+materiality      = clamp( max(|n_A|, |n_B|) / 50, 0, 1 )
+
+트리거: gap ≥ 40  AND  max(|n_A|,|n_B|) ≥ 30  AND  duration ≥ 2틱
+```
+
+**materiality가 왜 필요한가.** `n_A = +3, n_B = −3`이면 gap은 6이고 부호도 반대다. 통계적으로는 divergence지만 실무적으로는 아무 의미가 없다. 둘 다 사실상 0이기 때문이다. 두 신호 중 **적어도 하나는 충분히 커야** 괴리가 의미를 갖는다.
+
+**persistence가 왜 필요한가.** 한 틱짜리 노이즈와 며칠 지속되는 구조적 괴리는 전혀 다른 것이다. 요구 7이 `duration`을 필드로 요구한 이유가 이것이다. 2틱 이상 지속을 트리거 조건으로 둬서 노이즈를 걸러낸다.
+
+### 5.9 Alert Severity
+
+레벨이 아니라 **변화**를 본다 (요구 9).
+
+```
+severity = 100 · tanh(|delta_z| / 2.5) · type_weight
+delta_z  = z(metric_now − metric_prev)  또는  (current − baseline)/baseline
+
+dedupe_key = (type, subject, severity_band)
+cooldown   = 30분 — 같은 키 재발화 시 fire_count만 증가
+```
+
+요구 9의 예시(`News Volume: 3H 평균 대비 +280%`)는 `AlertTrigger{metric:"news_volume_3h", current:38, baseline:10, delta_pct:280, threshold:150, window:"3h"}`로 저장된다. 화면에 표시되는 모든 숫자가 구조화되어 남는다.
+
+### 5.10 재현성 보장
+
+모든 `ScoreBreakdown`이 `inputs_hash = sha256(정렬된 k=v)`를 갖는다. 테스트는 다음을 단언한다.
+
+```python
+def test_market_state_reproducible():
+    result1 = MarketStateEngine(rules).compute(snapshot_fixture)
+    result2 = MarketStateEngine(rules).compute(snapshot_fixture)
+    assert result1.confidence_breakdown.inputs_hash == result2....inputs_hash
+    assert result1.primary_label == "INFLATION_SHOCK"
+    assert [r.rule_id for r in ... if r.passed] == [...]   # 발동 룰까지 고정
+```
+
+요구 14가 요구한 "어떤 rule에 의해 발생했는지 확인할 수 있어야 한다"를 테스트가 직접 검증한다.
+
+---
+
+## STEP 6. 구현 계획 (파일 단위)
+
+### 6.0 디렉터리 구조
+
+기존 `upbit_trading/`은 손대지 않는다. 신규 패키지를 병렬로 추가한다.
+
+```
+marketpulse/
+├── config/
+│   ├── settings.py              pydantic-settings, 시크릿은 env만
+│   ├── instruments.yaml         Instrument 레지스트리
+│   ├── themes.yaml              Theme + theme→instrument 매핑
+│   ├── factors.yaml             11개 factor 구성과 부호 가중
+│   ├── scoring.yaml             모든 weight / threshold
+│   ├── state_rules.yaml         MarketState require+support 룰셋
+│   ├── divergence_rules.yaml
+│   ├── alert_rules.yaml
+│   └── relationships.yaml       사전 정의 관계 그래프
+├── models/
+│   ├── common.py                DataMode, DataMeta, ScoreBreakdown
+│   ├── market.py                Instrument, MarketDataPoint, MarketFeature,
+│   │                            MarketSnapshot
+│   ├── news.py                  RawNewsItem, NewsEvent, AssetImpact, Entity
+│   ├── theme.py, state.py, divergence.py, alert.py, relationship.py
+│   └── snapshot.py              IntelligenceSnapshot
+├── adapters/
+│   ├── base.py                  MarketAdapter / NewsAdapter ABC
+│   ├── registry.py              mode에 따른 어댑터 선택
+│   ├── market/
+│   │   ├── mock.py, csv_replay.py
+│   │   └── yfinance_adapter.py, fdr_adapter.py, fred_adapter.py   (P4)
+│   └── news/
+│       ├── mock.py, file.py
+│       └── rss.py                                                  (P4)
+├── data/mock/
+│   ├── scenario_baseline.json
+│   ├── scenario_inflation_shock.json
+│   ├── scenario_ai_divergence.json
+│   └── history/*.parquet        ← z-score용 롤링 히스토리 (중요)
+├── engines/
+│   ├── features.py              z-score, 수익률, 변동성, RSI, breadth
+│   ├── factors.py, market_state.py, sentiment.py, theme.py
+│   ├── confirmation.py, divergence.py, relationship.py, alert.py
+│   └── orchestrator.py          순수 함수: snapshot → IntelligenceSnapshot
+├── ai/
+│   ├── client.py                Anthropic client, timeout/retry/서킷브레이커
+│   ├── event_extractor.py       LLM structured output
+│   ├── rule_extractor.py        키워드 fallback, 항상 동작
+│   ├── summarizer.py            narrative (deterministic 입력만)
+│   └── validation.py            pydantic 검증 + clamp + 기록
+├── storage/
+│   ├── repository.py            ABC
+│   ├── sqlite_repo.py
+│   └── schema.sql
+├── api/
+│   ├── main.py, deps.py
+│   └── routes/snapshot.py, market_state.py, themes.py,
+│              divergences.py, alerts.py, impact_map.py, news.py, health.py
+├── scheduler/runner.py
+├── vendor/
+│   ├── indicators.py            technical_indicators.py 이식 (vwap 수정)
+│   └── rate_limiter.py          락 밖 대기로 수정 + async 변형
+└── cli.py                       python -m marketpulse.cli snapshot --scenario=...
+
+frontend/
+├── src/
+│   ├── api/client.ts, types.ts  백엔드 스키마와 1:1 (수기 동기화)
+│   ├── components/
+│   │   ├── MarketStateHeader.tsx    [TOP]
+│   │   ├── ThemeHeatmap.tsx         [THEME HEATMAP]
+│   │   ├── WhatsMoving.tsx          [WHAT'S MOVING]
+│   │   ├── WhyPanel.tsx             [WHY]
+│   │   ├── ConfirmationMatrix.tsx   [FLOW & PRICE CONFIRMATION]
+│   │   ├── DivergencePanel.tsx      [DIVERGENCE]
+│   │   ├── ImpactMap.tsx            [IMPACT MAP]
+│   │   ├── AlertTimeline.tsx        [ALERT / TIMELINE]
+│   │   ├── ScoreTooltip.tsx         ScoreBreakdown 렌더 — 설명가능성 UI
+│   │   └── DataModeBadge.tsx        LIVE/DELAYED/MOCK + freshness
+│   ├── layout/DashboardGrid.tsx
+│   └── theme/tokens.ts
+├── vite.config.ts, tailwind.config.ts
+tests/
+docs/
+pyproject.toml
+requirements.txt
+```
+
+컴포넌트 배치는 요구 10의 화면 순서를 그대로 따른다.
+
+### 6.1 P0 — Dashboard skeleton / Schema / Mock pipeline
+
+**목표:** `GET /api/v1/snapshot`이 mock 데이터로 완전한 페이로드를 반환하고, 대시보드가 그것을 그린다.
+
+| 파일 | 내용 |
+|---|---|
+| `pyproject.toml`, `requirements.txt` | 의존성 선언. **기존 리포지토리에 없던 것을 처음 만든다** |
+| `pytest.ini` | `--ignore=upbit_trading/test_sql_load.py` **필수** (STEP 1-6 4번 참조) |
+| `models/*.py` 전부 | STEP 4의 7개 스키마 + 공통 타입 |
+| `config/settings.py` | pydantic-settings. `MARKETPULSE_DATA_MODE`, `ANTHROPIC_API_KEY` 등 |
+| `config/instruments.yaml` | 요구 3의 6개 카테고리 초기 30여 종목 |
+| `config/themes.yaml` | 요구 5의 12개 테마 + instrument 매핑 |
+| `adapters/base.py`, `registry.py` | ABC + mode 기반 선택 |
+| `adapters/market/mock.py`, `news/mock.py` | |
+| `data/mock/scenario_baseline.json` + `history/` | **롤링 히스토리 60틱 포함** |
+| `engines/features.py` | z-score, 수익률, 변동성 |
+| `engines/orchestrator.py` | 스텁 (이후 P마다 채운다) |
+| `vendor/indicators.py` | `technical_indicators.py` 이식, `vwap` 세션 리셋 수정 |
+| `api/main.py`, `routes/snapshot.py`, `routes/health.py` | |
+| `cli.py` | **텍스트 출력 데모 경로 — 프론트 장애 대비책** |
+| frontend 부트스트랩 + `DashboardGrid` + `MarketStateHeader` + `ThemeHeatmap`(더미) + `DataModeBadge` | |
+| `tests/test_schemas.py`, `test_mock_adapter.py`, `test_features.py` | |
+
+**완료 기준:** `pytest` 통과 / `uvicorn` 기동 / 대시보드에 mock 데이터 표시 / 모드 배지에 "MOCK" 노출 / `python -m marketpulse.cli snapshot`이 텍스트 요약 출력.
+
+**주의 사항:** `data/mock/history/`를 P0에서 빼먹으면 P1에서 z-score를 계산할 수 없어 전부 막힌다. 60틱 히스토리는 P0의 필수 산출물이다.
+
+### 6.2 P1 — Market State / Theme Score / Sentiment / Heatmap
+
+| 파일 | 내용 |
+|---|---|
+| `config/factors.yaml`, `state_rules.yaml`, `scoring.yaml` | STEP 5의 모든 수치 |
+| `engines/factors.py` | 11개 factor |
+| `engines/market_state.py` | require+support 룰 평가, hypotheses 순위 |
+| `engines/sentiment.py` | 극성 사전 baseline + 시간감쇠 집계 |
+| `engines/theme.py` | ThemeScore + Confidence |
+| `ai/rule_extractor.py` | 키워드 기반 — **LLM 없이 파이프라인 완주** |
+| `data/mock/scenario_inflation_shock.json` | 요구 14 검증 케이스 |
+| frontend: `ThemeHeatmap` 실데이터, `ScoreTooltip` | |
+| `tests/test_factors.py`, `test_market_state.py`, `test_theme_score.py`, `test_sentiment.py` | |
+
+**완료 기준:** 요구 14의 `Oil +2σ / Rates +1.5σ / VIX +1.5σ / Equity −1.2σ → Inflation Shock` 케이스가 테스트로 통과하고, 응답에 발동 룰 목록이 포함된다.
+
+### 6.3 P2 — Confirmation / Divergence / Alert
+
+| 파일 | 내용 |
+|---|---|
+| `engines/confirmation.py` | 기대 반응표 대조 |
+| `engines/divergence.py` | 7개 divergence 타입 |
+| `engines/alert.py` | 변화 기반 + dedupe + cooldown |
+| `config/divergence_rules.yaml`, `alert_rules.yaml` | |
+| `storage/repository.py`, `sqlite_repo.py`, `schema.sql` | **직전 스냅샷 비교에 필요 — 여기서 처음 필요해진다** |
+| `scheduler/runner.py` | 주기 실행 |
+| `api/routes/divergences.py`, `alerts.py` | |
+| frontend: `ConfirmationMatrix`, `DivergencePanel`, `AlertTimeline`, `WhatsMoving` | |
+| `data/mock/scenario_ai_divergence.json` | 요구 7 예시 재현 |
+| `tests/test_confirmation.py`, `test_divergence.py`, `test_alert.py` | |
+
+**완료 기준:** AI 테마 divergence 시나리오가 자동 탐지되어 패널에 뜨고, 같은 알림이 cooldown 내에 중복 발화하지 않는다.
+
+### 6.4 P3 — Impact Map / LLM Extraction / AI Summary
+
+| 파일 | 내용 |
+|---|---|
+| `config/relationships.yaml` | 사전 정의 그래프 (요구 8의 중동→유가→인플레→금리→성장주 포함) |
+| `engines/relationship.py` | 그래프 순회, depth 제한 |
+| `ai/client.py` | timeout 8s, retry, 서킷브레이커 (연속 3회 실패 → 5분 차단) |
+| `ai/event_extractor.py` | LLM structured output |
+| `ai/validation.py` | pydantic 검증 + clamp + `clamped_fields` 기록 |
+| `ai/summarizer.py` | deterministic 결과만 입력, 숫자 검증 후처리 |
+| `api/routes/impact_map.py`, `news.py` | |
+| frontend: `ImpactMap`(predefined 실선 / llm_proposed 점선), `WhyPanel` | |
+| `tests/test_relationship.py`, `test_llm_validation.py`(고정 fixture, 네트워크 없음), `test_llm_fallback.py` | |
+
+**완료 기준:** `ANTHROPIC_API_KEY`를 지워도 대시보드 전체가 정상 동작하고 narrative만 템플릿으로 대체된다. 이것을 테스트로 고정한다.
+
+### 6.5 P4 — Real Adapter / History / Backtest
+
+| 파일 | 내용 |
+|---|---|
+| `adapters/market/yfinance_adapter.py`, `fdr_adapter.py`, `fred_adapter.py` | |
+| `adapters/market/csv_replay.py` | **로컬 CSV 리플레이 — 현 환경 네트워크 차단 대응** |
+| `adapters/news/rss.py` | |
+| `analysis/backtest.py` | `backtester.py::_calculate_metrics` 이식 |
+| API WebSocket | |
+
+**완료 기준:** `MARKETPULSE_DATA_MODE=LIVE` 환경변수 하나로 전환된다. 엔진 코드는 한 줄도 바뀌지 않는다.
+
+### 6.6 커밋 단위
+
+P당 3~5커밋을 권한다. 스키마 → 엔진 → API → 프론트 → 테스트 순. 각 P 완료 시점에 `pytest`가 통과하는 상태를 유지한다.
+
+---
+
+## STEP 7. Risk / Gap 분석
+
+### 7.1 데이터 확보 — 최상위 리스크
+
+**현 컨테이너에서 마켓데이터 API가 전면 차단되어 있다.** 추정이 아니라 실측 결과다(STEP 1.3). Yahoo Finance, stooq, FRED, Upbit 모두 조직 네트워크 정책으로 CONNECT가 거부된다.
+
+대응:
+- MOCK을 1급 시민으로 설계한다. 기본 모드를 MOCK으로 두고 LIVE는 명시적 opt-in이다.
+- `csv_replay` 어댑터를 만든다. 사용자가 로컬 PC에서 받은 CSV를 `data/replay/`에 넣으면 LIVE에 준하는 데모가 가능하다. 이것이 네트워크 제약을 우회하는 가장 현실적인 경로다.
+- LIVE 어댑터는 작성하되 이 환경에서 통합 테스트가 불가하므로, 고정 응답 fixture 기반 **계약 테스트**로 검증한다.
+
+**Gap — Flow 데이터.** 외국인/기관 순매수는 무료 API가 사실상 없다. KRX 일별 CSV 수동 적재 또는 mock 고정 중 하나를 택해야 한다. 요구 5의 Theme Flow Momentum과 요구 7의 "Price↑ / Flow↓" divergence가 여기에 의존하므로, **이 항목만큼은 mock이어도 시나리오가 설득력 있게 구성되어야 한다.**
+
+### 7.2 실시간성
+
+무료 소스는 대체로 15~20분 지연이다.
+
+대응: DELAYED를 **명시적 상태**로 두고 `freshness_sec`를 UI에 항상 표시한다. "실시간"이라고 주장하지 않는다. 데이터의 나이를 정직하게 드러내는 것이 자산운용 현업에서는 오히려 신뢰 요소다.
+
+### 7.3 LLM Hallucination
+
+가장 위험한 시나리오는 LLM이 없는 숫자를 만들거나 존재하지 않는 시장 관계를 사실처럼 반환하는 것이다.
+
+4중 방어:
+1. **LLM은 점수를 산출하지 않는다.** 모든 숫자는 정량 레이어에서 나온다. 이것이 요구 2의 핵심 원칙이자 가장 강력한 방어다.
+2. **summarizer 입력 고정.** 프롬프트에 deterministic 결과만 주입하고 "주어진 수치 외 인용 금지"를 제약으로 건다. 출력 후 숫자 토큰이 입력에 실제로 존재하는지 후검증한다.
+3. **extractor 출력 검증.** pydantic 스키마 검증 + 범위 clamp. 실패 시 `rule_extractor`로 폴백하고 `validation.errors`에 기록한다.
+4. **LLM 제안 관계 격리.** `origin="llm_proposed"`, `status="candidate"`로 저장하고 UI에서 점선·다른 색으로 그린다. 사전 정의 관계와 섞이지 않는다.
+
+### 7.4 Latency
+
+LLM 호출이 파이프라인을 블로킹하면 대시보드가 멈춘다.
+
+대응: LLM을 파이프라인 밖의 비동기 enrichment로 둔다. 스냅샷은 LLM 없이 **먼저 생성·반환**되고, narrative는 준비되면 다음 폴링에 채워진다. 타임아웃 8초, 서킷브레이커는 연속 3회 실패 시 5분 차단. 뉴스는 배치 처리하고 동일 기사는 본문 해시로 캐싱한다.
+
+### 7.5 비용
+
+기사당 LLM 호출은 건수에 선형 비례한다.
+
+대응:
+- 본문 해시 캐시로 중복 기사 제거
+- 추출은 저비용 모델, 요약만 상위 모델
+- 배치 처리 (10건/요청)
+- prompt caching으로 스키마·지침 부분 재사용
+- `MARKETPULSE_LLM_ENABLED=false`로 전면 차단 가능
+
+구체적인 모델 선택과 단가는 구현 착수 시점의 공개 가격표를 확인해 확정한다. 기억에 의존해 숫자를 적지 않는다.
+
+### 7.6 Scoring Reliability
+
+가중치와 임계값이 자의적이라는 것이 이 설계의 가장 정직한 약점이다.
+
+대응:
+- 전부 YAML로 외부화해 코드 수정 없이 조정 가능하게 한다
+- 모든 점수에 contributions를 동봉해 즉시 검증 가능하게 한다
+- `inputs_hash`로 재현성을 테스트로 고정한다
+- 골든 시나리오 테스트로 회귀를 막는다
+- **문서와 UI에 "이 가중치는 매크로 상식에 기반한 초기값이며 통계적으로 추정된 값이 아니다"를 명시한다.** 요구 15-11이 요구하는 태도다. 불확실한 관계를 확정 사실처럼 제시하지 않는다.
+
+**Gap — 히스토리 길이.** z-score의 60틱 롤링 윈도우를 채우려면 최소 60개 관측치가 필요하다. mock 시나리오에 히스토리를 포함시켜야 한다. **P0에서 이것을 놓치면 P1 전체가 막힌다.** 6.1에 명시했다.
+
+### 7.7 Demo Risk
+
+| 리스크 | 대응 |
+|---|---|
+| 데모 중 외부 API 실패 | 기본 모드 MOCK, LIVE는 명시적 opt-in |
+| 프론트엔드 빌드 실패 | P0에서 `/api/v1/snapshot` JSON과 **CLI 텍스트 출력**을 먼저 완성. 최악의 경우 CLI로 데모 |
+| LLM 키 만료 / 한도 초과 | 7.3, 7.4의 폴백. narrative만 템플릿으로 대체되고 나머지는 그대로 동작 |
+| 시연 결과가 매번 달라짐 | `?scenario=inflation_shock` 쿼리로 결정론적 재생. 우연에 의존하지 않는다 |
+| 시간 부족 | P0~P2가 이미 "뉴스+마켓데이터 결합 → divergence 탐지"라는 핵심 차별점을 담는다. P3는 있으면 좋은 것 |
+| 기존 리포지토리의 `test_sql_load.py` | pytest 도입 시 **import만으로 DB 생성과 외부 API 호출이 발생한다.** `pytest.ini`에서 반드시 제외 |
+
+### 7.8 요구사항 자체의 Gap
+
+구현 전에 결정이 필요한 항목들이다.
+
+1. **Novelty score 계산 방법이 요구사항에 정의되어 있지 않다.** 제안: 제목 토큰의 자카드 유사도 또는 임베딩으로 최근 24시간 기사와 비교해 최대 유사도의 역수를 쓴다. 임베딩은 비용이 붙으므로 P3 이후로 미루고, P1~P2는 자카드로 간다.
+2. **타임존.** KRX·US·유럽 시장이 섞인다. 내부는 전부 UTC로 통일하고 표시만 KST로 한다. instrument별 `as_of` 정의를 명확히 해야 한다.
+3. **시장 휴장.** 한국 휴장 중 미국 지표만 움직이면 KoreaFlow와 KoreaBreadth factor가 왜곡된다. `Instrument.calendar` 필드를 두고 휴장 시 해당 factor를 `data_quality="INSUFFICIENT"`로 표시하고 confidence에서 제외한다.
+4. **Theme 목록의 고정성.** 요구 5의 12개 테마가 초기값인지 확장 가능해야 하는지 불명확하다. YAML로 두어 런타임 추가는 가능하게 하되, 자동 테마 발견은 범위 밖으로 둔다.
+
+---
+
+## 승인 요청 사항
+
+구현 착수 전에 다음 4개 결정을 확인받고자 한다.
+
+1. **기존 `upbit_trading/`을 건드리지 않고 신규 `marketpulse/` 패키지를 병렬 추가하는 방향**이 맞는지. 기존 코드는 암호화폐 자동매매 실행 도메인이라 이번 요구와 겹치는 부분이 지표 계산과 레이트리밋 정도다.
+2. **프론트엔드를 React + Vite로 가는 것**이 맞는지. Streamlit이 더 빠르지만 요구 10의 정보 밀도·즉시성을 만족하기 어렵다고 판단했다.
+3. **현 환경의 네트워크 제약**(외부 마켓데이터 API 전면 차단)을 감안할 때, P4의 LIVE 어댑터를 계약 테스트로만 검증하고 실제 연동은 로컬 환경에 맡기는 것이 맞는지. 대안으로 `csv_replay` 어댑터를 P2로 앞당길 수 있다.
+4. **STEP 5의 초기 가중치**를 그대로 시작할지, 아니면 현업 감각에 맞춰 조정한 뒤 시작할지. YAML이라 언제든 바꿀 수 있지만 초기값이 데모 결과를 좌우한다.
+
+승인 후 P0부터 순차적으로 구현한다.
