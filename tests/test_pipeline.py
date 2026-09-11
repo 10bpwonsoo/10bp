@@ -65,22 +65,27 @@ class TestPurity:
 
 class TestWhatsMoving:
     def test_sorted_by_absolute_z(self, settings):
-        rows = run_pipeline(settings).whats_moving
+        rows = [r for r in run_pipeline(settings).whats_moving if r.kind == "instrument"]
         mags = [abs(r.z) for r in rows]
         assert mags == sorted(mags, reverse=True)
 
     def test_threshold_applied(self, settings):
         for r in run_pipeline(settings).whats_moving:
-            assert abs(r.z) >= WHATS_MOVING_MIN_Z
+            if r.kind == "instrument":
+                assert abs(r.z) >= WHATS_MOVING_MIN_Z
 
     def test_declared_shocks_lead(self, settings):
         """시나리오가 말하려는 이야기가 맨 위에 와야 한다."""
-        rows = run_pipeline(settings).whats_moving
+        rows = [r for r in run_pipeline(settings).whats_moving if r.kind == "instrument"]
         assert rows[0].key == "SOXX"
         assert {r.key for r in rows[:3]} == {"SOXX", "KRX_SEMI", "NDX"}
 
     def test_units_in_display(self, settings):
-        by_key = {r.key: r for r in run_pipeline(settings).whats_moving}
+        by_key = {
+            r.key: r
+            for r in run_pipeline(settings).whats_moving
+            if r.kind == "instrument"
+        }
         if "US2Y" in by_key:
             assert by_key["US2Y"].change_display.endswith("bp")
         assert by_key["SOXX"].change_display.endswith("%")
@@ -110,16 +115,51 @@ class TestUnimplementedStagesAreEmptyNotFaked:
     그럴듯한 가짜 숫자로 채우면 데모는 좋아 보이지만 시스템은 거짓말을 한다.
     """
 
-    def test_p1_p3_sections_empty(self, settings):
+    def test_p2_p3_sections_still_empty(self, settings):
         snap = run_pipeline(settings)
-        assert snap.themes == []
         assert snap.divergences == []
         assert snap.alerts == []
-        assert snap.events == []
-        assert snap.market_state.factors == {}
-        assert snap.market_state.confidence == 0.0
-        assert snap.market_state.narrative is None
-        assert snap.market_state.narrative_source == "none"
+        assert snap.impact_maps == []
+
+    def test_p1_sections_now_populated(self, settings):
+        snap = run_pipeline(settings)
+        assert len(snap.themes) >= 12
+        assert snap.events
+        assert len(snap.market_state.factors) == 11
+        assert snap.market_state.hypotheses
+        assert snap.market_state.narrative_source == "template"
+
+    def test_llm_is_not_used(self, settings):
+        """P1 은 LLM 없이 완주한다. narrative 도 템플릿에서 나온다."""
+        snap = run_pipeline(settings)
+        assert snap.data_health.llm_status == "disabled"
+        assert all(e.extractor == "rule" for e in snap.events)
+        assert snap.market_state.narrative_source != "llm"
+
+
+class TestHistoryEffects:
+    def test_persistence_raises_confidence_on_repeat(self, settings):
+        first = run_pipeline(settings)
+        second = run_pipeline(settings, history=[first])
+        assert second.market_state.confidence >= first.market_state.confidence
+
+    def test_theme_change_measured_against_previous(self, settings):
+        first = run_pipeline(settings)
+        second = run_pipeline(settings, history=[first])
+        assert all(t.last_change == pytest.approx(0.0, abs=1e-9) for t in second.themes)
+
+    def test_theme_movers_appear_when_scores_shift(self, settings):
+        first = run_pipeline(settings)
+        shifted = first.model_copy(
+            update={
+                "themes": [
+                    t.model_copy(update={"theme_score": t.theme_score - 40.0})
+                    for t in first.themes
+                ]
+            }
+        )
+        second = run_pipeline(settings, history=[shifted])
+        assert any(m.kind == "theme" for m in second.whats_moving)
 
 
 class TestAdapterRegistry:

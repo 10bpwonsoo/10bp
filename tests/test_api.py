@@ -21,6 +21,7 @@ class TestRoutes:
         [
             "/api/v1/snapshot",
             "/api/v1/market-state",
+            "/api/v1/themes",
             "/api/v1/whats-moving",
             "/api/v1/health",
             "/api/v1/info",
@@ -74,6 +75,41 @@ class TestScenarioControl:
         r = client.get("/api/v1/snapshot?scenario=nope")
         assert r.status_code == 404
         assert "baseline" in r.json()["detail"]
+
+
+class TestP1Payload:
+    def test_market_state_is_evaluated(self, client):
+        ms = client.get("/api/v1/market-state").json()
+        assert len(ms["factors"]) == 11
+        assert ms["hypotheses"]
+        assert ms["narrative"]
+        assert ms["narrative_source"] == "template"
+
+    def test_every_score_carries_its_reasoning(self, client):
+        """요구 15-6. 점수만 있고 근거가 없는 응답은 내보내지 않는다."""
+        for t in client.get("/api/v1/themes").json():
+            bd = t["breakdown"]
+            assert bd["method"] and bd["inputs_hash"]
+            assert bd["contributions"] or bd["missing_inputs"]
+
+    def test_rule_trace_reaches_the_client(self, client):
+        """요구 14. 어떤 rule 로 판정됐는지 화면에서 확인할 수 있어야 한다."""
+        d = client.get("/api/v1/snapshot?scenario=inflation_shock").json()
+        top = d["market_state"]["hypotheses"][0]
+        assert top["label"] == "INFLATION_SHOCK"
+        assert any(r["kind"] == "require" and r["passed"] for r in top["matched_rules"])
+        assert all("observed" in r and "evaluable" in r for r in top["matched_rules"])
+
+    def test_events_declare_their_extractor(self, client):
+        for e in client.get("/api/v1/snapshot").json()["events"]:
+            assert e["extractor"] == "rule"
+            assert e["validation"]["schema_ok"] is True
+
+    def test_scenarios_are_switchable(self, client):
+        quiet = client.get("/api/v1/snapshot?scenario=baseline").json()
+        shock = client.get("/api/v1/snapshot?scenario=inflation_shock").json()
+        assert quiet["market_state"]["primary_label"] == "NEUTRAL"
+        assert shock["market_state"]["primary_label"] == "INFLATION_SHOCK"
 
 
 class TestCaching:

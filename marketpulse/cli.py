@@ -31,6 +31,22 @@ from .models.snapshot import IntelligenceSnapshot
 RULE = "─" * 72
 
 
+def _wrap(text: str, width: int, indent: str = "") -> str:
+    """한글 폭을 고려하지 않는 단순 줄바꿈. 터미널 출력용으로 충분하다."""
+    words = text.split()
+    lines: list[str] = []
+    cur = ""
+    for w in words:
+        if cur and len(cur) + 1 + len(w) > width:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = f"{cur} {w}".strip()
+    if cur:
+        lines.append(cur)
+    return ("\n" + indent).join(lines)
+
+
 def _settings(args: argparse.Namespace) -> Settings:
     s = get_settings()
     if getattr(args, "scenario", None):
@@ -69,6 +85,17 @@ def render(snap: IntelligenceSnapshot) -> str:
     else:
         for d in ms.main_drivers:
             a(f"    {d.label:<22s} {d.arrow:<3s} {d.z:+.2f}σ")
+        a("")
+        a("    발동 룰")
+        top = ms.hypotheses[0] if ms.hypotheses else None
+        if top and top.score > 0:
+            for m in top.matched_rules:
+                mark = "✓" if m.passed else ("·" if m.evaluable else "?")
+                obs = f"{m.observed:+.2f}" if m.observed is not None else "  -  "
+                a(f"      {mark} [{m.kind:7s}] {m.expression:<24s} 관측 {obs}")
+        a("")
+        if ms.narrative:
+            a("    " + _wrap(ms.narrative, 66, indent="    "))
     a("")
 
     # ── THEME ──
@@ -77,7 +104,12 @@ def render(snap: IntelligenceSnapshot) -> str:
         a("    (Theme Score 는 P1 ThemeEngine 에서 활성화된다)")
     else:
         for t in snap.themes:
-            a(f"    {t.name:<28s} {t.theme_score:+6.1f}   conf {t.confidence:3.0f}%")
+            a(
+                f"    {t.name:<28s} {t.theme_score:+6.1f}   "
+                f"news {t.news_sentiment:+4.0f}  price {t.price_momentum:+4.0f}  "
+                f"flow {t.flow_momentum:+4.0f}   {t.cross_asset_confirmation.value:<8s} "
+                f"conf {t.confidence:3.0f}%"
+            )
     a("")
 
     # ── WHAT'S MOVING ──

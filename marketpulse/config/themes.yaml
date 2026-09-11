@@ -17,6 +17,8 @@ themes:
       - {instrument_id: NDX,  weight: 0.30, direction: 1}
       - {instrument_id: XLK,  weight: 0.20, direction: 1}
       - {instrument_id: KRX_SEMI, weight: 0.15, direction: 1}
+      # flow 자산군은 price_momentum 이 아니라 flow_momentum 으로 집계된다.
+      - {instrument_id: KR_FOREIGN_NET, weight: 1.00, direction: 1}
 
   - id: semiconductor
     name: Semiconductor
@@ -28,6 +30,8 @@ themes:
       - {instrument_id: KRX_SEMI, weight: 0.35, direction: 1}
       - {instrument_id: KOSPI200, weight: 0.15, direction: 1}
       - {instrument_id: NDX,      weight: 0.10, direction: 1}
+      - {instrument_id: KR_FOREIGN_NET, weight: 0.60, direction: 1}
+      - {instrument_id: KR_INSTITUTION_NET, weight: 0.40, direction: 1}
 
   - id: china
     name: China
@@ -84,7 +88,14 @@ themes:
   - id: geopolitical_risk
     name: Geopolitical Risk
     aliases: [지정학, 지정학적 리스크]
-    keywords: [전쟁, 분쟁, 중동, 우크라이나, 대만, 제재, 지정학, 미사일, 공습, 봉쇄, war, conflict, sanction, geopolitical, 호르무즈]
+    keywords: [전쟁, 분쟁, 중동, 우크라이나, 대만, 제재, 지정학, 미사일, 공습, 봉쇄, war, conflict, sanction, geopolitical, 호르무즈, 긴장]
+    # 악재가 테마를 키운다. 긴장 고조는 이 테마에 +다.
+    #
+    # risk 극성은 **테마의 키워드 자체가 부정 극성 단어인 경우에만** 쓴다.
+    # 전쟁·분쟁·긴장·제재가 그렇다. 반대로 Inflation 의 키워드(물가, CPI)는
+    # 중립 명사라서, "기대인플레이션 반등" 을 뒤집으면 오히려 틀린다.
+    # 그래서 Inflation 은 directional 로 둔다.
+    sentiment_polarity: risk
     macro_factors: [Volatility, Inflation]
     instruments:
       - {instrument_id: GOLD,  weight: 0.30, direction: 1}
@@ -141,3 +152,4 @@ themes:
       - {instrument_id: XLY,  weight: 0.55, direction: 1}
       - {instrument_id: RUT,  weight: 0.25, direction: 1}
       - {instrument_id: KOSDAQ, weight: 0.20, direction: 1}
+      - {instrument_id: KR_RETAIL_NET, weight: 1.00, direction: 1}

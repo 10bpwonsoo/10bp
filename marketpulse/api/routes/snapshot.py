@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends
 from ...config.settings import Settings
 from ...models.snapshot import IntelligenceSnapshot, MovingItem
 from ...models.state import MarketState
+from ...models.theme import ThemeState
 from ..deps import load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
@@ -32,6 +33,12 @@ def get_snapshot(settings: SettingsDep) -> IntelligenceSnapshot:
 def get_market_state(settings: SettingsDep) -> MarketState:
     """시장 상태만. 전체 스냅샷과 같은 계산 결과의 일부다."""
     return load_snapshot(settings).market_state
+
+
+@router.get("/themes", response_model=list[ThemeState])
+def get_themes(settings: SettingsDep) -> list[ThemeState]:
+    """테마 점수. theme_score 내림차순이다."""
+    return load_snapshot(settings).themes
 
 
 @router.get("/whats-moving", response_model=list[MovingItem])

@@ -1,5 +1,6 @@
 import type { ThemeState } from "../api/types";
 import { Pending } from "./Panel";
+import { ScoreTooltip } from "./ScoreTooltip";
 
 /** 점수(-100~+100)를 방향 색의 농도로. 0 근처는 거의 무색이다. */
 function cellStyle(score: number): React.CSSProperties {
@@ -58,44 +59,73 @@ export function ThemeHeatmap({ themes }: { themes: ThemeState[] }) {
           key={t.theme_id}
           className="row"
           style={{ gridTemplateColumns: "minmax(0,1.4fr) 64px 56px 56px 56px 64px" }}
-          title={`${t.breakdown.method} · hash ${t.breakdown.inputs_hash}`}
         >
           <span className="row-label">
             {t.name}
             {t.data_quality !== "OK" && (
-              <span className="row-sub" style={{ marginLeft: 6 }}>
-                {t.data_quality === "INSUFFICIENT" ? "데이터 부족" : "부분"}
+              <span
+                className="row-sub"
+                style={{ marginLeft: 6 }}
+                title={
+                  t.breakdown.missing_inputs.length > 0
+                    ? `누락: ${t.breakdown.missing_inputs.join(", ")}`
+                    : undefined
+                }
+              >
+                {t.data_quality === "INSUFFICIENT" ? "데이터 부족" : "일부 결손"}
               </span>
             )}
           </span>
-          <span
-            className="num"
-            style={{ ...cellStyle(t.theme_score), textAlign: "right", padding: "2px 6px", borderRadius: 2 }}
-          >
-            {t.theme_score >= 0 ? "+" : ""}
-            {t.theme_score.toFixed(0)}
-          </span>
-          {[t.news_sentiment, t.price_momentum, t.flow_momentum].map((v, i) => (
+          <ScoreTooltip breakdown={t.breakdown} label={`${t.name} Score`}>
             <span
-              key={i}
-              className={`num ${v >= 0 ? "up" : "down"}`}
-              style={{ textAlign: "right" }}
+              className="num"
+              style={{
+                ...cellStyle(t.theme_score),
+                display: "block",
+                textAlign: "right",
+                padding: "2px 6px",
+                borderRadius: 2,
+              }}
             >
-              {v >= 0 ? "+" : ""}
-              {v.toFixed(0)}
+              {t.theme_score >= 0 ? "+" : ""}
+              {t.theme_score.toFixed(0)}
+            </span>
+          </ScoreTooltip>
+          {[
+            ["뉴스 감성", t.news_sentiment],
+            ["가격 모멘텀", t.price_momentum],
+            ["수급 모멘텀", t.flow_momentum],
+          ].map(([label, v]) => (
+            <span
+              key={label as string}
+              className={`num ${v === null ? "" : (v as number) >= 0 ? "up" : "down"}`}
+              style={{ textAlign: "right", color: v === null ? "var(--faint)" : undefined }}
+              title={
+                v === null
+                  ? `${label as string}: 측정되지 않음`
+                  : `${label as string} ${(v as number).toFixed(1)}`
+              }
+            >
+              {/* 미측정은 0 이 아니다. 빈 값으로 보여야 한다. */}
+              {v === null ? "–" : `${(v as number) >= 0 ? "+" : ""}${(v as number).toFixed(0)}`}
             </span>
           ))}
-          <span
-            className="num"
-            style={{
-              textAlign: "right",
-              color:
-                t.cross_asset_confirmation === "CONFLICT" ? "var(--crit)" : "var(--muted)",
-            }}
-            title={`Cross-asset 확인: ${CONFIRM_LABEL[t.cross_asset_confirmation]}`}
-          >
-            {t.confidence.toFixed(0)}%
-          </span>
+          <ScoreTooltip breakdown={t.confidence_breakdown} label={`${t.name} Confidence`}>
+            <span
+              className="num"
+              style={{
+                display: "block",
+                textAlign: "right",
+                color:
+                  t.cross_asset_confirmation === "CONFLICT"
+                    ? "var(--crit)"
+                    : "var(--muted)",
+              }}
+              title={`Cross-asset 확인: ${CONFIRM_LABEL[t.cross_asset_confirmation]}`}
+            >
+              {t.confidence.toFixed(0)}%
+            </span>
+          </ScoreTooltip>
         </div>
       ))}
     </div>

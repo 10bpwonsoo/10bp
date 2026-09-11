@@ -16,12 +16,12 @@
 
 설계 문서: [`docs/00-analysis-and-architecture.md`](docs/00-analysis-and-architecture.md)
 
-### 현재 상태 — P0 완료
+### 현재 상태 — P1 완료
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
 | **P0** | 데이터 계약, MOCK 파이프라인, FeatureEngine, API, CLI, 대시보드 골격 | ✅ 완료 |
-| P1 | Market State Engine, Theme Score, Sentiment, Theme Heatmap | 예정 |
+| **P1** | Market State Engine, Theme Score, Sentiment, 룰 추출, Theme Heatmap | ✅ 완료 |
 | P2 | Confirmation, Divergence, Alert | 예정 |
 | P3 | Impact Map, LLM 이벤트 추출, AI 요약 | 예정 |
 | P4 | 실데이터 어댑터, 히스토리, 백테스트 | 예정 |
@@ -49,11 +49,37 @@ cd frontend && npm install && npm run dev
 
 ```bash
 .venv/bin/python -m marketpulse.cli snapshot
+.venv/bin/python -m marketpulse.cli snapshot --scenario inflation_shock
 .venv/bin/python -m marketpulse.cli scenarios
 .venv/bin/python -m marketpulse.cli features SOXX   # 한 종목의 파생 지표 검증
 ```
 
-### 설정
+`snapshot` 출력에는 **발동한 룰과 관측값이 그대로** 찍힌다.
+
+```
+  발동 룰
+    ✓ [require] Inflation >= 1.0         관측 +1.70
+    ✓ [support] Rates >= 0.8             관측 +1.42
+    ✓ [support] RiskAppetite <= -0.5     관측 -1.33
+```
+
+### 설정 파일
+
+스코어링 수치는 코드에 없다. 전부 YAML 이고 코드 수정 없이 조정한다.
+
+| 파일 | 내용 |
+|---|---|
+| `instruments.yaml` | 관측 대상 47종목. 요구 3 의 6개 카테고리 |
+| `themes.yaml` | 13개 테마와 테마-자산 매핑 |
+| `factors.yaml` | 11개 매크로 factor 의 부호 가중 구성 |
+| `state_rules.yaml` | Market State 의 require + support 룰셋과 기대 반응표 |
+| `scoring.yaml` | 모든 가중치와 임계값 |
+| `lexicon.yaml` | 감성 사전. 맥락 의존 표현은 일부러 제외했다 |
+
+> 이 값들은 매크로 상식에 기반한 **초기 제안값**이며 통계적으로 추정된 값이
+> 아니다. 실데이터가 붙는 시점에 재검토 대상이다.
+
+### 환경변수
 
 시크릿은 환경변수로만 받는다. **코드나 추적 대상 파일에 넣지 않는다.**
 
@@ -84,6 +110,11 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
 히스토리는 고정 시드로 생성한다. `"SOXX": 1.25` 라고 적으면 FeatureEngine 이
 계산한 `z_1d` 가 정확히 `+1.25` 가 된다.
 
+| 시나리오 | 내용 |
+|---|---|
+| `baseline` | 평시. 어느 상태 룰도 발동하지 않는다 (판정 없음) |
+| `inflation_shock` | 요구 14 의 검증 케이스. Oil +2σ / Rates +1.5σ / VIX +1.5σ / Equity −1.2σ → Inflation Shock / Risk-Off |
+
 ### 테스트
 
 ```bash
@@ -102,9 +133,11 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
 ```
 marketpulse/
 ├── models/      데이터 계약 7종 + 공통 타입 (pydantic v2)
-├── config/      instruments.yaml(47) · themes.yaml(13) · settings
+├── config/      instruments · themes · factors · state_rules · scoring · lexicon
 ├── adapters/    MarketAdapter / NewsAdapter + MOCK 구현
-├── engines/     features · normalize · orchestrator
+├── engines/     features · normalize · scoring · factors · market_state
+│                confirmation · sentiment · theme · orchestrator
+├── ai/          rule_extractor (LLM 없이 동작하는 기준선)
 ├── vendor/      technical_indicators.py 이식본
 ├── api/         FastAPI 라우트
 ├── data/mock/   시나리오 파일

@@ -1,0 +1,86 @@
+# Market Pulse AI — 스코어링 파라미터 (설계서 STEP 5)
+#
+# 모든 가중치와 임계값이 여기 있다. 코드에는 숫자가 없다 (요구 15-9).
+# 이 값들은 매크로 상식에 기반한 초기 제안값이며 통계적으로 추정된 값이
+# 아니다. 실데이터가 붙는 시점에 재검토 대상이다 (요구 15-11).
+
+standardize:
+  # squash(z) = squash_scale * tanh(z / squash_divisor)
+  # ±2σ 부근에서 ±76 으로 부드럽게 포화된다. 선형 스케일링은 극단치에서
+  # 포화되지 않아 한 자산이 전체 점수를 지배한다.
+  squash_scale: 100.0
+  squash_divisor: 2.0
+
+factor:
+  # 가중치 대비 이 비율 미만만 확보되면 factor 를 신뢰하지 않는다.
+  # 결측은 0 으로 채우지 않고 가중치를 재정규화한 뒤 품질을 낮춘다.
+  min_coverage_ok: 0.75
+  min_coverage_partial: 0.40
+
+market_state:
+  # score(label) = base + (1-base) * Σ(w_k · passed_k),  require 통과 시에만
+  require_pass_base: 0.5
+  # 2등이 이 점수 이상일 때만 secondary 로 표시한다
+  secondary_min_score: 0.5
+  # Main Drivers 에 표시할 최대 개수와 최소 |z|
+  driver_limit: 6
+  driver_min_z: 0.5
+
+confidence:
+  # 신뢰도는 "얼마나 강한가" 가 아니라 "얼마나 확실한가" 다.
+  # 강도는 factor z 가 이미 표현하므로 여기 다시 넣으면 같은 정보를 두 번
+  # 센다. 대신 서로 독립적인 불확실성의 원천 네 가지를 넣는다.
+  weights:
+    separation: 0.40    # 1등과 2등의 격차. 라벨 자체가 틀릴 가능성
+    confirmation: 0.25  # cross-asset 이 서로를 확인하는가
+    coverage: 0.20      # 데이터가 얼마나 있는가
+    persistence: 0.15   # 직전 틱에도 같은 판정이었는가
+  # separation 을 1.0 으로 보는 점수 격차
+  separation_full_gap: 0.5
+
+confirmation:
+  # 기대와 같은 방향으로 이만큼 움직이면 확인된 것으로 본다
+  confirm_min_abs_z: 0.5
+  # 기대와 반대로 이만큼 움직여야 상충으로 본다.
+  # "기대와 반대로 강하게 움직였다" 는 "기대대로 조금 움직였다" 보다
+  # 강한 주장이므로 더 높은 증거를 요구한다. 의도적 비대칭이다.
+  conflict_min_abs_z: 1.0
+  verdict_high: 0.6
+  verdict_medium: 0.3
+
+sentiment:
+  # LLM 검증을 통과했을 때 LLM 감성에 주는 비중. 나머지는 사전 기반.
+  llm_weight: 0.7
+  # 시간 감쇠 반감기 (시간). 뉴스의 시장 관련성은 지수적으로 줄어든다.
+  half_life_hours: 6.0
+  # 사전 매칭 1건당 점수. 부정어가 앞에 있으면 부호를 뒤집는다.
+  lexicon_unit: 26.0
+  lexicon_max_terms: 4
+  # 출처 가중. 미등록 출처는 default 를 쓴다.
+  source_weights:
+    default: 1.0
+
+theme:
+  # 각 component 를 z 단위로 맞춘 뒤 가중 평균하고 squash 한다.
+  weights:
+    price_momentum: 0.30   # 가격은 유일하게 조작 불가능한 실제 체결 정보다
+    news_sentiment: 0.25
+    flow_momentum: 0.20
+    news_momentum: 0.15
+    volatility: -0.10      # 테마 변동성 급등은 건전성이 아니라 불안정성이다
+  confirmation:
+    # 이 절댓값 미만의 신호는 방향이 없다고 보고 합의 계산에서 제외한다
+    signal_min_abs: 20.0
+    high: 60.0
+    medium: 25.0
+    low: -25.0
+  confidence:
+    weights:
+      confirmation: 0.35
+      coverage: 0.25
+      news_sufficiency: 0.20
+      stability: 0.20
+    # 기사 1건으로 만든 +78 과 20건으로 만든 +78 은 같은 확신도가 아니다.
+    news_sufficiency_saturation: 5
+    # 안정성 계산에 쓰는 theme_score 표준편차의 포화점
+    stability_stdev_saturation: 40.0

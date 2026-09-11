@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections import defaultdict, deque
 from dataclasses import dataclass
 
 from fastapi import HTTPException, Query
@@ -20,6 +21,10 @@ logger = logging.getLogger(__name__)
 
 #: 프론트가 5초 간격으로 폴링한다. 그 사이 재계산은 낭비다.
 CACHE_TTL_SEC = 4.0
+
+
+#: Persistence / Stability / (P2) duration 계산에 쓸 과거 틱 보관 수.
+HISTORY_LIMIT = 12
 
 
 @dataclass
@@ -40,8 +45,12 @@ class SnapshotService:
         self._ttl = ttl_sec
         self._cache: dict[str, _Entry] = {}
         self._lock = threading.Lock()
-        #: 직전 스냅샷. P2 의 alert/divergence 가 '변화' 를 보려면 필요하다.
-        self._previous: dict[str, IntelligenceSnapshot] = {}
+        #: 과거 스냅샷(오래된 것부터). 상태 판정의 지속성과 테마 점수의
+        #: 안정성을 재려면 한 틱 전만으로는 부족하다. P2 의 divergence
+        #: duration 과 alert baseline 도 여기서 온다.
+        self._history: dict[str, deque[IntelligenceSnapshot]] = defaultdict(
+            lambda: deque(maxlen=HISTORY_LIMIT)
+        )
 
     def get(self, settings: Settings, *, force: bool = False) -> IntelligenceSnapshot:
         key = f"{settings.data_mode.value}:{settings.scenario}"
@@ -52,19 +61,27 @@ class SnapshotService:
             if entry and not force and (now - entry.created_at) < self._ttl:
                 return entry.snapshot
 
-        snapshot = run_pipeline(settings, previous=self._previous.get(key))
+        with self._lock:
+            history = list(self._history[key])
+
+        snapshot = run_pipeline(settings, history=history)
 
         with self._lock:
             prior = self._cache.get(key)
             if prior is not None:
-                self._previous[key] = prior.snapshot
+                self._history[key].append(prior.snapshot)
             self._cache[key] = _Entry(snapshot=snapshot, created_at=time.monotonic())
         return snapshot
+
+    def history(self, settings: Settings) -> list[IntelligenceSnapshot]:
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            return list(self._history[key])
 
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
-            self._previous.clear()
+            self._history.clear()
 
 
 _service = SnapshotService()

@@ -24,22 +24,36 @@ from __future__ import annotations
 import logging
 import time
 from datetime import datetime
+from typing import Sequence
 
+from ..ai.rule_extractor import extract_events
+from ..config.registry import get_instruments, get_themes
 from ..config.settings import Settings
 from ..models.common import DataMode, arrow_for, direction_for, utcnow
 from ..models.market import Instrument, MarketSnapshot
 from ..models.news import RawNewsItem
 from ..models.snapshot import DataHealth, IntelligenceSnapshot, MovingItem
 from ..models.state import MarketState, StateLabel
+from ..models.theme import ThemeState
+from .market_state import compute_market_state
 from .normalize import build_snapshot
+from .theme import compute_theme_states
 
 logger = logging.getLogger(__name__)
 
 ENGINE_VERSIONS: dict[str, str] = {
     "features": "0.1.0",
     "normalize": "0.1.0",
-    "orchestrator": "0.1.0-p0",
+    "factors": "0.1.0",
+    "market_state": "0.1.0",
+    "sentiment": "0.1.0",
+    "theme": "0.1.0",
+    "rule_extractor": "0.1.0",
+    "orchestrator": "0.1.0-p1",
 }
+
+#: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
+THEME_HISTORY_TICKS = 6
 
 #: What's Moving 에 표시할 최대 줄 수.
 WHATS_MOVING_LIMIT = 12
@@ -119,6 +133,42 @@ def build_data_health(
     )
 
 
+def theme_score_history(
+    history: Sequence[IntelligenceSnapshot], theme_id: str
+) -> list[float]:
+    """과거 스냅샷들에서 한 테마의 점수 궤적을 뽑는다. Stability 계산용."""
+    out: list[float] = []
+    for snap in history[-THEME_HISTORY_TICKS:]:
+        for t in snap.themes:
+            if t.theme_id == theme_id:
+                out.append(t.theme_score)
+                break
+    return out
+
+
+def build_theme_movers(
+    themes: Sequence[ThemeState], min_change: float = 5.0
+) -> list[MovingItem]:
+    """직전 틱 대비 테마 점수 변화. 요구 10 의 '가장 크게 변한 ... 테마'."""
+    rows: list[MovingItem] = []
+    for t in themes:
+        if abs(t.last_change) < min_change:
+            continue
+        rows.append(
+            MovingItem(
+                key=t.theme_id,
+                label=t.name,
+                kind="theme",
+                z=None,
+                change=t.last_change,
+                change_display=f"{t.last_change:+.0f}p",
+                direction=direction_for(t.last_change, deadband=min_change),
+                arrow=arrow_for(t.last_change / 20.0),
+            )
+        )
+    return rows
+
+
 def build_intelligence(
     market_snapshot: MarketSnapshot,
     news_items: list[RawNewsItem],
@@ -128,35 +178,63 @@ def build_intelligence(
     llm_enabled: bool = False,
     timings_ms: dict[str, float] | None = None,
     warnings: list[str] | None = None,
-    previous: IntelligenceSnapshot | None = None,
+    history: Sequence[IntelligenceSnapshot] = (),
 ) -> IntelligenceSnapshot:
-    """순수 함수. 스냅샷과 뉴스를 받아 최종 인텔리전스를 만든다."""
-    t0 = time.perf_counter()
+    """
+    순수 함수. 스냅샷과 뉴스를 받아 최종 인텔리전스를 만든다.
+
+    history 는 오래된 것부터 정렬된 과거 스냅샷이다. Persistence(상태 판정의
+    지속성)와 Stability(테마 점수의 안정성) 계산에 쓴다. 비어 있으면 두 항은
+    None 이 되고 confidence 가중치가 재정규화된다 — 0 으로 채우지 않는다.
+    """
     timings = dict(timings_ms or {})
+    previous = history[-1] if history else None
 
-    whats_moving = build_whats_moving(market_snapshot, instruments_by_id)
+    t = time.perf_counter()
+    events = extract_events(news_items, as_of=market_snapshot.as_of)
+    timings["extract"] = (time.perf_counter() - t) * 1000.0
 
-    # P1 에서 MarketStateEngine 이 채운다. 지금은 라벨 없음을 명시한다.
-    market_state = MarketState(
-        as_of=market_snapshot.as_of,
-        primary_label=StateLabel.NEUTRAL,
-        confidence=0.0,
-        narrative=None,
-        narrative_source="none",
+    t = time.perf_counter()
+    market_state = compute_market_state(
+        market_snapshot,
+        instruments_by_id,
+        previous_label=previous.market_state.primary_label if previous else None,
     )
+    timings["market_state"] = (time.perf_counter() - t) * 1000.0
 
-    timings["orchestrator"] = (time.perf_counter() - t0) * 1000.0
+    t = time.perf_counter()
+    themes = compute_theme_states(
+        get_themes().themes,
+        market_snapshot,
+        events,
+        instruments_by_id,
+        previous={ts.theme_id: ts for ts in previous.themes} if previous else None,
+        history={
+            th.id: theme_score_history(history, th.id) for th in get_themes().themes
+        },
+    )
+    timings["theme"] = (time.perf_counter() - t) * 1000.0
+
+    t = time.perf_counter()
+    whats_moving = build_whats_moving(market_snapshot, instruments_by_id)
+    whats_moving += build_theme_movers(themes)
+    whats_moving.sort(
+        key=lambda r: abs(r.z if r.z is not None else (r.change or 0.0) / 20.0),
+        reverse=True,
+    )
+    whats_moving = whats_moving[:WHATS_MOVING_LIMIT]
+    timings["orchestrator"] = (time.perf_counter() - t) * 1000.0
 
     return IntelligenceSnapshot(
         as_of=market_snapshot.as_of,
         mode=market_snapshot.mode,
         scenario=scenario,
         market_state=market_state,
-        themes=[],
+        themes=themes,
         divergences=[],
         alerts=[],
         impact_maps=[],
-        events=[],
+        events=events,
         whats_moving=whats_moving,
         data_health=build_data_health(
             market_snapshot,
@@ -173,12 +251,11 @@ def run_pipeline(
     settings: Settings,
     *,
     as_of: datetime | None = None,
-    previous: IntelligenceSnapshot | None = None,
+    history: Sequence[IntelligenceSnapshot] = (),
 ) -> IntelligenceSnapshot:
     """I/O 를 포함한 한 tick 실행. 어댑터 -> 정규화 -> 엔진."""
     # 지연 import: 레지스트리 캐시와 순환 참조를 피한다.
     from ..adapters.registry import build_market_adapter, build_news_adapter
-    from ..config.registry import get_instruments
 
     registry = get_instruments()
     instruments = registry.instruments
@@ -229,5 +306,5 @@ def run_pipeline(
         llm_enabled=settings.llm_enabled,
         timings_ms=timings,
         warnings=warnings,
-        previous=previous,
+        history=history,
     )

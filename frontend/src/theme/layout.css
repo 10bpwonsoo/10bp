@@ -237,3 +237,124 @@
     display: none;
   }
 }
+
+/* ── 계산 근거 팝오버 ────────────────────────── */
+.tip {
+  position: relative;
+  display: inline-block;
+}
+
+.tip-trigger {
+  cursor: help;
+  border-bottom: 1px dotted var(--faint);
+}
+
+.tip-panel {
+  display: none;
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(360px, 84vw);
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+}
+
+.tip:hover .tip-panel,
+.tip:focus-within .tip-panel {
+  display: flex;
+}
+
+.tip-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 10.5px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 6px;
+}
+
+.tip-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.tip-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px 46px 56px;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.tip-row > span:not(:first-child) {
+  text-align: right;
+}
+
+.tip-row-head {
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--rule-soft);
+  padding-bottom: 3px;
+  margin-bottom: 2px;
+}
+
+.tip-row > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tip-missing {
+  color: var(--warn);
+}
+
+.tip-empty,
+.tip-foot {
+  color: var(--faint);
+  font-size: 10.5px;
+}
+
+/* ── 룰 트레이스 ─────────────────────────────── */
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 16px 62px minmax(0, 1fr) 62px;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.rule-mark.pass {
+  color: var(--ok);
+}
+.rule-mark.fail {
+  color: var(--faint);
+}
+.rule-mark.unknown {
+  color: var(--warn);
+}
+
+.rule-kind {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}

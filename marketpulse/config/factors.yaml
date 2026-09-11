@@ -1,0 +1,90 @@
+# Market Pulse AI — Factor 구성 (설계서 STEP 5.2)
+#
+#   F_j = Σ_i (s_ij · w_ij · z_i) / Σ_i w_ij      (확보된 i 만, 재정규화)
+#
+# sign 은 방향 부호다. VIX 가 오르면 위험선호가 내리므로 RiskAppetite 에서
+# VIX 의 sign 은 -1 이다.
+#
+# 왜 통계 추정이 아니라 사전 정의 부호 가중인가
+# ---------------------------------------------
+# PCA 나 회귀로 factor 를 추정하면 표본이 부족해 불안정하고, 무엇보다
+# 설명이 안 된다. "PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 아무
+# 정보가 아니다. 사전 정의 부호는 매크로 상식과 일치하고 여기서 즉시
+# 조정할 수 있으며 모든 기여도가 그대로 보인다. 통계적 추정은 P4
+# validation 단계에서 이 초기값을 검증하는 용도로 쓴다.
+
+factors:
+  Growth:
+    description: 실물 성장 기대. 경기민감 자산과 커브의 기울기로 읽는다.
+    components:
+      - {instrument_id: COPPER_GOLD, weight: 0.30, sign: 1}
+      - {instrument_id: RUT,         weight: 0.30, sign: 1}
+      - {instrument_id: CURVE_2S10S, weight: 0.25, sign: 1}
+      - {instrument_id: KOSPI,       weight: 0.15, sign: 1}
+
+  Inflation:
+    description: 물가 압력. 원자재와 기대인플레이션으로 읽는다.
+    components:
+      - {instrument_id: BRENT,  weight: 0.35, sign: 1}
+      - {instrument_id: WTI,    weight: 0.25, sign: 1}
+      - {instrument_id: COPPER, weight: 0.20, sign: 1}
+      - {instrument_id: BE10Y,  weight: 0.20, sign: 1}
+
+  Rates:
+    description: 금리 수준의 변화. 단위는 bp 기준 z 다.
+    components:
+      - {instrument_id: US10Y, weight: 0.40, sign: 1}
+      - {instrument_id: US2Y,  weight: 0.30, sign: 1}
+      - {instrument_id: KR10Y, weight: 0.30, sign: 1}
+
+  USD:
+    description: 달러 강세. 원화 약세를 함께 본다.
+    components:
+      - {instrument_id: DXY,    weight: 0.60, sign: 1}
+      - {instrument_id: USDKRW, weight: 0.40, sign: 1}
+
+  Liquidity:
+    description: 유동성 여건. 스프레드 확대와 변동성 상승은 유동성 악화다.
+    components:
+      - {instrument_id: US_HY_OAS,       weight: 0.50, sign: -1}
+      - {instrument_id: MOVE,            weight: 0.30, sign: -1}
+      - {instrument_id: KR_TRADING_VALUE, weight: 0.20, sign: 1}
+
+  RiskAppetite:
+    description: 위험선호. 주식 강세와 변동성·스프레드 축소로 읽는다.
+    components:
+      - {instrument_id: SPX,       weight: 0.30, sign: 1}
+      - {instrument_id: NDX,       weight: 0.25, sign: 1}
+      - {instrument_id: VIX,       weight: 0.25, sign: -1}
+      - {instrument_id: US_HY_OAS, weight: 0.20, sign: -1}
+
+  Credit:
+    description: 신용 스프레드. 확대가 악화다.
+    components:
+      - {instrument_id: US_HY_OAS, weight: 1.00, sign: 1}
+
+  Volatility:
+    description: 변동성 레짐.
+    components:
+      - {instrument_id: VIX,    weight: 0.45, sign: 1}
+      - {instrument_id: VKOSPI, weight: 0.30, sign: 1}
+      - {instrument_id: MOVE,   weight: 0.25, sign: 1}
+
+  China:
+    description: 중국 경기와 위안화. CNH 상승(위안 약세)은 역방향이다.
+    components:
+      - {instrument_id: HSCEI,  weight: 0.50, sign: 1}
+      - {instrument_id: COPPER, weight: 0.30, sign: 1}
+      - {instrument_id: USDCNH, weight: 0.20, sign: -1}
+
+  KoreaFlow:
+    description: 국내 수급. 외국인·기관 순매수.
+    components:
+      - {instrument_id: KR_FOREIGN_NET,     weight: 0.60, sign: 1}
+      - {instrument_id: KR_INSTITUTION_NET, weight: 0.40, sign: 1}
+
+  KoreaBreadth:
+    description: 국내 시장 폭. 지수보다 참여도를 본다.
+    components:
+      - {instrument_id: KOSPI_ADV_RATIO, weight: 0.60, sign: 1}
+      - {instrument_id: KOSPI_NHNL,      weight: 0.40, sign: 1}

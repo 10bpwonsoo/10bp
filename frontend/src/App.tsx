@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchNews, fetchScenarios } from "./api/client";
-import type { RawNewsItem, ScenarioInfo } from "./api/types";
+import { fetchScenarios } from "./api/client";
+import type { ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
 import { DataModeBadge } from "./components/DataModeBadge";
 import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
@@ -9,7 +9,6 @@ import { DashboardGrid } from "./layout/DashboardGrid";
 export default function App() {
   const [scenario, setScenario] = useState<string | undefined>(undefined);
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
-  const [news, setNews] = useState<RawNewsItem[]>([]);
   const { snapshot, error, loading } = useSnapshot(scenario);
 
   useEffect(() => {
@@ -22,14 +21,6 @@ export default function App() {
       .catch(() => setScenarios([]));
     return () => c.abort();
   }, []);
-
-  useEffect(() => {
-    const c = new AbortController();
-    fetchNews(scenario, c.signal)
-      .then(setNews)
-      .catch(() => setNews([]));
-    return () => c.abort();
-  }, [scenario, snapshot?.as_of]);
 
   return (
     <div className="app">
@@ -61,7 +52,7 @@ export default function App() {
       ) : null}
 
       {snapshot ? (
-        <DashboardGrid snapshot={snapshot} news={news} />
+        <DashboardGrid snapshot={snapshot} />
       ) : (
         <div className="grid">
           <section className="panel span-3">

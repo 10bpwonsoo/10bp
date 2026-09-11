@@ -1255,3 +1255,79 @@ LLM 호출이 파이프라인을 블로킹하면 대시보드가 멈춘다.
 instruments.yaml 에 등록되어 있으나 실데이터 확보 난이도가 높다(STEP 7.1).
 P1 에서 factor 를 계산할 때 이들이 빠져도 가중치 재정규화로 동작하는지
 테스트로 고정한다.
+
+### P1 — 완료
+
+STEP 6.2 의 완료 기준을 충족했다. 요구 14 의 검증 케이스가 테스트로 통과하고,
+응답에 발동 룰 목록이 포함된다.
+
+**요구 14 검증 케이스 재현**
+
+`scenario_inflation_shock` 이 Oil +2.1σ / Rates +1.6σ / VIX +1.5σ / Equity −1.2σ 를
+선언하고, 엔진이 다음을 산출한다.
+
+```
+INFLATION_SHOCK   1.000   ✓ inf_core(Inflation>=1.0, 관측 +1.70)
+                          ✓ inf_rates ✓ inf_risk ✓ inf_vol ✓ inf_growth
+RISK_OFF          0.875   ✓ ro_core ✓ ro_vol ✓ ro_credit ✓ ro_usd
+                          · ro_flow  (KoreaFlow -0.20, 조건 <= -0.3 미달)
+GEOPOLITICAL_RISK 0.775
+POLICY_DRIVEN     0.750
+
+primary = INFLATION_SHOCK, secondary = RISK_OFF, confidence 65%
+```
+
+두 판정의 순위를 가른 것은 **국내 수급 조건 하나**다. `ro_flow` 가 실패하지
+않았다면 두 라벨이 동점이 되고 separation 이 0 이 되어 confidence 가 더
+낮아졌을 것이다. 이 한 줄이 테스트로 고정되어 있다.
+
+**설계 대비 변경점**
+
+1. **Confirmation 엔진을 P1 로 당겼다.** 설계서는 P2 에 두었으나 STEP 5.4 의
+   Confidence 가 Confirmation 을 구성요소로 쓴다. 둘을 떼면 P1 의 confidence
+   가 불완전해진다. P2 는 이것을 테마와 divergence 로 확장한다.
+
+2. **`Theme.sentiment_polarity` 를 추가했다.** 설계에 없던 항목이다. 요구 5 의
+   예시 히트맵에서 "Geopolitical Risk +88" 은 지정학 리스크가 **높다**는 뜻이다.
+   그런데 사전은 "긴장 고조" 를 부정 극성으로 읽는다. 테마의 키워드 자체가
+   부정 극성 단어인 경우(전쟁·분쟁·긴장·제재)에만 부호를 뒤집도록 했다.
+   Inflation 의 키워드(물가, CPI)는 중립 명사라 뒤집으면 오히려 틀린다.
+
+3. **`NewsEvent.theme_sentiment` 를 추가했다.** 기사 하나가 여러 테마를
+   건드릴 때 기사 전체 감성을 모든 테마에 그대로 붙이면 틀린다.
+   "정유주 강세, 항공주 약세" 는 Energy 에 +, Airlines 에 −여야 한다. 문장과
+   한국어 대조 접속사(반면/한편), 그리고 헤드라인의 말줄임표를 경계로 잘라
+   테마 키워드가 있는 절만 채점한다.
+
+4. **`news_volume` 을 횡단면 z 로 계산한다.** 설계의 정의는 시계열 z(최근
+   3시간 vs 직전 7일 같은 시간대)다. 뉴스 히스토리가 없는 현 단계에서는
+   쓸 수 없어, "이 테마가 지금 다른 테마들보다 유별나게 많이 언급되는가" 로
+   대체했다. 다른 지표이므로 method 문자열에 그 사실을 남겼고, 히스토리가
+   붙는 P4 에서 교체한다.
+
+5. **ThemeState 의 구성요소를 `float | None` 으로 바꿨다.** 처음에는 미측정을
+   0.0 으로 채웠는데, 이는 설계서 STEP 5.0 의 원칙 3 을 스스로 어긴 것이었다.
+   수급 자산을 매핑하지 않은 테마의 Flow 가 "+0" 으로 보이면 "측정했더니
+   중립" 으로 읽힌다. 화면에서도 `–` 로 구분한다.
+
+6. **데이터 품질 판정에서 구조적 부재와 실제 결손을 구분한다.** Defense
+   테마에 수급 자산을 매핑하지 않은 것은 데이터 결손이 아니라 모델링
+   선택이다. 그것까지 PARTIAL 로 표시하면 진짜 결손이 묻힌다.
+
+**설계대로 유지된 것**
+
+- LLM 을 한 번도 호출하지 않는다. `llm_status` 는 `disabled` 이고 narrative 는
+  템플릿에서 나온다. 요구 6 의 "유가는 강하게 상승했으나 USD 반응은
+  제한적" 같은 문장이 `ConfirmationResult.note` 에서 자동 생성된다.
+- 표현식 평가에 `eval` 을 쓰지 않는다. 설정 파일이 임의 코드를 실행할 수
+  있으면 그것은 설정이 아니라 코드다. 허용 문법만 정규식으로 파싱한다.
+- 평가 불가를 통과로 처리하지 않는다. 그렇게 하면 데이터가 없을수록 라벨이
+  잘 붙는 시스템이 된다.
+
+**P2 착수 전 확인 사항**
+
+`inflation_shock` 시나리오에서 Semiconductor 테마의 news_sentiment(−39)와
+price_momentum(−65)은 같은 방향이지만, flow_momentum(−10)은 상대적으로
+약하다. P2 의 Divergence Engine 이 이런 격차를 어느 임계에서 잡을지는
+`divergence_rules.yaml` 에서 정한다. 설계서 STEP 5.8 의 materiality 항이
+이 경우를 걸러내는지 테스트로 확인해야 한다.

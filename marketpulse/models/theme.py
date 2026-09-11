@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import Field, model_validator
 
@@ -47,6 +48,14 @@ class Theme(Base):
         default_factory=list, description="RuleExtractor 가 뉴스 태깅에 쓴다"
     )
     parent: str | None = None
+    sentiment_polarity: Literal["directional", "risk"] = Field(
+        default="directional",
+        description=(
+            "directional: 테마가 강해지는 방향이 +. Oil 테마는 유가 상승이 +다. "
+            "risk: 악재가 테마를 키운다. Geopolitical Risk 는 긴장 고조가 +다. "
+            "요구 5 의 예시 히트맵에서 'Geopolitical Risk +88' 이 이 경우다."
+        ),
+    )
     instruments: list[ThemeInstrument] = Field(default_factory=list)
     macro_factors: list[str] = Field(default_factory=list)
 
@@ -77,15 +86,18 @@ class ThemeState(Base):
     theme_score: float = Field(default=0.0, ge=-100.0, le=100.0)
     breakdown: ScoreBreakdown
 
-    news_sentiment: float = 0.0
-    news_volume: float = 0.0
-    news_momentum: float = 0.0
-    price_momentum: float = 0.0
-    flow_momentum: float = 0.0
-    volatility: float = 0.0
+    # None 은 '측정되지 않음' 이다. 0.0 은 '측정했고 중립' 이다.
+    # 둘을 같은 값으로 뭉개면 뉴스가 없는 테마와 뉴스가 팽팽한 테마를
+    # 구분할 수 없다 (설계서 STEP 5.0 원칙 3).
+    news_sentiment: float | None = None
+    news_volume: float | None = None
+    news_momentum: float | None = None
+    price_momentum: float | None = None
+    flow_momentum: float | None = None
+    volatility: float | None = None
 
     cross_asset_confirmation: Confirmation = Confirmation.LOW
-    confirmation_score: float = 0.0
+    confirmation_score: float | None = None
     confidence: float = Field(default=0.0, ge=0.0, le=100.0)
     confidence_breakdown: ScoreBreakdown | None = None
 

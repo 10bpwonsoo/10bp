@@ -62,6 +62,13 @@ class RuleMatch(Base):
     weight: float = 0.0
     passed: bool = False
     observed: float | None = None
+    evaluable: bool = Field(
+        default=True,
+        description=(
+            "평가에 필요한 값이 있었는가. False 면 통과로 보지 않는다. "
+            "평가 불가를 통과로 처리하면 데이터가 없을수록 라벨이 잘 붙는다."
+        ),
+    )
 
 
 class StateHypothesis(Base):

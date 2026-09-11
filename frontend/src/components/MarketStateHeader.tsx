@@ -1,5 +1,7 @@
 import type { MarketState } from "../api/types";
 import { Pending } from "./Panel";
+import { RuleTrace } from "./RuleTrace";
+import { ScoreTooltip } from "./ScoreTooltip";
 
 const LABEL_KO: Record<string, string> = {
   RISK_ON: "Risk-On",
@@ -28,6 +30,9 @@ export function MarketStateHeader({ state }: { state: MarketState }) {
 
   const label = LABEL_KO[state.primary_label] ?? state.primary_label;
   const second = state.secondary_label ? LABEL_KO[state.secondary_label] : null;
+  const ranked = state.hypotheses.filter((h) => h.score > 0);
+  const top = ranked[0];
+  const passed = top ? top.matched_rules.filter((r) => r.passed).length : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -36,8 +41,17 @@ export function MarketStateHeader({ state }: { state: MarketState }) {
           {label}
           {second ? <span style={{ color: "var(--muted)" }}> / {second}</span> : null}
         </strong>
-        <span className="num" style={{ color: "var(--muted)", fontSize: 13 }}>
-          Confidence {state.confidence.toFixed(0)}%
+        <ScoreTooltip breakdown={state.confidence_breakdown} label="Confidence 계산 근거">
+          <span className="num" style={{ color: "var(--muted)", fontSize: 13 }}>
+            Confidence {state.confidence.toFixed(0)}%
+          </span>
+        </ScoreTooltip>
+        <span
+          className="num"
+          style={{ fontSize: 11, color: "var(--faint)" }}
+          title={state.cross_asset_confirmation.note}
+        >
+          Cross-asset {state.cross_asset_confirmation.verdict}
         </span>
       </div>
 
@@ -52,6 +66,33 @@ export function MarketStateHeader({ state }: { state: MarketState }) {
           ))}
         </div>
       )}
+
+      {top && top.score > 0 ? (
+        <details>
+          <summary
+            style={{
+              cursor: "pointer",
+              color: "var(--muted)",
+              fontSize: 12,
+              marginBottom: 8,
+            }}
+          >
+            발동 룰 {passed}/{top.matched_rules.length} · 후보 판정 {ranked.length}건
+          </summary>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <RuleTrace hypothesis={top} />
+            {ranked.length > 1 && (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                다음 후보:{" "}
+                {ranked
+                  .slice(1, 4)
+                  .map((h) => `${LABEL_KO[h.label] ?? h.label} ${h.score.toFixed(2)}`)
+                  .join(" · ")}
+              </div>
+            )}
+          </div>
+        </details>
+      ) : null}
 
       {state.narrative ? (
         <p style={{ margin: 0, color: "var(--ink-2)", maxWidth: "70ch" }}>

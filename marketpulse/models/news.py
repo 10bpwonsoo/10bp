@@ -93,6 +93,14 @@ class NewsEvent(Base):
     event: str
     event_type: EventType = EventType.OTHER
     themes: list[str] = Field(default_factory=list, description="Theme.id 참조")
+    theme_sentiment: dict[str, int] = Field(
+        default_factory=dict,
+        description=(
+            "테마별 감성. 기사 하나가 여러 테마를 건드릴 때 기사 전체 감성을 "
+            "모든 테마에 그대로 붙이면 틀린다. '정유주 강세, 항공주 약세' 는 "
+            "Energy 에 +, Airlines 에 -여야 한다. 비어 있으면 sentiment 로 대체한다."
+        ),
+    )
     entities: list[Entity] = Field(default_factory=list)
 
     sentiment: int = Field(default=0, ge=-100, le=100)

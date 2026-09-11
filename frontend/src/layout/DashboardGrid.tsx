@@ -1,4 +1,4 @@
-import type { IntelligenceSnapshot, RawNewsItem } from "../api/types";
+import type { IntelligenceSnapshot } from "../api/types";
 import { DataHealthPanel } from "../components/DataHealthPanel";
 import { MarketStateHeader } from "../components/MarketStateHeader";
 import { NewsFeed } from "../components/NewsFeed";
@@ -14,13 +14,7 @@ import { WhatsMoving } from "../components/WhatsMoving";
  * 아직 만들지 않은 패널도 자리를 차지한다. 구현 순서에 따라 화면이 어떻게
  * 채워질지 한눈에 보이고, P1~P3 에서 붙일 자리가 분명해진다.
  */
-export function DashboardGrid({
-  snapshot,
-  news,
-}: {
-  snapshot: IntelligenceSnapshot;
-  news: RawNewsItem[];
-}) {
+export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) {
   return (
     <div className="grid">
       <Panel
@@ -48,8 +42,8 @@ export function DashboardGrid({
         <WhatsMoving items={snapshot.whats_moving} />
       </Panel>
 
-      <Panel title="Why · 뉴스" flush note={`${news.length}건`}>
-        <NewsFeed items={news} />
+      <Panel title="Why · 뉴스" flush note={`${snapshot.events.length}건`}>
+        <NewsFeed events={snapshot.events} />
       </Panel>
 
       <Panel title="Flow & Price Confirmation">

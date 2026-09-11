@@ -52,6 +52,7 @@ export interface RuleMatch {
   weight: number;
   passed: boolean;
   observed: number | null;
+  evaluable: boolean;
 }
 
 export interface StateHypothesis {
@@ -97,14 +98,15 @@ export interface ThemeState {
   as_of: string;
   theme_score: number;
   breakdown: ScoreBreakdown;
-  news_sentiment: number;
-  news_volume: number;
-  news_momentum: number;
-  price_momentum: number;
-  flow_momentum: number;
-  volatility: number;
+  // null 은 '측정되지 않음'. 0 은 '측정했고 중립'. 화면에서도 구분해야 한다.
+  news_sentiment: number | null;
+  news_volume: number | null;
+  news_momentum: number | null;
+  price_momentum: number | null;
+  flow_momentum: number | null;
+  volatility: number | null;
   cross_asset_confirmation: "HIGH" | "MEDIUM" | "LOW" | "CONFLICT";
-  confirmation_score: number;
+  confirmation_score: number | null;
   confidence: number;
   confidence_breakdown: ScoreBreakdown | null;
   last_change: number;
@@ -195,6 +197,21 @@ export interface DataHealth {
   warnings: string[];
 }
 
+export interface NewsEventLite {
+  id: string;
+  event: string;
+  event_type: string;
+  themes: string[];
+  theme_sentiment: Record<string, number>;
+  sentiment: number;
+  impact_score: number;
+  reason: string;
+  source: string;
+  timestamp: string;
+  extractor: "llm" | "rule" | "manual";
+  confidence: number;
+}
+
 export interface RawNewsItem {
   id: string;
   title: string;
@@ -214,7 +231,7 @@ export interface IntelligenceSnapshot {
   divergences: Divergence[];
   alerts: Alert[];
   impact_maps: unknown[];
-  events: unknown[];
+  events: NewsEventLite[];
   whats_moving: MovingItem[];
   data_health: DataHealth;
   engine_versions: Record<string, string>;
