@@ -24,11 +24,16 @@ from .adapters.market.scenario import available_scenarios, load_scenario
 from .config.registry import get_instruments
 from .config.settings import Settings, get_settings
 from .engines.features import compute_feature
-from .engines.orchestrator import run_pipeline
+from .engines.orchestrator import run_pipeline_detailed
 from .models.common import DataMode
 from .models.snapshot import IntelligenceSnapshot
 
 RULE = "─" * 72
+
+
+def _sig(value: float | None, width: int = 4) -> str:
+    """신호 값 표기. None 은 0 이 아니라 빈 값으로 보인다."""
+    return "-".rjust(width) if value is None else f"{value:+{width}.0f}"
 
 
 def _wrap(text: str, width: int, indent: str = "") -> str:
@@ -104,10 +109,11 @@ def render(snap: IntelligenceSnapshot) -> str:
         a("    (Theme Score 는 P1 ThemeEngine 에서 활성화된다)")
     else:
         for t in snap.themes:
+            # None 은 '측정되지 않음' 이다. 0 으로 찍으면 '측정했고 중립' 으로 읽힌다.
             a(
                 f"    {t.name:<28s} {t.theme_score:+6.1f}   "
-                f"news {t.news_sentiment:+4.0f}  price {t.price_momentum:+4.0f}  "
-                f"flow {t.flow_momentum:+4.0f}   {t.cross_asset_confirmation.value:<8s} "
+                f"news {_sig(t.news_sentiment)}  price {_sig(t.price_momentum)}  "
+                f"flow {_sig(t.flow_momentum)}   {t.cross_asset_confirmation.value:<8s} "
                 f"conf {t.confidence:3.0f}%"
             )
     a("")
@@ -123,19 +129,35 @@ def render(snap: IntelligenceSnapshot) -> str:
 
     # ── DIVERGENCE / ALERT ──
     a("  DIVERGENCE")
-    a(
-        "    (P2 DivergenceEngine 에서 활성화된다)"
-        if not snap.divergences
-        else ""
-    )
+    if not snap.divergences:
+        a("    지속 조건(2틱)을 충족한 괴리 없음")
     for d in snap.divergences:
-        a(f"    [{d.severity_band.value}] {d.type.value}  severity {d.severity:.0f}")
-        a(f"        {d.explanation}")
+        legs = "  ".join(f"{l.name} {l.value:+.0f}" for l in d.legs)
+        a(
+            f"    [{d.severity_band.value:8s}] {d.severity:5.1f}  {d.type.value:22s}"
+            f" {d.duration_periods}틱"
+        )
+        a(f"        {legs}")
+        a(f"        {_wrap(d.explanation, 62, indent='        ')}")
     a("")
+
     a("  ALERT")
-    a("    (P2 AlertEngine 에서 활성화된다)" if not snap.alerts else "")
+    live = [al for al in snap.alerts if al.state.value != "RESOLVED"]
+    if not snap.alerts:
+        a("    임계 이상으로 변한 항목 없음")
     for al in snap.alerts:
-        a(f"    [{al.severity_band.value}] {al.title}")
+        mark = " " if al.state.value != "RESOLVED" else "~"
+        t = al.trigger
+        count = f" x{al.fire_count}" if al.fire_count > 1 else ""
+        a(f"  {mark} [{al.severity_band.value:8s}] {al.title}{count}")
+        a(
+            f"        {t.metric}  {t.baseline:.1f} → {t.current:.1f}"
+            f"  (Δ{t.delta:+.1f}"
+            + (f", {t.delta_pct:+.0f}%" if t.delta_pct is not None else "")
+            + f", 임계 {t.threshold:.1f})"
+        )
+    if snap.alerts:
+        a(f"    진행 {len(live)}건 / 전체 {len(snap.alerts)}건 (~ 는 해소됨)")
     a("")
 
     # ── DATA HEALTH ──
@@ -160,7 +182,17 @@ def render(snap: IntelligenceSnapshot) -> str:
 def cmd_snapshot(args: argparse.Namespace) -> int:
     settings = _settings(args)
     try:
-        snap = run_pipeline(settings)
+        # 괴리는 최소 두 틱이 있어야 확정되고, 알림은 직전 틱과 비교해야
+        # '변화' 를 말할 수 있다. 한 번만 돌리면 두 패널이 비어 있다.
+        history: list = []
+        pending: list = []
+        for _ in range(max(1, args.warmup + 1)):
+            result = run_pipeline_detailed(
+                settings, history=history, pending_divergences=pending
+            )
+            history.append(result.snapshot)
+            pending = result.pending
+        snap = history[-1]
     except AdapterError as exc:
         print(f"어댑터 오류: {exc}", file=sys.stderr)
         return 2
@@ -238,6 +270,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("snapshot", help="현재 시장 인텔리전스를 출력한다")
     sp.add_argument("--scenario", help="MOCK 시나리오 이름")
+    sp.add_argument(
+        "--warmup",
+        type=int,
+        default=1,
+        help=(
+            "본 출력 전에 미리 돌릴 틱 수 (기본 1). 괴리는 두 틱, 알림은 "
+            "직전 틱과의 비교가 필요하다. 0 이면 첫 틱 상태를 그대로 본다."
+        ),
+    )
     sp.add_argument("--json", action="store_true", help="JSON 원문으로 출력")
     sp.set_defaults(func=cmd_snapshot)
 

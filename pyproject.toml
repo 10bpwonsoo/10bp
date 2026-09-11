@@ -16,7 +16,7 @@ dependencies = { file = ["requirements.txt"] }
 include = ["marketpulse*"]
 
 [tool.setuptools.package-data]
-marketpulse = ["config/*.yaml", "data/mock/*.json"]
+marketpulse = ["config/*.yaml", "data/mock/*.json", "storage/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

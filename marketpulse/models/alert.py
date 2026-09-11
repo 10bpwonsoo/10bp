@@ -52,6 +52,12 @@ class Alert(Base):
     type: AlertType
     severity: float = Field(default=0.0, ge=0.0, le=100.0)
     severity_band: SeverityBand = SeverityBand.LOW
+    subject: str = Field(
+        description=(
+            "이 알림이 무엇에 대한 것인가. divergence id, instrument id, "
+            "theme id 등. 조건이 아직 참인지 판정할 때 이 값으로 대조한다."
+        )
+    )
     title: str
     message: str = ""
     trigger: AlertTrigger

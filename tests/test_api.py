@@ -22,6 +22,8 @@ class TestRoutes:
             "/api/v1/snapshot",
             "/api/v1/market-state",
             "/api/v1/themes",
+            "/api/v1/divergences",
+            "/api/v1/alerts",
             "/api/v1/whats-moving",
             "/api/v1/health",
             "/api/v1/info",
@@ -112,6 +114,62 @@ class TestP1Payload:
         assert shock["market_state"]["primary_label"] == "INFLATION_SHOCK"
 
 
+class TestSignals:
+    def _two_ticks(self, client, scenario="ai_divergence"):
+        """괴리는 최소 두 틱이 있어야 확정된다."""
+        get_service().clear()
+        client.get(f"/api/v1/snapshot?scenario={scenario}")
+        get_service()._cache.clear()  # TTL 을 우회해 다음 틱을 강제한다
+        return client.get(f"/api/v1/snapshot?scenario={scenario}").json()
+
+    def test_divergences_need_two_ticks(self, client):
+        get_service().clear()
+        first = client.get("/api/v1/snapshot?scenario=ai_divergence").json()
+        assert first["divergences"] == []
+        second = self._two_ticks(client)
+        assert second["divergences"]
+
+    def test_requirement_7_shape(self, client):
+        """AI 뉴스·가격은 긍정적인데 외국인 수급이 동반되지 않는 상황."""
+        d = self._two_ticks(client)
+        ai = next(t for t in d["themes"] if t["theme_id"] == "ai")
+        assert ai["price_momentum"] > 0 and ai["flow_momentum"] < 0
+        assert any(
+            x["related_theme"] == "ai" and x["type"] == "PRICE_VS_FLOW"
+            for x in d["divergences"]
+        )
+
+    def test_every_divergence_carries_its_legs(self, client):
+        for x in self._two_ticks(client)["divergences"]:
+            assert len(x["legs"]) == 2
+            assert x["explanation"]
+            assert x["duration_periods"] >= 2
+
+    def test_every_alert_carries_a_baseline(self, client):
+        """요구 9. 기준선 없는 알림은 스키마가 만들지 못한다."""
+        for a in self._two_ticks(client)["alerts"]:
+            t = a["trigger"]
+            assert {"metric", "current", "baseline", "delta", "threshold"} <= set(t)
+
+    def test_band_filter(self, client):
+        self._two_ticks(client)
+        all_rows = client.get("/api/v1/divergences?scenario=ai_divergence").json()
+        high = client.get(
+            "/api/v1/divergences?scenario=ai_divergence&min_band=HIGH"
+        ).json()
+        assert len(high) <= len(all_rows)
+        assert all(r["severity_band"] in ("HIGH", "CRITICAL") for r in high)
+
+    def test_resolved_alerts_hidden_by_default(self, client):
+        self._two_ticks(client)
+        live = client.get("/api/v1/alerts?scenario=ai_divergence").json()
+        every = client.get(
+            "/api/v1/alerts?scenario=ai_divergence&include_resolved=true"
+        ).json()
+        assert len(live) <= len(every)
+        assert all(a["state"] != "RESOLVED" for a in live)
+
+
 class TestCaching:
     def test_repeat_calls_are_consistent(self, client):
         a = client.get("/api/v1/snapshot").json()
@@ -122,3 +180,32 @@ class TestCaching:
         client.get("/api/v1/snapshot")
         get_service().clear()
         assert client.get("/api/v1/snapshot").status_code == 200
+
+
+class TestHistoryContinuity:
+    """
+    캐시에 있는 것이 가장 최근 틱이다. 그것을 history 에 붙이지 않으면
+    엔진이 보는 '직전 스냅샷' 이 한 틱 밀리고, divergence 의 지속 기간이
+    이어지지 않아 결과가 매 틱 나타났다 사라진다.
+    """
+
+    def _tick(self, client, scenario="ai_divergence"):
+        get_service()._cache.clear()  # TTL 을 우회해 다음 틱을 강제한다
+        return client.get(f"/api/v1/snapshot?scenario={scenario}").json()
+
+    def test_divergences_do_not_flicker(self, client):
+        get_service().clear()
+        counts = [len(self._tick(client)["divergences"]) for _ in range(6)]
+        assert counts[0] == 0, "첫 틱은 후보만 있어야 한다"
+        assert all(c > 0 for c in counts[1:]), f"괴리가 깜빡인다: {counts}"
+
+    def test_duration_keeps_growing(self, client):
+        get_service().clear()
+        self._tick(client)
+        seen: list[int] = []
+        for _ in range(4):
+            rows = self._tick(client)["divergences"]
+            assert rows
+            seen.append(max(d["duration_periods"] for d in rows))
+        assert seen == sorted(seen), f"지속 기간이 되돌아갔다: {seen}"
+        assert seen[-1] > seen[0]

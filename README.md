@@ -16,13 +16,13 @@
 
 설계 문서: [`docs/00-analysis-and-architecture.md`](docs/00-analysis-and-architecture.md)
 
-### 현재 상태 — P1 완료
+### 현재 상태 — P2 완료
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
 | **P0** | 데이터 계약, MOCK 파이프라인, FeatureEngine, API, CLI, 대시보드 골격 | ✅ 완료 |
 | **P1** | Market State Engine, Theme Score, Sentiment, 룰 추출, Theme Heatmap | ✅ 완료 |
-| P2 | Confirmation, Divergence, Alert | 예정 |
+| **P2** | Confirmation, Divergence, Alert, 저장소, 스케줄러 | ✅ 완료 |
 | P3 | Impact Map, LLM 이벤트 추출, AI 요약 | 예정 |
 | P4 | 실데이터 어댑터, 히스토리, 백테스트 | 예정 |
 
@@ -73,6 +73,7 @@ cd frontend && npm install && npm run dev
 | `themes.yaml` | 13개 테마와 테마-자산 매핑 |
 | `factors.yaml` | 11개 매크로 factor 의 부호 가중 구성 |
 | `state_rules.yaml` | Market State 의 require + support 룰셋과 기대 반응표 |
+| `divergence_rules.yaml` | 괴리 규칙과 설명 템플릿 |
 | `scoring.yaml` | 모든 가중치와 임계값 |
 | `lexicon.yaml` | 감성 사전. 맥락 의존 표현은 일부러 제외했다 |
 
@@ -114,6 +115,18 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
 |---|---|
 | `baseline` | 평시. 어느 상태 룰도 발동하지 않는다 (판정 없음) |
 | `inflation_shock` | 요구 14 의 검증 케이스. Oil +2σ / Rates +1.5σ / VIX +1.5σ / Equity −1.2σ → Inflation Shock / Risk-Off |
+| `ai_divergence` | 요구 7 의 예시. AI 뉴스·가격은 강한데 외국인 수급이 빠진다 → PRICE_VS_FLOW / NEWS_VS_FLOW 괴리 |
+
+> **괴리와 알림은 두 틱이 필요하다.** 한 틱짜리 격차는 노이즈와 구분되지
+> 않아 표시하지 않고, 알림은 직전 틱과 비교해야 "변화" 를 말할 수 있다.
+> CLI 는 `--warmup` 으로 미리 돌리고(기본 1), 화면은 폴링하면서 자연히
+> 채워진다. 데모 전에 스케줄러를 몇 분 돌려 두면 첫 순간부터 채워진다.
+
+```bash
+# 히스토리를 쌓아 두는 주기 실행기
+.venv/bin/python -m marketpulse.scheduler.runner \
+    --scenario ai_divergence --interval 60 --db data/snapshots.db
+```
 
 ### 테스트
 
@@ -136,8 +149,11 @@ marketpulse/
 ├── config/      instruments · themes · factors · state_rules · scoring · lexicon
 ├── adapters/    MarketAdapter / NewsAdapter + MOCK 구현
 ├── engines/     features · normalize · scoring · factors · market_state
-│                confirmation · sentiment · theme · orchestrator
+│                confirmation · sentiment · theme · divergence · alert
+│                korean · orchestrator
 ├── ai/          rule_extractor (LLM 없이 동작하는 기준선)
+├── storage/     SnapshotRepository + SQLite 구현
+├── scheduler/   주기 실행기
 ├── vendor/      technical_indicators.py 이식본
 ├── api/         FastAPI 라우트
 ├── data/mock/   시나리오 파일

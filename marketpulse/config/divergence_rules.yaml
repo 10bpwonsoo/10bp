@@ -1,0 +1,139 @@
+# Divergence 룰 (설계서 STEP 5.8 / 요구 7)
+#
+# 요구 7 이 "이 프로젝트의 핵심 차별화 기능 중 하나" 로 지목한 부분이다.
+# 뉴스 내러티브와 실제 가격·수급이 어긋나는 지점을 찾는다.
+#
+# 괴리의 두 가지 형태
+# -------------------
+#   opposing     두 신호가 반대 방향을 가리킨다.  News ↑ / Price ↓
+#   unresponsive 한쪽은 크게 움직였는데 다른 쪽이 반응하지 않았다.
+#                Risk Event ↑ / VIX 반응 없음
+#
+# 같은 방향으로 크기만 다른 것은 괴리가 아니다. 그래서 설명 문장도 두
+# 형태를 구분한다. 무반응을 "방향이 엇갈린다" 고 쓰면 틀린 말이 된다.
+#
+# 치환자: {subject} {left} {right} {left_value} {right_value} {gap}
+
+theme_pairs:
+  - id: news_vs_price
+    type: NEWS_VS_PRICE
+    left: news_sentiment
+    right: price_momentum
+    left_label: 뉴스 감성
+    right_label: 가격 모멘텀
+    # 기사 1건으로 "내러티브가 가격과 어긋난다" 고 말하지 않는다.
+    min_events: 2
+    explanation:
+      opposing: >
+        {subject} 관련 뉴스 톤은 {left_value}인데 가격은 {right_value}으로(로)
+        반대 방향이다. 내러티브와 시장의 판단이 엇갈리고 있다.
+      unresponsive: >
+        {subject}의 {active}은(는) {active_value}으로(로) 움직였으나
+        {quiet}은(는) {quiet_value}에 그쳤다. 한쪽이 아직 따라오지 않았다.
+
+  - id: news_vs_flow
+    type: NEWS_VS_FLOW
+    left: news_sentiment
+    right: flow_momentum
+    left_label: 뉴스 감성
+    right_label: 수급 모멘텀
+    min_events: 2
+    explanation:
+      opposing: >
+        {subject} 관련 뉴스는 {left_value}인데 수급은 {right_value}으로(로) 반대
+        방향이다. 이야기와 자금이 서로 다른 쪽을 향하고 있다.
+      unresponsive: >
+        {subject}의 {active}은(는) {active_value}인데 {quiet}은(는)
+        {quiet_value}에 그쳤다. 이야기와 자금 중 한쪽만 움직이고 있다.
+
+  - id: price_vs_flow
+    type: PRICE_VS_FLOW
+    left: price_momentum
+    right: flow_momentum
+    left_label: 가격 모멘텀
+    right_label: 수급 모멘텀
+    explanation:
+      opposing: >
+        {subject}의 가격은 {left_value}, 수급은 {right_value}으로(로) 방향이
+        엇갈린다. 가격 움직임을 만든 주체가 수급 지표에 잡히지 않고 있다.
+      unresponsive: >
+        {subject}의 {active}은(는) {active_value}으로(로) 움직였으나
+        {quiet}은(는) {quiet_value}에 그쳤다. 가격과 수급 중 한쪽만
+        반응하고 있어 움직임의 근거를 확인할 필요가 있다.
+
+instrument_pairs:
+  - id: oil_vs_inflation_exp
+    type: OIL_VS_INFLATION_EXP
+    left: BRENT
+    right: BE10Y
+    left_label: 브렌트 원유
+    right_label: 기대인플레이션
+    # 유가가 오르면 기대인플레이션도 따라 오르는 것이 보통이다.
+    require_left_abs: 1.0
+    explanation:
+      opposing: >
+        유가는 {left_value}인데 기대인플레이션은 {right_value}로 반대 방향이다.
+        유가 변동이 물가 경로에 대한 시장 인식과 어긋난다.
+      unresponsive: >
+        유가는 {left_value}으로(로) 움직였으나 기대인플레이션은 {right_value}에
+        그쳤다. 시장이 이번 유가 변동을 물가로 전이되지 않을 일시적 요인으로
+        보고 있을 가능성이 있다.
+
+  - id: breadth_vs_index
+    type: BREADTH_VS_INDEX
+    left: KOSPI
+    right: KOSPI_ADV_RATIO
+    left_label: KOSPI
+    right_label: 상승종목 비율
+    require_left_abs: 0.8
+    explanation:
+      opposing: >
+        지수는 {left_value}인데 상승종목 비율은 {right_value}로 반대 방향이다.
+        지수와 시장 전반의 체감이 따로 움직이고 있다.
+      unresponsive: >
+        지수는 {left_value}으로(로) 움직였으나 상승종목 비율은 {right_value}에
+        그쳤다. 지수 움직임이 소수 종목에 집중되어 참여가 얕다.
+
+  - id: usd_vs_krw
+    type: THEME_VS_ASSET
+    left: DXY
+    right: USDKRW
+    left_label: 달러 인덱스
+    right_label: 원달러
+    require_left_abs: 0.8
+    explanation:
+      opposing: >
+        달러 인덱스는 {left_value}인데 원달러는 {right_value}로 반대 방향이다.
+        글로벌 달러 흐름으로 설명되지 않는 국내 요인이 있다.
+      unresponsive: >
+        달러 인덱스는 {left_value}으로(로) 움직였으나 원달러는 {right_value}에
+        그쳤다. 원화가 글로벌 달러 흐름에 둔감하게 반응하고 있다.
+
+state_vs_volatility:
+  - id: risk_event_without_vol
+    type: RISK_VS_VOL
+    states: [GEOPOLITICAL_RISK, RISK_OFF, INFLATION_SHOCK, LIQUIDITY_STRESS]
+    instrument: VIX
+    instrument_label: VIX
+    max_vol_z: 0.5
+    explanation:
+      opposing: >
+        {subject} 판정이 섰는데 VIX 는 오히려 {right_value}까지 내렸다.
+        시장이 이번 리스크를 리스크로 보고 있지 않다.
+      unresponsive: >
+        {subject} 판정이 섰는데 VIX 반응은 {right_value}에 그쳤다.
+        시장이 이번 리스크를 아직 전면적으로 가격에 반영하지 않았다.
+
+theme_vs_asset:
+  id: theme_vs_constituent
+  type: THEME_VS_ASSET
+  min_theme_abs: 35.0
+  # 자산이 사실상 제자리인데 "반대 방향" 이라 말하지 않는다
+  min_asset_abs: 20.0
+  explanation:
+    opposing: >
+      {subject} 테마는 {left_value}인데 구성 자산인 {right}는 {right_value}로
+      테마와 반대 방향이다.
+    unresponsive: >
+      {subject} 테마는 {left_value}인데 구성 자산인 {right}는 {right_value}로
+      테마 움직임에 동참하지 않고 있다.

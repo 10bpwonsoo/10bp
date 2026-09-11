@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import time
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Sequence
 
@@ -33,8 +34,12 @@ from ..models.common import DataMode, arrow_for, direction_for, utcnow
 from ..models.market import Instrument, MarketSnapshot
 from ..models.news import RawNewsItem
 from ..models.snapshot import DataHealth, IntelligenceSnapshot, MovingItem
+from ..models.alert import Alert
+from ..models.divergence import Divergence
 from ..models.state import MarketState, StateLabel
 from ..models.theme import ThemeState
+from .alert import build_alerts, carry_forward
+from .divergence import detect_divergences, pending_candidates
 from .market_state import compute_market_state
 from .normalize import build_snapshot
 from .theme import compute_theme_states
@@ -49,7 +54,10 @@ ENGINE_VERSIONS: dict[str, str] = {
     "sentiment": "0.1.0",
     "theme": "0.1.0",
     "rule_extractor": "0.1.0",
-    "orchestrator": "0.1.0-p1",
+    "confirmation": "0.1.0",
+    "divergence": "0.1.0",
+    "alert": "0.1.0",
+    "orchestrator": "0.1.0-p2",
 }
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
@@ -179,6 +187,8 @@ def build_intelligence(
     timings_ms: dict[str, float] | None = None,
     warnings: list[str] | None = None,
     history: Sequence[IntelligenceSnapshot] = (),
+    pending_divergences: Sequence[Divergence] = (),
+    pending_out: list[Divergence] | None = None,
 ) -> IntelligenceSnapshot:
     """
     순수 함수. 스냅샷과 뉴스를 받아 최종 인텔리전스를 만든다.
@@ -215,6 +225,68 @@ def build_intelligence(
     )
     timings["theme"] = (time.perf_counter() - t) * 1000.0
 
+    # 직전 틱의 확정 괴리와 미확정 후보를 합쳐 지속 기간을 잇는다.
+    prior_divergences = list(previous.divergences if previous else []) + list(
+        pending_divergences
+    )
+
+    t = time.perf_counter()
+    divergences = detect_divergences(
+        themes,
+        {th.id: th for th in get_themes().themes},
+        market_state,
+        market_snapshot,
+        instruments_by_id,
+        previous=prior_divergences,
+    )
+    if pending_out is not None:
+        pending_out.extend(
+            pending_candidates(
+                themes,
+                {th.id: th for th in get_themes().themes},
+                market_state,
+                market_snapshot,
+                instruments_by_id,
+                previous=prior_divergences,
+            )
+        )
+    timings["divergence"] = (time.perf_counter() - t) * 1000.0
+
+    health = build_data_health(
+        market_snapshot,
+        news_items,
+        llm_enabled=llm_enabled,
+        timings_ms=timings,
+        warnings=warnings,
+    )
+
+    t = time.perf_counter()
+    alerts: list[Alert] = build_alerts(
+        market_state,
+        themes,
+        divergences,
+        market_snapshot,
+        health,
+        instruments_by_id,
+        previous_state=previous.market_state if previous else None,
+        previous_themes=(
+            {ts.theme_id: ts for ts in previous.themes} if previous else None
+        ),
+        previous_divergences=previous.divergences if previous else (),
+        previous_alerts=previous.alerts if previous else (),
+    )
+    # 조건이 아직 참인 대상. 괴리가 이어지는 동안 그 알림은 해소가 아니다.
+    live_subjects = {d.id for d in divergences} | {
+        d.subject for d in alerts
+    }
+    alerts += carry_forward(
+        alerts,
+        previous.alerts if previous else (),
+        market_snapshot.as_of,
+        live_subjects=live_subjects,
+    )
+    timings["alert"] = (time.perf_counter() - t) * 1000.0
+
     t = time.perf_counter()
     whats_moving = build_whats_moving(market_snapshot, instruments_by_id)
     whats_moving += build_theme_movers(themes)
@@ -231,20 +303,29 @@ def build_intelligence(
         scenario=scenario,
         market_state=market_state,
         themes=themes,
-        divergences=[],
-        alerts=[],
+        divergences=divergences,
+        alerts=alerts,
         impact_maps=[],
         events=events,
         whats_moving=whats_moving,
-        data_health=build_data_health(
-            market_snapshot,
-            news_items,
-            llm_enabled=llm_enabled,
-            timings_ms=timings,
-            warnings=warnings,
+        data_health=health.model_copy(
+            update={"engine_timings_ms": {k: round(v, 2) for k, v in timings.items()}}
         ),
         engine_versions=dict(ENGINE_VERSIONS),
     )
+
+
+@dataclass(frozen=True)
+class PipelineResult:
+    """
+    한 틱의 산출물 전체.
+
+    pending 은 아직 min_duration 을 못 채운 divergence 후보다. 스냅샷에는
+    싣지 않지만 다음 틱에서 지속 기간을 이으려면 어딘가 남겨야 한다.
+    """
+
+    snapshot: IntelligenceSnapshot
+    pending: list[Divergence]
 
 
 def run_pipeline(
@@ -252,7 +333,24 @@ def run_pipeline(
     *,
     as_of: datetime | None = None,
     history: Sequence[IntelligenceSnapshot] = (),
+    pending_divergences: Sequence[Divergence] = (),
 ) -> IntelligenceSnapshot:
+    """한 틱 실행. 대부분의 호출자는 스냅샷만 필요하다."""
+    return run_pipeline_detailed(
+        settings,
+        as_of=as_of,
+        history=history,
+        pending_divergences=pending_divergences,
+    ).snapshot
+
+
+def run_pipeline_detailed(
+    settings: Settings,
+    *,
+    as_of: datetime | None = None,
+    history: Sequence[IntelligenceSnapshot] = (),
+    pending_divergences: Sequence[Divergence] = (),
+) -> PipelineResult:
     """I/O 를 포함한 한 tick 실행. 어댑터 -> 정규화 -> 엔진."""
     # 지연 import: 레지스트리 캐시와 순환 참조를 피한다.
     from ..adapters.registry import build_market_adapter, build_news_adapter
@@ -298,7 +396,8 @@ def run_pipeline(
             + ("…" if len(snapshot.missing) > 5 else "")
         )
 
-    return build_intelligence(
+    pending: list[Divergence] = []
+    result = build_intelligence(
         snapshot,
         news_items,
         by_id,
@@ -307,4 +406,7 @@ def run_pipeline(
         timings_ms=timings,
         warnings=warnings,
         history=history,
+        pending_divergences=pending_divergences,
+        pending_out=pending,
     )
+    return PipelineResult(snapshot=result, pending=pending)

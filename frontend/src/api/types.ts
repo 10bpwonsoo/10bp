@@ -125,9 +125,18 @@ export interface DivergenceLeg {
   direction: Direction;
 }
 
+export type DivergenceType =
+  | "NEWS_VS_PRICE"
+  | "NEWS_VS_FLOW"
+  | "PRICE_VS_FLOW"
+  | "THEME_VS_ASSET"
+  | "RISK_VS_VOL"
+  | "OIL_VS_INFLATION_EXP"
+  | "BREADTH_VS_INDEX";
+
 export interface Divergence {
   id: string;
-  type: string;
+  type: DivergenceType;
   as_of: string;
   severity: number;
   severity_band: SeverityBand;
@@ -153,12 +162,23 @@ export interface AlertTrigger {
   window: string;
 }
 
+export type AlertType =
+  | "THEME_SENTIMENT_SPIKE"
+  | "NEWS_VOLUME_SPIKE"
+  | "PRICE_ZSCORE_SPIKE"
+  | "FLOW_REVERSAL"
+  | "VOL_SPIKE"
+  | "DIVERGENCE_OPENED"
+  | "STATE_CHANGE"
+  | "DATA_QUALITY";
+
 export interface Alert {
   id: string;
   as_of: string;
-  type: string;
+  type: AlertType;
   severity: number;
   severity_band: SeverityBand;
+  subject: string;
   title: string;
   message: string;
   trigger: AlertTrigger;

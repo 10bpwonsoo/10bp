@@ -1,5 +1,8 @@
 import type { IntelligenceSnapshot } from "../api/types";
+import { AlertTimeline } from "../components/AlertTimeline";
+import { ConfirmationMatrix } from "../components/ConfirmationMatrix";
 import { DataHealthPanel } from "../components/DataHealthPanel";
+import { DivergencePanel } from "../components/DivergencePanel";
 import { MarketStateHeader } from "../components/MarketStateHeader";
 import { NewsFeed } from "../components/NewsFeed";
 import { Panel, Pending } from "../components/Panel";
@@ -15,6 +18,8 @@ import { WhatsMoving } from "../components/WhatsMoving";
  * 채워질지 한눈에 보이고, P1~P3 에서 붙일 자리가 분명해진다.
  */
 export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) {
+  const themeNames = Object.fromEntries(snapshot.themes.map((t) => [t.theme_id, t.name]));
+
   return (
     <div className="grid">
       <Panel
@@ -46,18 +51,16 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
         <NewsFeed events={snapshot.events} />
       </Panel>
 
-      <Panel title="Flow & Price Confirmation">
-        <Pending stage="P2">
-          News · Flow · Price · Volatility 네 신호를 나란히 놓고 서로를 확인하는
-          패널입니다. ConfirmationEngine 이 붙으면 활성화됩니다.
-        </Pending>
+      <Panel title="Flow & Price Confirmation" flush note="네 신호 비교">
+        <ConfirmationMatrix themes={snapshot.themes} />
       </Panel>
 
-      <Panel title="Divergence">
-        <Pending stage="P2">
-          뉴스 내러티브와 실제 가격·수급이 어긋나는 지점을 찾습니다. 이
-          프로젝트의 핵심 차별화 기능이며 DivergenceEngine 에서 붙습니다.
-        </Pending>
+      <Panel
+        title="Divergence"
+        flush
+        note={snapshot.divergences.length > 0 ? `${snapshot.divergences.length}건` : undefined}
+      >
+        <DivergencePanel items={snapshot.divergences} themeNames={themeNames} />
       </Panel>
 
       <Panel title="Impact Map" span={2}>
@@ -67,11 +70,16 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
         </Pending>
       </Panel>
 
-      <Panel title="Alert · Timeline">
-        <Pending stage="P2">
-          수준이 아니라 변화를 봅니다. 직전 스냅샷 대비 급변과 중복 억제는
-          AlertEngine 에서 붙습니다.
-        </Pending>
+      <Panel
+        title="Alert · Timeline"
+        flush
+        note={
+          snapshot.alerts.length > 0
+            ? `${snapshot.alerts.filter((a) => a.state !== "RESOLVED").length}건 진행 / ${snapshot.alerts.length}건`
+            : undefined
+        }
+      >
+        <AlertTimeline items={snapshot.alerts} />
       </Panel>
 
       <Panel title="Data Health" span={3}>

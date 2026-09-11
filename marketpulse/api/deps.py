@@ -13,9 +13,11 @@ from fastapi import HTTPException, Query
 from ..adapters.base import AdapterError
 from ..adapters.market.scenario import available_scenarios
 from ..config.settings import Settings, get_settings
-from ..engines.orchestrator import run_pipeline
+from ..engines.orchestrator import run_pipeline_detailed
 from ..models.common import DataMode
+from ..models.divergence import Divergence
 from ..models.snapshot import IntelligenceSnapshot
+from ..storage.repository import SnapshotRepository
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +43,15 @@ class SnapshotService:
     의존성이 하나 줄면 데모가 죽을 경로도 하나 줄어든다.
     """
 
-    def __init__(self, ttl_sec: float = CACHE_TTL_SEC) -> None:
+    def __init__(
+        self,
+        ttl_sec: float = CACHE_TTL_SEC,
+        repository: SnapshotRepository | None = None,
+    ) -> None:
         self._ttl = ttl_sec
+        #: 선택적이다. 없으면 프로세스 메모리만 쓴다 — 데모는 그것으로 충분하고,
+        #: 의존성이 하나 줄면 데모가 죽을 경로도 하나 준다.
+        self._repo = repository
         self._cache: dict[str, _Entry] = {}
         self._lock = threading.Lock()
         #: 과거 스냅샷(오래된 것부터). 상태 판정의 지속성과 테마 점수의
@@ -51,6 +60,8 @@ class SnapshotService:
         self._history: dict[str, deque[IntelligenceSnapshot]] = defaultdict(
             lambda: deque(maxlen=HISTORY_LIMIT)
         )
+        #: 아직 지속 기간을 못 채운 divergence 후보. 다음 틱에서 이어붙인다.
+        self._pending: dict[str, list[Divergence]] = defaultdict(list)
 
     def get(self, settings: Settings, *, force: bool = False) -> IntelligenceSnapshot:
         key = f"{settings.data_mode.value}:{settings.scenario}"
@@ -61,17 +72,37 @@ class SnapshotService:
             if entry and not force and (now - entry.created_at) < self._ttl:
                 return entry.snapshot
 
-        with self._lock:
             history = list(self._history[key])
+            pending = list(self._pending[key])
 
-        snapshot = run_pipeline(settings, history=history)
+        if not history and self._repo is not None:
+            # 프로세스가 재시작돼도 지속 기간이 끊기지 않게 저장소에서 잇는다.
+            history = self._repo.recent(key, limit=HISTORY_LIMIT)
+            pending = self._repo.latest_pending(key)
+
+        result = run_pipeline_detailed(
+            settings, history=history, pending_divergences=pending
+        )
 
         with self._lock:
-            prior = self._cache.get(key)
-            if prior is not None:
-                self._history[key].append(prior.snapshot)
-            self._cache[key] = _Entry(snapshot=snapshot, created_at=time.monotonic())
-        return snapshot
+            # 방금 계산한 스냅샷을 히스토리에 넣는다. 캐시에 있던 것을 넣으면
+            # 엔진이 보는 '직전 스냅샷' 이 한 틱 밀리고, divergence 의 지속
+            # 기간이 이어지지 않아 결과가 매 틱 나타났다 사라진다.
+            # 히스토리는 캐시와 독립이어야 한다 — 캐시는 TTL 최적화일 뿐이고,
+            # 비워도 시계열이 끊기면 안 된다.
+            self._history[key].append(result.snapshot)
+            self._pending[key] = result.pending
+            self._cache[key] = _Entry(
+                snapshot=result.snapshot, created_at=time.monotonic()
+            )
+
+        if self._repo is not None:
+            try:
+                self._repo.save(key, result.snapshot, result.pending)
+            except Exception:
+                # 저장 실패가 화면을 막으면 안 된다.
+                logger.exception("스냅샷 저장 실패. 화면은 그대로 진행한다.")
+        return result.snapshot
 
     def history(self, settings: Settings) -> list[IntelligenceSnapshot]:
         key = f"{settings.data_mode.value}:{settings.scenario}"
@@ -82,6 +113,7 @@ class SnapshotService:
         with self._lock:
             self._cache.clear()
             self._history.clear()
+            self._pending.clear()
 
 
 _service = SnapshotService()
