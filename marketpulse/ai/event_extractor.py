@@ -69,6 +69,14 @@ def build_schema(theme_ids: Sequence[str]) -> dict:
                                 "type": "integer", "minimum": -100, "maximum": 100
                             },
                         },
+                        # 감성과 다른 축이다. 같은 기사가 감성 −, 방향 ↑ 일 수
+                        # 있다 — "물가 부담 확대 우려" 가 그렇다.
+                        "theme_direction": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string", "enum": ["up", "down", "neutral"]
+                            },
+                        },
                         "entities": {
                             "type": "array",
                             "items": {
@@ -122,6 +130,7 @@ def build_schema(theme_ids: Sequence[str]) -> dict:
                     },
                     "required": [
                         "source_id", "event", "event_type", "themes", "theme_sentiment",
+                        "theme_direction",
                         "entities", "sentiment", "impact_score", "novelty_score",
                         "time_horizon", "affected_assets", "reason",
                     ],
@@ -140,10 +149,16 @@ SYSTEM_PROMPT = """당신은 자산운용사의 시장 분석 데이터를 구�
 지켜야 할 것
 
 1. 기사에 없는 사실을 만들지 않는다. 근거가 없으면 중립값을 쓴다.
-2. sentiment 는 **해당 테마가 강해지는 방향**을 뜻한다. 시장에 좋은가가 아니다.
-   유가 급등 기사는 Oil 테마에 +다. 지정학 리스크 테마는 긴장 고조가 +다.
-3. theme_sentiment 는 기사가 각 테마에 대해 말하는 방향을 따로 적는다.
-   "정유주 강세, 항공주 약세" 는 energy 에 +, 항공 관련 테마에 -다.
+2. **감성과 방향은 다른 축이다. 절대 섞지 마라.**
+   · theme_sentiment 는 호재냐 악재냐다. -100 ~ +100.
+   · theme_direction 은 그 값이 오르냐 내리냐다. up / down / neutral.
+   "물가 둔화 흐름 확인" → inflation 은 감성 +, 방향 down.
+   "수입 물가 부담 확대 우려" → inflation 은 감성 -, 방향 up.
+   방향을 이 지도가 인과 연쇄에 그대로 쓴다. 감성 부호로 대신하면 그 아래
+   금리·업종·자산까지 부호가 전부 뒤집힌다.
+3. 기사가 테마마다 다르게 말하면 테마마다 다르게 적는다.
+   "정유주 강세, 항공주 약세" 는 energy 에 +/up, 항공 관련 테마에 -/down.
+   기사에서 방향을 읽을 수 없으면 neutral 로 둔다. 짐작해서 채우지 마라.
 4. impact_score 는 시장 전체에 미칠 파급의 크기다. 기사의 흥미도가 아니다.
    개별 기업 소식은 낮게, 통화정책·지정학·원자재 공급은 높게 본다.
 5. affected_assets 의 instrument_id 는 아래 목록에 있는 것만 쓴다.
@@ -241,6 +256,7 @@ def extract_events(
                 known_themes=themes_by_id,
                 known_instruments=instruments_by_id,
                 theme_sentiment_fallback=fallback.theme_sentiment if fallback else None,
+                theme_direction_fallback=fallback.theme_direction if fallback else None,
                 model=client.model,
             )
             if event is None:

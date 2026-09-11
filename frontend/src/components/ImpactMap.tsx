@@ -91,6 +91,11 @@ const REACTION_LABEL: Record<Reaction, string> = {
   muted: "유의미하게 움직이지 않았다",
   unknown: "판정할 수 없다",
 };
+const REL_LABEL: Record<RelationshipEdge["direction"], string> = {
+  positive: "정",
+  negative: "역",
+  ambiguous: "?",
+};
 
 function tooltip(n: RelationshipNode, edge: RelationshipEdge | undefined): string {
   const bits = [`${TYPE_TAG[n.type]} · ${n.label}`];
@@ -100,6 +105,10 @@ function tooltip(n: RelationshipNode, edge: RelationshipEdge | undefined): strin
   if (n.observed_z !== null) {
     bits.push(`실측 ${zText(n.observed_z)}${n.observed_display ? ` (${n.observed_display})` : ""}`);
     bits.push(REACTION_LABEL[n.reaction]);
+  }
+  if (n.path_strength !== null) {
+    // 판정을 믿을지 말지의 근거다. 사슬은 가장 약한 고리만큼만 버틴다.
+    bits.push(`경로 최약 고리 ${n.path_strength.toFixed(2)}`);
   }
   if (edge?.reason) bits.push(`← ${edge.reason}`);
   return bits.join("\n");
@@ -300,7 +309,9 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
                     fill="none"
                     stroke={on && lit ? "var(--accent)" : "var(--rule-hi, var(--surface-3))"}
                     strokeWidth={0.5 + e.strength * 1.1}
-                    strokeDasharray={e.origin === "predefined" ? undefined : "3 3"}
+                    strokeDasharray={
+                      e.origin !== "predefined" ? "3 3" : e.direction === "ambiguous" ? "1 4" : undefined
+                    }
                   >
                     <title>{e.reason}</title>
                   </path>
@@ -418,8 +429,10 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
                 <span className="mono impact-kind">{TYPE_TAG[node.type]}</span>
                 <span className="impact-label">{node.label}</span>
                 {edge && (
-                  <span className={`mono impact-rel${edge.direction === "negative" ? " neg" : ""}`}>
-                    {edge.direction === "negative" ? "역" : "정"}·{edge.strength.toFixed(2)}
+                  <span
+                    className={`mono impact-rel${edge.direction !== "positive" ? " neg" : ""}`}
+                  >
+                    {REL_LABEL[edge.direction]}·{edge.strength.toFixed(2)}
                   </span>
                 )}
                 <span className="mono impact-exp">{signText(node)}</span>
@@ -457,6 +470,9 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
         <span style={{ color: "var(--up)" }}>상승</span>
         <span style={{ color: "var(--down)" }}>하락</span>
         <span>⊖ 역방향 관계</span>
+        {map.edges.some((e) => e.direction === "ambiguous") && (
+          <span>점점선 = 기사에서 방향을 읽지 못함</span>
+        )}
         {mismatches.length > 0 && (
           <span style={{ color: "var(--crit)" }}>● 예상과 반대 {mismatches.length}건</span>
         )}

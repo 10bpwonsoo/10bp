@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Sequence
 
 from ..config.registry import get_themes
+from ..engines.direction import scoped_direction
 from ..engines.sentiment import lexicon_sentiment, scoped_sentiment
 from ..models.news import (
     EventType,
@@ -91,6 +92,8 @@ def extract_events(
         sentiment, hits = lexicon_sentiment(text, config_dir=config_dir)
 
         theme_sentiment: dict[str, int] = {}
+        theme_direction: dict[str, str] = {}
+        direction_hits: list[str] = []
         for theme, keywords in matched:
             scoped = scoped_sentiment(text, keywords, config_dir=config_dir)
             value = sentiment if scoped is None else scoped
@@ -98,6 +101,12 @@ def extract_events(
             if theme.sentiment_polarity == "risk":
                 value = -value
             theme_sentiment[theme.id] = int(max(-100, min(100, value)))
+
+            # 방향은 감성과 별개로 읽는다. 감성 부호를 방향으로 쓰면
+            # "물가 부담 확대 우려" 가 '물가가 내린다' 로 읽힌다.
+            heading, terms = scoped_direction(text, keywords, config_dir=config_dir)
+            theme_direction[theme.id] = heading
+            direction_hits.extend(terms)
 
         impact = _impact_score(text, len(matched), sentiment)
 
@@ -112,6 +121,7 @@ def extract_events(
                 event_type=_event_type(text),
                 themes=[t.id for t, _ in matched],
                 theme_sentiment=theme_sentiment,
+                theme_direction=theme_direction,
                 sentiment=sentiment,
                 impact_score=impact,
                 # 중복 제거 기반 novelty 는 P3 다. 여기서 추정하지 않고
@@ -121,6 +131,11 @@ def extract_events(
                 reason=(
                     f"키워드 매칭으로 {len(matched)}개 테마를 식별했다"
                     + (f". 감성 표현: {', '.join(hits)}" if hits else ". 감성 표현 없음")
+                    + (
+                        f". 방향 표현: {', '.join(dict.fromkeys(direction_hits))}"
+                        if direction_hits
+                        else ". 방향 표현 없음"
+                    )
                 ),
                 source=item.publisher or item.meta.source,
                 timestamp=item.published_at,

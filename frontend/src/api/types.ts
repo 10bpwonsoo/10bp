@@ -208,6 +208,8 @@ export interface RelationshipNode {
   /** 다른 경로가 반대 부호를 준다. 이때는 일치/불일치를 말하지 않는다. */
   sign_conflict: boolean;
   via_edge_id: string | null;
+  /** 대표 경로의 가장 약한 고리. 낮으면 예상 부호 자체가 약한 주장이다. */
+  path_strength: number | null;
   observed_z: number | null;
   observed_display: string | null;
   reaction: Reaction;
@@ -268,6 +270,8 @@ export interface NewsEventLite {
   event_type: string;
   themes: string[];
   theme_sentiment: Record<string, number>;
+  /** 테마 방향. 감성과 다른 축이다 — 호재/악재가 아니라 오르냐 내리냐. */
+  theme_direction: Record<string, Direction>;
   sentiment: number;
   impact_score: number;
   reason: string;

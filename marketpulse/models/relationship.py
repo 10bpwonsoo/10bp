@@ -48,6 +48,16 @@ class RelationshipNode(Base):
     via_edge_id: str | None = Field(
         default=None, description="이 노드로 들어온 대표 관계. 부호 계산 근거다"
     )
+    path_strength: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "대표 경로의 **가장 약한 고리**. 사슬은 가장 약한 고리만큼만 "
+            "버틴다. 이 값이 낮으면 예상 부호 자체가 약한 주장이라 "
+            "'예상과 반대' 로 단정하지 않는다."
+        ),
+    )
     observed_z: float | None = Field(
         default=None, description="실측 z_1d. 가격이 있는 노드만"
     )

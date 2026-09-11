@@ -33,7 +33,7 @@ from ..models.relationship import (
 from ..models.theme import Theme
 from .scoring import load_scoring
 
-ENGINE_VERSION = "0.2.0"
+ENGINE_VERSION = "0.3.0"
 
 
 @dataclass(frozen=True)
@@ -200,9 +200,13 @@ def traverse(
 _SIGN = {"positive": 1, "negative": -1, "ambiguous": 0}
 
 
-def _reaction_floor(config_dir: Path | None = None) -> float:
+def _reaction_floors(config_dir: Path | None = None) -> tuple[float, float]:
+    """(판정에 필요한 최소 |z|, 최소 고리 강도)"""
     cfg = load_scoring(config_dir).get("relationship", {})
-    return float(cfg.get("reaction_min_abs_z", 0.5))
+    return (
+        float(cfg.get("reaction_min_abs_z", 0.5)),
+        float(cfg.get("reaction_min_link_strength", 0.5)),
+    )
 
 
 def annotate_nodes(
@@ -225,13 +229,14 @@ def annotate_nodes(
     "예상과 어긋났다" 고 단정하지 않는다. 관계가 상충하는 것이지 시장이
     틀린 것이 아니다 (개발 규칙 11).
     """
-    floor = _reaction_floor(config_dir)
+    z_floor, link_floor = _reaction_floors(config_dir)
     obs = observed or {}
     by_target: dict[str, list[RelationshipEdge]] = {}
     for e in edges:
         by_target.setdefault(e.target_id, []).append(e)
 
     signs: dict[str, int] = {n.id: 0 for n in nodes if hops.get(n.id, 0) == 0}
+    weakest: dict[str, float] = {n.id: 1.0 for n in nodes if hops.get(n.id, 0) == 0}
     out: list[RelationshipNode] = []
     # 홉 순서대로 처리해야 부모 부호가 먼저 정해진다.
     for node in sorted(nodes, key=lambda n: hops.get(n.id, 0)):
@@ -239,6 +244,7 @@ def annotate_nodes(
         expected = 0
         conflict = False
         via: str | None = None
+        link = 1.0
 
         if h > 0:
             parents = [
@@ -247,22 +253,28 @@ def annotate_nodes(
             if parents:
                 best = max(parents, key=lambda e: (e.strength, e.id))
                 via = best.id
-                parent_sign = signs.get(best.source_id, 0)
-                # 뿌리(부호 0)의 바로 아래 단계는 관계 부호 자체가 예상이다.
-                base = parent_sign if parent_sign != 0 else 1
-                expected = base * _SIGN.get(best.direction, 0)
-                candidates = {
-                    (signs.get(e.source_id, 0) or 1) * _SIGN.get(e.direction, 0)
-                    for e in parents
-                }
+
+                def carried(edge: RelationshipEdge) -> int:
+                    # 뿌리에는 부호가 없다. 첫 관계의 부호가 곧 예상이다.
+                    # 그러나 중간 노드의 0 은 "모른다" 는 뜻이므로 그대로
+                    # 전파되어야 한다. 모르는 것을 아는 것처럼 그리면 그
+                    # 아래 연쇄가 전부 거짓이 된다 (요구 15-11).
+                    upstream = 1 if hops.get(edge.source_id, 0) == 0 else signs.get(edge.source_id, 0)
+                    return upstream * _SIGN.get(edge.direction, 0)
+
+                expected = carried(best)
+                candidates = {carried(e) for e in parents}
                 conflict = len({c for c in candidates if c != 0}) > 1
+                # 사슬은 가장 약한 고리만큼만 버틴다.
+                link = min(weakest.get(best.source_id, 1.0), best.strength)
         signs[node.id] = expected
+        weakest[node.id] = link
 
         o = obs.get(node.ref_id or "")
         z = o.z if o else None
         reaction = "unknown"
-        if z is not None and expected != 0 and not conflict:
-            if abs(z) < floor:
+        if z is not None and expected != 0 and not conflict and link >= link_floor:
+            if abs(z) < z_floor:
                 reaction = "muted"
             elif (z > 0) == (expected > 0):
                 reaction = "confirmed"
@@ -276,6 +288,7 @@ def annotate_nodes(
                     "expected_sign": expected,
                     "sign_conflict": conflict,
                     "via_edge_id": via,
+                    "path_strength": None if h == 0 else round(link, 4),
                     "observed_z": z,
                     "observed_display": o.display if o else None,
                     "reaction": reaction,
@@ -321,6 +334,46 @@ def build_map(
     )
 
 
+#: 뉴스가 말하는 테마 방향 → 관계 부호.
+#: 감성이 아니라 방향을 쓴다. 감성 부호를 방향으로 쓰면 "수입 물가 부담
+#: 확대 우려" 가 '물가가 내린다' 로 읽히고, 그 아래 금리·업종·자산까지
+#: 부호가 전부 뒤집힌다. 호재냐 악재냐와 오르냐 내리냐는 다른 축이다.
+_DIRECTION_TO_SIGN: dict[str, str] = {
+    "up": "positive",
+    "down": "negative",
+    "neutral": "ambiguous",
+}
+
+
+def _event_theme_link(
+    event: NewsEvent, event_node: str, theme_id: str
+) -> RelationshipEdge:
+    """사건에서 테마로 뻗는 첫 가지."""
+    heading = event.theme_direction.get(theme_id, "neutral")
+    sign = _DIRECTION_TO_SIGN.get(heading, "ambiguous")
+    if heading == "neutral":
+        # 방향을 못 읽었다. ambiguous 는 아래 연쇄의 예상 부호를 0 으로
+        # 만들어 "예상과 반대" 판정을 막는다. 모르는 것을 아는 것처럼
+        # 그리지 않는다 (요구 15-11).
+        reason = f"기사에서 {theme_id} 테마가 식별되었으나 방향은 읽지 못했다"
+    else:
+        arrow = "상승" if heading == "up" else "하락"
+        reason = f"기사는 {theme_id} 테마의 {arrow} 을 말한다"
+
+    return RelationshipEdge(
+        id=f"evt-{event.id}-{theme_id}",
+        source_id=event_node,
+        target_id=f"theme:{theme_id}",
+        direction=sign,
+        strength=min(1.0, event.impact_score / 100.0),
+        confidence=event.confidence,
+        lag="immediate",
+        reason=reason,
+        origin="predefined" if event.extractor == "rule" else "llm_proposed",
+        status="active" if event.extractor == "rule" else "candidate",
+    )
+
+
 def build_impact_maps(
     events: Sequence[NewsEvent],
     themes_by_id: Mapping[str, Theme],
@@ -360,22 +413,7 @@ def build_impact_maps(
         # 이벤트를 뿌리로 두고, 그 이벤트가 건드린 테마로 첫 가지를 뻗는다.
         event_node = f"event:{event.id}"
         links = [
-            RelationshipEdge(
-                id=f"evt-{event.id}-{theme_id}",
-                source_id=event_node,
-                target_id=f"theme:{theme_id}",
-                direction=(
-                    "positive"
-                    if event.theme_sentiment.get(theme_id, event.sentiment) >= 0
-                    else "negative"
-                ),
-                strength=min(1.0, event.impact_score / 100.0),
-                confidence=event.confidence,
-                lag="immediate",
-                reason=f"기사에서 {theme_id} 테마가 식별되었다",
-                origin="predefined" if event.extractor == "rule" else "llm_proposed",
-                status="active" if event.extractor == "rule" else "candidate",
-            )
+            _event_theme_link(event, event_node, theme_id)
             for theme_id in event.themes
             if theme_id in themes_by_id
         ]

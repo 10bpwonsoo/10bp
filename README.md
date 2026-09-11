@@ -78,11 +78,19 @@ cd frontend && npm install && npm run dev
 | 관계 부호 | ⊖ 표식. 선 색으로 쓰지 않는다 |
 | 관계 출처 | 실선 = 사전 정의, 점선 = LLM 제안 |
 
+사건에서 테마로 뻗는 첫 가지의 부호는 **기사가 말하는 방향**에서 온다.
+감성이 아니다. 호재냐 악재냐와 오르냐 내리냐는 독립된 두 축이고, 네 조합이
+모두 존재한다 — "물가 둔화"(감성 +, 방향 ↓), "물가 부담 확대"(감성 −,
+방향 ↑). 기사에서 방향을 못 읽으면 `ambiguous` 로 두고 아래 연쇄를 판정하지
+않는다. 감성으로 대신 채우지 않는다.
+
 예상 부호는 **대표 경로 하나**의 관계 부호 곱이다. 대표 경로는 한 단계 앞
 노드에서 들어오는 관계 중 `strength` 가 가장 큰 것이고, `via_edge_id` 로
 근거를 추적한다. 다른 경로가 반대 부호를 주면 `sign_conflict` 를 세우고
 **판정하지 않는다.** `|z| < 0.5` 는 `muted` — 0.3σ 로 내러티브의 옳고
-그름을 말하지 않는다.
+그름을 말하지 않는다. 대표 경로의 **가장 약한 고리**(`path_strength`)가 `0.5` 에 못 미쳐도
+판정하지 않는다 — 스스로 약하다고 적어 둔 관계를 놓고 "예상과 반대" 라고
+말하는 것은 과장이다.
 
 실측은 종목과 매크로 factor 에만 붙는다. 테마 점수는 뉴스를 섞은
 합성값이라 '실측 가격 반응' 자리에 넣으면 내러티브를 내러티브로 검증하게
@@ -103,7 +111,7 @@ cd frontend && npm install && npm run dev
 | `state_rules.yaml` | Market State 의 require + support 룰셋과 기대 반응표 |
 | `divergence_rules.yaml` | 괴리 규칙과 설명 템플릿 |
 | `scoring.yaml` | 모든 가중치와 임계값 |
-| `lexicon.yaml` | 감성 사전. 맥락 의존 표현은 일부러 제외했다 |
+| `lexicon.yaml` | 감성 사전 + 방향 사전. 두 축은 독립이다 |
 | `relationships.yaml` | 사건→테마→매크로→업종→자산 사전 정의 관계 46개 |
 | `scoring.yaml` 의 `relationship` | 실측 반응을 판정하는 최소 \|z\| |
 
@@ -204,8 +212,8 @@ marketpulse/
 │                lexicon · divergence_rules · relationships
 ├── adapters/    MarketAdapter / NewsAdapter + MOCK 구현
 ├── engines/     features · normalize · scoring · factors · market_state
-│                confirmation · sentiment · theme · divergence · alert
-│                relationship · korean · orchestrator
+│                confirmation · sentiment · direction · theme · divergence
+│                alert · relationship · korean · orchestrator
 ├── ai/          rule_extractor(기준선) · client · validation
 │                event_extractor · summarizer
 ├── storage/     SnapshotRepository + SQLite 구현

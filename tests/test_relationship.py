@@ -18,6 +18,7 @@ from marketpulse.engines.relationship import (
     predefined_edges,
     traverse,
 )
+from marketpulse.models.news import NewsEvent
 from marketpulse.models.relationship import NodeType, RelationshipEdge
 from marketpulse.models.state import FACTOR_NAMES
 
@@ -334,3 +335,166 @@ class TestReaction:
             [(n.id, n.hop, n.expected_sign, n.reaction) for n in m.nodes] for m in ms
         ]
         assert key(a) == key(b)
+
+
+class TestEventThemeDirection:
+    """
+    사건→테마 관계의 부호는 **방향**에서 온다. 감성이 아니다.
+
+    감성 부호를 방향으로 쓰면 "수입 물가 부담 확대 우려" 가 '물가가
+    내린다' 로 읽히고, 그 아래 금리·업종·자산까지 부호가 전부 뒤집힌다.
+    """
+
+    def _link(self, event, themes_by_id, instruments_by_id, as_of, theme_id):
+        maps = build_impact_maps([event], themes_by_id, instruments_by_id, as_of)
+        assert maps
+        return next(
+            e for e in maps[0].edges if e.target_id == f"theme:{theme_id}"
+        )
+
+    @pytest.fixture
+    def bad_news_rising(self, as_of):
+        """감성은 −, 방향은 ↑. 이 조합이 버그를 드러낸 자리다."""
+        return NewsEvent(
+            id="x",
+            event="수입 물가 부담 확대 우려",
+            themes=["inflation"],
+            theme_sentiment={"inflation": -39},
+            theme_direction={"inflation": "up"},
+            impact_score=50,
+            timestamp=as_of,
+        )
+
+    def test_sign_follows_direction_not_sentiment(
+        self, bad_news_rising, themes, instruments_by_id, as_of
+    ):
+        link = self._link(
+            bad_news_rising, {t.id: t for t in themes}, instruments_by_id, as_of, "inflation"
+        )
+        assert link.direction == "positive"
+        assert "상승" in link.reason
+
+    def test_good_news_falling_is_negative(self, themes, instruments_by_id, as_of):
+        event = NewsEvent(
+            id="y",
+            event='연준 위원 "물가 둔화 흐름 확인"',
+            themes=["inflation"],
+            theme_sentiment={"inflation": 26},  # 호재
+            theme_direction={"inflation": "down"},  # 그러나 물가는 내려간다
+            impact_score=50,
+            timestamp=as_of,
+        )
+        link = self._link(
+            event, {t.id: t for t in themes}, instruments_by_id, as_of, "inflation"
+        )
+        assert link.direction == "negative"
+
+    def test_unknown_direction_is_ambiguous_not_a_guess(
+        self, themes, instruments_by_id, as_of
+    ):
+        """
+        방향을 못 읽었으면 ambiguous 다. 아래 연쇄의 예상 부호가 0 이 되어
+        '예상과 반대' 판정이 막힌다. 모르는 것을 아는 것처럼 그리면 그
+        아래가 전부 거짓이 된다 (요구 15-11).
+        """
+        event = NewsEvent(
+            id="z",
+            event="반도체 대형주에 집중",
+            themes=["semiconductor"],
+            theme_sentiment={"semiconductor": 40},
+            theme_direction={"semiconductor": "neutral"},
+            impact_score=50,
+            timestamp=as_of,
+        )
+        maps = build_impact_maps(
+            [event], {t.id: t for t in themes}, instruments_by_id, as_of
+        )
+        link = next(e for e in maps[0].edges if e.target_id == "theme:semiconductor")
+        assert link.direction == "ambiguous"
+        assert "읽지 못했다" in link.reason
+        for n in maps[0].nodes:
+            assert n.expected_sign == 0
+            assert n.reaction == "unknown"
+
+    def test_missing_direction_field_does_not_fall_back_to_sentiment(
+        self, themes, instruments_by_id, as_of
+    ):
+        """theme_direction 이 아예 비어도 감성으로 대신 채우지 않는다."""
+        event = NewsEvent(
+            id="w",
+            event="무언가",
+            themes=["inflation"],
+            theme_sentiment={"inflation": 80},
+            impact_score=50,
+            timestamp=as_of,
+        )
+        link = self._link(
+            event, {t.id: t for t in themes}, instruments_by_id, as_of, "inflation"
+        )
+        assert link.direction == "ambiguous"
+
+    def test_pipeline_regression(self):
+        """
+        버그 재현 시나리오. 예전에는 이 지도에서 US 10Y Breakeven ·
+        US 10Y Treasury · Nasdaq 100 이 전부 '예상과 반대' 로 찍혔다.
+        셋 다 감성 부호를 방향으로 쓴 탓이었다.
+        """
+        snap = run_pipeline(Settings(scenario="inflation_shock"))
+        m = next(
+            x for x in snap.impact_maps if x.max_depth == max(y.max_depth for y in snap.impact_maps)
+        )
+        flagged = {n.label for n in m.mismatches}
+        assert "US 10Y Breakeven" not in flagged
+        assert "US 10Y Treasury" not in flagged
+        assert "Nasdaq 100" not in flagged
+        # 기사는 물가 상승을 말한다. 그 부호가 관계에 그대로 실려야 한다.
+        link = next(
+            e for e in m.edges
+            if e.source_id.startswith("event:") and e.target_id == "theme:inflation"
+        )
+        assert link.direction == "positive"
+
+
+class TestWeakestLink:
+    """사슬은 가장 약한 고리만큼만 버틴다."""
+
+    def test_path_strength_is_the_minimum(self, resolver, as_of):
+        edges = [
+            RelationshipEdge(
+                id="a", source_id="theme:oil", target_id="macro:Inflation", strength=0.9
+            ),
+            RelationshipEdge(
+                id="b", source_id="macro:Inflation", target_id="macro:Rates", strength=0.4
+            ),
+            RelationshipEdge(
+                id="c", source_id="macro:Rates", target_id="asset:US10Y", strength=0.95
+            ),
+        ]
+        m = build_map(["theme:oil"], resolver, edges, as_of)
+        by_id = {n.id: n for n in m.nodes}
+        assert by_id["theme:oil"].path_strength is None
+        assert by_id["macro:Inflation"].path_strength == 0.9
+        assert by_id["macro:Rates"].path_strength == 0.4
+        assert by_id["asset:US10Y"].path_strength == 0.4
+
+    def test_weak_link_withholds_the_verdict(self, resolver, as_of):
+        """
+        relationships.yaml 이 스스로 "조달비용과 신용위험이 상쇄한다" 며
+        strength 0.45 로 적어 둔 관계를 놓고 "예상과 반대로 움직였다" 고
+        말하는 것은 과장이다.
+        """
+        weak = [
+            RelationshipEdge(
+                id="a", source_id="macro:Rates", target_id="asset:XLF", strength=0.45
+            )
+        ]
+        strong = [
+            RelationshipEdge(
+                id="a", source_id="macro:Rates", target_id="asset:XLF", strength=0.90
+            )
+        ]
+        obs = {"XLF": Observation(z=-1.4)}
+        quiet = build_map(["macro:Rates"], resolver, weak, as_of, observed=obs)
+        loud = build_map(["macro:Rates"], resolver, strong, as_of, observed=obs)
+        assert next(n for n in quiet.nodes if n.id == "asset:XLF").reaction == "unknown"
+        assert next(n for n in loud.nodes if n.id == "asset:XLF").reaction == "mismatch"

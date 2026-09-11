@@ -101,6 +101,15 @@ class NewsEvent(Base):
             "Energy 에 +, Airlines 에 -여야 한다. 비어 있으면 sentiment 로 대체한다."
         ),
     )
+    theme_direction: dict[str, Direction] = Field(
+        default_factory=dict,
+        description=(
+            "테마별 방향. **감성과 다른 축이다.** 감성은 호재냐 악재냐를, "
+            "방향은 그 값이 오르냐 내리냐를 말한다. '물가 둔화 흐름 확인' 은 "
+            "감성 + 이지만 물가 방향은 ↓ 다. 둘을 한 필드로 합치면 Impact Map "
+            "의 연쇄 전체가 뒤집힌다. 읽을 수 없으면 비워 둔다 — 추측하지 않는다."
+        ),
+    )
     entities: list[Entity] = Field(default_factory=list)
 
     sentiment: int = Field(default=0, ge=-100, le=100)

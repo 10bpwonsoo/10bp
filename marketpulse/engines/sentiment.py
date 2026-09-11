@@ -88,7 +88,7 @@ def lexicon_sentiment(text: str, *, config_dir: Path | None = None) -> tuple[int
 # 문장 경계 + 한국어 대조 접속사.
 # "정유주는 강세를 보인 반면 항공주는 약세" 처럼 한 문장 안에서 극성이
 # 뒤집히는 자리가 바로 이 접속사들이다. 여기서 끊어야 테마별로 갈린다.
-_SENTENCE_SPLIT = re.compile(
+SENTENCE_SPLIT = re.compile(
     r"(?<=[.!?。])\s+"          # 일반 문장 끝
     r"|\n+"                     # 줄바꿈
     r"|…+|\.{3,}"               # 한국어 헤드라인의 말줄임표. 두 절을 가르는 표지다.
@@ -113,7 +113,7 @@ def scoped_sentiment(
     감성으로 되돌아간다.
     """
     lowered_keys = [k.lower() for k in keywords]
-    sentences = [s for s in _SENTENCE_SPLIT.split(text) if s.strip()]
+    sentences = [s for s in SENTENCE_SPLIT.split(text) if s.strip()]
     matched = [
         s for s in sentences if any(k in s.lower() for k in lowered_keys)
     ]

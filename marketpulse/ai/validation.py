@@ -172,6 +172,7 @@ def validate_event(
     known_themes: Mapping[str, Any],
     known_instruments: Mapping[str, Any],
     theme_sentiment_fallback: Mapping[str, int] | None = None,
+    theme_direction_fallback: Mapping[str, str] | None = None,
     model: str | None = None,
 ) -> tuple[NewsEvent | None, ValidationReport]:
     """
@@ -207,6 +208,25 @@ def validate_event(
             if theme_id in theme_sentiment_fallback:
                 theme_sentiment[theme_id] = theme_sentiment_fallback[theme_id]
 
+    # 방향은 감성과 다른 축이다. 모델이 비워 두면 룰 추출기가 사전으로 읽은
+    # 값으로 채우고, 그것도 없으면 neutral 로 둔다 — 감성 부호로 대신하지
+    # 않는다. 그것이 이 필드를 따로 둔 이유다.
+    theme_direction: dict[str, str] = {}
+    raw_theme_direction = raw.get("theme_direction")
+    if isinstance(raw_theme_direction, dict):
+        for key, value in raw_theme_direction.items():
+            k = str(key)[:60]
+            if k not in themes:
+                continue
+            theme_direction[k] = _enum(
+                value, DIRECTIONS, f"theme_direction.{k}", report, "neutral"
+            )
+    for theme_id in themes:
+        if theme_direction.get(theme_id, "neutral") == "neutral" and theme_direction_fallback:
+            fallback_value = theme_direction_fallback.get(theme_id)
+            if fallback_value and fallback_value != "neutral":
+                theme_direction[theme_id] = fallback_value
+
     direction_map: dict[str, str] = {}
     if isinstance(raw.get("direction"), dict):
         for key, value in raw["direction"].items():
@@ -223,6 +243,7 @@ def validate_event(
         ),
         themes=themes,
         theme_sentiment=theme_sentiment,
+        theme_direction=theme_direction,
         entities=_validate_entities(raw.get("entities"), report),
         sentiment=_clamp_int(raw.get("sentiment", 0), -100, 100, "sentiment", report, 0),
         impact_score=_clamp_int(raw.get("impact_score", 40), 0, 100, "impact_score", report, 40),
