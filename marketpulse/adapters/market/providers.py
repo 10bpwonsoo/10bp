@@ -371,21 +371,70 @@ class CsvProvider(Provider):
             raise FetchError(f"{path.name} 이 없다", kind="missing", permanent=True)
         return self.parse(path.read_bytes(), bars=bars, scale=float(spec.get("scale", 1.0)))
 
+    #: 값 열로 인정하는 이름. 내려받는 곳마다 다르다.
+    VALUE_HEADERS = (
+        "close", "adj close", "adjclose", "종가", "수정종가",
+        "value", "값", "price", "현재가", "last", "settle",
+    )
+    #: 날짜 열로 인정하는 이름. FRED 는 observation_date, KRX 는 일자다.
+    DATE_HEADERS = ("date", "observation_date", "일자", "날짜", "datetime", "time")
+    #: 받아들이는 날짜 형식. 이 밖의 형식은 그 행을 건너뛴다.
+    DATE_FORMATS = ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y%m%d", "%d-%m-%Y", "%m/%d/%Y")
+
+    @classmethod
+    def _columns(cls, headers: list[str]) -> tuple[str | None, str | None]:
+        """
+        날짜 열과 값 열을 고른다.
+
+        FRED 는 `observation_date,DGS10` 처럼 값 열 이름이 심볼이다. 알려진
+        이름이 없으면 **열이 둘뿐일 때만** 나머지를 값으로 본다. 열이 여럿인데
+        짐작해서 고르면 Open 을 종가로 읽는 사고가 난다.
+        """
+        lowered = {h.lower().strip(): h for h in headers}
+        date_col = next((lowered[k] for k in cls.DATE_HEADERS if k in lowered), None)
+        value_col = next((lowered[k] for k in cls.VALUE_HEADERS if k in lowered), None)
+        if value_col is None and date_col is not None and len(headers) == 2:
+            value_col = next(h for h in headers if h != date_col)
+        return date_col, value_col
+
     @staticmethod
-    def parse(raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
-        text = raw.decode("utf-8-sig", errors="replace").strip()
+    def _number(raw: str) -> float | None:
+        """
+        "1,380.5" · "4.21%" · "." 를 다룬다.
+
+        FRED 는 휴일을 "." 로 준다. 결측이지 0 이 아니다 — 0 으로 읽으면
+        금리가 4.21 에서 0 으로 떨어진 것이 되어 z-score 가 폭발한다.
+        """
+        cleaned = raw.strip().replace(",", "").replace("%", "").replace("\u2212", "-")
+        if not cleaned or cleaned in (".", "-", "--", "N/A", "n/a"):
+            return None
+        try:
+            return float(cleaned)
+        except ValueError:
+            return None
+
+    @classmethod
+    def parse(cls, raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
+        for encoding in ("utf-8-sig", "cp949", "euc-kr"):
+            try:
+                text = raw.decode(encoding).strip()
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            raise FetchError("인코딩을 알 수 없다", kind="parse", permanent=True)
+
         rows = list(csv.DictReader(io.StringIO(text)))
         if not rows:
             raise FetchError("행이 없다", kind="empty", permanent=True)
 
-        headers = {h.lower().strip(): h for h in rows[0].keys()}
-        date_col = next((headers[k] for k in ("date", "일자", "날짜") if k in headers), None)
-        value_col = next(
-            (headers[k] for k in ("close", "value", "종가", "값") if k in headers), None
-        )
+        headers = [h for h in rows[0].keys() if h is not None]
+        date_col, value_col = cls._columns(headers)
         if date_col is None or value_col is None:
             raise FetchError(
-                f"date/close 열이 필요하다. 받은 열: {list(rows[0])[:6]}",
+                "날짜 열과 값 열을 찾지 못했다. "
+                f"받은 열: {headers[:6]} / 인정하는 이름: date·일자 + close·종가·value·price "
+                "(열이 둘뿐이면 두 번째를 값으로 본다)",
                 kind="parse",
                 permanent=True,
             )
@@ -393,10 +442,10 @@ class CsvProvider(Provider):
         points: list[Point] = []
         for row in rows:
             date_raw = (row.get(date_col) or "").strip().replace("/", "-")
-            value_raw = (row.get(value_col) or "").strip().replace(",", "")
-            if not date_raw or not value_raw:
+            value = cls._number(row.get(value_col) or "")
+            if not date_raw or value is None:
                 continue
-            for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y%m%d"):
+            for fmt in cls.DATE_FORMATS:
                 try:
                     ts = datetime.strptime(date_raw[:19], fmt).replace(tzinfo=timezone.utc)
                     break
@@ -404,10 +453,13 @@ class CsvProvider(Provider):
                     continue
             else:
                 continue
-            try:
-                points.append((ts, float(value_raw) * scale))
-            except ValueError:
-                continue
+            points.append((ts, value * scale))
+
         if not points:
-            raise FetchError("파싱된 행이 없다", kind="empty", permanent=True)
+            raise FetchError(
+                f"'{date_col}' / '{value_col}' 열은 찾았으나 읽을 수 있는 행이 없다. "
+                "날짜 형식은 YYYY-MM-DD 를 권한다",
+                kind="empty",
+                permanent=True,
+            )
         return _clean(points, bars)

@@ -143,7 +143,60 @@ class TestCsvReplay:
         (tmp_path / "Y.csv").write_text("a,b\n1,2\n")
         with pytest.raises(FetchError) as exc:
             CsvProvider(tmp_path).fetch({"symbol": "Y"}, bars=10, as_of=AS_OF)
-        assert "date/close" in str(exc.value)
+        assert "받은 열" in str(exc.value)
+
+    @pytest.mark.parametrize(
+        "name,raw,expected",
+        [
+            # FRED 는 값 열 이름이 심볼이다. 열이 둘뿐이면 두 번째가 값이다.
+            ("fred", "observation_date,DGS10\n2026-01-02,4.21\n2026-01-06,4.26\n", [4.21, 4.26]),
+            # Yahoo 다운로드 CSV. Close 를 고른다 — Open 을 고르면 사고다.
+            (
+                "yahoo",
+                "Date,Open,High,Low,Close,Adj Close,Volume\n"
+                "2026-01-02,1,2,3,5820.11,5820.11,100\n",
+                [5820.11],
+            ),
+            # 자릿수 쉼표는 따옴표 안에 온다
+            ("investing", 'Date,Price,Open\n2026-01-02,"1,380.5",1378\n', [1380.5]),
+            # 퍼센트 표기로 내보내는 곳이 있다
+            ("percent", "date,value\n2026-01-02,4.21%\n", [4.21]),
+        ],
+    )
+    def test_real_world_exports_parse(self, tmp_path, name, raw, expected):
+        """
+        사람이 실제로 내려받는 파일이 그대로 들어가야 한다. 열 이름을 손으로
+        고치게 만들면 그 과정에서 Open 을 종가로 넣는 사고가 난다.
+        """
+        (tmp_path / f"{name}.csv").write_text(raw)
+        points = CsvProvider(tmp_path).fetch({"symbol": name}, bars=10, as_of=AS_OF)
+        assert [v for _, v in points] == pytest.approx(expected)
+
+    def test_ambiguous_wide_file_is_refused_not_guessed(self, tmp_path):
+        """
+        열이 여럿인데 알려진 이름이 없으면 거부한다. 짐작해서 고르면
+        Open 을 종가로 읽는다 — 조용히 틀린 값이 화면에 오른다.
+        """
+        (tmp_path / "W.csv").write_text("date,a,b\n2026-01-02,1,2\n")
+        with pytest.raises(FetchError):
+            CsvProvider(tmp_path).fetch({"symbol": "W"}, bars=10, as_of=AS_OF)
+
+    def test_fred_holiday_dot_is_missing_not_zero(self, tmp_path):
+        """
+        "." 를 0 으로 읽으면 금리가 4.21 에서 0 으로 떨어진 것이 되어
+        z-score 가 폭발한다.
+        """
+        (tmp_path / "R.csv").write_text(
+            "observation_date,DGS10\n2026-01-02,4.21\n2026-01-03,.\n2026-01-06,4.26\n"
+        )
+        points = CsvProvider(tmp_path).fetch({"symbol": "R"}, bars=10, as_of=AS_OF)
+        assert len(points) == 2
+
+    def test_cp949_export_is_read(self, tmp_path):
+        """KRX·네이버에서 받은 파일은 대개 CP949 다."""
+        (tmp_path / "K.csv").write_bytes("일자,종가\n2026-01-02,\"2,540.10\"\n".encode("cp949"))
+        points = CsvProvider(tmp_path).fetch({"symbol": "K"}, bars=10, as_of=AS_OF)
+        assert [v for _, v in points] == pytest.approx([2540.10])
 
 
 # ══════════════════════════════════════════════════════════════
@@ -350,3 +403,40 @@ class TestCircuitBreaker:
             client.get(host)
         assert exc.value.kind == "circuit"
         assert "차단" in client.status()["blocked.invalid"]
+
+
+class TestReplayDoc:
+    """
+    CSV 적재 안내가 레지스트리와 어긋나면 사용자가 없는 종목을 채우거나
+    있는 종목을 빠뜨린다. 문서도 계약이다.
+    """
+
+    @pytest.fixture(scope="class")
+    def doc(self):
+        return (
+            Path(__file__).resolve().parents[1]
+            / "marketpulse" / "data" / "replay" / "README.md"
+        ).read_text(encoding="utf-8")
+
+    def test_every_instrument_is_documented(self, doc):
+        import re
+
+        ids = {i.id for i in get_instruments().instruments}
+        mentioned = {m for m in re.findall(r"`([A-Z][A-Z0-9_]{1,24})`", doc) if m in ids}
+        assert ids - mentioned == set(), f"문서에 없는 종목: {sorted(ids - mentioned)}"
+
+    def test_derived_are_marked_as_do_not_fill(self, doc):
+        derived = [
+            i.id for i in get_instruments().instruments if i.derived_from is not None
+        ]
+        section = doc[doc.index("넣으면 안 되는 것") :]
+        for iid in derived:
+            assert iid in section, iid
+
+    def test_unit_conversion_warnings_are_present(self, doc):
+        """
+        단위를 틀리면 조용히 틀린 값이 화면에 오른다. US_HY_OAS 의 bp 변환과
+        수급의 십억원 변환은 반드시 적혀 있어야 한다.
+        """
+        assert "×100" in doc or "x100" in doc
+        assert "십억원" in doc
