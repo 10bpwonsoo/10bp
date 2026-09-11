@@ -1,0 +1,239 @@
+/* 대시보드 셸과 패널 공통 */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ── 상단 바 ───────────────────────────────── */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-right: auto;
+}
+
+.brand strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.brand span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ── 그리드 ────────────────────────────────── */
+.grid {
+  display: grid;
+  gap: var(--gap);
+  padding: var(--gap);
+  grid-template-columns: 1fr;
+  align-content: start;
+  flex: 1;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .span-2 {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1400px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .span-2 {
+    grid-column: span 2;
+  }
+  .span-3 {
+    grid-column: span 3;
+  }
+}
+
+/* ── 패널 ──────────────────────────────────── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px var(--pad);
+  border-bottom: 1px solid var(--rule);
+}
+
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.panel-body {
+  padding: var(--pad);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-body.flush {
+  padding: 0;
+}
+
+/* ── 미구현 단계 표시 ───────────────────────── */
+/* 같은 줄의 다른 패널이 키를 정하므로 빈 패널이 길어질 수 있다.
+   안내 문구를 세로 중앙에 두면 의도한 여백처럼 읽힌다. */
+.pending {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px var(--pad);
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 62ch;
+}
+
+.pending .stage {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  color: var(--accent);
+  background: var(--accent-wash);
+}
+
+/* ── 표 ────────────────────────────────────── */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  padding: 7px var(--pad);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-sub {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ── 배지 ──────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.badge-mock {
+  color: var(--accent);
+  background: var(--accent-wash);
+}
+.badge-live {
+  color: var(--ok);
+}
+.badge-delayed {
+  color: var(--warn);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+  margin: var(--gap) var(--gap) 0;
+  padding: 9px 14px;
+  border: 1px solid var(--crit);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: 13px;
+}
+
+.banner .tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--crit);
+}
+
+/* 좁은 화면에서는 발산형 막대를 숨긴다. 숫자가 먼저다. */
+@media (max-width: 560px) {
+  .row .bar {
+    display: none;
+  }
+}

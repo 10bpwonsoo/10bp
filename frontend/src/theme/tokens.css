@@ -1,0 +1,140 @@
+/*
+ * Market Pulse AI — 디자인 토큰
+ *
+ * 설계서 STEP 10: "화려함보다 정보 밀도, 가독성, 즉시성."
+ *
+ * 설계서는 Tailwind 를 적었으나 토큰 기반 CSS 로 간다. 이유는 두 가지다.
+ *   1. 고밀도 금융 표에 필요한 것(등폭 숫자, 헤어라인 괘선, 방향 색 체계)은
+ *      유틸리티 클래스로 쓰면 JSX 가 읽을 수 없게 길어진다.
+ *   2. 빌드 의존성이 하나 줄면 데모가 죽을 경로도 하나 준다 (STEP 7.7).
+ * Recharts 는 그릴 시계열이 생기는 P1/P2 에서 도입한다.
+ *
+ * 색 체계에서 상승/하락은 한국 시장 관례를 따른다. 상승 적색, 하락 청색.
+ */
+
+:root {
+  color-scheme: dark light;
+
+  /* 다크 우선. 트레이딩 데스크의 기본 환경이다. */
+  --bg: #101109;
+  --surface: #191b12;
+  --surface-2: #21241a;
+  --surface-3: #2a2e21;
+  --ink: #e9e8dc;
+  --ink-2: #c6c5b7;
+  --muted: #919482;
+  --faint: #676a5b;
+  --rule: #2c2f24;
+  --rule-soft: #23261c;
+
+  --accent: #d8a84f;
+  --accent-dim: #9d7a37;
+  --accent-wash: #241f12;
+
+  /* 방향: 한국 관례 (상승 적 / 하락 청) */
+  --up: #e2756a;
+  --up-dim: #8d4139;
+  --down: #6fa9e2;
+  --down-dim: #3a627f;
+  --flat: #8b8e7c;
+
+  /* 상태 (방향색과 구분되는 별도 체계) */
+  --crit: #e2705f;
+  --warn: #d8a84f;
+  --ok: #7fb98c;
+  --info: #6fa9e2;
+
+  --font-sans: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SFMono-Regular",
+    Menlo, monospace;
+
+  --gap: 14px;
+  --pad: 16px;
+  --radius: 3px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f3f3ee;
+    --surface: #fbfbf7;
+    --surface-2: #ececE3;
+    --surface-3: #e0e0d5;
+    --ink: #1a1c15;
+    --ink-2: #3c3f32;
+    --muted: #6a6d5e;
+    --faint: #96998a;
+    --rule: #d9d9cf;
+    --rule-soft: #e6e6dc;
+
+    --accent: #8a5f16;
+    --accent-dim: #b08a3c;
+    --accent-wash: #f6efdd;
+
+    --up: #b8332a;
+    --up-dim: #d99189;
+    --down: #1c5795;
+    --down-dim: #8fb3d6;
+    --flat: #77796a;
+
+    --crit: #9c2f24;
+    --warn: #8a5f16;
+    --ok: #386643;
+    --info: #1c5795;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--up);
+}
+.down {
+  color: var(--down);
+}
+.flat {
+  color: var(--flat);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

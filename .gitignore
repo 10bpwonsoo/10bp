@@ -30,4 +30,5 @@ upbit_analysis_*.csv
 .venv/
 frontend/node_modules/
 frontend/dist/
+frontend/*.tsbuildinfo
 .pytest_cache/
