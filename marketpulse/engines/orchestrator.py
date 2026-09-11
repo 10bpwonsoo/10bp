@@ -27,7 +27,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Sequence
 
-from ..ai.rule_extractor import extract_events
+from ..ai.client import LLMClient, build_client
+from ..ai.event_extractor import extract_events as llm_extract_events
+from ..ai.rule_extractor import extract_events as rule_extract_events
+from ..ai.summarizer import summarize
 from ..config.registry import get_instruments, get_themes
 from ..config.settings import Settings
 from ..models.common import DataMode, arrow_for, direction_for, utcnow
@@ -42,6 +45,7 @@ from .alert import build_alerts, carry_forward
 from .divergence import detect_divergences, pending_candidates
 from .market_state import compute_market_state
 from .normalize import build_snapshot
+from .relationship import build_impact_maps
 from .theme import compute_theme_states
 
 logger = logging.getLogger(__name__)
@@ -57,7 +61,10 @@ ENGINE_VERSIONS: dict[str, str] = {
     "confirmation": "0.1.0",
     "divergence": "0.1.0",
     "alert": "0.1.0",
-    "orchestrator": "0.1.0-p2",
+    "relationship": "0.1.0",
+    "llm_extractor": "0.1.0",
+    "summarizer": "0.1.0",
+    "orchestrator": "0.1.0-p3",
 }
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
@@ -112,6 +119,13 @@ def build_whats_moving(
     return rows[:WHATS_MOVING_LIMIT]
 
 
+class _DisabledSettings:
+    """LLM 클라이언트가 주어지지 않았을 때 쓰는 비활성 설정."""
+
+    llm_enabled = False
+    llm_timeout_sec = 8.0
+
+
 def build_data_health(
     snapshot: MarketSnapshot,
     news_items: list[RawNewsItem],
@@ -119,6 +133,7 @@ def build_data_health(
     llm_enabled: bool,
     timings_ms: dict[str, float],
     warnings: list[str] | None = None,
+    llm_status: str | None = None,
 ) -> DataHealth:
     stale = [
         iid for iid, p in snapshot.points.items() if p.meta.is_stale
@@ -135,7 +150,7 @@ def build_data_health(
         stale=sorted(stale),
         max_freshness_sec=max_fresh,
         news_items=len(news_items),
-        llm_status="disabled" if not llm_enabled else "ok",
+        llm_status=llm_status or ("disabled" if not llm_enabled else "ok"),
         engine_timings_ms={k: round(v, 2) for k, v in timings_ms.items()},
         warnings=list(warnings or []),
     )
@@ -189,6 +204,7 @@ def build_intelligence(
     history: Sequence[IntelligenceSnapshot] = (),
     pending_divergences: Sequence[Divergence] = (),
     pending_out: list[Divergence] | None = None,
+    llm_client: LLMClient | None = None,
 ) -> IntelligenceSnapshot:
     """
     순수 함수. 스냅샷과 뉴스를 받아 최종 인텔리전스를 만든다.
@@ -199,9 +215,19 @@ def build_intelligence(
     """
     timings = dict(timings_ms or {})
     previous = history[-1] if history else None
+    notes = list(warnings or [])
+    themes_registry = get_themes().by_id()
 
+    # LLM 은 파이프라인 바깥의 enrichment 다. 꺼져 있거나 실패하면 룰
+    # 추출기로 돌아가고, 아래 정량 경로는 전혀 영향을 받지 않는다.
     t = time.perf_counter()
-    events = extract_events(news_items, as_of=market_snapshot.as_of)
+    if llm_client is not None and llm_client.available():
+        events, extract_notes = llm_extract_events(
+            news_items, llm_client, themes_registry, instruments_by_id
+        )
+        notes.extend(extract_notes)
+    else:
+        events = rule_extract_events(news_items, as_of=market_snapshot.as_of)
     timings["extract"] = (time.perf_counter() - t) * 1000.0
 
     t = time.perf_counter()
@@ -214,13 +240,13 @@ def build_intelligence(
 
     t = time.perf_counter()
     themes = compute_theme_states(
-        get_themes().themes,
+        list(themes_registry.values()),
         market_snapshot,
         events,
         instruments_by_id,
         previous={ts.theme_id: ts for ts in previous.themes} if previous else None,
         history={
-            th.id: theme_score_history(history, th.id) for th in get_themes().themes
+            th_id: theme_score_history(history, th_id) for th_id in themes_registry
         },
     )
     timings["theme"] = (time.perf_counter() - t) * 1000.0
@@ -233,7 +259,7 @@ def build_intelligence(
     t = time.perf_counter()
     divergences = detect_divergences(
         themes,
-        {th.id: th for th in get_themes().themes},
+        themes_registry,
         market_state,
         market_snapshot,
         instruments_by_id,
@@ -243,7 +269,7 @@ def build_intelligence(
         pending_out.extend(
             pending_candidates(
                 themes,
-                {th.id: th for th in get_themes().themes},
+                themes_registry,
                 market_state,
                 market_snapshot,
                 instruments_by_id,
@@ -252,12 +278,43 @@ def build_intelligence(
         )
     timings["divergence"] = (time.perf_counter() - t) * 1000.0
 
+    t = time.perf_counter()
+    impact_maps = build_impact_maps(
+        events, themes_registry, instruments_by_id, market_snapshot.as_of
+    )
+    timings["relationship"] = (time.perf_counter() - t) * 1000.0
+
+    # 템플릿 문장이 먼저 있고, LLM 은 그것을 다듬는다. LLM 이 없거나 지어낸
+    # 숫자를 쓰면 템플릿이 그대로 화면에 간다 (요구 15-7).
+    t = time.perf_counter()
+    narrative, narrative_source, summary_notes = summarize(
+        market_state,
+        themes,
+        divergences,
+        llm_client or build_client(_DisabledSettings()),
+        fallback=market_state.narrative,
+    )
+    notes.extend(summary_notes)
+
+    # 서킷이 영구히 열린 뒤에는 매 틱 경고가 새로 생기지 않는다. 이유가
+    # 화면에서 사라지지 않도록 상태를 한 줄로 계속 남긴다.
+    if llm_client is not None and llm_client.status == "failed":
+        reason = llm_client.last_error or "복구 불가능한 오류"
+        note = f"LLM 사용 불가: {reason} 정량 파이프라인은 정상 동작한다."
+        if note not in notes:
+            notes.append(note)
+    market_state = market_state.model_copy(
+        update={"narrative": narrative, "narrative_source": narrative_source}
+    )
+    timings["summarize"] = (time.perf_counter() - t) * 1000.0
+
     health = build_data_health(
         market_snapshot,
         news_items,
         llm_enabled=llm_enabled,
         timings_ms=timings,
-        warnings=warnings,
+        warnings=notes,
+        llm_status=llm_client.status if llm_client else None,
     )
 
     t = time.perf_counter()
@@ -305,7 +362,7 @@ def build_intelligence(
         themes=themes,
         divergences=divergences,
         alerts=alerts,
-        impact_maps=[],
+        impact_maps=impact_maps,
         events=events,
         whats_moving=whats_moving,
         data_health=health.model_copy(
@@ -396,6 +453,8 @@ def run_pipeline_detailed(
             + ("…" if len(snapshot.missing) > 5 else "")
         )
 
+    llm_client = build_client(settings)
+
     pending: list[Divergence] = []
     result = build_intelligence(
         snapshot,
@@ -408,5 +467,6 @@ def run_pipeline_detailed(
         history=history,
         pending_divergences=pending_divergences,
         pending_out=pending,
+        llm_client=llm_client,
     )
     return PipelineResult(snapshot=result, pending=pending)

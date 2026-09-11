@@ -16,17 +16,17 @@
 
 설계 문서: [`docs/00-analysis-and-architecture.md`](docs/00-analysis-and-architecture.md)
 
-### 현재 상태 — P2 완료
+### 현재 상태 — P3 완료
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
 | **P0** | 데이터 계약, MOCK 파이프라인, FeatureEngine, API, CLI, 대시보드 골격 | ✅ 완료 |
 | **P1** | Market State Engine, Theme Score, Sentiment, 룰 추출, Theme Heatmap | ✅ 완료 |
 | **P2** | Confirmation, Divergence, Alert, 저장소, 스케줄러 | ✅ 완료 |
-| P3 | Impact Map, LLM 이벤트 추출, AI 요약 | 예정 |
+| **P3** | Impact Map, 관계 그래프, LLM 이벤트 추출, AI 요약 | ✅ 완료 |
 | P4 | 실데이터 어댑터, 히스토리, 백테스트 | 예정 |
 
-대시보드에서 아직 만들지 않은 패널은 해당 단계(P1/P2/P3)를 명시한 자리
+대시보드에서 아직 만들지 않은 패널은 해당 단계(P4)를 명시한 자리
 표시자로 남는다. **그럴듯한 가짜 숫자로 채우지 않는다.**
 
 ### 실행
@@ -76,6 +76,7 @@ cd frontend && npm install && npm run dev
 | `divergence_rules.yaml` | 괴리 규칙과 설명 템플릿 |
 | `scoring.yaml` | 모든 가중치와 임계값 |
 | `lexicon.yaml` | 감성 사전. 맥락 의존 표현은 일부러 제외했다 |
+| `relationships.yaml` | 사건→테마→매크로→업종→자산 사전 정의 관계 46개 |
 
 > 이 값들은 매크로 상식에 기반한 **초기 제안값**이며 통계적으로 추정된 값이
 > 아니다. 실데이터가 붙는 시점에 재검토 대상이다.
@@ -93,7 +94,8 @@ cp .env.example .env
 | `MARKETPULSE_DATA_MODE` | `MOCK` | `LIVE` / `DELAYED` / `MOCK` |
 | `MARKETPULSE_SCENARIO` | `baseline` | MOCK 모드에서 재생할 시나리오 |
 | `MARKETPULSE_LLM_ENABLED` | `false` | false 면 정량 파이프라인만 동작 |
-| `ANTHROPIC_API_KEY` | – | P3 에서 사용 |
+| `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약에 쓰는 모델 |
+| `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요 |
 
 `LIVE` / `DELAYED` 어댑터는 P4 에서 추가한다. 그 전에 해당 모드로 실행하면
 **조용히 MOCK 으로 떨어지지 않고 명확히 실패한다.** 모의 데이터를 실시간이라
@@ -128,6 +130,29 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
     --scenario ai_divergence --interval 60 --db data/snapshots.db
 ```
 
+### LLM
+
+LLM 은 **선택 사항**이다. 켜면 뉴스 이벤트 추출과 시장 요약 한 문단을
+맡고, 꺼지거나 실패하면 그 두 가지만 룰 기반으로 되돌아간다. 정량
+대시보드(상태·테마·확인·괴리·알림·영향 경로)는 어느 쪽이든 동일하다.
+
+```bash
+export MARKETPULSE_LLM_ENABLED=true
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+세 가지 안전장치를 걸어 두었다.
+
+| 장치 | 동작 |
+|---|---|
+| 회로 차단기 | 연속 3회 실패하면 5분간 호출을 멈춘다. 인증 실패는 영구 차단 |
+| 스키마 검증 | 모델이 만든 테마·종목 ID 중 레지스트리에 없는 것은 버리고, 보정한 필드를 전부 기록한다 |
+| 숫자 검증 | 요약문의 모든 숫자가 결정론적 계산 결과에 실재해야 한다. 하나라도 지어내면 템플릿 문장으로 되돌린다 |
+
+키 없이 `MARKETPULSE_LLM_ENABLED=true` 로 켜도 화면 전체가 동작하고
+`data_health.llm_status` 가 `failed` 로, 서술 출처가 `template` 로 표시된다.
+이것은 `tests/test_llm.py` 에 고정되어 있다.
+
 ### 테스트
 
 ```bash
@@ -146,12 +171,14 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
 ```
 marketpulse/
 ├── models/      데이터 계약 7종 + 공통 타입 (pydantic v2)
-├── config/      instruments · themes · factors · state_rules · scoring · lexicon
+├── config/      instruments · themes · factors · state_rules · scoring
+│                lexicon · divergence_rules · relationships
 ├── adapters/    MarketAdapter / NewsAdapter + MOCK 구현
 ├── engines/     features · normalize · scoring · factors · market_state
 │                confirmation · sentiment · theme · divergence · alert
-│                korean · orchestrator
-├── ai/          rule_extractor (LLM 없이 동작하는 기준선)
+│                relationship · korean · orchestrator
+├── ai/          rule_extractor(기준선) · client · validation
+│                event_extractor · summarizer
 ├── storage/     SnapshotRepository + SQLite 구현
 ├── scheduler/   주기 실행기
 ├── vendor/      technical_indicators.py 이식본

@@ -30,6 +30,8 @@ class TestRoutes:
             "/api/v1/scenarios",
             "/api/v1/news",
             "/api/v1/events",
+            "/api/v1/impact-map",
+            "/api/v1/relationships",
         ],
     )
     def test_ok(self, client, path):

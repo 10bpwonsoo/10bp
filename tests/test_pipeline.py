@@ -115,11 +115,11 @@ class TestUnimplementedStagesAreEmptyNotFaked:
     그럴듯한 가짜 숫자로 채우면 데모는 좋아 보이지만 시스템은 거짓말을 한다.
     """
 
-    def test_p2_p3_sections_still_empty(self, settings):
+    def test_p3_sections_now_populated(self, settings):
         snap = run_pipeline(settings)
-        assert snap.divergences == []
-        assert snap.alerts == []
-        assert snap.impact_maps == []
+        assert snap.impact_maps, "Impact Map 이 비어 있다"
+        assert all(len(m.nodes) >= 2 for m in snap.impact_maps)
+        assert all(m.edges for m in snap.impact_maps)
 
     def test_p1_sections_now_populated(self, settings):
         snap = run_pipeline(settings)

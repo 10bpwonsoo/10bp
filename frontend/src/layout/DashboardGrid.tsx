@@ -3,9 +3,10 @@ import { AlertTimeline } from "../components/AlertTimeline";
 import { ConfirmationMatrix } from "../components/ConfirmationMatrix";
 import { DataHealthPanel } from "../components/DataHealthPanel";
 import { DivergencePanel } from "../components/DivergencePanel";
+import { ImpactMapPanel } from "../components/ImpactMap";
 import { MarketStateHeader } from "../components/MarketStateHeader";
 import { NewsFeed } from "../components/NewsFeed";
-import { Panel, Pending } from "../components/Panel";
+import { Panel } from "../components/Panel";
 import { ThemeHeatmap } from "../components/ThemeHeatmap";
 import { WhatsMoving } from "../components/WhatsMoving";
 
@@ -63,11 +64,12 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
         <DivergencePanel items={snapshot.divergences} themeNames={themeNames} />
       </Panel>
 
-      <Panel title="Impact Map" span={2}>
-        <Pending stage="P3">
-          Event → Theme → Macro → Asset → Sector 관계 그래프입니다. 사전 정의
-          관계는 실선, LLM 이 제안한 관계는 점선으로 구분해 그립니다.
-        </Pending>
+      <Panel
+        title="Impact Map"
+        span={2}
+        note={snapshot.impact_maps.length > 1 ? `${snapshot.impact_maps.length}개 경로` : undefined}
+      >
+        <ImpactMapPanel maps={snapshot.impact_maps} />
       </Panel>
 
       <Panel

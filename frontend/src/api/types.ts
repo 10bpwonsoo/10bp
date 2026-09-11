@@ -192,6 +192,39 @@ export interface Alert {
   state: "NEW" | "ONGOING" | "RESOLVED";
 }
 
+export type NodeType = "EVENT" | "THEME" | "MACRO_FACTOR" | "ASSET" | "SECTOR";
+
+export interface RelationshipNode {
+  id: string;
+  type: NodeType;
+  label: string;
+  ref_id: string | null;
+}
+
+export interface RelationshipEdge {
+  id: string;
+  source_id: string;
+  target_id: string;
+  direction: "positive" | "negative" | "ambiguous";
+  strength: number;
+  confidence: number;
+  lag: "immediate" | "hours" | "days" | "weeks";
+  reason: string;
+  origin: "predefined" | "llm_proposed" | "statistical";
+  status: "active" | "candidate" | "rejected";
+  evidence: string[];
+  created_at: string;
+  verified_by: string | null;
+}
+
+export interface ImpactMap {
+  as_of: string;
+  root_event_id: string | null;
+  nodes: RelationshipNode[];
+  edges: RelationshipEdge[];
+  max_depth: number;
+}
+
 export interface MovingItem {
   key: string;
   label: string;
@@ -250,7 +283,7 @@ export interface IntelligenceSnapshot {
   themes: ThemeState[];
   divergences: Divergence[];
   alerts: Alert[];
-  impact_maps: unknown[];
+  impact_maps: ImpactMap[];
   events: NewsEventLite[];
   whats_moving: MovingItem[];
   data_health: DataHealth;
