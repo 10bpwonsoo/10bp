@@ -18,6 +18,27 @@ import { WhatsMoving } from "../components/WhatsMoving";
  * 아직 만들지 않은 패널도 자리를 차지한다. 구현 순서에 따라 화면이 어떻게
  * 채워질지 한눈에 보이고, P1~P3 에서 붙일 자리가 분명해진다.
  */
+/**
+ * 패널 머리에 무엇을 띄울지. 예상과 반대로 움직인 노드가 있으면 그것이
+ * 먼저다 — 경로 개수보다 운용자가 먼저 알아야 할 것이다.
+ */
+function impactNote(snapshot: IntelligenceSnapshot) {
+  // 한 노드가 여러 경로에 등장할 수 있다. 같은 자산을 두 번 세지 않는다.
+  const bad = new Set<string>();
+  for (const m of snapshot.impact_maps) {
+    for (const n of m.nodes) if (n.reaction === "mismatch") bad.add(n.id);
+  }
+  const paths = snapshot.impact_maps.length;
+  if (bad.size > 0) {
+    return (
+      <span style={{ color: "var(--crit)" }}>
+        예상과 반대 {bad.size}개{paths > 1 ? ` · ${paths}개 경로` : ""}
+      </span>
+    );
+  }
+  return paths > 1 ? `${paths}개 경로` : undefined;
+}
+
 export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) {
   const themeNames = Object.fromEntries(snapshot.themes.map((t) => [t.theme_id, t.name]));
 
@@ -66,14 +87,15 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
 
       <Panel
         title="Impact Map"
-        span={2}
-        note={snapshot.impact_maps.length > 1 ? `${snapshot.impact_maps.length}개 경로` : undefined}
+        span={3}
+        note={impactNote(snapshot)}
       >
         <ImpactMapPanel maps={snapshot.impact_maps} />
       </Panel>
 
       <Panel
         title="Alert · Timeline"
+        span={3}
         flush
         note={
           snapshot.alerts.length > 0

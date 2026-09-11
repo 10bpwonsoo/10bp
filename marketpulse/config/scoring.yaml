@@ -156,3 +156,9 @@ alert:
     flow_reversal_z: 0.8
     # 커버리지가 이 아래로 떨어지면 데이터 품질 경고
     coverage_floor: 0.85
+
+relationship:
+  # 실측 |z| 가 이 값에 못 미치면 "움직이지 않았다"(muted) 로 본다.
+  # 0.3σ 짜리 움직임을 놓고 내러티브가 맞았다/틀렸다를 말하면 잡음을
+  # 신호로 읽는 것이다.
+  reaction_min_abs_z: 0.5

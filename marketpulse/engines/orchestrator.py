@@ -25,7 +25,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from ..ai.client import LLMClient, build_client
 from ..ai.event_extractor import extract_events as llm_extract_events
@@ -39,13 +39,13 @@ from ..models.news import RawNewsItem
 from ..models.snapshot import DataHealth, IntelligenceSnapshot, MovingItem
 from ..models.alert import Alert
 from ..models.divergence import Divergence
-from ..models.state import MarketState, StateLabel
+from ..models.state import FactorScore, MarketState, StateLabel
 from ..models.theme import ThemeState
 from .alert import build_alerts, carry_forward
 from .divergence import detect_divergences, pending_candidates
 from .market_state import compute_market_state
 from .normalize import build_snapshot
-from .relationship import build_impact_maps
+from .relationship import Observation, build_impact_maps
 from .theme import compute_theme_states
 
 logger = logging.getLogger(__name__)
@@ -61,10 +61,10 @@ ENGINE_VERSIONS: dict[str, str] = {
     "confirmation": "0.1.0",
     "divergence": "0.1.0",
     "alert": "0.1.0",
-    "relationship": "0.1.0",
+    "relationship": "0.2.0",
     "llm_extractor": "0.1.0",
     "summarizer": "0.1.0",
-    "orchestrator": "0.1.0-p3",
+    "orchestrator": "0.2.0-p3",
 }
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
@@ -124,6 +124,32 @@ class _DisabledSettings:
 
     llm_enabled = False
     llm_timeout_sec = 8.0
+
+
+def build_observations(
+    snapshot: MarketSnapshot,
+    instruments_by_id: dict[str, Instrument],
+    factors: Mapping[str, FactorScore],
+) -> dict[str, Observation]:
+    """
+    Impact Map 노드에 붙일 실측 반응.
+
+    가격이 있는 것만 넣는다 — 종목과 매크로 factor. 테마와 업종은 제외한다.
+    테마 점수는 뉴스·가격·수급을 섞은 합성값이라, 그것을 '실측 가격 반응'
+    칸에 넣으면 내러티브를 내러티브로 검증하게 된다. 비워 두는 편이 정직하다.
+    """
+    out: dict[str, Observation] = {}
+    for iid, feat in snapshot.features.items():
+        if feat.z_1d is None:
+            continue
+        ins = instruments_by_id.get(iid)
+        out[iid] = Observation(
+            z=feat.z_1d,
+            display=_format_change(ins, feat.ret_1d) if ins else None,
+        )
+    for name, fs in factors.items():
+        out[name] = Observation(z=fs.score)
+    return out
 
 
 def build_data_health(
@@ -280,7 +306,13 @@ def build_intelligence(
 
     t = time.perf_counter()
     impact_maps = build_impact_maps(
-        events, themes_registry, instruments_by_id, market_snapshot.as_of
+        events,
+        themes_registry,
+        instruments_by_id,
+        market_snapshot.as_of,
+        observed=build_observations(
+            market_snapshot, instruments_by_id, market_state.factors
+        ),
     )
     timings["relationship"] = (time.perf_counter() - t) * 1000.0
 

@@ -194,11 +194,23 @@ export interface Alert {
 
 export type NodeType = "EVENT" | "THEME" | "MACRO_FACTOR" | "ASSET" | "SECTOR";
 
+export type Reaction = "confirmed" | "mismatch" | "muted" | "unknown";
+
 export interface RelationshipNode {
   id: string;
   type: NodeType;
   label: string;
   ref_id: string | null;
+  /** 뿌리에서 몇 단계 떨어졌는가. 열 배치의 기준이다. */
+  hop: number;
+  /** 대표 경로의 관계 부호 곱. 0 은 뿌리이거나 판정 불가 */
+  expected_sign: -1 | 0 | 1;
+  /** 다른 경로가 반대 부호를 준다. 이때는 일치/불일치를 말하지 않는다. */
+  sign_conflict: boolean;
+  via_edge_id: string | null;
+  observed_z: number | null;
+  observed_display: string | null;
+  reaction: Reaction;
 }
 
 export interface RelationshipEdge {

@@ -13,6 +13,7 @@ status="candidate" 로 따로 들어와 화면에서 점선으로 그려진다. 
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -30,8 +31,17 @@ from ..models.relationship import (
     RelationshipNode,
 )
 from ..models.theme import Theme
+from .scoring import load_scoring
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
+
+
+@dataclass(frozen=True)
+class Observation:
+    """노드 하나의 실측 반응. 가격이 있는 노드에만 존재한다."""
+
+    z: float | None
+    display: str | None = None
 
 #: 한 맵의 최대 깊이.
 #: 요구 8 의 예시 연쇄(사건 → 유가 → 인플레이션 → 금리 → 성장주 → 나스닥)가
@@ -147,13 +157,15 @@ def traverse(
     edges: Sequence[RelationshipEdge],
     *,
     max_depth: int = DEFAULT_MAX_DEPTH,
-) -> tuple[list[str], list[RelationshipEdge], int]:
+) -> tuple[list[str], list[RelationshipEdge], int, dict[str, int]]:
     """
     roots 에서 시작해 나가는 방향으로 BFS.
 
-    Returns: (도달한 노드 id, 사용된 edge, 실제 깊이)
+    Returns: (도달한 노드 id, 사용된 edge, 실제 깊이, 노드별 최단 홉)
 
     같은 노드를 두 번 확장하지 않는다. 사이클이 있어도 멈춘다.
+    BFS 이므로 hop 은 최단 거리다 — 한 노드가 여러 경로로 닿아도 화면에서
+    자리가 흔들리지 않게 하나로 고정된다.
     """
     adjacency: dict[str, list[RelationshipEdge]] = {}
     for e in edges:
@@ -162,6 +174,7 @@ def traverse(
     seen: set[str] = set(roots)
     order: list[str] = list(roots)
     used: list[RelationshipEdge] = []
+    hops: dict[str, int] = {r: 0 for r in roots}
     frontier = list(roots)
     depth = 0
 
@@ -174,13 +187,105 @@ def traverse(
                     continue
                 seen.add(edge.target_id)
                 order.append(edge.target_id)
+                hops[edge.target_id] = depth + 1
                 nxt.append(edge.target_id)
         if not nxt:
             break
         frontier = nxt
         depth += 1
 
-    return order, used, depth
+    return order, used, depth, hops
+
+
+_SIGN = {"positive": 1, "negative": -1, "ambiguous": 0}
+
+
+def _reaction_floor(config_dir: Path | None = None) -> float:
+    cfg = load_scoring(config_dir).get("relationship", {})
+    return float(cfg.get("reaction_min_abs_z", 0.5))
+
+
+def annotate_nodes(
+    nodes: Sequence[RelationshipNode],
+    edges: Sequence[RelationshipEdge],
+    hops: Mapping[str, int],
+    observed: Mapping[str, Observation] | None = None,
+    *,
+    config_dir: Path | None = None,
+) -> list[RelationshipNode]:
+    """
+    각 노드에 전파 단계 · 예상 부호 · 실측 반응을 붙인다.
+
+    예상 부호는 **대표 경로 하나**의 관계 부호 곱이다. 대표 경로는 한 단계
+    앞 노드에서 들어오는 관계 중 strength 가 가장 큰 것으로 고른다. 임의로
+    고르지 않는 이유는 결정론이 필요해서다 — 같은 입력이면 같은 화면이어야
+    한다 (요구 14).
+
+    다른 경로가 반대 부호를 주면 sign_conflict 를 세운다. 그럴 때
+    "예상과 어긋났다" 고 단정하지 않는다. 관계가 상충하는 것이지 시장이
+    틀린 것이 아니다 (개발 규칙 11).
+    """
+    floor = _reaction_floor(config_dir)
+    obs = observed or {}
+    by_target: dict[str, list[RelationshipEdge]] = {}
+    for e in edges:
+        by_target.setdefault(e.target_id, []).append(e)
+
+    signs: dict[str, int] = {n.id: 0 for n in nodes if hops.get(n.id, 0) == 0}
+    out: list[RelationshipNode] = []
+    # 홉 순서대로 처리해야 부모 부호가 먼저 정해진다.
+    for node in sorted(nodes, key=lambda n: hops.get(n.id, 0)):
+        h = hops.get(node.id, 0)
+        expected = 0
+        conflict = False
+        via: str | None = None
+
+        if h > 0:
+            parents = [
+                e for e in by_target.get(node.id, []) if hops.get(e.source_id, -1) == h - 1
+            ]
+            if parents:
+                best = max(parents, key=lambda e: (e.strength, e.id))
+                via = best.id
+                parent_sign = signs.get(best.source_id, 0)
+                # 뿌리(부호 0)의 바로 아래 단계는 관계 부호 자체가 예상이다.
+                base = parent_sign if parent_sign != 0 else 1
+                expected = base * _SIGN.get(best.direction, 0)
+                candidates = {
+                    (signs.get(e.source_id, 0) or 1) * _SIGN.get(e.direction, 0)
+                    for e in parents
+                }
+                conflict = len({c for c in candidates if c != 0}) > 1
+        signs[node.id] = expected
+
+        o = obs.get(node.ref_id or "")
+        z = o.z if o else None
+        reaction = "unknown"
+        if z is not None and expected != 0 and not conflict:
+            if abs(z) < floor:
+                reaction = "muted"
+            elif (z > 0) == (expected > 0):
+                reaction = "confirmed"
+            else:
+                reaction = "mismatch"
+
+        out.append(
+            node.model_copy(
+                update={
+                    "hop": h,
+                    "expected_sign": expected,
+                    "sign_conflict": conflict,
+                    "via_edge_id": via,
+                    "observed_z": z,
+                    "observed_display": o.display if o else None,
+                    "reaction": reaction,
+                }
+            )
+        )
+    # 원래 순서(BFS 등장 순)를 유지한다. 화면 정렬은 UI 가 정한다.
+    order = {n.id: i for i, n in enumerate(nodes)}
+    out.sort(key=lambda n: order[n.id])
+    return out
 
 
 def build_map(
@@ -191,9 +296,11 @@ def build_map(
     *,
     root_event_id: str | None = None,
     max_depth: int = DEFAULT_MAX_DEPTH,
+    observed: Mapping[str, Observation] | None = None,
+    config_dir: Path | None = None,
 ) -> ImpactMap | None:
     """한 뿌리에서 뻗어나가는 영향 경로를 그린다."""
-    node_ids, used, depth = traverse(roots, edges, max_depth=max_depth)
+    node_ids, used, depth, hops = traverse(roots, edges, max_depth=max_depth)
     nodes = [n for n in (resolver.resolve(i) for i in node_ids) if n is not None]
     if len(nodes) < 2:
         # 뿌리 하나뿐이면 그릴 관계가 없다. 빈 그래프를 만들지 않는다.
@@ -203,6 +310,7 @@ def build_map(
     kept = [e for e in used if e.source_id in known and e.target_id in known]
     # 같은 edge 가 여러 경로로 두 번 담길 수 있다.
     unique = list({e.id: e for e in kept}.values())
+    nodes = annotate_nodes(nodes, unique, hops, observed, config_dir=config_dir)
 
     return ImpactMap(
         as_of=as_of,
@@ -222,6 +330,7 @@ def build_impact_maps(
     proposed_edges: Iterable[RelationshipEdge] = (),
     max_depth: int = DEFAULT_MAX_DEPTH,
     limit: int = DEFAULT_MAP_LIMIT,
+    observed: Mapping[str, Observation] | None = None,
     config_dir: Path | None = None,
 ) -> list[ImpactMap]:
     """
@@ -279,6 +388,8 @@ def build_impact_maps(
             as_of,
             root_event_id=event.id,
             max_depth=max_depth,
+            observed=observed,
+            config_dir=config_dir,
         )
         if m is not None:
             maps.append(m)
@@ -291,7 +402,15 @@ def build_impact_maps(
         node = f"theme:{theme_id}"
         if not any(e.source_id == node for e in edges):
             continue
-        m = build_map([node], resolver, edges, as_of, max_depth=max_depth)
+        m = build_map(
+            [node],
+            resolver,
+            edges,
+            as_of,
+            max_depth=max_depth,
+            observed=observed,
+            config_dir=config_dir,
+        )
         if m is not None:
             maps.append(m)
         if len(maps) >= limit:

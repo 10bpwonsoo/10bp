@@ -8,6 +8,7 @@ from marketpulse.ai.rule_extractor import extract_events
 from marketpulse.config.settings import Settings
 from marketpulse.engines.orchestrator import run_pipeline
 from marketpulse.engines.relationship import (
+    Observation,
     DEFAULT_MAX_DEPTH,
     MACRO_LABELS,
     NodeResolver,
@@ -69,14 +70,14 @@ class TestConfig:
 
 class TestTraversal:
     def test_follows_outgoing_edges(self, edges):
-        nodes, used, depth = traverse(["theme:oil"], edges, max_depth=2)
+        nodes, used, depth, hops = traverse(["theme:oil"], edges, max_depth=2)
         assert "asset:BRENT" in nodes
         assert "macro:Inflation" in nodes
         assert depth <= 2
 
     def test_depth_limits_reach(self, edges):
-        shallow, _, _ = traverse(["theme:oil"], edges, max_depth=1)
-        deep, _, _ = traverse(["theme:oil"], edges, max_depth=4)
+        shallow, _, _, _ = traverse(["theme:oil"], edges, max_depth=1)
+        deep, _, _, _ = traverse(["theme:oil"], edges, max_depth=4)
         assert len(deep) > len(shallow)
 
     def test_cycle_does_not_hang(self):
@@ -84,7 +85,7 @@ class TestTraversal:
             RelationshipEdge(id="a", source_id="theme:x", target_id="theme:y"),
             RelationshipEdge(id="b", source_id="theme:y", target_id="theme:x"),
         ]
-        nodes, _, _ = traverse(["theme:x"], loop, max_depth=10)
+        nodes, _, _, _ = traverse(["theme:x"], loop, max_depth=10)
         assert nodes == ["theme:x", "theme:y"]
 
     def test_isolated_root_yields_no_map(self, resolver, edges, as_of):
@@ -100,7 +101,7 @@ class TestRequirement8:
     """
 
     def test_chain_is_reachable(self, edges):
-        nodes, _, _ = traverse(
+        nodes, _, _, _ = traverse(
             ["theme:geopolitical_risk"], edges, max_depth=DEFAULT_MAX_DEPTH
         )
         for expected in (
@@ -130,7 +131,7 @@ class TestRequirement8:
 
     def test_full_chain_fits_in_default_depth(self, resolver, edges, as_of):
         """사건 → 유가 → 인플레 → 금리 → 성장주 → 나스닥 이 다 담겨야 한다."""
-        nodes, _, _ = traverse(["theme:oil"], edges, max_depth=DEFAULT_MAX_DEPTH)
+        nodes, _, _, _ = traverse(["theme:oil"], edges, max_depth=DEFAULT_MAX_DEPTH)
         assert "asset:NDX" in nodes
 
 
@@ -193,3 +194,143 @@ class TestImpactMaps:
         snap = run_pipeline(settings)
         assert snap.impact_maps
         assert all(m.nodes and m.edges for m in snap.impact_maps)
+
+
+class TestReaction:
+    """
+    지도에 실측을 올린다.
+
+    관계 그래프만 그리면 이 지도는 가설만 보여준다. 요구 7 이 묻는 것은
+    "내러티브와 실제 가격·수급이 일치하는가" 이므로 예상 부호 옆에 실측이
+    있어야 지도가 그 질문에 답한다.
+    """
+
+    @pytest.fixture
+    def chain(self):
+        return [
+            RelationshipEdge(id="e1", source_id="theme:oil", target_id="macro:Inflation"),
+            RelationshipEdge(id="e2", source_id="macro:Inflation", target_id="macro:Rates"),
+            RelationshipEdge(
+                id="e3",
+                source_id="macro:Rates",
+                target_id="sector:growth_equity",
+                direction="negative",
+            ),
+            RelationshipEdge(
+                id="e4", source_id="sector:growth_equity", target_id="asset:NDX"
+            ),
+        ]
+
+    def test_hop_is_shortest_distance(self, resolver, chain, as_of):
+        m = build_map(["theme:oil"], resolver, chain, as_of)
+        hops = {n.id: n.hop for n in m.nodes}
+        assert hops["theme:oil"] == 0
+        assert hops["macro:Inflation"] == 1
+        assert hops["asset:NDX"] == 4
+
+    def test_negative_edge_flips_expected_sign(self, resolver, chain, as_of):
+        m = build_map(["theme:oil"], resolver, chain, as_of)
+        signs = {n.id: n.expected_sign for n in m.nodes}
+        assert signs["macro:Rates"] == 1
+        # 금리 상승은 성장주에 역방향이고, 그 아래 나스닥까지 이어진다
+        assert signs["sector:growth_equity"] == -1
+        assert signs["asset:NDX"] == -1
+
+    def test_every_node_names_the_edge_it_came_through(self, resolver, chain, as_of):
+        """부호의 계산 근거를 추적할 수 있어야 한다 (요구 15-6)."""
+        m = build_map(["theme:oil"], resolver, chain, as_of)
+        ids = {e.id for e in m.edges}
+        for n in m.nodes:
+            if n.hop == 0:
+                assert n.via_edge_id is None
+            else:
+                assert n.via_edge_id in ids
+
+    def test_observed_z_decides_the_verdict(self, resolver, chain, as_of):
+        m = build_map(
+            ["theme:oil"],
+            resolver,
+            chain,
+            as_of,
+            observed={"NDX": Observation(z=-1.6, display="-1.88%")},
+        )
+        ndx = next(n for n in m.nodes if n.id == "asset:NDX")
+        assert ndx.observed_z == -1.6
+        assert ndx.observed_display == "-1.88%"
+        # 예상 −, 실측 − → 일치
+        assert ndx.reaction == "confirmed"
+
+    def test_opposite_move_is_flagged(self, resolver, chain, as_of):
+        m = build_map(
+            ["theme:oil"], resolver, chain, as_of, observed={"NDX": Observation(z=1.9)}
+        )
+        ndx = next(n for n in m.nodes if n.id == "asset:NDX")
+        assert ndx.reaction == "mismatch"
+        assert [n.id for n in m.mismatches] == ["asset:NDX"]
+
+    def test_small_move_is_muted_not_a_verdict(self, resolver, chain, as_of):
+        """0.3σ 짜리 움직임으로 내러티브의 옳고 그름을 말하지 않는다."""
+        m = build_map(
+            ["theme:oil"], resolver, chain, as_of, observed={"NDX": Observation(z=0.2)}
+        )
+        ndx = next(n for n in m.nodes if n.id == "asset:NDX")
+        assert ndx.reaction == "muted"
+        assert m.mismatches == []
+
+    def test_conflicting_paths_withhold_the_verdict(self, resolver, as_of):
+        """
+        같은 단계의 두 경로가 반대 부호를 주면 판정하지 않는다.
+        관계가 상충하는 것이지 시장이 틀린 것이 아니다 (개발 규칙 11).
+        """
+        edges = [
+            RelationshipEdge(id="p", source_id="theme:oil", target_id="macro:Inflation"),
+            RelationshipEdge(
+                id="n",
+                source_id="theme:oil",
+                target_id="macro:Inflation",
+                direction="negative",
+                strength=0.9,
+            ),
+        ]
+        m = build_map(
+            ["theme:oil"],
+            resolver,
+            edges,
+            as_of,
+            observed={"Inflation": Observation(z=2.0)},
+        )
+        node = next(n for n in m.nodes if n.id == "macro:Inflation")
+        assert node.sign_conflict is True
+        assert node.reaction == "unknown"
+        assert m.mismatches == []
+
+    def test_missing_price_is_not_zero(self, resolver, chain, as_of):
+        """가격이 없는 노드를 0 으로 채우지 않는다 (개발 규칙 3)."""
+        m = build_map(["theme:oil"], resolver, chain, as_of, observed={})
+        for n in m.nodes:
+            assert n.observed_z is None
+            assert n.reaction == "unknown"
+
+    def test_pipeline_puts_prices_on_the_map(self, settings):
+        """
+        파이프라인을 통과하면 종목과 매크로 factor 에 실측이 붙는다.
+        테마·업종은 가격이 없으므로 비어 있어야 한다 — 테마 점수는 뉴스를
+        섞은 합성값이라 '실측 가격 반응' 자리에 넣으면 내러티브를
+        내러티브로 검증하게 된다.
+        """
+        snap = run_pipeline(Settings(scenario="inflation_shock"))
+        m = max(snap.impact_maps, key=lambda x: x.max_depth)
+        assets = [n for n in m.nodes if n.type is NodeType.ASSET]
+        assert assets and all(n.observed_z is not None for n in assets)
+        for n in m.nodes:
+            if n.type in (NodeType.THEME, NodeType.SECTOR, NodeType.EVENT):
+                assert n.observed_z is None
+
+    def test_deterministic_across_runs(self, settings):
+        """같은 시나리오는 같은 지도를 만든다 (요구 14)."""
+        a = run_pipeline(Settings(scenario="inflation_shock")).impact_maps
+        b = run_pipeline(Settings(scenario="inflation_shock")).impact_maps
+        key = lambda ms: [  # noqa: E731
+            [(n.id, n.hop, n.expected_sign, n.reaction) for n in m.nodes] for m in ms
+        ]
+        assert key(a) == key(b)

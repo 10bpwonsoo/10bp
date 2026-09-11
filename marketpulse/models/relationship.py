@@ -33,6 +33,35 @@ class RelationshipNode(Base):
         default=None, description="NewsEvent.id / Theme.id / Instrument.id"
     )
 
+    # ── 전파 위치와 실측 반응 ────────────────────────────────────
+    # 지도가 '가설' 만 그리면 이 제품의 1번 질문 — 내러티브와 실제 가격이
+    # 일치하는가 — 에 답하지 못한다. 아래 네 필드가 가설 옆에 실측을 둔다.
+    hop: int = Field(default=0, ge=0, description="뿌리에서 몇 단계 떨어졌는가")
+    expected_sign: Literal[-1, 0, 1] = Field(
+        default=0,
+        description="대표 경로의 관계 부호 곱. 0 은 뿌리이거나 판정 불가",
+    )
+    sign_conflict: bool = Field(
+        default=False,
+        description="같은 단계의 다른 경로가 반대 부호를 준다. 단정하면 안 된다",
+    )
+    via_edge_id: str | None = Field(
+        default=None, description="이 노드로 들어온 대표 관계. 부호 계산 근거다"
+    )
+    observed_z: float | None = Field(
+        default=None, description="실측 z_1d. 가격이 있는 노드만"
+    )
+    observed_display: str | None = Field(
+        default=None, description='화면용 변화율 문자열. 예 "+3.16%"'
+    )
+    reaction: Literal["confirmed", "mismatch", "muted", "unknown"] = Field(
+        default="unknown",
+        description=(
+            "confirmed 예상 부호대로 움직였다 / mismatch 반대로 움직였다 / "
+            "muted 유의미하게 움직이지 않았다 / unknown 가격이 없거나 부호 미정"
+        ),
+    )
+
 
 class RelationshipEdge(Base):
     id: str
@@ -57,3 +86,8 @@ class ImpactMap(Base):
     nodes: list[RelationshipNode] = Field(default_factory=list)
     edges: list[RelationshipEdge] = Field(default_factory=list)
     max_depth: int = 0
+
+    @property
+    def mismatches(self) -> list[RelationshipNode]:
+        """예상과 반대로 움직인 노드. 화면이 먼저 보여줘야 할 것들이다."""
+        return [n for n in self.nodes if n.reaction == "mismatch"]

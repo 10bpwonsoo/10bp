@@ -26,6 +26,7 @@
   --faint: #676a5b;
   --rule: #2c2f24;
   --rule-soft: #23261c;
+  --rule-hi: #434836;
 
   --accent: #d8a84f;
   --accent-dim: #9d7a37;
@@ -66,6 +67,7 @@
     --faint: #96998a;
     --rule: #d9d9cf;
     --rule-soft: #e6e6dc;
+    --rule-hi: #b9bbad;
 
     --accent: #8a5f16;
     --accent-dim: #b08a3c;
