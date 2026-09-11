@@ -1,0 +1,143 @@
+# Market Pulse AI — Theme 레지스트리 (요구 5)
+#
+# keywords : RuleExtractor 가 뉴스 태깅에 쓴다. LLM 이 없어도 동작해야 하므로
+#            한국어와 영어를 함께 둔다 (요구 15-7).
+# instruments : theme -> asset 매핑. direction 이 -1 이면 역방향이다.
+#            예) Inflation 테마에서 성장주(NDX)는 금리 상승에 눌리므로 -1.
+#            weight 는 테마 내 상대 중요도이며 합이 1일 필요는 없다 (정규화한다).
+
+themes:
+  - id: ai
+    name: AI
+    aliases: [인공지능, Artificial Intelligence]
+    keywords: [AI, 인공지능, LLM, 생성형, GPU, 데이터센터, OpenAI, Nvidia, 엔비디아, 추론, 학습]
+    macro_factors: [Growth]
+    instruments:
+      - {instrument_id: SOXX, weight: 0.35, direction: 1}
+      - {instrument_id: NDX,  weight: 0.30, direction: 1}
+      - {instrument_id: XLK,  weight: 0.20, direction: 1}
+      - {instrument_id: KRX_SEMI, weight: 0.15, direction: 1}
+
+  - id: semiconductor
+    name: Semiconductor
+    aliases: [반도체]
+    keywords: [반도체, 메모리, HBM, D램, 파운드리, semiconductor, foundry, wafer, TSMC, 삼성전자, SK하이닉스]
+    macro_factors: [Growth, China]
+    instruments:
+      - {instrument_id: SOXX,     weight: 0.40, direction: 1}
+      - {instrument_id: KRX_SEMI, weight: 0.35, direction: 1}
+      - {instrument_id: KOSPI200, weight: 0.15, direction: 1}
+      - {instrument_id: NDX,      weight: 0.10, direction: 1}
+
+  - id: china
+    name: China
+    aliases: [중국]
+    keywords: [중국, 차이나, 위안화, 인민은행, 시진핑, China, PBOC, yuan, 부동산, 헝다]
+    macro_factors: [China, Growth]
+    instruments:
+      - {instrument_id: HSCEI,  weight: 0.40, direction: 1}
+      - {instrument_id: COPPER, weight: 0.30, direction: 1}
+      - {instrument_id: USDCNH, weight: 0.30, direction: -1}
+
+  - id: oil
+    name: Oil
+    aliases: [유가, 원유]
+    keywords: [유가, 원유, 브렌트, WTI, OPEC, 감산, 증산, oil, crude, barrel, 정유]
+    macro_factors: [Inflation]
+    instruments:
+      - {instrument_id: BRENT, weight: 0.40, direction: 1}
+      - {instrument_id: WTI,   weight: 0.35, direction: 1}
+      - {instrument_id: XLE,   weight: 0.25, direction: 1}
+
+  - id: inflation
+    name: Inflation
+    aliases: [인플레이션, 물가]
+    keywords: [인플레이션, 물가, CPI, PCE, 소비자물가, 기대인플레이션, inflation, breakeven, 디스인플레이션]
+    macro_factors: [Inflation, Rates]
+    instruments:
+      - {instrument_id: BE10Y,  weight: 0.35, direction: 1}
+      - {instrument_id: BRENT,  weight: 0.25, direction: 1}
+      - {instrument_id: COPPER, weight: 0.20, direction: 1}
+      - {instrument_id: NDX,    weight: 0.20, direction: -1}   # 성장주는 인플레에 역방향
+
+  - id: rates
+    name: Rates
+    aliases: [금리, 채권]
+    keywords: [금리, 국채, 연준, FOMC, 기준금리, 한국은행, 금통위, rates, Fed, yield, treasury, 인상, 인하]
+    macro_factors: [Rates, Liquidity]
+    instruments:
+      - {instrument_id: US10Y, weight: 0.35, direction: 1}
+      - {instrument_id: US2Y,  weight: 0.25, direction: 1}
+      - {instrument_id: KR10Y, weight: 0.20, direction: 1}
+      - {instrument_id: MOVE,  weight: 0.20, direction: 1}
+
+  - id: usd
+    name: USD
+    aliases: [달러, 환율]
+    keywords: [달러, 환율, 원달러, 강달러, 약달러, dollar, DXY, greenback, 외환]
+    macro_factors: [USD]
+    instruments:
+      - {instrument_id: DXY,    weight: 0.45, direction: 1}
+      - {instrument_id: USDKRW, weight: 0.35, direction: 1}
+      - {instrument_id: EURUSD, weight: 0.20, direction: -1}
+
+  - id: geopolitical_risk
+    name: Geopolitical Risk
+    aliases: [지정학, 지정학적 리스크]
+    keywords: [전쟁, 분쟁, 중동, 우크라이나, 대만, 제재, 지정학, 미사일, 공습, 봉쇄, war, conflict, sanction, geopolitical, 호르무즈]
+    macro_factors: [Volatility, Inflation]
+    instruments:
+      - {instrument_id: GOLD,  weight: 0.30, direction: 1}
+      - {instrument_id: BRENT, weight: 0.30, direction: 1}
+      - {instrument_id: VIX,   weight: 0.25, direction: 1}
+      - {instrument_id: ITA,   weight: 0.15, direction: 1}
+
+  - id: defense
+    name: Defense
+    aliases: [방산]
+    keywords: [방산, 국방, 무기, 수출, defense, aerospace, 한화에어로스페이스, 현대로템, K9]
+    macro_factors: [Volatility]
+    instruments:
+      - {instrument_id: ITA, weight: 0.70, direction: 1}
+      - {instrument_id: VIX, weight: 0.30, direction: 1}
+
+  - id: energy
+    name: Energy
+    aliases: [에너지]
+    keywords: [에너지, 전력, 가스, LNG, 원전, 재생에너지, energy, natural gas, nuclear, 전기요금]
+    macro_factors: [Inflation]
+    instruments:
+      - {instrument_id: XLE,    weight: 0.40, direction: 1}
+      - {instrument_id: NATGAS, weight: 0.30, direction: 1}
+      - {instrument_id: WTI,    weight: 0.20, direction: 1}
+      - {instrument_id: XLU,    weight: 0.10, direction: 1}
+
+  - id: korea_governance
+    name: Korea Corporate Governance
+    aliases: [지배구조, 밸류업]
+    keywords: [지배구조, 밸류업, 기업가치, 상법, 이사회, 소액주주, 물적분할, governance, 코리아 디스카운트]
+    macro_factors: [KoreaFlow]
+    instruments:
+      - {instrument_id: KOSPI200,       weight: 0.45, direction: 1}
+      - {instrument_id: KR_FOREIGN_NET, weight: 0.35, direction: 1}
+      - {instrument_id: KOSPI,          weight: 0.20, direction: 1}
+
+  - id: shareholder_return
+    name: Shareholder Return
+    aliases: [주주환원]
+    keywords: [주주환원, 배당, 자사주, 소각, 매입, dividend, buyback, payout, 배당성향]
+    macro_factors: [KoreaFlow]
+    instruments:
+      - {instrument_id: KOSPI200,       weight: 0.40, direction: 1}
+      - {instrument_id: KR_FOREIGN_NET, weight: 0.35, direction: 1}
+      - {instrument_id: XLF,            weight: 0.25, direction: 1}
+
+  - id: consumer
+    name: Consumer
+    aliases: [소비]
+    keywords: [소비, 내수, 유통, 소매판매, consumer, retail, 소비심리, 가계부채]
+    macro_factors: [Growth]
+    instruments:
+      - {instrument_id: XLY,  weight: 0.55, direction: 1}
+      - {instrument_id: RUT,  weight: 0.25, direction: 1}
+      - {instrument_id: KOSDAQ, weight: 0.20, direction: 1}
