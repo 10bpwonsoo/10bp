@@ -13,7 +13,7 @@ export interface SnapshotStore {
   refresh: () => void;
 }
 
-export function useSnapshot(scenario?: string): SnapshotStore {
+export function useSnapshot(scenario?: string, enabled = true): SnapshotStore {
   const [snapshot, setSnapshot] = useState<IntelligenceSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,7 @@ export function useSnapshot(scenario?: string): SnapshotStore {
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
   useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
     let timer: number | undefined;
 
@@ -59,7 +60,7 @@ export function useSnapshot(scenario?: string): SnapshotStore {
       controller.abort();
       if (timer) window.clearInterval(timer);
     };
-  }, [scenario, tick]);
+  }, [scenario, tick, enabled]);
 
   return { snapshot, error, loading, lastUpdated, refresh };
 }

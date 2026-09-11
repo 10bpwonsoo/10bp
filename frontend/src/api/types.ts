@@ -312,3 +312,13 @@ export interface ScenarioInfo {
   description: string;
   is_active: boolean;
 }
+
+/** GET /api/v1/info — 스냅샷보다 먼저, 싸게 모드를 안다. */
+export interface ApiInfo {
+  status: string;
+  version: string;
+  mode: DataMode;
+  scenario: string | null;
+  llm_enabled: boolean;
+  zscore_window: number;
+}

@@ -16,7 +16,7 @@
 
 설계 문서: [`docs/00-analysis-and-architecture.md`](docs/00-analysis-and-architecture.md)
 
-### 현재 상태 — P4 완료
+### 현재 상태 — 베타 (P4 완료)
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
@@ -108,6 +108,26 @@ python -m marketpulse.cli probe --mode DELAYED
 MARKETPULSE_DATA_MODE=DELAYED uvicorn marketpulse.api.main:app
 ```
 
+**막힌 네트워크에서도 실데이터가 나온다.** 조직 정책이 마켓데이터 호스트를
+막아도 GitHub 은 열려 있는 경우가 많다. `github` 공급자가 CBOE·EIA·연준
+H.10 의 공개 자료를 매일 미러링하는 저장소를 읽어 8종목을 채운다.
+
+| 종목 | 출처 | 원본 |
+|---|---|---|
+| `VIX` | `datasets/finance-vix` | CBOE |
+| `WTI` `BRENT` | `datasets/oil-prices` | EIA |
+| `NATGAS` | `datasets/natural-gas` | EIA |
+| `USDKRW` `USDJPY` `EURUSD` `USDCNH` | `datasets/exchange-rates` | 연준 H.10 |
+
+미러라서 원본보다 1~2영업일(환율은 최대 일주일) 늦다. 그 사실을 숨기지
+않는다 — 기준을 넘으면 화면이 문장으로 말한다.
+
+> 4개 종목의 데이터가 기준 신선도를 넘었다. 가장 오래된 것은 USDKRW 로
+> 7.7일 전 값이다. **지금 시장이 아니라 그때 시장을 보고 있는 것이다.**
+
+일별 주가지수는 이 경로로 구할 수 없다. 없는 것은 없는 대로 두고
+coverage 가 떨어진다.
+
 `instruments.yaml` 이 "무엇을 본다" 면 `sources.yaml` 은 "어디서 가져온다" 다.
 공급자는 **우선순위 목록**이라 앞에서부터 시도하고 실패하면 다음으로 넘어간다.
 
@@ -117,6 +137,7 @@ MARKETPULSE_DATA_MODE=DELAYED uvicorn marketpulse.api.main:app
 | `stooq` | 불필요 | Yahoo 장애 시 대체 |
 | `fred` | `FRED_API_KEY` | 금리·크레딧·기대인플레이션의 정본 |
 | `krx` | 불필요 | 한국 수급·업종지수. 공개 계약이 아니라 불안정하다 |
+| `github` | 불필요 | 공개 저장소의 CSV 미러. 다른 호스트가 막혔을 때의 경로 |
 | `csv` | – | `data/replay/<id>.csv`. 자동으로 마지막 후보가 된다 |
 
 전부 실패하면 그 종목은 **빠진다.** 0 으로 채우지 않는다. 어느 종목이 어떤

@@ -49,9 +49,14 @@ class DataQuality(StrEnum):
 
 
 #: 이 초를 넘으면 is_stale 로 본다. 모드별로 기대 신선도가 다르다.
+#
+# DELAYED 가 4일인 이유 — 무료 공급자는 **일봉 종가**를 준다. 월요일
+# 아침에 보이는 마지막 봉은 금요일 종가라 정상 상태에서도 3일이 된다.
+# 그보다 짧게 잡으면 주말마다 거짓 경보가 뜨고, 경보가 일상이 되면
+# 진짜 고장을 놓친다. 4일을 넘어가면 그때는 공급자가 멈춘 것이다.
 STALE_THRESHOLD_SEC: dict[DataMode, int] = {
     DataMode.LIVE: 120,
-    DataMode.DELAYED: 20 * 60 + 120,  # 무료 소스의 15~20분 지연을 정상으로 본다
+    DataMode.DELAYED: 4 * 24 * 3600,
     DataMode.MOCK: 24 * 3600,
 }
 

@@ -24,6 +24,21 @@ logger = logging.getLogger(__name__)
 #: 프론트가 5초 간격으로 폴링한다. 그 사이 재계산은 낭비다.
 CACHE_TTL_SEC = 4.0
 
+#: 모드별 캐시 수명.
+#
+# MOCK 은 순수 계산이라 4초면 된다. 실데이터는 다르다 — 공급자 47곳을
+# 도는 데 수 초에서 수십 초가 걸리고, **TTL 이 그보다 짧으면 매 폴링이
+# 새 수집을 띄워 어떤 요청도 끝나지 않는다.** 실제로 그 상태가 되어
+# 화면이 영영 비어 있었다.
+#
+# 값 자체도 데이터의 성질을 따라야 한다. 무료 공급자는 일봉 종가를 준다.
+# 하루에 한 번 바뀌는 값을 4초마다 다시 받을 이유가 없다.
+MODE_CACHE_TTL_SEC: dict[DataMode, float] = {
+    DataMode.MOCK: CACHE_TTL_SEC,
+    DataMode.DELAYED: 300.0,
+    DataMode.LIVE: 300.0,
+}
+
 
 #: Persistence / Stability / (P2) duration 계산에 쓸 과거 틱 보관 수.
 HISTORY_LIMIT = 12
@@ -63,13 +78,20 @@ class SnapshotService:
         #: 아직 지속 기간을 못 채운 divergence 후보. 다음 틱에서 이어붙인다.
         self._pending: dict[str, list[Divergence]] = defaultdict(list)
 
+    def ttl_for(self, mode: DataMode) -> float:
+        """MOCK 은 짧게, 실데이터는 길게. 수집 시간보다 짧으면 안 된다."""
+        if self._ttl != CACHE_TTL_SEC:
+            return self._ttl  # 테스트가 명시적으로 지정한 값을 존중한다
+        return MODE_CACHE_TTL_SEC.get(mode, CACHE_TTL_SEC)
+
     def get(self, settings: Settings, *, force: bool = False) -> IntelligenceSnapshot:
         key = f"{settings.data_mode.value}:{settings.scenario}"
         now = time.monotonic()
+        ttl = self.ttl_for(settings.data_mode)
 
         with self._lock:
             entry = self._cache.get(key)
-            if entry and not force and (now - entry.created_at) < self._ttl:
+            if entry and not force and (now - entry.created_at) < ttl:
                 return entry.snapshot
 
             history = list(self._history[key])

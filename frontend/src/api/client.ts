@@ -1,4 +1,4 @@
-import type { IntelligenceSnapshot, RawNewsItem, ScenarioInfo } from "./types";
+import type { ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -38,6 +38,14 @@ const qs = (scenario?: string) =>
 
 export const fetchSnapshot = (scenario?: string, signal?: AbortSignal) =>
   get<IntelligenceSnapshot>(`/api/v1/snapshot${qs(scenario)}`, signal);
+
+/**
+ * 가벼운 상태 조회. 스냅샷을 받기 전에 **모드**를 알아야 한다 —
+ * 시나리오 전환은 MOCK 에서만 의미가 있고, 실데이터 모드에서 시나리오를
+ * 보내면 무엇을 보고 있는지 화면이 거짓말을 한다.
+ */
+export const fetchInfo = (signal?: AbortSignal) =>
+  get<ApiInfo>("/api/v1/info", signal);
 
 export const fetchScenarios = (signal?: AbortSignal) =>
   get<ScenarioInfo[]>("/api/v1/scenarios", signal);

@@ -88,12 +88,26 @@ def compute_factors(
     return out
 
 
+#: 품질 등급이 coverage 에 기여하는 정도.
+#: PARTIAL 을 0 으로 두면 데이터가 반쯤 빠진 상황에서 confidence 가 정확히
+#: 0 이 되어 "조금 아는 것" 과 "전혀 모르는 것" 을 구분하지 못한다. 운용자가
+#: 신뢰도를 조정해야 할 때가 바로 그 구간이다. 절반만 인정한다.
+QUALITY_CREDIT: dict[DataQualityBand, float] = {
+    DataQualityBand.OK: 1.0,
+    DataQualityBand.PARTIAL: 0.5,
+    DataQualityBand.INSUFFICIENT: 0.0,
+}
+
+
 def factor_coverage(factors: dict[str, FactorScore], *, config_dir: Path | None = None) -> float:
-    """계산된 factor 중 품질이 OK 인 비율. Confidence 의 coverage 항이다."""
+    """
+    factor 들이 얼마나 확보되었는가. Confidence 의 coverage 항이다.
+
+    분모는 계산된 factor 수가 아니라 **정의된 factor 수**다. 아예 계산되지
+    못한 factor 를 분모에서 빼면 두 개만 살아남은 상황이 100% 로 보인다.
+    """
     specs = load_factor_specs(config_dir)
     if not specs:
         return 0.0
-    ok = sum(
-        1 for f in factors.values() if f.data_quality is DataQualityBand.OK
-    )
-    return ok / len(specs)
+    credit = sum(QUALITY_CREDIT.get(f.data_quality, 0.0) for f in factors.values())
+    return min(1.0, credit / len(specs))

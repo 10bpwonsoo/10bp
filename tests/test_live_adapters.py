@@ -23,6 +23,7 @@ import pytest
 from marketpulse.adapters.http import FetchError, HttpClient
 from marketpulse.adapters.market.live import MIN_POINTS, LiveMarketAdapter, load_sources
 from marketpulse.adapters.market.providers import (
+    GithubCsvProvider,
     CsvProvider,
     FredProvider,
     StooqProvider,
@@ -440,3 +441,156 @@ class TestReplayDoc:
         """
         assert "×100" in doc or "x100" in doc
         assert "십억원" in doc
+
+
+class TestGithubMirror:
+    """
+    공개 GitHub 미러. 조직 네트워크가 마켓데이터 호스트를 막아도 여기는
+    열려 있는 경우가 많아, 그때 같은 숫자에 닿는 유일한 경로가 된다.
+    """
+
+    VIX = b"DATE,OPEN,HIGH,LOW,CLOSE\n2026-09-08,15.56,15.94,15.22,15.72\n2026-09-09,15.65,16.68,15.57,16.46\n"
+    FX = (
+        b"Date,Country,Exchange rate\n"
+        b"2026-09-03,South Korea,1356.89\n2026-09-03,Euro,0.8604\n2026-09-03,Japan,155.8\n"
+        b"2026-09-04,South Korea,1346.51\n2026-09-04,Euro,0.8607\n2026-09-04,Japan,156.11\n"
+    )
+
+    def test_named_columns_are_required_not_guessed(self):
+        """
+        미러의 열 이름이 바뀌면 조용히 다른 열을 읽는 대신 실패해야 한다.
+        OHLC 파일에서 OPEN 을 종가로 읽으면 아무도 눈치채지 못한다.
+        """
+        points = GithubCsvProvider.parse(self.VIX, bars=10, date_col="DATE", value_col="CLOSE")
+        assert [v for _, v in points] == pytest.approx([15.72, 16.46])
+        with pytest.raises(FetchError) as exc:
+            GithubCsvProvider.parse(self.VIX, bars=10, date_col="DATE", value_col="ADJUSTED")
+        assert "열을 찾지 못했다" in str(exc.value)
+
+    def test_long_format_is_filtered_by_row(self):
+        """환율 파일은 한 파일에 22개국이 들어 있다. 한 계열만 뽑아야 한다."""
+        krw = GithubCsvProvider.parse(
+            self.FX, bars=10, date_col="Date", value_col="Exchange rate",
+            row_filter={"Country": "South Korea"},
+        )
+        assert [v for _, v in krw] == pytest.approx([1356.89, 1346.51])
+
+    def test_invert_turns_usd_eur_into_eurusd(self):
+        """연준 H.10 은 USD→EUR(0.86)로 준다. 뒤집어야 EURUSD 다."""
+        eur = GithubCsvProvider.parse(
+            self.FX, bars=10, date_col="Date", value_col="Exchange rate",
+            row_filter={"Country": "Euro"}, invert=True,
+        )
+        assert [v for _, v in eur] == pytest.approx([1 / 0.8604, 1 / 0.8607])
+
+    def test_empty_filter_result_is_an_error_not_silence(self):
+        with pytest.raises(FetchError) as exc:
+            GithubCsvProvider.parse(
+                self.FX, bars=10, date_col="Date", value_col="Exchange rate",
+                row_filter={"Country": "Atlantis"},
+            )
+        assert "Atlantis" in str(exc.value)
+
+    def test_monthly_dates_become_first_of_month(self):
+        raw = b"Date,Price\n2026-07,4073.0\n2026-08,4411.0\n"
+        points = GithubCsvProvider.parse(raw, bars=10, date_col="Date", value_col="Price")
+        assert [t.day for t, _ in points] == [1, 1]
+
+    def test_404_page_is_not_parsed_as_data(self):
+        with pytest.raises(FetchError):
+            GithubCsvProvider.parse(b"404: Not Found", bars=10)
+
+    def test_one_file_is_fetched_once_for_many_instruments(self):
+        """환율 파일 하나를 네 종목이 나눠 쓴다. 네 번 내려받으면 안 된다."""
+        client = FakeClient({"raw.githubusercontent.com": self.FX})
+        provider = GithubCsvProvider(client)
+        spec = {
+            "path": "datasets/exchange-rates/main/data/daily.csv",
+            "date_col": "Date", "value_col": "Exchange rate",
+        }
+        for country in ("South Korea", "Japan", "Euro"):
+            provider.fetch({**spec, "filter": {"Country": country}}, bars=10, as_of=AS_OF)
+        assert len(client.calls) == 1
+
+
+class TestFreshnessIsLoud:
+    def test_stale_data_says_so_in_words(self):
+        """
+        화면에 신선도 숫자가 있어도 사람은 잘 안 본다. 며칠 지난 값으로
+        "지금 시장" 을 읽으면 판단이 통째로 틀어진다.
+        """
+        from datetime import timedelta
+
+        from marketpulse.engines.orchestrator import freshness_warnings
+        from marketpulse.models.common import DataMeta, utcnow
+        from marketpulse.models.market import MarketDataPoint, MarketSnapshot
+
+        old = utcnow() - timedelta(days=8)
+        point = MarketDataPoint(
+            instrument_id="USDKRW",
+            as_of=old,
+            value=1346.51,
+            change=0.0,
+            meta=DataMeta(
+                source="github", mode=DataMode.DELAYED, retrieved_at=utcnow(), as_of=old
+            ),
+        )
+        snap = MarketSnapshot(
+            as_of=utcnow(), mode=DataMode.DELAYED, points={"USDKRW": point}, features={}
+        )
+        notes = freshness_warnings(snap)
+        assert notes and "USDKRW" in notes[0]
+        assert "8.0일" in notes[0] or "7.9일" in notes[0]
+
+    def test_fresh_data_says_nothing(self):
+        from marketpulse.engines.orchestrator import freshness_warnings
+        from marketpulse.models.common import DataMeta, utcnow
+        from marketpulse.models.market import MarketDataPoint, MarketSnapshot
+
+        now = utcnow()
+        point = MarketDataPoint(
+            instrument_id="VIX", as_of=now, value=16.4, change=0.0,
+            meta=DataMeta(source="github", mode=DataMode.DELAYED, retrieved_at=now, as_of=now),
+        )
+        snap = MarketSnapshot(
+            as_of=now, mode=DataMode.DELAYED, points={"VIX": point}, features={}
+        )
+        assert freshness_warnings(snap) == []
+
+
+class TestPartialCoverageIsNotZero:
+    def test_partial_factors_get_half_credit(self):
+        """
+        PARTIAL 을 0 으로 두면 "조금 아는 것" 과 "전혀 모르는 것" 이 같아진다.
+        운용자가 신뢰도를 조정해야 할 때가 바로 그 구간이다.
+        """
+        from marketpulse.engines.factors import factor_coverage, load_factor_specs
+        from marketpulse.models.common import ScoreBreakdown
+        from marketpulse.models.state import DataQualityBand, FactorScore
+
+        n = len(load_factor_specs())
+        def score(band):
+            return FactorScore(
+                factor="X", score=0.0,
+                breakdown=ScoreBreakdown(value=0.0, method="t"), data_quality=band,
+            )
+
+        assert factor_coverage({}) == 0.0
+        partial = {f"F{i}": score(DataQualityBand.PARTIAL) for i in range(n)}
+        assert factor_coverage(partial) == pytest.approx(0.5)
+        ok = {f"F{i}": score(DataQualityBand.OK) for i in range(n)}
+        assert factor_coverage(ok) == pytest.approx(1.0)
+
+    def test_denominator_is_defined_factors_not_computed_ones(self):
+        """계산 못 한 factor 를 분모에서 빼면 둘만 살아남아도 100% 로 보인다."""
+        from marketpulse.engines.factors import factor_coverage
+        from marketpulse.models.common import ScoreBreakdown
+        from marketpulse.models.state import DataQualityBand, FactorScore
+
+        two_ok = {
+            "A": FactorScore(factor="A", score=0.0, breakdown=ScoreBreakdown(value=0.0, method="t"),
+                             data_quality=DataQualityBand.OK),
+            "B": FactorScore(factor="B", score=0.0, breakdown=ScoreBreakdown(value=0.0, method="t"),
+                             data_quality=DataQualityBand.OK),
+        }
+        assert factor_coverage(two_ok) < 0.3

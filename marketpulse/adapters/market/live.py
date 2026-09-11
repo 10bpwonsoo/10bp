@@ -33,6 +33,7 @@ from ..http import FetchError, HttpClient
 from .providers import (
     CsvProvider,
     FredProvider,
+    GithubCsvProvider,
     KrxProvider,
     Provider,
     StooqProvider,
@@ -57,6 +58,17 @@ def load_sources(config_dir: Path | None = None) -> dict[str, list[dict]]:
 
 def reset_sources_cache() -> None:
     load_sources.cache_clear()
+
+
+def _source_label(spec: dict, fallback: str) -> str:
+    """DataMeta.source 에 적을 이름. 어디서 온 값인지 되짚을 수 있어야 한다."""
+    if spec.get("path"):
+        parts = str(spec["path"]).split("/")
+        # owner/repo/ref/dir/file → repo/file 로 줄인다
+        label = f"{parts[1]}/{parts[-1]}" if len(parts) > 3 else str(spec["path"])
+        where = (spec.get("filter") or {}).get("Country")
+        return f"{label}[{where}]" if where else label
+    return str(spec.get("symbol") or spec.get("dataset") or fallback)
 
 
 @dataclass
@@ -106,6 +118,7 @@ class LiveMarketAdapter(MarketAdapter):
                 self.client, fred_api_key or os.environ.get("FRED_API_KEY")
             ),
             "krx": KrxProvider(self.client),
+            "github": GithubCsvProvider(self.client),
             "csv": self.csv,
         }
         #: 직전 fetch 의 instrument 별 결과. health 와 probe 가 읽는다.
@@ -173,7 +186,9 @@ class LiveMarketAdapter(MarketAdapter):
                     continue
                 raw[ins.id] = points
                 outcome.provider = name
-                outcome.symbol = str(spec.get("symbol") or ins.id)
+                # 출처는 사람이 읽고 검증할 수 있어야 한다. github 는 심볼이
+                # 아니라 파일 경로가 곧 출처다 (요구 15-6).
+                outcome.symbol = _source_label(spec, ins.id)
                 outcome.points = len(points)
                 break
             self.outcomes[ins.id] = outcome

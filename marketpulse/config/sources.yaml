@@ -13,7 +13,14 @@
 #   stooq : stooq.com CSV.            키 불필요. Yahoo 장애 시 대체
 #   fred  : api.stlouisfed.org        FRED_API_KEY 필요. 금리·크레딧의 정본
 #   krx   : data.krx.co.kr            키 불필요. 한국 수급·업종지수
+#   github: raw.githubusercontent.com 공개 저장소의 CSV 미러. 키 불필요
 #   csv   : data/replay/<id>.csv      로컬 파일. 최후의 수단이자 재현 경로
+#
+# github 는 원본 기관(CBOE·EIA·연준 H.10)의 공개 자료를 매일 미러링하는
+# 저장소를 읽는다. 조직 네트워크가 마켓데이터 호스트를 막아도 GitHub 은
+# 열려 있는 경우가 많아, 그때 **같은 숫자에 닿는 유일한 경로**가 된다.
+# 미러라서 원본보다 1~2영업일 늦다. 그 사실은 DataMeta.as_of 에 그대로
+# 남아 화면의 freshness 로 보인다 — 속이지 않는다.
 #
 # scale : 받은 값에 곱할 수. Yahoo 의 ^TNX 는 4.2 를 42 로 준다.
 # csv 는 모든 instrument 에 자동으로 마지막 후보로 붙는다. 여기 적지 않아도
@@ -55,22 +62,32 @@ sources:
   # CURVE_2S10S 는 derived_from 으로 계산된다. 여기 적지 않는다.
 
   # ── FX ────────────────────────────────────────────────
-  USDKRW:    [{provider: yahoo, symbol: "KRW=X"}]
+  USDKRW:    [{provider: yahoo, symbol: "KRW=X"},
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: South Korea}}]
   DXY:       [{provider: yahoo, symbol: "DX-Y.NYB"}, {provider: stooq, symbol: "^dxy"}]
-  USDJPY:    [{provider: yahoo, symbol: "JPY=X"},    {provider: stooq, symbol: "usdjpy"}]
-  EURUSD:    [{provider: yahoo, symbol: "EURUSD=X"}, {provider: stooq, symbol: "eurusd"}]
-  USDCNH:    [{provider: yahoo, symbol: "CNH=X"}]
+  USDJPY:    [{provider: yahoo, symbol: "JPY=X"},    {provider: stooq, symbol: "usdjpy"},
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: Japan}}]
+  EURUSD:    [{provider: yahoo, symbol: "EURUSD=X"}, {provider: stooq, symbol: "eurusd"},
+              # 연준 H.10 은 USD→EUR(0.86)로 준다. 뒤집어야 EURUSD 다.
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: Euro}, invert: true}]
+  USDCNH:    [{provider: yahoo, symbol: "CNH=X"},
+              # H.10 은 역내 위안(CNY)이다. CNH 와 미세하게 다르지만 매크로 신호로는 같다.
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: China}}]
 
   # ── Commodity ─────────────────────────────────────────
-  WTI:       [{provider: yahoo, symbol: "CL=F"}, {provider: fred, symbol: "DCOILWTICO"}]
-  BRENT:     [{provider: yahoo, symbol: "BZ=F"}, {provider: fred, symbol: "DCOILBRENTEU"}]
+  WTI:       [{provider: yahoo, symbol: "CL=F"}, {provider: fred, symbol: "DCOILWTICO"},
+              {provider: github, path: "datasets/oil-prices/main/data/wti-daily.csv", date_col: Date, value_col: Price}]
+  BRENT:     [{provider: yahoo, symbol: "BZ=F"}, {provider: fred, symbol: "DCOILBRENTEU"},
+              {provider: github, path: "datasets/oil-prices/main/data/brent-daily.csv", date_col: Date, value_col: Price}]
   GOLD:      [{provider: yahoo, symbol: "GC=F"}]
   COPPER:    [{provider: yahoo, symbol: "HG=F"}]
-  NATGAS:    [{provider: yahoo, symbol: "NG=F"}, {provider: fred, symbol: "DHHNGSP"}]
+  NATGAS:    [{provider: yahoo, symbol: "NG=F"}, {provider: fred, symbol: "DHHNGSP"},
+              {provider: github, path: "datasets/natural-gas/main/data/daily.csv", date_col: Date, value_col: Price}]
   # COPPER_GOLD 는 derived_from 으로 계산된다.
 
   # ── Volatility ────────────────────────────────────────
-  VIX:       [{provider: yahoo, symbol: "^VIX"},  {provider: fred, symbol: "VIXCLS"}]
+  VIX:       [{provider: yahoo, symbol: "^VIX"},  {provider: fred, symbol: "VIXCLS"},
+              {provider: github, path: "datasets/finance-vix/main/data/vix-daily.csv", date_col: DATE, value_col: CLOSE}]
   MOVE:      [{provider: yahoo, symbol: "^MOVE"}]
   VKOSPI:    [{provider: krx, dataset: index, symbol: "코스피 200 변동성지수"}]
 

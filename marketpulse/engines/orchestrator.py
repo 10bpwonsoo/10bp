@@ -160,6 +160,31 @@ def adapter_warnings(
     return notes
 
 
+def freshness_warnings(snapshot: MarketSnapshot) -> list[str]:
+    """
+    낡은 데이터를 조용히 오늘 시장처럼 보여주지 않는다.
+
+    화면에 신선도 숫자가 있어도 사람은 잘 안 본다. 며칠 지난 값으로
+    "지금 시장" 을 읽으면 판단이 통째로 틀어지므로 문장으로 말한다.
+    """
+    stale = [(iid, p.meta.freshness_sec) for iid, p in snapshot.points.items() if p.meta.is_stale]
+    if not stale:
+        return []
+    stale.sort(key=lambda x: -x[1])
+    worst_id, worst_sec = stale[0]
+    days = worst_sec / 86400.0
+    if len(stale) == len(snapshot.points):
+        who = "확보된 전 종목"
+    else:
+        names = ", ".join(iid for iid, _ in stale[:3])
+        who = f"{len(stale)}개 종목({names}{'…' if len(stale) > 3 else ''})"
+    return [
+        f"{who}의 데이터가 기준 신선도를 넘었다. 가장 오래된 것은 "
+        f"{worst_id} 로 {days:.1f}일 전 값이다. 지금 시장이 아니라 "
+        f"그때 시장을 보고 있는 것이다."
+    ]
+
+
 def build_observations(
     snapshot: MarketSnapshot,
     instruments_by_id: dict[str, Instrument],
@@ -523,6 +548,7 @@ def run_pipeline_detailed(
             + ("…" if len(snapshot.missing) > 5 else "")
         )
     warnings.extend(adapter_warnings(market_adapter, news_adapter, snapshot.missing))
+    warnings.extend(freshness_warnings(snapshot))
 
     llm_client = build_client(settings)
 

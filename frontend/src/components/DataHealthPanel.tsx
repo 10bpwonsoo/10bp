@@ -1,6 +1,19 @@
 import type { DataHealth } from "../api/types";
 
 /** 요구 12 의 메타데이터를 숨기지 않고 그대로 보여준다. */
+/**
+ * 661701초 는 사람이 못 읽는다. 지연은 판단에 직접 쓰이는 숫자라
+ * 한눈에 들어와야 한다.
+ */
+function humanAge(seconds: number): string {
+  if (seconds < 90) return `${seconds}초`;
+  const minutes = seconds / 60;
+  if (minutes < 90) return `${minutes.toFixed(0)}분`;
+  const hours = minutes / 60;
+  if (hours < 48) return `${hours.toFixed(1)}시간`;
+  return `${(hours / 24).toFixed(1)}일`;
+}
+
 export function DataHealthPanel({
   health,
   versions,
@@ -16,7 +29,7 @@ export function DataHealthPanel({
       "커버리지",
       `${(health.coverage * 100).toFixed(0)}% (${health.available_instruments}/${health.expected_instruments})`,
     ],
-    ["최대 지연", `${health.max_freshness_sec}초`],
+    ["최대 지연", humanAge(health.max_freshness_sec)],
     ["기사 수", String(health.news_items)],
     ["LLM", health.llm_status],
     ["파이프라인", `${totalMs.toFixed(0)}ms`],

@@ -338,6 +338,129 @@ class KrxProvider(Provider):
 
 
 # ══════════════════════════════════════════════════════════════
+class GithubCsvProvider(Provider):
+    """
+    공개 GitHub 저장소의 CSV.
+
+    왜 이것이 있는가 — 조직 네트워크가 마켓데이터 호스트를 전부 막아도
+    raw.githubusercontent.com 은 열려 있는 경우가 많다. datasets 조직은
+    CBOE·EIA·연준 H.10 의 공개 자료를 매일 자동으로 미러링한다. 원본
+    기관에 직접 닿을 수 없을 때 **같은 숫자에 닿는 유일한 경로**다.
+
+    한계를 분명히 한다.
+      · 미러라서 원본보다 1~2영업일 늦다. DataMeta.as_of 가 마지막 봉의
+        날짜이므로 화면의 freshness 에 그대로 드러난다.
+      · 갱신은 저장소 주인의 자동화에 달려 있다. 멈추면 데이터가 조용히
+        낡는다 — 그래서 as_of 를 속이지 않는 것이 특히 중요하다.
+      · 일별 주가지수는 이 경로로 구할 수 없다. 없는 것은 없는 대로 둔다.
+
+    spec 형식 (sources.yaml)
+        {provider: github, path: "<owner>/<repo>/<ref>/<file>",
+         date_col: Date, value_col: Price,
+         filter: {Country: "South Korea"},   # 롱 포맷에서 한 계열만
+         invert: true,                        # 1/x. EUR 표시 환율 뒤집기
+         scale: 1.0}
+    """
+
+    name = "github"
+    BASE = "https://raw.githubusercontent.com/"
+    #: 한 파일을 여러 instrument 가 나눠 쓴다(환율 롱 포맷). 매번 받으면
+    #: 같은 10MB 를 네 번 내려받는다.
+    CACHE_TTL_SEC = 900.0
+
+    def __init__(self, client: HttpClient) -> None:
+        self.client = client
+        self._cache: dict[str, tuple[float, bytes]] = {}
+
+    def _load(self, path: str) -> bytes:
+        import time
+
+        hit = self._cache.get(path)
+        if hit and (time.monotonic() - hit[0]) < self.CACHE_TTL_SEC:
+            return hit[1]
+        raw = self.client.get(self.BASE + path)
+        self._cache[path] = (time.monotonic(), raw)
+        return raw
+
+    def fetch(self, spec: dict, *, bars: int, as_of: datetime) -> list[Point]:
+        path = str(spec.get("path") or spec.get("symbol") or "")
+        if not path:
+            raise FetchError("path 가 없다", kind="config", permanent=True)
+        return self.parse(
+            self._load(path),
+            bars=bars,
+            date_col=spec.get("date_col"),
+            value_col=spec.get("value_col"),
+            row_filter=spec.get("filter"),
+            invert=bool(spec.get("invert", False)),
+            scale=float(spec.get("scale", 1.0)),
+        )
+
+    @staticmethod
+    def parse(
+        raw: bytes,
+        *,
+        bars: int,
+        date_col: str | None = None,
+        value_col: str | None = None,
+        row_filter: dict | None = None,
+        invert: bool = False,
+        scale: float = 1.0,
+    ) -> list[Point]:
+        text = raw.decode("utf-8-sig", errors="replace").strip()
+        if text.lower().startswith("<") or text.startswith("404"):
+            raise FetchError("CSV 가 아니다", kind="parse", permanent=True)
+
+        rows = list(csv.DictReader(io.StringIO(text)))
+        if not rows:
+            raise FetchError("행이 없다", kind="empty", permanent=True)
+
+        headers = [h for h in rows[0] if h is not None]
+        # 열 이름을 설정에서 받는다. 미러의 열 이름이 바뀌면 조용히 다른
+        # 열을 읽는 대신 여기서 실패해야 한다.
+        if date_col is None:
+            date_col = next((h for h in headers if h.lower() in ("date", "month")), None)
+        if value_col is None:
+            value_col = next(
+                (h for h in headers if h.lower() in ("price", "close", "value", "rate")), None
+            )
+        if date_col not in headers or value_col not in headers:
+            raise FetchError(
+                f"열을 찾지 못했다. 기대 {date_col!r}/{value_col!r}, 받은 {headers[:6]}",
+                kind="parse",
+                permanent=True,
+            )
+
+        points: list[Point] = []
+        for row in rows:
+            if row_filter and any(
+                (row.get(k) or "").strip() != str(v) for k, v in row_filter.items()
+            ):
+                continue
+            date_raw = (row.get(date_col) or "").strip()
+            value = CsvProvider._number(row.get(value_col) or "")
+            if not date_raw or value is None:
+                continue
+            # 월간 파일은 "2026-08" 처럼 일자가 없다. 월 1일로 둔다.
+            if len(date_raw) == 7:
+                date_raw += "-01"
+            try:
+                ts = datetime.strptime(date_raw[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+            if invert:
+                if value == 0:
+                    continue
+                value = 1.0 / value
+            points.append((ts, value * scale))
+
+        if not points:
+            detail = f" (filter={row_filter})" if row_filter else ""
+            raise FetchError(f"조건에 맞는 행이 없다{detail}", kind="empty", permanent=True)
+        return _clean(points, bars)
+
+
+# ══════════════════════════════════════════════════════════════
 class CsvProvider(Provider):
     """
     로컬 CSV. 모든 instrument 의 마지막 후보로 자동 등록된다.
