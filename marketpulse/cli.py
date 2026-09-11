@@ -56,6 +56,10 @@ def _settings(args: argparse.Namespace) -> Settings:
     s = get_settings()
     if getattr(args, "scenario", None):
         s = s.model_copy(update={"scenario": args.scenario})
+    if getattr(args, "mode", None):
+        # model_copy 는 검증을 건너뛴다. 문자열이 그대로 들어가면 뒤에서
+        # .value 가 터진다. 여기서 enum 으로 바꿔 둔다.
+        s = s.model_copy(update={"data_mode": DataMode(args.mode)})
     return s
 
 
@@ -262,6 +266,192 @@ def cmd_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_probe(args: argparse.Namespace) -> int:
+    """
+    공급자 연결 상태와 종목별 커버리지를 표로 낸다.
+
+    막힌 네트워크에서 개발했기 때문에 이 명령이 필요하다. 사용자가 자기
+    네트워크에서 한 번 돌리면 무엇이 되고 무엇이 안 되는지, 안 되면
+    왜인지가 한 화면에 나온다. "안 된다" 와 "왜 안 되는지" 는 다르다.
+    """
+    from .adapters.registry import build_market_adapter, build_news_adapter
+
+    settings = _settings(args)
+    out: list[str] = [f"DATA PROBE  ·  모드 {settings.data_mode.value}", RULE]
+
+    market = build_market_adapter(settings)
+    news = build_news_adapter(settings)
+
+    # ── 1. 공급자 사용 가능 여부. 네트워크를 쓰지 않는다 ──
+    out.append("공급자")
+    probe = getattr(market, "probe", None)
+    if probe is None:
+        out.append("  MOCK 어댑터에는 외부 공급자가 없다")
+    else:
+        for name, (ok, why) in probe().items():
+            out.append(f"  {'OK ' if ok else '불가'}  {name:<7} {why}")
+    out.append("")
+
+    if args.offline:
+        out.append("--offline: 실제 수집은 건너뛴다")
+        print("\n".join(out))
+        return 0
+
+    # ── 2. 실제 수집 ──
+    instruments = get_instruments().instruments
+    if args.only:
+        wanted = {x.strip().upper() for x in args.only.split(",")}
+        instruments = [i for i in instruments if i.id.upper() in wanted]
+        if not instruments:
+            print(f"일치하는 instrument 가 없다: {args.only}")
+            return 2
+
+    out.append(f"종목 {len(instruments)}개 수집 시도…")
+    series = market.fetch_series(instruments, bars=settings.history_bars)
+    outcomes = getattr(market, "outcomes", {}) or {}
+
+    ok_rows = [o for o in outcomes.values() if o.ok]
+    bad_rows = [o for o in outcomes.values() if not o.ok]
+    total = len(outcomes) or len(instruments)
+    got = len(ok_rows) or len(series)
+    out.append("")
+    out.append(f"커버리지  {got}/{total} ({got / total * 100 if total else 0:.0f}%)")
+    out.append("")
+
+    if bad_rows:
+        out.append("실패")
+        for o in sorted(bad_rows, key=lambda x: x.instrument_id):
+            out.append(f"  x  {o.instrument_id:<18} {o.reason}")
+        out.append("")
+
+    if args.verbose and ok_rows:
+        out.append("성공")
+        for o in sorted(ok_rows, key=lambda x: x.instrument_id):
+            out.append(f"  o  {o.instrument_id:<18} {o.reason}")
+        out.append("")
+
+    host_status = getattr(market, "host_status", None)
+    if host_status:
+        status = host_status()
+        if status:
+            out.append("호스트")
+            for host, state in sorted(status.items()):
+                out.append(f"  {state:<28} {host}")
+            out.append("")
+
+    # ── 3. 뉴스 ──
+    items = news.fetch_news(limit=settings.news_limit)
+    out.append(f"뉴스  {len(items)}건")
+    for name, result in sorted((getattr(news, "outcomes", {}) or {}).items()):
+        mark = "o" if result.endswith("건") else "x"
+        out.append(f"  {mark}  {name:<18} {result}")
+    if items and args.verbose:
+        out.append("")
+        for item in items[:5]:
+            out.append(f"     {item.title[:86]}")
+
+    print("\n".join(out))
+    # 하나도 못 가져왔으면 실패로 끝낸다. 스크립트와 CI 가 알아채야 한다.
+    return 0 if series else 1
+
+
+def _pct(value: float | None) -> str:
+    """None 은 0 이 아니라 빈 값으로 보인다."""
+    return "  -  " if value is None else f"{value:+.2f}%"
+
+
+def cmd_backtest(args: argparse.Namespace) -> int:
+    """
+    저장된 스냅샷으로 신호 성적을 낸다.
+
+    매매 전략이 아니라 **신호**를 채점한다. 이 시스템은 주문을 내지 않고,
+    검증할 것은 "판정과 괴리가 실제로 무언가를 앞섰는가" 다.
+
+    수익률의 기준 자산을 인자로 받는 이유는 그것이 분석가의 선택이기
+    때문이다. 엔진이 몰래 정할 일이 아니다.
+    """
+    from .adapters.registry import build_market_adapter
+    from .analysis.backtest import forward_returns, run_backtest
+    from .storage.sqlite_repo import SqliteSnapshotRepository
+
+    settings = _settings(args)
+    repo = SqliteSnapshotRepository(args.db)
+    try:
+        history = repo.recent(args.stream, limit=args.limit)
+    finally:
+        repo.close()
+
+    if not history:
+        print(
+            f"{args.db} 에 '{args.stream}' 스냅샷이 없다.\n"
+            "스케줄러를 먼저 돌려 히스토리를 쌓아야 한다:\n"
+            "  python -m marketpulse.scheduler.runner "
+            f"--scenario {settings.scenario} --interval 60 --db {args.db}"
+        )
+        return 1
+
+    by_id = get_instruments().by_id()
+    instrument = by_id.get(args.benchmark)
+    if instrument is None:
+        print(f"알 수 없는 instrument: {args.benchmark}")
+        return 2
+
+    adapter = build_market_adapter(settings)
+    series = adapter.fetch_series([instrument], bars=settings.history_bars)
+    if args.benchmark not in series:
+        reason = getattr(adapter, "outcomes", {}).get(args.benchmark)
+        print(
+            f"{args.benchmark} 시세를 가져오지 못했다"
+            + (f": {reason.reason}" if reason else "")
+            + "\n채점할 기준이 없으면 성적을 낼 수 없다."
+        )
+        return 1
+
+    returns = forward_returns(
+        series[args.benchmark],
+        [s.as_of for s in history],
+        horizon_bars=args.horizon,
+    )
+    report = run_backtest(history, returns, horizon_bars=args.horizon)
+
+    out = [
+        f"SIGNAL BACKTEST  ·  {args.stream}",
+        RULE,
+        f"스냅샷 {len(history)}개  ·  기준 {instrument.name}({args.benchmark})"
+        f"  ·  지평 {args.horizon}봉",
+    ]
+    if report.baseline_return is not None:
+        out.append(f"같은 기간 평균 {report.baseline_return * 100:+.2f}%")
+    out.append("")
+
+    if report.by_signal:
+        out.append(
+            f"{'신호':<32}{'표본':>5}{'적중':>8}{'평균':>10}{'초과':>10}{'MDD':>9}"
+        )
+        for key, m in report.by_signal.items():
+            hit = "  -  " if m.hit_rate is None else f"{m.hit_rate:>5.0f}%"
+            out.append(
+                f"{key[:31]:<32}{m.samples:>5}{hit:>8}"
+                f"{_pct(m.mean_return):>10}{_pct(m.edge):>10}{_pct(m.max_drawdown):>9}"
+            )
+            if m.note:
+                out.append(f"{'':<32}{m.note}")
+    else:
+        out.append("채점할 신호가 없다.")
+
+    if report.warnings:
+        out.append("")
+        for w in report.warnings:
+            out.append(f"! {w}")
+    out.append("")
+    out.append(
+        "적중률만 보지 마라. 작게 자주 맞고 크게 한 번 틀리는 신호가 "
+        "적중률로는 우수해 보인다."
+    )
+    print("\n".join(out))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="marketpulse", description="Market Pulse AI 터미널 대시보드"
@@ -289,6 +479,48 @@ def build_parser() -> argparse.ArgumentParser:
     sf.add_argument("instrument", help="instrument id. 예: SOXX")
     sf.add_argument("--scenario", help="MOCK 시나리오 이름")
     sf.set_defaults(func=cmd_features)
+
+    pr = sub.add_parser(
+        "probe",
+        help="공급자 연결과 종목별 커버리지를 점검한다",
+        description=(
+            "네트워크가 막힌 환경에서 개발했다. 자기 네트워크에서 이것을 "
+            "돌리면 무엇이 되고 무엇이 왜 안 되는지 한 화면에 나온다."
+        ),
+    )
+    pr.add_argument(
+        "--mode",
+        choices=["MOCK", "DELAYED", "LIVE"],
+        default="DELAYED",
+        help="점검할 데이터 모드 (기본 DELAYED)",
+    )
+    pr.add_argument("--only", help="쉼표로 구분한 instrument id. 예: SPX,US10Y")
+    pr.add_argument(
+        "--offline", action="store_true", help="실제 수집 없이 설정만 점검한다"
+    )
+    pr.add_argument("-v", "--verbose", action="store_true", help="성공한 것도 전부 출력")
+    pr.set_defaults(func=cmd_probe)
+
+    bt = sub.add_parser(
+        "backtest",
+        help="저장된 스냅샷으로 신호 성적을 낸다",
+        description=(
+            "매매 전략이 아니라 신호를 채점한다. Market State 판정과 괴리가 "
+            "실제로 무언가를 앞섰는지 본다."
+        ),
+    )
+    bt.add_argument("--db", default="data/snapshots.db", help="스냅샷 SQLite 경로")
+    bt.add_argument(
+        "--stream", default="MOCK:baseline", help="스트림 키. 예: MOCK:inflation_shock"
+    )
+    bt.add_argument("--benchmark", default="SPX", help="수익률 기준 instrument")
+    bt.add_argument("--horizon", type=int, default=5, help="신호 이후 몇 봉을 볼지")
+    bt.add_argument("--limit", type=int, default=500, help="읽어올 스냅샷 수")
+    bt.add_argument("--scenario", help="MOCK 시나리오 이름")
+    bt.add_argument(
+        "--mode", choices=["MOCK", "DELAYED", "LIVE"], help="기준 시세를 받을 모드"
+    )
+    bt.set_defaults(func=cmd_backtest)
     return p
 
 

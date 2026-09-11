@@ -211,3 +211,42 @@ class TestHistoryContinuity:
             seen.append(max(d["duration_periods"] for d in rows))
         assert seen == sorted(seen), f"지속 기간이 되돌아갔다: {seen}"
         assert seen[-1] > seen[0]
+
+
+class TestStream:
+    """
+    WebSocket 은 폴링을 **대체하지 않고** 보탠다. 소켓이 죽어도 폴링이
+    화면을 유지한다.
+    """
+
+    def test_first_message_is_the_whole_snapshot(self, client):
+        """붙자마자 화면이 채워져야 한다."""
+        with client.websocket_connect("/api/v1/stream") as ws:
+            msg = ws.receive_json()
+        assert msg["type"] == "snapshot"
+        for key in ("market_state", "themes", "impact_maps", "data_health"):
+            assert key in msg["snapshot"]
+
+    def test_unknown_scenario_says_so_and_closes(self, client):
+        """조용히 기본값으로 돌지 않는다."""
+        with client.websocket_connect("/api/v1/stream?scenario=nope") as ws:
+            msg = ws.receive_json()
+        assert msg["type"] == "error"
+        assert "nope" in msg["detail"]
+
+    def test_digest_changes_only_when_something_changes(self, client):
+        from marketpulse.api.routes.stream import digest
+
+        a = client.get("/api/v1/snapshot?scenario=baseline").json()
+        from marketpulse.models.snapshot import IntelligenceSnapshot
+
+        snap = IntelligenceSnapshot.model_validate(a)
+        assert digest(snap) == digest(snap)
+        moved = snap.model_copy(
+            update={
+                "market_state": snap.market_state.model_copy(
+                    update={"confidence": snap.market_state.confidence + 0.1}
+                )
+            }
+        )
+        assert digest(snap) != digest(moved)

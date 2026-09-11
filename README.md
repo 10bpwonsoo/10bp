@@ -16,7 +16,7 @@
 
 설계 문서: [`docs/00-analysis-and-architecture.md`](docs/00-analysis-and-architecture.md)
 
-### 현재 상태 — P3 완료
+### 현재 상태 — P4 완료
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
@@ -24,10 +24,10 @@
 | **P1** | Market State Engine, Theme Score, Sentiment, 룰 추출, Theme Heatmap | ✅ 완료 |
 | **P2** | Confirmation, Divergence, Alert, 저장소, 스케줄러 | ✅ 완료 |
 | **P3** | Impact Map, 관계 그래프, LLM 이벤트 추출, AI 요약 | ✅ 완료 |
-| P4 | 실데이터 어댑터, 히스토리, 백테스트 | 예정 |
+| **P4** | 실데이터 어댑터, RSS, WebSocket, 신호 백테스트 | ✅ 완료 |
 
-대시보드에서 아직 만들지 않은 패널은 해당 단계(P4)를 명시한 자리
-표시자로 남는다. **그럴듯한 가짜 숫자로 채우지 않는다.**
+**그럴듯한 가짜 숫자로 채우지 않는다.** 못 가져온 종목은 빈칸이고,
+coverage 와 confidence 가 그만큼 떨어진다.
 
 ### 실행
 
@@ -99,6 +99,72 @@ cd frontend && npm install && npm run dev
 옆의 **단계별 실측 반응**은 단계가 깊어질수록 충격이 살아남는지 보여주고,
 **목록** 보기는 같은 데이터를 들여쓰기 트리로 낸다(좁은 폭 대체 표현).
 
+### 실데이터
+
+```bash
+# 무엇이 되고 무엇이 왜 안 되는지 먼저 본다
+python -m marketpulse.cli probe --mode DELAYED
+
+MARKETPULSE_DATA_MODE=DELAYED uvicorn marketpulse.api.main:app
+```
+
+`instruments.yaml` 이 "무엇을 본다" 면 `sources.yaml` 은 "어디서 가져온다" 다.
+공급자는 **우선순위 목록**이라 앞에서부터 시도하고 실패하면 다음으로 넘어간다.
+
+| 공급자 | 키 | 담당 |
+|---|---|---|
+| `yahoo` | 불필요 | 지수·ETF·FX·원자재·VIX. 커버리지가 가장 넓다 |
+| `stooq` | 불필요 | Yahoo 장애 시 대체 |
+| `fred` | `FRED_API_KEY` | 금리·크레딧·기대인플레이션의 정본 |
+| `krx` | 불필요 | 한국 수급·업종지수. 공개 계약이 아니라 불안정하다 |
+| `csv` | – | `data/replay/<id>.csv`. 자동으로 마지막 후보가 된다 |
+
+전부 실패하면 그 종목은 **빠진다.** 0 으로 채우지 않는다. 어느 종목이 어떤
+이유로 실패했는지는 화면의 경고와 `probe` 출력에 그대로 남는다.
+
+> **LIVE 는 실시간이 아니다.** 무료 공급자는 일봉 종가만 준다.
+> `MARKETPULSE_DATA_MODE=LIVE` 로 두면 데이터는 DELAYED 로 표시되고 그
+> 사실이 경고로 화면에 남는다. 지연 데이터를 실시간이라 표시하는 것은 이
+> 시스템이 피하려는 바로 그 부정직함이다.
+
+**네트워크가 막혀 있다면** `data/replay/` 에 CSV 를 넣는다. `sources.yaml` 을
+고칠 필요가 없다 — 파일이 있으면 자동으로 후보에 붙는다. 형식은
+[`marketpulse/data/replay/README.md`](marketpulse/data/replay/README.md).
+
+뉴스는 `feeds.yaml` 의 RSS 를 읽는다. 피드 하나가 죽어도 나머지는 나오고,
+전부 죽어도 정량 대시보드는 그대로 동작한다.
+
+### WebSocket
+
+```
+ws://127.0.0.1:8000/api/v1/stream?scenario=baseline
+```
+
+폴링을 **대체하지 않고 보탠다.** 첫 메시지는 전체 스냅샷이고 그 뒤로는
+바뀐 것만 보낸다. 소켓이 끊겨도 5초 폴링이 화면을 유지한다.
+
+### 신호 백테스트
+
+```bash
+python -m marketpulse.cli backtest --db data/snapshots.db \
+    --stream MOCK:baseline --benchmark SPX --horizon 5
+```
+
+**매매 전략이 아니라 신호를 채점한다.** 이 시스템은 주문을 내지 않는다.
+검증할 것은 "Market State 판정과 괴리가 실제로 무언가를 앞섰는가" 다.
+
+세 가지를 지킨다.
+
+- 같은 판정이 20틱 이어져도 **신호는 하나**다. 매 틱을 독립 표본으로 세면
+  표본 수가 부풀고 지표가 거짓말을 한다.
+- 괴리는 **방향 없는 신호**다. 어느 쪽으로 수렴할지 말하지 않으므로
+  적중률을 계산하지 않는다.
+- 표본 10건 미만은 지표 옆에 그렇게 적힌다. 5건짜리 적중률 60% 는 숫자가
+  아니라 인상이다.
+
+진입가는 **판정 시각 이하의 마지막 봉**이다. 그 이후 봉을 쓰면 판정 시점에
+없던 정보를 쓰는 것이다.
+
 ### 설정 파일
 
 스코어링 수치는 코드에 없다. 전부 YAML 이고 코드 수정 없이 조정한다.
@@ -113,6 +179,8 @@ cd frontend && npm install && npm run dev
 | `scoring.yaml` | 모든 가중치와 임계값 |
 | `lexicon.yaml` | 감성 사전 + 방향 사전. 두 축은 독립이다 |
 | `relationships.yaml` | 사건→테마→매크로→업종→자산 사전 정의 관계 46개 |
+| `sources.yaml` | 종목별 공급자 우선순위. "어디서 가져오는가" |
+| `feeds.yaml` | RSS 뉴스 피드 |
 | `scoring.yaml` 의 `relationship` | 실측 반응을 판정하는 최소 \|z\| |
 
 > 이 값들은 매크로 상식에 기반한 **초기 제안값**이며 통계적으로 추정된 값이
@@ -132,11 +200,13 @@ cp .env.example .env
 | `MARKETPULSE_SCENARIO` | `baseline` | MOCK 모드에서 재생할 시나리오 |
 | `MARKETPULSE_LLM_ENABLED` | `false` | false 면 정량 파이프라인만 동작 |
 | `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약에 쓰는 모델 |
+| `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
+| `MARKETPULSE_NEWS_LIMIT` | `60` | 실데이터에서 받을 기사 수 |
 | `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요 |
+| `FRED_API_KEY` | – | 금리·크레딧을 FRED 에서 받을 때만 필요 |
 
-`LIVE` / `DELAYED` 어댑터는 P4 에서 추가한다. 그 전에 해당 모드로 실행하면
-**조용히 MOCK 으로 떨어지지 않고 명확히 실패한다.** 모의 데이터를 실시간이라
-표시하는 것은 이 시스템이 피하려는 바로 그 부정직함이다.
+어떤 모드에서도 **모의 데이터가 실데이터 이름표를 달고 나가지 않는다.**
+MOCK 은 MOCK 으로, 지연 데이터는 DELAYED 로 표시된다.
 
 ### 시연 통제
 
@@ -210,17 +280,21 @@ marketpulse/
 ├── models/      데이터 계약 7종 + 공통 타입 (pydantic v2)
 ├── config/      instruments · themes · factors · state_rules · scoring
 │                lexicon · divergence_rules · relationships
-├── adapters/    MarketAdapter / NewsAdapter + MOCK 구현
+├── adapters/    MarketAdapter / NewsAdapter
+│                http(회로 차단기) · market/{mock,live,providers}
+│                news/{mock,rss}
 ├── engines/     features · normalize · scoring · factors · market_state
 │                confirmation · sentiment · direction · theme · divergence
 │                alert · relationship · korean · orchestrator
 ├── ai/          rule_extractor(기준선) · client · validation
 │                event_extractor · summarizer
+├── analysis/    신호 백테스트
 ├── storage/     SnapshotRepository + SQLite 구현
 ├── scheduler/   주기 실행기
 ├── vendor/      technical_indicators.py 이식본
 ├── api/         FastAPI 라우트
 ├── data/mock/   시나리오 파일
+├── data/replay/ 로컬 CSV (네트워크가 막혔을 때의 실데이터 경로)
 └── cli.py       터미널 대시보드
 frontend/        React 19 + TypeScript + Vite
 ```

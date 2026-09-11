@@ -2,8 +2,15 @@
 # 기존 upbit_trading/ 패키지와는 독립적인 의존성 집합이다.
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
+# WebSocket 스트림(/api/v1/stream). uvicorn[standard] 가 끌어오지만
+# 최소 설치에서도 동작하도록 명시한다.
+websockets==17.1
 pydantic==2.13.5
 pydantic-settings==2.13.1
 PyYAML==6.0.3
 pandas==3.0.5
 numpy==2.4.6
+
+# P4 의 LIVE 어댑터는 표준 라이브러리(urllib)만 쓴다. requests 도
+# yfinance 도 들이지 않는다 — 의존성이 하나 줄면 데모가 죽을 경로도
+# 하나 준다 (설계서 STEP 7.7).

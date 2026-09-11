@@ -1,0 +1,19 @@
+# Market Pulse AI — 뉴스 피드 (P4)
+#
+# RSS 만 쓴다. 무료이고 키가 필요 없으며 계약이 안정적이다. 유료 뉴스
+# API 는 라이선스 문제가 있고, 크롤링은 약관 문제가 있다.
+#
+# weight 는 scoring.yaml 의 source_weights 와 같은 축이다. 여기 적힌 이름이
+# NewsEvent.source 로 들어간다.
+#
+# 피드가 죽어도 대시보드는 돈다. 하나가 실패하면 그것만 건너뛰고 경고가
+# data_health 에 남는다.
+
+feeds:
+  - {name: "연합인포맥스", url: "https://news.einfomax.co.kr/rss/S1N1.xml", lang: ko, weight: 1.0}
+  - {name: "한국경제 마켓", url: "https://www.hankyung.com/feed/finance", lang: ko, weight: 0.95}
+  - {name: "매일경제 증권", url: "https://www.mk.co.kr/rss/50200011/", lang: ko, weight: 0.95}
+  - {name: "이데일리 마켓", url: "https://rss.edaily.co.kr/stock_news.xml", lang: ko, weight: 0.9}
+  - {name: "Reuters Business", url: "https://feeds.reuters.com/reuters/businessNews", lang: en, weight: 1.0}
+  - {name: "CNBC Markets", url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258", lang: en, weight: 0.9}
+  - {name: "Investing.com", url: "https://www.investing.com/rss/news_25.rss", lang: en, weight: 0.8}

@@ -64,7 +64,7 @@ ENGINE_VERSIONS: dict[str, str] = {
     "relationship": "0.3.0",
     "llm_extractor": "0.1.0",
     "summarizer": "0.1.0",
-    "orchestrator": "0.2.0-p3",
+    "orchestrator": "0.3.0-p4",
 }
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
@@ -124,6 +124,40 @@ class _DisabledSettings:
 
     llm_enabled = False
     llm_timeout_sec = 8.0
+
+
+#: data_health 에 싣는 공급자 실패 요약의 최대 줄 수. 47종목이 전부
+#: 실패하면 경고가 화면을 덮는다 — 대표적인 것만 보이고 나머지는 개수로 낸다.
+ADAPTER_WARNING_LIMIT = 4
+
+
+def adapter_warnings(
+    market_adapter: object, news_adapter: object, missing: Sequence[str]
+) -> list[str]:
+    """
+    어느 종목이 왜 빠졌는지, 어느 피드가 왜 죽었는지.
+
+    coverage 가 62% 라는 숫자만으로는 고칠 수가 없다. 무엇이 어떤 이유로
+    빠졌는지 화면에 있어야 사용자가 조치한다 (요구 15-6).
+    """
+    notes: list[str] = []
+
+    outcomes = getattr(market_adapter, "outcomes", None)
+    if outcomes:
+        failed = [o for o in outcomes.values() if not o.ok]
+        for o in failed[:ADAPTER_WARNING_LIMIT]:
+            notes.append(f"{o.instrument_id}: {o.reason}")
+        if len(failed) > ADAPTER_WARNING_LIMIT:
+            notes.append(f"… 외 {len(failed) - ADAPTER_WARNING_LIMIT}개 종목도 같은 이유로 실패")
+
+    feed_outcomes = getattr(news_adapter, "outcomes", None)
+    if feed_outcomes:
+        dead = [f"{k}: {v}" for k, v in feed_outcomes.items() if not v.endswith("건")]
+        for line in dead[:ADAPTER_WARNING_LIMIT]:
+            notes.append(f"뉴스 피드 {line}")
+        if len(dead) > ADAPTER_WARNING_LIMIT:
+            notes.append(f"… 외 {len(dead) - ADAPTER_WARNING_LIMIT}개 피드도 실패")
+    return notes
 
 
 def build_observations(
@@ -442,13 +476,17 @@ def run_pipeline_detailed(
 ) -> PipelineResult:
     """I/O 를 포함한 한 tick 실행. 어댑터 -> 정규화 -> 엔진."""
     # 지연 import: 레지스트리 캐시와 순환 참조를 피한다.
-    from ..adapters.registry import build_market_adapter, build_news_adapter
+    from ..adapters.registry import (
+        build_market_adapter,
+        build_news_adapter,
+        mode_warnings,
+    )
 
     registry = get_instruments()
     instruments = registry.instruments
     by_id = registry.by_id()
     timings: dict[str, float] = {}
-    warnings: list[str] = []
+    warnings: list[str] = list(mode_warnings(settings))
 
     as_of = as_of or utcnow()
 
@@ -462,7 +500,7 @@ def run_pipeline_detailed(
     t = time.perf_counter()
     news_adapter = build_news_adapter(settings)
     try:
-        news_items = news_adapter.fetch_news(as_of=as_of)
+        news_items = news_adapter.fetch_news(limit=settings.news_limit, as_of=as_of)
     except Exception as exc:  # 뉴스 실패가 정량 대시보드를 막으면 안 된다
         logger.exception("뉴스 수집 실패")
         news_items = []
@@ -484,6 +522,7 @@ def run_pipeline_detailed(
             + ", ".join(snapshot.missing[:5])
             + ("…" if len(snapshot.missing) > 5 else "")
         )
+    warnings.extend(adapter_warnings(market_adapter, news_adapter, snapshot.missing))
 
     llm_client = build_client(settings)
 

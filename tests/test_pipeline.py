@@ -168,13 +168,44 @@ class TestAdapterRegistry:
         assert build_news_adapter(settings).mode is DataMode.MOCK
 
     @pytest.mark.parametrize("mode", ["LIVE", "DELAYED"])
-    def test_live_fails_loudly_instead_of_faking(self, mode):
-        """MOCK 데이터를 LIVE 라고 표시하느니 명확히 실패한다."""
+    def test_real_modes_never_serve_mock_data(self, mode):
+        """
+        P4 이전에는 LIVE/DELAYED 가 예외를 던졌다. 이제 실어댑터가 있다.
+        그때 지키려던 불변식은 그대로다 — **MOCK 데이터가 LIVE 라는
+        이름표를 달고 나가지 않는다.**
+        """
+        from marketpulse.adapters.market.live import LiveMarketAdapter
+        from marketpulse.adapters.news.rss import RssNewsAdapter
+
         s = Settings(data_mode=mode)
-        with pytest.raises(AdapterError, match="P4"):
-            build_market_adapter(s)
-        with pytest.raises(AdapterError, match="P4"):
-            build_news_adapter(s)
+        market = build_market_adapter(s)
+        news = build_news_adapter(s)
+        assert isinstance(market, LiveMarketAdapter)
+        assert isinstance(news, RssNewsAdapter)
+        assert market.mode is not DataMode.MOCK
+        assert news.mode is not DataMode.MOCK
+
+    def test_live_is_labelled_delayed_not_live(self):
+        """
+        무료 공급자는 일봉 종가만 준다. 사용자가 LIVE 를 요구해도 그것을
+        실시간이라 표시하지 않고, 왜 아닌지 경고로 남긴다.
+        """
+        from marketpulse.adapters.registry import mode_warnings
+
+        s = Settings(data_mode="LIVE")
+        assert build_market_adapter(s).mode is DataMode.DELAYED
+        notes = mode_warnings(s)
+        assert notes and "지연" in notes[0]
+        assert mode_warnings(Settings(data_mode="DELAYED")) == []
+
+    def test_unknown_mode_still_fails_loudly(self):
+        from marketpulse.adapters.registry import build_market_adapter as build
+
+        class Fake:
+            data_mode = "NONSENSE"
+
+        with pytest.raises(AdapterError):
+            build(Fake())
 
 
 class TestSerialization:

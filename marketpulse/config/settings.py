@@ -18,6 +18,7 @@ from ..models.common import DataMode
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = PACKAGE_ROOT / "config"
 MOCK_DIR = PACKAGE_ROOT / "data" / "mock"
+REPLAY_DIR = PACKAGE_ROOT / "data" / "replay"
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,12 @@ class Settings(BaseSettings):
     #: 시나리오 생성 시 만드는 히스토리 길이. zscore_window 보다 넉넉해야 한다.
     history_bars: int = 180
 
+    #: LIVE/DELAYED 어댑터의 HTTP 타임아웃. 공급자 하나가 느리다고
+    #: 전체 틱이 늘어지면 안 된다.
+    http_timeout_sec: float = 8.0
+    #: 실데이터에서 뉴스를 몇 건까지 받을지.
+    news_limit: int = 60
+
     llm_enabled: bool = Field(
         default=False,
         description="false 이면 정량 파이프라인만 동작한다. LLM 실패와 동일한 경로.",
@@ -60,6 +67,11 @@ class Settings(BaseSettings):
     @property
     def mock_dir(self) -> Path:
         return MOCK_DIR
+
+    @property
+    def replay_dir(self) -> Path:
+        """로컬 CSV 리플레이. 막힌 네트워크의 탈출구다."""
+        return REPLAY_DIR
 
 
 @lru_cache(maxsize=1)
