@@ -280,3 +280,80 @@ class TestDrivers:
     def test_threshold_applied(self, shock_snapshot, instruments_by_id):
         state = compute_market_state(shock_snapshot, instruments_by_id)
         assert all(abs(d.z) >= 0.5 for d in state.main_drivers)
+
+
+class TestUnevaluatedRivalsAreNotDefeatedRivals:
+    """
+    데이터가 없어 평가조차 못 한 가설을 "제친 경쟁자" 로 세면, 데이터가
+    빠질수록 confidence 가 올라가는 뒤집힌 지표가 된다.
+    """
+
+    def _hypothesis(self, label, score, *, evaluable):
+        from marketpulse.models.state import RuleMatch, StateHypothesis
+
+        return StateHypothesis(
+            label=label,
+            score=score,
+            matched_rules=[
+                RuleMatch(
+                    rule_id="r",
+                    expression="Growth <= -1.0",
+                    kind="require",
+                    passed=False,
+                    observed=None if not evaluable else -0.2,
+                    evaluable=evaluable,
+                )
+            ],
+        )
+
+    def _confidence(self, hypotheses, coverage=0.14):
+        from marketpulse.engines.market_state import compute_confidence
+        from marketpulse.models.state import ConfirmationResult
+
+        return compute_confidence(
+            hypotheses,
+            ConfirmationResult(expected={}),
+            coverage,
+            None,
+        )
+
+    def test_unevaluable_rival_is_excluded(self):
+        from marketpulse.models.state import StateLabel
+
+        top = self._hypothesis(StateLabel.RISK_OFF, 0.8, evaluable=True)
+        ghost = self._hypothesis(StateLabel.GROWTH_SHOCK, 0.0, evaluable=False)
+        breakdown = self._confidence([top, ghost])
+        keys = {c.key for c in breakdown.contributions}
+        # 겨룰 상대가 없었으므로 separation 은 '모름' 이고 가중치에서 빠진다
+        assert "separation" not in keys
+        assert "separation" in breakdown.missing_inputs
+
+    def test_evaluated_rival_still_counts(self):
+        """실제로 평가되어 탈락한 경쟁자는 정상적으로 격차를 만든다."""
+        from marketpulse.models.state import StateLabel
+
+        top = self._hypothesis(StateLabel.RISK_OFF, 0.8, evaluable=True)
+        loser = self._hypothesis(StateLabel.GROWTH_SHOCK, 0.0, evaluable=True)
+        breakdown = self._confidence([top, loser])
+        sep = next(c for c in breakdown.contributions if c.key == "separation")
+        assert sep.normalized > 0.0
+
+    def test_thin_data_does_not_inflate_confidence(self):
+        """
+        똑같이 1등이어도, 경쟁자가 평가된 경우와 평가조차 못 한 경우의
+        confidence 가 같으면 안 된다.
+        """
+        from marketpulse.models.state import StateLabel
+
+        top = self._hypothesis(StateLabel.RISK_OFF, 0.8, evaluable=True)
+        real = self._confidence([top, self._hypothesis(StateLabel.GROWTH_SHOCK, 0.0, evaluable=True)])
+        ghost = self._confidence([top, self._hypothesis(StateLabel.GROWTH_SHOCK, 0.0, evaluable=False)])
+        assert ghost.value < real.value
+
+    def test_state_without_require_rules_is_always_evaluable(self):
+        """require 가 없는 상태는 막는 것이 없다. 평가 불가가 아니다."""
+        from marketpulse.engines.market_state import _was_evaluable
+        from marketpulse.models.state import StateHypothesis, StateLabel
+
+        bare = StateHypothesis(label=StateLabel.NEUTRAL, score=0.0, matched_rules=[])
+        assert _was_evaluable(bare)

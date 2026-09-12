@@ -198,6 +198,19 @@ def build_drivers(
     return [r[2] for r in rows[:limit]]
 
 
+def _was_evaluable(hypothesis: StateHypothesis) -> bool:
+    """
+    이 가설을 실제로 판정할 수 있었는가.
+
+    require 룰 중 하나라도 값이 없어 평가하지 못했다면 이 가설의 0 점은
+    "조건을 충족하지 못했다" 가 아니라 "알 수 없다" 다. 둘을 같이 세면
+    데이터가 빠질수록 1등이 돋보이게 된다.
+    """
+    # require 가 아예 없는 상태는 막는 것이 없으므로 언제나 평가 가능하다.
+    requires = [r for r in hypothesis.matched_rules if r.kind == "require"]
+    return all(r.evaluable for r in requires)
+
+
 def compute_confidence(
     hypotheses: Sequence[StateHypothesis],
     confirmation: ConfirmationResult,
@@ -224,8 +237,19 @@ def compute_confidence(
     full_gap = float(cfg["separation_full_gap"])
 
     top = hypotheses[0].score if hypotheses else 0.0
-    second = hypotheses[1].score if len(hypotheses) > 1 else 0.0
-    separation = max(0.0, min(1.0, (top - second) / full_gap)) if top > 0 else 0.0
+    # **겨룰 수 있었던 상대만 센다.** require 룰을 평가할 데이터조차 없어
+    # 0 점인 가설은 패배한 경쟁자가 아니라 평가되지 않은 가설이다. 그것을
+    # 제치고 1등이라 읽으면, 데이터가 없을수록 확신이 커지는 뒤집힌 지표가
+    # 된다 — 실제로 커버리지 17% 에서 confidence 80% 가 나왔다.
+    rivals = [h for h in hypotheses[1:] if _was_evaluable(h)]
+    if top <= 0:
+        separation = 0.0
+    elif not rivals:
+        # 비교 대상이 없다. 압도한 것이 아니라 알 수 없는 것이다.
+        # None 이면 가중치가 재정규화되어 나머지 항목으로만 판단한다.
+        separation = None
+    else:
+        separation = max(0.0, min(1.0, (top - rivals[0].score) / full_gap))
 
     # confirmation.score 는 -1~+1 이다. 0~1 로 옮긴다.
     confirm = None if not confirmation.expected else (confirmation.score + 1.0) / 2.0
@@ -258,7 +282,10 @@ def compute_confidence(
 
 
 _CONF_NOTES = {
-    "separation": "1등과 2등 판정의 격차. 붙어 있으면 어느 쪽인지 확신할 수 없다",
+    "separation": (
+        "1등과 2등 판정의 격차. 붙어 있으면 어느 쪽인지 확신할 수 없다. "
+        "데이터가 없어 평가조차 못 한 가설은 경쟁자로 세지 않는다"
+    ),
     "confirmation": "cross-asset 이 서로를 확인하는 정도",
     "coverage": "factor 계산에 쓸 데이터가 얼마나 확보되었는가",
     "persistence": "직전 틱에도 같은 판정이었는가",

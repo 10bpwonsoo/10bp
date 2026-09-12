@@ -130,6 +130,24 @@ class TestCsvReplay:
         assert len(points) == 40
         assert points[0][1] == pytest.approx(4.20)
 
+    def test_future_bars_are_cut_at_as_of(self, tmp_path):
+        """
+        과거 시점으로 파이프라인을 돌릴 때 판정 시점에 없던 가격이 섞이면
+        look-ahead 다. 백테스트 성적이 통째로 거짓이 된다. 파일을 통째로
+        받는 공급자는 여기서 잘라야 한다 — Yahoo·FRED 처럼 조회
+        파라미터로 기간을 자를 수 없기 때문이다.
+        """
+        (tmp_path / "Z.csv").write_text(
+            "date,close\n2026-01-02,10\n2026-06-01,20\n2026-09-09,30\n"
+        )
+        cut = CsvProvider(tmp_path).fetch({"symbol": "Z"}, bars=10, as_of=AS_OF)
+        assert [v for _, v in cut] == [10.0]
+        # as_of 를 주지 않으면 최신까지 전부. 실시간 조회의 기본 동작이다.
+        whole = CsvProvider.parse(
+            (tmp_path / "Z.csv").read_bytes(), bars=10
+        )
+        assert [v for _, v in whole] == [10.0, 20.0, 30.0]
+
     def test_korean_headers_accepted(self, tmp_path):
         (tmp_path / "X.csv").write_text("일자,종가\n2026-01-02,1380\n2026-01-03,1385\n")
         points = CsvProvider(tmp_path).fetch({"symbol": "X"}, bars=10, as_of=AS_OF)

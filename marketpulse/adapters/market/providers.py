@@ -36,8 +36,18 @@ def _utc(ts: float | int) -> datetime:
     return datetime.fromtimestamp(float(ts), tz=timezone.utc)
 
 
-def _clean(points: Sequence[Point], bars: int) -> list[Point]:
-    """시간 오름차순 정렬, 중복 제거, 마지막 bars 개."""
+def _clean(
+    points: Sequence[Point], bars: int, as_of: datetime | None = None
+) -> list[Point]:
+    """
+    시간 오름차순 정렬, 중복 제거, **as_of 이후 절단**, 마지막 bars 개.
+
+    as_of 절단이 핵심이다. Yahoo·FRED 는 조회 파라미터로 기간을 자르지만
+    파일을 통째로 받는 공급자(github·csv·stooq)는 최신 봉까지 다 준다.
+    과거 시점으로 파이프라인을 돌릴 때 그것을 그대로 쓰면 **판정 시점에
+    없던 가격으로 판정하게 된다** — look-ahead 다. 백테스트 성적이
+    통째로 거짓이 된다.
+    """
     seen: dict[datetime, float] = {}
     for ts, value in points:
         if value is None:
@@ -47,6 +57,8 @@ def _clean(points: Sequence[Point], bars: int) -> list[Point]:
         except (TypeError, ValueError):
             continue
         if v != v or v in (float("inf"), float("-inf")):  # NaN/inf
+            continue
+        if as_of is not None and ts > as_of:
             continue
         seen[ts] = v
     ordered = sorted(seen.items())
@@ -96,10 +108,14 @@ class YahooProvider(Provider):
                 "events": "div,split",
             },
         )
-        return self.parse(raw, bars=bars, scale=float(spec.get("scale", 1.0)))
+        return self.parse(
+            raw, bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of
+        )
 
     @staticmethod
-    def parse(raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
+    def parse(
+        raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None
+    ) -> list[Point]:
         """응답 파싱을 따로 둔다. 네트워크 없이 고정 응답으로 테스트한다."""
         try:
             doc = json.loads(raw)
@@ -129,6 +145,7 @@ class YahooProvider(Provider):
         return _clean(
             [(_utc(t), v * scale) for t, v in zip(stamps, series) if v is not None],
             bars,
+            as_of,
         )
 
 
@@ -146,10 +163,14 @@ class StooqProvider(Provider):
         raw = self.client.get(
             self.BASE, params={"s": str(spec["symbol"]), "i": "d"}
         )
-        return self.parse(raw, bars=bars, scale=float(spec.get("scale", 1.0)))
+        return self.parse(
+            raw, bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of
+        )
 
     @staticmethod
-    def parse(raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
+    def parse(
+        raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None
+    ) -> list[Point]:
         text = raw.decode("utf-8", errors="replace").strip()
         if not text or text.lower().startswith("<"):
             raise FetchError("CSV 가 아니다 (HTML 응답)", kind="parse", permanent=True)
@@ -169,7 +190,7 @@ class StooqProvider(Provider):
                 continue
         if not points:
             raise FetchError("파싱된 행이 없다", kind="empty", permanent=True)
-        return _clean(points, bars)
+        return _clean(points, bars, as_of)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -208,10 +229,14 @@ class FredProvider(Provider):
                 "observation_end": as_of.date().isoformat(),
             },
         )
-        return self.parse(raw, bars=bars, scale=float(spec.get("scale", 1.0)))
+        return self.parse(
+            raw, bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of
+        )
 
     @staticmethod
-    def parse(raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
+    def parse(
+        raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None
+    ) -> list[Point]:
         try:
             doc = json.loads(raw)
         except json.JSONDecodeError as exc:
@@ -232,7 +257,7 @@ class FredProvider(Provider):
                 continue
         if not points:
             raise FetchError("관측치가 없다", kind="empty", permanent=True)
-        return _clean(points, bars)
+        return _clean(points, bars, as_of)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -289,10 +314,12 @@ class KrxProvider(Provider):
         raw = self.client.get(
             self.DOWNLOAD, data={"code": otp}, headers={"Referer": self.REFERER}
         )
-        return self.parse(raw, label=str(spec["symbol"]), bars=bars)
+        return self.parse(raw, label=str(spec["symbol"]), bars=bars, as_of=as_of)
 
     @staticmethod
-    def parse(raw: bytes, *, label: str, bars: int) -> list[Point]:
+    def parse(
+        raw: bytes, *, label: str, bars: int, as_of: datetime | None = None
+    ) -> list[Point]:
         """
         KRX CSV 는 EUC-KR 이고 열 이름이 화면마다 다르다. 날짜처럼 보이는
         열과 label 이 붙은 값 열을 찾는다.
@@ -334,7 +361,7 @@ class KrxProvider(Provider):
                 continue
         if not points:
             raise FetchError("파싱된 행이 없다", kind="empty", permanent=True)
-        return _clean(points, bars)
+        return _clean(points, bars, as_of)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -394,6 +421,7 @@ class GithubCsvProvider(Provider):
             row_filter=spec.get("filter"),
             invert=bool(spec.get("invert", False)),
             scale=float(spec.get("scale", 1.0)),
+            as_of=as_of,
         )
 
     @staticmethod
@@ -406,6 +434,7 @@ class GithubCsvProvider(Provider):
         row_filter: dict | None = None,
         invert: bool = False,
         scale: float = 1.0,
+        as_of: datetime | None = None,
     ) -> list[Point]:
         text = raw.decode("utf-8-sig", errors="replace").strip()
         if text.lower().startswith("<") or text.startswith("404"):
@@ -457,7 +486,7 @@ class GithubCsvProvider(Provider):
         if not points:
             detail = f" (filter={row_filter})" if row_filter else ""
             raise FetchError(f"조건에 맞는 행이 없다{detail}", kind="empty", permanent=True)
-        return _clean(points, bars)
+        return _clean(points, bars, as_of)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -492,7 +521,9 @@ class CsvProvider(Provider):
         path = self.path_for(str(spec["symbol"]))
         if not path.exists():
             raise FetchError(f"{path.name} 이 없다", kind="missing", permanent=True)
-        return self.parse(path.read_bytes(), bars=bars, scale=float(spec.get("scale", 1.0)))
+        return self.parse(
+            path.read_bytes(), bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of
+        )
 
     #: 값 열로 인정하는 이름. 내려받는 곳마다 다르다.
     VALUE_HEADERS = (
@@ -537,7 +568,9 @@ class CsvProvider(Provider):
             return None
 
     @classmethod
-    def parse(cls, raw: bytes, *, bars: int, scale: float = 1.0) -> list[Point]:
+    def parse(
+        cls, raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None
+    ) -> list[Point]:
         for encoding in ("utf-8-sig", "cp949", "euc-kr"):
             try:
                 text = raw.decode(encoding).strip()
@@ -585,4 +618,4 @@ class CsvProvider(Provider):
                 kind="empty",
                 permanent=True,
             )
-        return _clean(points, bars)
+        return _clean(points, bars, as_of)
