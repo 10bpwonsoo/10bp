@@ -75,7 +75,7 @@ class TestYahoo:
         assert all(t.tzinfo is timezone.utc for t in stamps)
 
     def test_scale_converts_rate_symbols(self):
-        """^TNX 는 4.2% 를 42 로 준다. sources.yaml 의 scale 이 되돌린다."""
+        """scale 은 받은 값에 곱한다. HY OAS 처럼 단위를 맞출 때 쓴다."""
         points = YahooProvider.parse(fixture("yahoo_spx.json"), bars=10, scale=0.1)
         assert points[0][1] == pytest.approx(582.011)
 
@@ -321,6 +321,46 @@ class TestFallbackChain:
         outcome = adapter.outcomes["CURVE_2S10S"]
         assert not outcome.ok
         assert "기초 자산 누락" in outcome.reason
+
+    def test_derived_joins_legs_by_calendar_date(self, tmp_path):
+        """
+        같은 공급자라도 심볼마다 봉의 시각이 다르다. Yahoo 는 2YY=F 를
+        04:00 UTC 로, ^TNX 를 12:20 UTC 로 찍는다 (2026-09 실측). datetime
+        으로 교집합을 내면 같은 날인데도 0개가 되어 2s10s 커브가 통째로
+        빠진다. 날짜로 맞춰야 한다.
+        """
+        from datetime import timedelta
+
+        class Stub:
+            def available(self):
+                return True, "ok"
+
+            def fetch(self, spec, *, bars, as_of):
+                hour, minute = (4, 0) if spec["symbol"] == "2YY=F" else (12, 20)
+                base = 4.0 if spec["symbol"] == "2YY=F" else 4.5
+                return [
+                    (
+                        (AS_OF - timedelta(days=i)).replace(hour=hour, minute=minute, second=0, microsecond=0),
+                        base + i * 0.01,
+                    )
+                    for i in range(30, 0, -1)
+                ]
+
+        by_id = get_instruments().by_id()
+        adapter = LiveMarketAdapter(replay_dir=tmp_path, client=FakeClient({}))
+        adapter.providers["yahoo"] = Stub()  # fred 는 키가 없어 스스로 물러난다
+        series = adapter.fetch_series(
+            [by_id["US2Y"], by_id["US10Y"], by_id["CURVE_2S10S"]], bars=30, as_of=AS_OF
+        )
+        curve = adapter.outcomes["CURVE_2S10S"]
+        assert curve.ok, curve.reason
+        assert curve.points == 30
+        from marketpulse.adapters.market.mock import derive
+
+        expected = derive("spread", [series["US10Y"].values[-1]], [series["US2Y"].values[-1]])[0]
+        assert series["CURVE_2S10S"].values[-1] == pytest.approx(expected, abs=1e-9)
+        # 파생값의 시각은 두 재료 중 늦은 쪽이다
+        assert series["CURVE_2S10S"].timestamps[-1].hour == 12
 
 
 # ══════════════════════════════════════════════════════════════

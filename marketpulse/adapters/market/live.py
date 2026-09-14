@@ -206,16 +206,23 @@ class LiveMarketAdapter(MarketAdapter):
                 self.outcomes[ins.id] = outcome
                 continue
             # 공급자마다 휴장일이 달라 길이가 어긋난다. 날짜 교집합만 쓴다.
-            shared = sorted(set(dict(a)) & set(dict(b)))
+            # **날짜**로 맞춘다 — 같은 공급자라도 심볼마다 봉의 시각이 다르다.
+            # Yahoo 는 2YY=F 를 04:00 UTC 로, ^TNX 를 12:20 UTC 로 찍는다.
+            # datetime 그대로 교집합을 내면 같은 날인데도 0개가 되어 2s10s
+            # 커브가 통째로 빠진다 (2026-09 실측).
+            amap = {t.date(): (t, v) for t, v in a}
+            bmap = {t.date(): (t, v) for t, v in b}
+            shared = sorted(set(amap) & set(bmap))
             if len(shared) < MIN_POINTS:
                 outcome.attempts.append(
                     ("derived", f"공통 날짜 {len(shared)}개뿐 — 최소 {MIN_POINTS}개 필요")
                 )
                 self.outcomes[ins.id] = outcome
                 continue
-            amap, bmap = dict(a), dict(b)
-            values = derive(spec.op, [amap[t] for t in shared], [bmap[t] for t in shared])
-            raw[ins.id] = list(zip(shared, values))
+            values = derive(spec.op, [amap[d][1] for d in shared], [bmap[d][1] for d in shared])
+            # 시각은 더 늦게 찍힌 쪽을 쓴다. 파생값은 두 재료가 다 있는 시점의 값이다.
+            stamps = [max(amap[d][0], bmap[d][0]) for d in shared]
+            raw[ins.id] = list(zip(stamps, values))
             outcome.provider = "derived"
             outcome.symbol = f"{spec.op}({spec.a},{spec.b})"
             outcome.points = len(shared)

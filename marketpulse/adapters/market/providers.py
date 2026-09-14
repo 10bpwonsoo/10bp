@@ -273,9 +273,9 @@ class KrxProvider(Provider):
     """
 
     name = "krx"
-    OTP = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd"
-    DOWNLOAD = "http://data.krx.co.kr/comm/fileDn/download_csv/download.cmd"
-    REFERER = "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd"
+    OTP = "https://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd"
+    DOWNLOAD = "https://data.krx.co.kr/comm/fileDn/download_csv/download.cmd"
+    REFERER = "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd"
 
     #: dataset 이름 → KRX 화면 ID. sources.yaml 이 dataset 으로 고른다.
     SCREENS = {
