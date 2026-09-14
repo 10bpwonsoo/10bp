@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -50,8 +51,12 @@ class Settings(BaseSettings):
     news_limit: int = 60
 
     llm_enabled: bool = Field(
-        default=False,
-        description="false 이면 정량 파이프라인만 동작한다. LLM 실패와 동일한 경로.",
+        default_factory=lambda: bool(os.environ.get("ANTHROPIC_API_KEY")),
+        description=(
+            "기본값은 '키가 있으면 켠다'. 켜 두고 키가 없으면 매 틱 인증 실패를 "
+            "겪고, 꺼 두고 키가 있으면 기능이 논다. MARKETPULSE_LLM_ENABLED 로 "
+            "명시하면 그것이 우선한다. false 면 정량 파이프라인만 동작한다."
+        ),
     )
     llm_timeout_sec: float = 8.0
     #: LLM 웹검색으로 기사를 찾는 경로. 검색은 Anthropic 서버가 하므로 RSS

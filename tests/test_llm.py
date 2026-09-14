@@ -70,6 +70,25 @@ class FakeClient(LLMClient):
 # ──────────────────────────────────────────────────────────
 # 요구 15-7 — LLM 이 죽어도 정량 대시보드는 동작한다
 # ──────────────────────────────────────────────────────────
+class TestAutoEnable:
+    """키가 있으면 켜지고, 없으면 꺼진다. 명시 설정이 있으면 그것이 이긴다."""
+
+    def test_key_turns_llm_on(self, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.delenv("MARKETPULSE_LLM_ENABLED", raising=False)
+        assert Settings().llm_enabled is True
+
+    def test_no_key_leaves_it_off(self, monkeypatch):
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("MARKETPULSE_LLM_ENABLED", raising=False)
+        assert Settings().llm_enabled is False
+
+    def test_explicit_setting_wins(self, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("MARKETPULSE_LLM_ENABLED", "false")
+        assert Settings().llm_enabled is False
+
+
 class TestGracefulDegradation:
     def test_disabled_pipeline_is_complete(self):
         snap = run_pipeline(Settings(scenario="inflation_shock", llm_enabled=False))

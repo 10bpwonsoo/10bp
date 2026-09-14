@@ -219,7 +219,7 @@ cp .env.example .env
 |---|---|---|
 | `MARKETPULSE_DATA_MODE` | `MOCK` | `LIVE` / `DELAYED` / `MOCK` |
 | `MARKETPULSE_SCENARIO` | `baseline` | MOCK 모드에서 재생할 시나리오 |
-| `MARKETPULSE_LLM_ENABLED` | `false` | false 면 정량 파이프라인만 동작 |
+| `MARKETPULSE_LLM_ENABLED` | 키가 있으면 `true` | `ANTHROPIC_API_KEY` 가 있으면 자동으로 켜진다. 명시하면 그것이 우선. false 면 정량 파이프라인만 동작 |
 | `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약·웹검색에 쓰는 모델 |
 | `MARKETPULSE_NEWS_SEARCH` | `auto` | LLM 웹검색으로 기사 찾기. `auto` RSS 가 0건일 때만 / `on` 항상 병합 / `off` |
 | `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
@@ -266,8 +266,7 @@ LLM 은 **선택 사항**이다. 켜면 뉴스 이벤트 추출과 시장 요약
 대시보드(상태·테마·확인·괴리·알림·영향 경로)는 어느 쪽이든 동일하다.
 
 ```bash
-export MARKETPULSE_LLM_ENABLED=true
-export ANTHROPIC_API_KEY=sk-ant-...
+export ANTHROPIC_API_KEY=sk-ant-...   # 이것만으로 켜진다. 끄려면 MARKETPULSE_LLM_ENABLED=false
 ```
 
 세 가지 안전장치를 걸어 두었다.
