@@ -445,3 +445,89 @@
     padding-left: 16px;
   }
 }
+
+/* ── Market State 좌우 분할 — 판정 | 온도계 ───────── */
+.state-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .state-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 센티멘트 온도계 ─────────────────────────── */
+.gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding-left: 18px;
+  border-left: 1px solid var(--rule-soft);
+}
+
+@media (max-width: 900px) {
+  .gauge {
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+}
+
+.gauge-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* hero 숫자는 비례 숫자다. 고정폭은 표 안에서만 쓴다. */
+.gauge-value {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: proportional-nums;
+}
+
+.gauge-band {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.gauge-trend {
+  font-size: 12px;
+}
+
+.gauge-conf {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.gauge-legs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.gauge-leg-k {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.gauge-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 52ch;
+}

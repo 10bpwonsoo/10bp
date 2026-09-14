@@ -20,6 +20,7 @@ from .news import NewsEvent
 from .relationship import ImpactMap
 from .state import MarketState
 from .theme import ThemeState
+from .thermometer import SentimentThermometer
 
 
 class MovingItem(Base):
@@ -57,6 +58,8 @@ class IntelligenceSnapshot(Base):
     scenario: str | None = None
 
     market_state: MarketState
+    #: 센티멘트 온도계. None 은 엔진이 돌지 않은 옛 스냅샷이다.
+    thermometer: SentimentThermometer | None = None
     themes: list[ThemeState] = Field(default_factory=list)
     divergences: list[Divergence] = Field(default_factory=list)
     alerts: list[Alert] = Field(default_factory=list)

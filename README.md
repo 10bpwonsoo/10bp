@@ -220,7 +220,8 @@ cp .env.example .env
 | `MARKETPULSE_DATA_MODE` | `MOCK` | `LIVE` / `DELAYED` / `MOCK` |
 | `MARKETPULSE_SCENARIO` | `baseline` | MOCK 모드에서 재생할 시나리오 |
 | `MARKETPULSE_LLM_ENABLED` | `false` | false 면 정량 파이프라인만 동작 |
-| `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약에 쓰는 모델 |
+| `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약·웹검색에 쓰는 모델 |
+| `MARKETPULSE_NEWS_SEARCH` | `auto` | LLM 웹검색으로 기사 찾기. `auto` RSS 가 0건일 때만 / `on` 항상 병합 / `off` |
 | `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
 | `MARKETPULSE_NEWS_LIMIT` | `60` | 실데이터에서 받을 기사 수 |
 | `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요 |
@@ -280,6 +281,33 @@ export ANTHROPIC_API_KEY=sk-ant-...
 키 없이 `MARKETPULSE_LLM_ENABLED=true` 로 켜도 화면 전체가 동작하고
 `data_health.llm_status` 가 `failed` 로, 서술 출처가 `template` 로 표시된다.
 이것은 `tests/test_llm.py` 에 고정되어 있다.
+
+#### LLM 웹검색으로 기사 찾기 (P5)
+
+RSS 호스트가 전부 막힌 네트워크에서는 뉴스가 0건이 되고 뉴스 감성·괴리·
+Impact Map 사건 노드가 함께 잠긴다. LLM 이 켜져 있으면 Claude 의 `web_search`
+도구로 기사를 찾는다. 검색은 Anthropic 서버가 수행하므로 `api.anthropic.com`
+하나만 열려 있으면 된다.
+
+- **검색 결과 블록만 믿는다.** 제목·URL·게시 시각은 검색 엔진이 돌려준 실재
+  페이지의 것이고, 모델이 쓴 문장은 버린다. 존재하지 않는 기사가 섞일 경로가 없다.
+- 게시 시각을 모르는 결과와 48시간이 넘은 결과는 버린다. 본문이 없으므로
+  `DataMeta.quality` 는 `PARTIAL` 이다.
+- 검색어는 `config/feeds.yaml` 의 `search.queries` 다.
+
+```bash
+# 키가 맞는지, 결과가 오는지, 무엇이 왜 버려지는지 한 화면에
+MARKETPULSE_LLM_ENABLED=true .venv/bin/python -m marketpulse.cli probe --mode DELAYED --llm-search
+```
+
+#### 센티멘트 온도계 (P5)
+
+Market State 패널 오른쪽의 게이지. −100(결빙) ~ +100(과열) 한 눈금 위에 바늘
+셋을 놓는다 — **가격이 말하는 온도**(이미 계산된 매크로 factor 의 부호·가중
+평균), **뉴스가 말하는 온도**(기사 감성의 감쇠·영향도·출처 가중 평균), 그
+둘의 **종합**(0.6 / 0.4). 두 바늘의 거리가 임계(30)를 넘으면 내러티브 괴리로
+표시한다. 새 데이터는 쓰지 않고, 한쪽이 없으면 나머지로만 재며 그 사실을
+문장과 신뢰도에 남긴다. 가중치는 `config/scoring.yaml` 의 `thermometer` 절.
 
 ### 테스트
 

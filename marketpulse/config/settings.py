@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -53,6 +54,13 @@ class Settings(BaseSettings):
         description="false 이면 정량 파이프라인만 동작한다. LLM 실패와 동일한 경로.",
     )
     llm_timeout_sec: float = 8.0
+    #: LLM 웹검색으로 기사를 찾는 경로. 검색은 Anthropic 서버가 하므로 RSS
+    #: 호스트가 막혀 있어도 동작한다. auto 는 RSS 가 0건일 때만 쓴다 —
+    #: 매 틱 검색을 돌리면 비용이 들고, RSS 가 살아 있으면 필요도 없다.
+    news_search: Literal["auto", "on", "off"] = Field(
+        default="auto",
+        description="auto: RSS 가 비었을 때만 / on: 항상 병합 / off: 쓰지 않음",
+    )
 
     api_title: str = "Market Pulse AI"
     api_version: str = "0.1.0"

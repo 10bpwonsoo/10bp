@@ -47,6 +47,7 @@ from .market_state import compute_market_state
 from .normalize import build_snapshot
 from .relationship import Observation, build_impact_maps
 from .theme import compute_theme_states
+from .thermometer import ENGINE_VERSION as THERMOMETER_VERSION, compute_thermometer
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,8 @@ ENGINE_VERSIONS: dict[str, str] = {
     "relationship": "0.3.0",
     "llm_extractor": "0.1.0",
     "summarizer": "0.1.0",
-    "orchestrator": "0.3.0-p4",
+    "thermometer": THERMOMETER_VERSION,
+    "orchestrator": "0.4.0-p5",
 }
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
@@ -399,6 +401,17 @@ def build_intelligence(
     )
     timings["summarize"] = (time.perf_counter() - t) * 1000.0
 
+    # 온도계는 위에서 이미 계산된 factor 와 이벤트만 다시 읽는다. 새 데이터는
+    # 없고, 그래서 여기가 맞는 자리다 — 모든 재료가 확정된 뒤.
+    t = time.perf_counter()
+    thermometer = compute_thermometer(
+        market_state,
+        events,
+        market_snapshot.as_of,
+        previous=previous.thermometer if previous else None,
+    )
+    timings["thermometer"] = (time.perf_counter() - t) * 1000.0
+
     health = build_data_health(
         market_snapshot,
         news_items,
@@ -450,6 +463,7 @@ def build_intelligence(
         mode=market_snapshot.mode,
         scenario=scenario,
         market_state=market_state,
+        thermometer=thermometer,
         themes=themes,
         divergences=divergences,
         alerts=alerts,

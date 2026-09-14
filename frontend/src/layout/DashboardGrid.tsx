@@ -7,6 +7,7 @@ import { ImpactMapPanel } from "../components/ImpactMap";
 import { MarketStateHeader } from "../components/MarketStateHeader";
 import { NewsFeed } from "../components/NewsFeed";
 import { Panel } from "../components/Panel";
+import { SentimentGauge } from "../components/SentimentGauge";
 import { ThemeHeatmap } from "../components/ThemeHeatmap";
 import { WhatsMoving } from "../components/WhatsMoving";
 
@@ -58,7 +59,12 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
           </span>
         }
       >
-        <MarketStateHeader state={snapshot.market_state} />
+        {/* 판정과 온도계를 나란히. 온도계는 새 패널이 아니라 판정의 두 번째
+            읽기다 — 라벨이 '무엇' 이라면 온도는 '얼마나' 다. */}
+        <div className="state-split">
+          <MarketStateHeader state={snapshot.market_state} />
+          <SentimentGauge t={snapshot.thermometer} />
+        </div>
       </Panel>
 
       <Panel title="Theme Heatmap" span={2} flush note={`${snapshot.themes.length}개`}>

@@ -291,11 +291,46 @@ export interface RawNewsItem {
   language: string;
 }
 
+export type ThermometerBand =
+  | "overheated"
+  | "warm"
+  | "neutral"
+  | "cool"
+  | "frozen"
+  | "unknown";
+
+/**
+ * 센티멘트 온도계. 바늘이 셋 — 가격·뉴스·종합. null 은 '측정하지 못함'.
+ * 두 바늘의 거리(gap)가 곧 "내러티브와 가격이 맞는가" 다.
+ */
+export interface SentimentThermometer {
+  as_of: string;
+  composite: number | null;
+  price: number | null;
+  news: number | null;
+  gap: number | null;
+  gap_flag: "none" | "narrative_hot" | "narrative_cold";
+  band: ThermometerBand;
+  band_label: string;
+  trend: Direction;
+  trend_arrow: string;
+  delta: number | null;
+  confidence: number;
+  composite_breakdown: ScoreBreakdown | null;
+  price_breakdown: ScoreBreakdown | null;
+  news_breakdown: ScoreBreakdown | null;
+  confidence_breakdown: ScoreBreakdown | null;
+  news_events: number;
+  llm_events: number;
+  note: string;
+}
+
 export interface IntelligenceSnapshot {
   as_of: string;
   mode: DataMode;
   scenario: string | null;
   market_state: MarketState;
+  thermometer: SentimentThermometer | null;
   themes: ThemeState[];
   divergences: Divergence[];
   alerts: Alert[];

@@ -21,6 +21,7 @@ from .base import AdapterError, MarketAdapter, NewsAdapter
 from .http import HttpClient
 from .market.live import LiveMarketAdapter
 from .market.mock import MockMarketAdapter
+from .news.llm_search import CompositeNewsAdapter, LlmSearchNewsAdapter
 from .news.mock import MockNewsAdapter
 from .news.rss import RssNewsAdapter
 
@@ -46,6 +47,24 @@ def _live_news(config_dir, mode, timeout) -> RssNewsAdapter:
     return RssNewsAdapter(
         config_dir=config_dir, client=HttpClient(timeout_sec=timeout), mode=mode
     )
+
+
+def _news_with_search(settings: Settings, rss: RssNewsAdapter) -> NewsAdapter:
+    """
+    RSS 에 LLM 검색을 정책대로 붙인다.
+
+    LLM 이 꺼져 있거나 정책이 off 면 RSS 그대로다. 검색 어댑터는 LLM
+    클라이언트를 공유하므로 서킷 브레이커 상태도 공유한다 — 추출이 인증
+    실패로 영구 차단되면 검색도 시도하지 않는다.
+    """
+    if settings.news_search == "off" or not settings.llm_enabled:
+        return rss
+    from ..ai.client import build_client
+
+    search = LlmSearchNewsAdapter(
+        build_client(settings), config_dir=settings.config_dir, mode=rss.mode
+    )
+    return CompositeNewsAdapter(rss, search, policy=settings.news_search, mode=rss.mode)
 
 
 def reset_adapter_cache() -> None:
@@ -76,7 +95,8 @@ def build_news_adapter(settings: Settings) -> NewsAdapter:
     if settings.data_mode is DataMode.MOCK:
         return MockNewsAdapter(settings.mock_dir, settings.scenario)
     if settings.data_mode in (DataMode.DELAYED, DataMode.LIVE):
-        return _live_news(settings.config_dir, DataMode.DELAYED, settings.http_timeout_sec)
+        rss = _live_news(settings.config_dir, DataMode.DELAYED, settings.http_timeout_sec)
+        return _news_with_search(settings, rss)
     raise AdapterError(f"알 수 없는 데이터 모드: {settings.data_mode}")
 
 

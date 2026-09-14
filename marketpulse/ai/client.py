@@ -49,6 +49,21 @@ class LLMFailure:
     permanent: bool = False
 
 
+@dataclass(frozen=True)
+class SearchHit:
+    """
+    web_search 가 돌려준 결과 하나.
+
+    모델이 쓴 문장이 아니라 **검색 엔진이 돌려준 항목**이다. 제목과 URL 은
+    실재하는 페이지의 것이고, 그래서 뉴스 어댑터가 이것만 믿는다.
+    """
+
+    title: str
+    url: str
+    page_age: str | None
+    query: str
+
+
 @dataclass
 class _Circuit:
     failures: int = 0
@@ -184,11 +199,8 @@ class LLMClient:
         if isinstance(client, LLMFailure):
             return client
 
-        import anthropic
-        import json
-
-        try:
-            response = client.messages.create(
+        response = self._invoke(
+            lambda: client.messages.create(
                 model=self.model,
                 max_tokens=max_tokens,
                 system=[
@@ -201,6 +213,50 @@ class LLMClient:
                     "format": {"type": "json_schema", "schema": schema},
                 },
             )
+        )
+        if isinstance(response, LLMFailure):
+            return response
+
+        if getattr(response, "stop_reason", None) == "refusal":
+            details = getattr(response, "stop_details", None)
+            category = getattr(details, "category", None) if details else None
+            self._circuit.record_success()  # 모델이 답한 것이다. 장애가 아니다.
+            return LLMFailure(f"모델이 응답을 거절했다 (category={category})", "refusal")
+
+        text = next(
+            (b.text for b in response.content if getattr(b, "type", None) == "text"),
+            None,
+        )
+        if not text:
+            self._circuit.record_failure()
+            return LLMFailure("응답에 텍스트 블록이 없다", "parse")
+
+        import json
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            self._circuit.record_failure()
+            return LLMFailure(f"JSON 파싱 실패: {exc}", "parse")
+
+        if not isinstance(data, dict):
+            self._circuit.record_failure()
+            return LLMFailure("최상위가 객체가 아니다", "parse")
+
+        self._circuit.record_success()
+        return data
+
+    def _invoke(self, call: Any) -> Any | LLMFailure:
+        """
+        SDK 호출 하나를 실행하고 실패를 값으로 바꾼다.
+
+        structured() 와 search_news() 가 같은 실패 분류를 써야 서킷 브레이커가
+        일관되게 동작한다. 인증 실패는 어느 경로에서 나든 영구 차단이다.
+        """
+        import anthropic
+
+        try:
+            return call()
         except anthropic.AuthenticationError as exc:
             # 시간이 지난다고 낫지 않는다. 영구 차단한다.
             self._circuit.record_failure(permanent=True)
@@ -242,32 +298,86 @@ class LLMClient:
             self._circuit.record_failure()
             return LLMFailure(str(exc), "api")
 
-        if getattr(response, "stop_reason", None) == "refusal":
-            details = getattr(response, "stop_details", None)
-            category = getattr(details, "category", None) if details else None
-            self._circuit.record_success()  # 모델이 답한 것이다. 장애가 아니다.
-            return LLMFailure(f"모델이 응답을 거절했다 (category={category})", "refusal")
+    def search_news(
+        self,
+        *,
+        system: str,
+        user: str,
+        max_uses: int = 4,
+        max_tokens: int = 4000,
+    ) -> list[SearchHit] | LLMFailure:
+        """
+        web_search 서버 도구를 돌리고 **검색 결과 블록만** 모아 돌려준다.
 
-        text = next(
-            (b.text for b in response.content if getattr(b, "type", None) == "text"),
-            None,
+        모델의 답변 텍스트는 읽지 않는다. 검색 결과는 검색 엔진이 돌려준
+        실재 페이지이고, 텍스트는 모델이 쓴 것이다. 뉴스 어댑터가 믿어도
+        되는 것은 앞쪽뿐이다. 존재하지 않는 기사가 화면에 오르는 경로를
+        구조로 막는다 (요구 15-11).
+        """
+        if not self.enabled:
+            return LLMFailure("LLM 이 비활성화되어 있다", "disabled")
+        if self._circuit.is_open():
+            return LLMFailure(
+                self._client_error or "연속 실패로 호출을 잠시 멈춘 상태다",
+                "unavailable",
+                permanent=self._circuit.permanently_open,
+            )
+        client = self._ensure_client()
+        if isinstance(client, LLMFailure):
+            return client
+
+        response = self._invoke(
+            lambda: client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=[
+                    {"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}
+                ],
+                messages=[{"role": "user", "content": user}],
+                tools=[
+                    {"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}
+                ],
+                output_config={"effort": EXTRACT_EFFORT},
+            )
         )
-        if not text:
-            self._circuit.record_failure()
-            return LLMFailure("응답에 텍스트 블록이 없다", "parse")
+        if isinstance(response, LLMFailure):
+            return response
 
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as exc:
-            self._circuit.record_failure()
-            return LLMFailure(f"JSON 파싱 실패: {exc}", "parse")
+        hits: list[SearchHit] = []
+        current_query = ""
+        for block in getattr(response, "content", None) or []:
+            kind = getattr(block, "type", None)
+            if kind == "server_tool_use":
+                inp = getattr(block, "input", None) or {}
+                current_query = str(inp.get("query", "") if isinstance(inp, dict) else "")
+                continue
+            if kind != "web_search_tool_result":
+                continue
+            content = getattr(block, "content", None)
+            # 실패한 검색은 content 가 목록이 아니라 오류 객체다. 건너뛴다.
+            if not isinstance(content, list):
+                continue
+            for item in content:
+                if getattr(item, "type", None) != "web_search_result":
+                    continue
+                url = str(getattr(item, "url", "") or "").strip()
+                title = str(getattr(item, "title", "") or "").strip()
+                if not url or not title:
+                    continue
+                age = getattr(item, "page_age", None)
+                hits.append(
+                    SearchHit(
+                        title=title,
+                        url=url,
+                        page_age=str(age) if age else None,
+                        query=current_query,
+                    )
+                )
 
-        if not isinstance(data, dict):
-            self._circuit.record_failure()
-            return LLMFailure("최상위가 객체가 아니다", "parse")
-
+        # 검색이 한 번도 돌지 않았다면 모델이 도구를 안 쓴 것이다. 장애는
+        # 아니지만 결과도 아니다 — 호출자가 "0건" 으로 다룬다.
         self._circuit.record_success()
-        return data
+        return hits
 
     def reset(self) -> None:
         self._circuit.reset()

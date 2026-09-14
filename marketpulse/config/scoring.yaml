@@ -167,3 +167,43 @@ relationship:
   # "조달비용과 신용위험이 상쇄한다" 며 strength 0.45 로 적어 둔 관계를
   # 놓고 "예상과 반대로 움직였다" 고 말하는 것은 과장이다.
   reaction_min_link_strength: 0.5
+
+thermometer:
+  # 센티멘트 온도계 — "지금 시장이 얼마나 뜨거운가" 를 -100(결빙) ~ +100(과열)
+  # 한 자로 잰다. 두 개의 온도를 따로 재서 한 눈금 위에 같이 놓는다.
+  #
+  #   가격 온도  이미 계산된 매크로 factor(z) 의 부호·가중 평균을 squash 한 값.
+  #              새 데이터를 쓰지 않는다 — Market State 가 쓴 그 숫자다.
+  #   뉴스 온도  기사 감성의 시간감쇠·영향도·출처 3중 가중 평균 (SentimentEngine).
+  #   종합 온도  둘의 가중 결합. 한쪽이 없으면 나머지로만 재고 그 사실을 남긴다.
+  #
+  # 두 온도의 격차가 곧 "내러티브와 가격이 맞는가" 다. 그래서 종합 하나만
+  # 보여주지 않고 두 바늘을 따로 그린다.
+  blend:
+    price: 0.60   # 가격은 조작 불가능한 실제 체결 정보다
+    news: 0.40
+  price_components:
+    - {factor: RiskAppetite, weight: 0.35, sign: 1}
+    - {factor: Volatility,   weight: 0.25, sign: -1}
+    - {factor: Growth,       weight: 0.15, sign: 1}
+    - {factor: Credit,       weight: 0.15, sign: -1}
+    - {factor: KoreaFlow,    weight: 0.10, sign: 1}
+  # 기사가 이만큼이면 뉴스 온도의 충분성을 1.0 으로 본다. 기사 1건으로 잰
+  # +60 과 8건으로 잰 +60 은 같은 온도가 아니다.
+  news_saturation: 8
+  # |뉴스 - 가격| 이 이 이상이면 내러티브 괴리로 표시한다
+  gap_threshold: 30.0
+  # 직전 틱 대비 종합 변화가 이보다 작으면 화살표를 옆으로 눕힌다
+  trend_min_delta: 5.0
+  # 하한 기준. 위에서부터 검사한다.
+  bands:
+    - {min: 60,   id: overheated, label: 과열}
+    - {min: 20,   id: warm,       label: 온기}
+    - {min: -20,  id: neutral,    label: 중립}
+    - {min: -60,  id: cool,       label: 냉각}
+    - {min: -100, id: frozen,     label: 결빙}
+  confidence:
+    weights:
+      price_coverage: 0.50    # factor 품질 가중 확보율
+      news_sufficiency: 0.30  # 기사 수 / news_saturation
+      agreement: 0.20         # 두 온도가 서로 얼마나 가까운가

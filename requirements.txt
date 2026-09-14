@@ -14,3 +14,7 @@ numpy==2.4.6
 # P4 의 LIVE 어댑터는 표준 라이브러리(urllib)만 쓴다. requests 도
 # yfinance 도 들이지 않는다 — 의존성이 하나 줄면 데모가 죽을 경로도
 # 하나 준다 (설계서 STEP 7.7).
+
+# P5 — LLM 경로. 없어도 정량 파이프라인은 돈다 (지연 import). 키는
+# ANTHROPIC_API_KEY 환경변수로만 받는다 (요구 15-8).
+anthropic==1.5.0

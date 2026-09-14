@@ -17,3 +17,23 @@ feeds:
   - {name: "Reuters Business", url: "https://feeds.reuters.com/reuters/businessNews", lang: en, weight: 1.0}
   - {name: "CNBC Markets", url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258", lang: en, weight: 0.9}
   - {name: "Investing.com", url: "https://www.investing.com/rss/news_25.rss", lang: en, weight: 0.8}
+
+# ── LLM 웹검색 경로 ──────────────────────────────────────
+# RSS 호스트가 전부 막힌 네트워크에서의 대체 경로다. 검색은 Anthropic 서버가
+# 수행하므로 api.anthropic.com 하나만 열려 있으면 된다.
+#
+# 여기서 나오는 것은 **검색 결과(제목·URL·게시 시각)** 이지 모델이 쓴 문장이
+# 아니다. 모델의 답변 텍스트는 버리고 web_search 결과 블록만 읽는다 —
+# 존재하지 않는 기사가 섞여 들어올 경로를 처음부터 막는다.
+#
+# 켜는 조건은 settings.news_search 다. auto(기본) 는 RSS 가 0건일 때만,
+# on 은 항상 병합, off 는 쓰지 않는다. LLM 자체가 꺼져 있으면 무시된다.
+search:
+  max_uses: 4          # 한 틱에 허용하는 검색 횟수
+  recency_hours: 48    # 이보다 오래된 결과는 버린다. 검색은 옛 기사를 잘 끌어온다
+  limit: 30
+  queries:
+    - 오늘 코스피 코스닥 마감 시황 외국인 순매수
+    - 오늘 미국 증시 마감 S&P500 나스닥 국채금리
+    - 국제유가 브렌트 WTI 달러 원달러 환율 오늘
+    - global markets today stocks bonds oil news

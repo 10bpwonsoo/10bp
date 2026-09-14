@@ -107,6 +107,16 @@ def render(snap: IntelligenceSnapshot) -> str:
             a("    " + _wrap(ms.narrative, 66, indent="    "))
     a("")
 
+    # ── THERMOMETER ──
+    th = snap.thermometer
+    if th is not None:
+        a("  SENTIMENT THERMOMETER")
+        a(f"    종합 {_sig(th.composite)}  {th.trend_arrow}  {th.band_label:<6s}"
+          f"  가격 {_sig(th.price)}  뉴스 {_sig(th.news)}  신뢰도 {th.confidence:3.0f}%"
+          f"  기사 {th.news_events}건")
+        a("    " + _wrap(th.note, 66, indent="    "))
+        a("")
+
     # ── THEME ──
     a("  THEME HEATMAP")
     if not snap.themes:
@@ -292,10 +302,39 @@ def cmd_probe(args: argparse.Namespace) -> int:
             out.append(f"  {'OK ' if ok else '불가'}  {name:<7} {why}")
     out.append("")
 
+    # ── 1b. LLM. 네트워크를 쓰지 않는다 — 키가 있는지, 서킷이 열렸는지만 ──
+    from .ai.client import build_client
+
+    llm = build_client(settings)
+    out.append("LLM")
+    if not settings.llm_enabled:
+        out.append("  꺼짐   MARKETPULSE_LLM_ENABLED=true 로 켠다. 키는 ANTHROPIC_API_KEY 환경변수")
+    else:
+        out.append(f"  {llm.status:<7s} 모델 {llm.model}  뉴스 검색 정책 {settings.news_search}")
+        if llm.last_error:
+            out.append(f"         {llm.last_error}")
+    out.append("")
+
     if args.offline:
         out.append("--offline: 실제 수집은 건너뛴다")
         print("\n".join(out))
         return 0
+
+    if args.llm_search:
+        # 검색 한 번을 실제로 돌려 본다. 키가 맞는지, 결과가 오는지, 무엇이
+        # 왜 버려지는지가 한 화면에 나온다.
+        from .adapters.news.llm_search import LlmSearchNewsAdapter
+
+        search = LlmSearchNewsAdapter(llm, config_dir=settings.config_dir)
+        found = search.fetch_news(limit=settings.news_limit)
+        out.append(f"LLM 검색  {len(found)}건")
+        for name, result in sorted(search.probe().items()):
+            out.append(f"  {name:<12} {result}")
+        for item in found[:8]:
+            out.append(f"     {item.published_at:%m-%d %H:%M}  {item.publisher:<20} {item.title[:70]}")
+        out.append("")
+        print("\n".join(out))
+        return 0 if found else 1
 
     # ── 2. 실제 수집 ──
     instruments = get_instruments().instruments
@@ -499,6 +538,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--offline", action="store_true", help="실제 수집 없이 설정만 점검한다"
     )
     pr.add_argument("-v", "--verbose", action="store_true", help="성공한 것도 전부 출력")
+    pr.add_argument(
+        "--llm-search",
+        action="store_true",
+        help="LLM 웹검색을 실제로 한 번 돌려 결과와 제외 사유를 보인다 (ANTHROPIC_API_KEY 필요)",
+    )
     pr.set_defaults(func=cmd_probe)
 
     bt = sub.add_parser(
