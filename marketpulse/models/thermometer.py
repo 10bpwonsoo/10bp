@@ -21,6 +21,27 @@ from .common import Base, Direction, ScoreBreakdown
 
 Band = Literal["overheated", "warm", "neutral", "cool", "frozen", "unknown"]
 GapFlag = Literal["none", "narrative_hot", "narrative_cold"]
+WeekAgoSource = Literal["none", "series", "snapshot"]
+
+
+class ThermoComponent(Base):
+    """
+    온도계 재료 한 줄 (GOAL Kickstart Exhibit 34 의 지표 스트립 차용).
+
+    같은 눈금(-100~+100)에 현재 값과 1주 전 값을 나란히 찍는다. factor 는
+    부호를 곱해 "뜨거운 쪽이 +" 로 맞춘 뒤 squash 한 값이고, 뉴스는 뉴스
+    온도 그대로다. value 가 None 이면 결측이다 — 0 이 아니다.
+    """
+
+    key: str
+    label: str
+    kind: Literal["factor", "news"]
+    value: float | None = None
+    week_ago: float | None = None
+    weight: float = 0.0
+    sign: int = 1
+    quality: str | None = Field(default=None, description="factor 의 data_quality")
+    note: str = ""
 
 
 class SentimentThermometer(Base):
@@ -41,6 +62,22 @@ class SentimentThermometer(Base):
     trend: Direction = "flat"
     trend_arrow: str = "→"
     delta: float | None = Field(default=None, description="직전 틱 대비 종합 변화")
+
+    # ── 1주 전 (GOAL Kickstart 의 'Latest vs 1-week ago' 관례) ─────────
+    # 가격 온도의 1주 전은 시계열에서 바로 잰다 (5봉 전 factor). 뉴스와 종합의
+    # 1주 전은 기사가 남아 있지 않아 저장된 스냅샷이 있어야만 잰다. 둘의
+    # 출처가 다르므로 week_ago_source 가 그것을 말한다.
+    price_week_ago: float | None = None
+    news_week_ago: float | None = None
+    composite_week_ago: float | None = None
+    week_ago_source: WeekAgoSource = Field(
+        default="none",
+        description="series: 가격만 시계열에서 / snapshot: 저장된 1주 전 스냅샷까지 / none: 없음",
+    )
+    week_ago_as_of: datetime | None = Field(default=None, description="저장된 1주 전 스냅샷의 시각")
+    components: list[ThermoComponent] = Field(
+        default_factory=list, description="재료별 현재·1주 전 값. 스트립 표시용"
+    )
 
     confidence: float = Field(default=0.0, ge=0.0, le=100.0)
 

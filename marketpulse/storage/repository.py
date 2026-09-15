@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 from typing import Sequence
 
 from ..models.divergence import Divergence
@@ -37,6 +38,15 @@ class SnapshotRepository(ABC):
     @abstractmethod
     def prune(self, stream_key: str, keep: int) -> int:
         """오래된 스냅샷을 지운다. 지운 개수를 돌려준다."""
+
+    @abstractmethod
+    def at_or_before(
+        self, stream_key: str, target: datetime, *, max_distance: timedelta
+    ) -> IntelligenceSnapshot | None:
+        """
+        target 이전 것 중 가장 최근 스냅샷. target 보다 max_distance 이상
+        오래됐으면 None — "1주 전" 을 묻는데 한 달 전 것을 주면 안 된다.
+        """
 
     def close(self) -> None:
         """자원 정리. 기본은 아무것도 하지 않는다."""

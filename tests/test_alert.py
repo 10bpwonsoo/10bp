@@ -91,9 +91,14 @@ class TestChangeBased:
             a.type is AlertType.DIVERGENCE_OPENED for a in second.snapshot.alerts
         )
 
-    def test_price_spike_alert_from_z(self):
-        """가격 급변은 z 자체가 이미 과거 대비 변화량이라 수준으로 본다."""
-        run = run_pipeline_detailed(Settings(scenario="inflation_shock"))
+    def test_price_spike_alert_from_z(self, as_of):
+        """
+        가격 급변은 z 자체가 이미 과거 대비 변화량이라 수준으로 본다.
+
+        as_of 를 고정한다 — 중앙은행 회의 D-2 안에서는 급변 임계가 ×1.25 로
+        올라가므로(calendar.yaml), 시계에 맡기면 회의 주간마다 결과가 달라진다.
+        """
+        run = run_pipeline_detailed(Settings(scenario="inflation_shock"), as_of=as_of)
         spikes = [
             a for a in run.snapshot.alerts if a.type is AlertType.PRICE_ZSCORE_SPIKE
         ]

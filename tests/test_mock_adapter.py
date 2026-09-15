@@ -120,9 +120,12 @@ class TestShape:
     def test_all_instruments_covered(self, series, instruments):
         assert set(series) == {i.id for i in instruments}
 
-    def test_series_length_and_alignment(self, series):
+    def test_series_length_and_alignment(self, series, instruments_by_id):
         for s in series.values():
-            assert len(s.values) == len(s.timestamps) >= 180
+            spec = instruments_by_id[s.instrument_id].derived_from
+            # 변동성 프리미엄은 실현변동성 창(20봉)만큼 앞이 비어 있다.
+            floor = 180 - 20 if spec is not None and spec.op == "vol_premium" else 180
+            assert len(s.values) == len(s.timestamps) >= floor
 
     def test_metadata_is_mock(self, series):
         for s in series.values():

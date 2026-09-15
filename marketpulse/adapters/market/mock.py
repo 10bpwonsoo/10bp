@@ -9,6 +9,7 @@ MOCK 마켓데이터 어댑터.
 from __future__ import annotations
 
 import logging
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Sequence
@@ -112,15 +113,22 @@ class MockMarketAdapter(MarketAdapter):
         out: dict[str, MarketSeries] = {}
         for iid, values in base_values.items():
             ins = by_id[iid]
+            # 파생값은 앞부분이 비어 있을 수 있다 (vol_premium 의 첫 20봉).
+            # 빈 봉은 버린다. 0 으로 채우면 '없음' 이 '중립' 으로 둔갑한다.
+            kept = [(t, v) for t, v in zip(stamps, values) if math.isfinite(v)]
+            if not kept:
+                logger.warning("%s: 유효한 값이 없어 건너뛴다.", iid)
+                continue
+            own_stamps = [t for t, _ in kept]
             out[iid] = MarketSeries(
                 instrument_id=iid,
-                timestamps=stamps,
-                values=values,
+                timestamps=own_stamps,
+                values=[v for _, v in kept],
                 meta=DataMeta(
                     source=self.name,
                     mode=DataMode.MOCK,
                     retrieved_at=retrieved,
-                    as_of=stamps[-1],
+                    as_of=own_stamps[-1],
                     quality=DataQuality.OK,
                 ),
             )

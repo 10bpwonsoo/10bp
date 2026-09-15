@@ -30,6 +30,20 @@ instruments:
   - {id: ITA,  name: Aerospace & Defense,    asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: false, calendar: NYSE, tags: [sector, defense]}
   - {id: JETS, name: Airlines,               asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, airlines]}
   - {id: KRX_SEMI, name: KRX 반도체,         asset_class: equity, unit: index, series_kind: price, region: KR, currency: KRW, higher_is_risk_on: true,  calendar: KRX,  tags: [korea, sector, semiconductor]}
+  # 경기민감 vs 방어. GS 위험선호 지표(RAI)의 주식 하위 성분 중 하나인
+  # "Cyclicals vs Defensives" 를 ETF 비율로 옮긴 것이다. 비율이 오르면 시장이
+  # 경기 민감 쪽을 사고 있다는 뜻이라 위험선호의 재료가 된다.
+  - id: CYC_DEF
+    name: 경기민감/방어 (XLY/XLU)
+    asset_class: equity
+    unit: ratio
+    series_kind: price
+    region: US
+    currency: USD
+    higher_is_risk_on: true
+    calendar: NYSE
+    tags: [risk_appetite, derived]
+    derived_from: {op: ratio, a: XLY, b: XLU}
 
   # ── Rates (단위는 percent, 변화는 bp 로 표시한다) ────────
   - {id: US2Y,  name: US 2Y Treasury,  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, front]}
@@ -77,6 +91,30 @@ instruments:
   - {id: VIX,  name: VIX,            asset_class: volatility, unit: index, series_kind: price, region: US,     higher_is_risk_on: false, calendar: NYSE, tags: [vol, equity]}
   - {id: MOVE, name: MOVE 채권변동성, asset_class: volatility, unit: index, series_kind: price, region: US,     higher_is_risk_on: false, calendar: NYSE, tags: [vol, rates]}
   - {id: VKOSPI, name: V-KOSPI,      asset_class: volatility, unit: index, series_kind: price, region: KR,     higher_is_risk_on: false, calendar: KRX,  tags: [vol, korea]}
+  # 내재 − 실현 변동성 (변동성 프리미엄). 단위는 연율 변동성 %p 라 레벨
+  # 차분(level)으로 다룬다. 양수면 시장이 실현된 것보다 큰 변동을 값으로
+  # 치르고 있고(공포 프리미엄), 음수면 실현된 변동조차 반영하지 않는
+  # 안일함이다. 지정학 뉴스가 뜨거운데 이 값이 조용하면 그것이 괴리다.
+  - id: VIX_RV_SPX
+    name: VIX − S&P 실현변동성
+    asset_class: volatility
+    unit: index
+    series_kind: level
+    region: US
+    higher_is_risk_on: false
+    calendar: NYSE
+    tags: [vol, vol_premium, derived]
+    derived_from: {op: vol_premium, a: VIX, b: SPX}
+  - id: VKOSPI_RV_KOSPI
+    name: V-KOSPI − KOSPI 실현변동성
+    asset_class: volatility
+    unit: index
+    series_kind: level
+    region: KR
+    higher_is_risk_on: false
+    calendar: KRX
+    tags: [vol, vol_premium, korea, derived]
+    derived_from: {op: vol_premium, a: VKOSPI, b: KOSPI}
 
   # ── Credit ───────────────────────────────────────────
   - {id: US_HY_OAS, name: US HY OAS, asset_class: credit, unit: bp, series_kind: level, region: US, higher_is_risk_on: false, calendar: NYSE, tags: [credit, spread]}

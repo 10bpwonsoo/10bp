@@ -16,6 +16,7 @@ const TYPE_LABEL: Record<DivergenceType, string> = {
   RISK_VS_VOL: "리스크 ↔ 변동성",
   OIL_VS_INFLATION_EXP: "유가 ↔ 기대인플레",
   BREADTH_VS_INDEX: "시장폭 ↔ 지수",
+  CORRELATION_REGIME: "상관 레짐",
 };
 
 /**

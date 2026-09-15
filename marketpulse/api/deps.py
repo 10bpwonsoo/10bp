@@ -13,8 +13,12 @@ from fastapi import HTTPException, Query
 from ..adapters.base import AdapterError
 from ..adapters.market.scenario import available_scenarios
 from ..config.settings import Settings, get_settings
-from ..engines.orchestrator import run_pipeline_detailed
-from ..models.common import DataMode
+from ..engines.orchestrator import (
+    WEEK_AGO_TARGET,
+    WEEK_AGO_TOLERANCE,
+    run_pipeline_detailed,
+)
+from ..models.common import DataMode, utcnow
 from ..models.divergence import Divergence
 from ..models.snapshot import IntelligenceSnapshot
 from ..storage.repository import SnapshotRepository
@@ -102,8 +106,18 @@ class SnapshotService:
             history = self._repo.recent(key, limit=HISTORY_LIMIT)
             pending = self._repo.latest_pending(key)
 
+        # "1주 전" 표식. 메모리 히스토리(12틱)로는 못 미치므로 저장소에만 묻는다.
+        week_ago = None
+        if self._repo is not None:
+            try:
+                week_ago = self._repo.at_or_before(
+                    key, utcnow() - WEEK_AGO_TARGET, max_distance=WEEK_AGO_TOLERANCE
+                )
+            except Exception:
+                logger.exception("1주 전 스냅샷 조회 실패. 표식 없이 진행한다.")
+
         result = run_pipeline_detailed(
-            settings, history=history, pending_divergences=pending
+            settings, history=history, pending_divergences=pending, week_ago=week_ago
         )
 
         with self._lock:

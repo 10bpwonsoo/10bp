@@ -14,6 +14,7 @@ from typing import Mapping, Sequence
 
 from ..models.common import DataMode
 from ..models.market import Instrument, MarketDataPoint, MarketSeries, MarketSnapshot
+from .correlation import build_correlation_book
 from .features import compute_feature
 
 logger = logging.getLogger(__name__)
@@ -55,12 +56,16 @@ def build_snapshot(
     mode: DataMode,
     as_of: datetime | None = None,
     zscore_window: int = 60,
+    correlations: bool = True,
 ) -> MarketSnapshot:
     """
     MarketSnapshot 을 조립한다.
 
     빠진 instrument 는 missing 에 남기고 넘어간다. 0 으로 채우지 않는다.
     coverage 가 떨어지면 이후 confidence 계산이 알아서 낮아진다.
+
+    correlations 가 참이면 자산 간 롤링 상관 행렬을 같이 싣는다. 시계열은
+    이 함수를 지나면 사라지므로 상관은 여기서 재야 한다.
     """
     points: dict[str, MarketDataPoint] = {}
     features = {}
@@ -85,6 +90,15 @@ def build_snapshot(
             max(p.as_of for p in points.values()) if points else datetime.min
         )
 
+    book = None
+    if correlations:
+        try:
+            book = build_correlation_book(
+                [i for i in instruments if i.id in points], series_by_id, resolved_as_of
+            )
+        except Exception:  # 상관 실패가 스냅샷을 막으면 안 된다
+            logger.exception("상관 행렬 계산 실패. 상관 없이 진행한다.")
+
     return MarketSnapshot(
         as_of=resolved_as_of,
         mode=mode,
@@ -92,4 +106,5 @@ def build_snapshot(
         features=features,
         expected_instruments=[i.id for i in instruments],
         missing=missing,
+        correlations=book,
     )

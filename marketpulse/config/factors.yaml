@@ -51,12 +51,15 @@ factors:
       - {instrument_id: KR_TRADING_VALUE, weight: 0.20, sign: 1}
 
   RiskAppetite:
-    description: 위험선호. 주식 강세와 변동성·스프레드 축소로 읽는다.
+    description: 위험선호. 주식 강세, 경기민감주 선호, 변동성·스프레드 축소로 읽는다.
     components:
-      - {instrument_id: SPX,       weight: 0.30, sign: 1}
-      - {instrument_id: NDX,       weight: 0.25, sign: 1}
+      - {instrument_id: SPX,       weight: 0.25, sign: 1}
+      - {instrument_id: NDX,       weight: 0.20, sign: 1}
+      # 경기민감/방어 비율. GS RAI 주식 성분의 "Cyclicals vs Defensives" 다.
+      # 지수가 올라도 방어주가 이끌면 위험선호가 아니다.
+      - {instrument_id: CYC_DEF,   weight: 0.15, sign: 1}
       - {instrument_id: VIX,       weight: 0.25, sign: -1}
-      - {instrument_id: US_HY_OAS, weight: 0.20, sign: -1}
+      - {instrument_id: US_HY_OAS, weight: 0.15, sign: -1}
 
   Credit:
     description: 신용 스프레드. 확대가 악화다.
@@ -64,11 +67,14 @@ factors:
       - {instrument_id: US_HY_OAS, weight: 1.00, sign: 1}
 
   Volatility:
-    description: 변동성 레짐.
+    description: 변동성 레짐. 내재변동성 수준과 실현 대비 프리미엄을 함께 본다.
     components:
-      - {instrument_id: VIX,    weight: 0.45, sign: 1}
-      - {instrument_id: VKOSPI, weight: 0.30, sign: 1}
-      - {instrument_id: MOVE,   weight: 0.25, sign: 1}
+      - {instrument_id: VIX,        weight: 0.40, sign: 1}
+      - {instrument_id: VKOSPI,     weight: 0.25, sign: 1}
+      - {instrument_id: MOVE,       weight: 0.20, sign: 1}
+      # 내재 − 실현. 내재가 실현보다 빨리 오르면 시장이 아직 오지 않은
+      # 변동을 값으로 치르는 것이고, 그것이 레짐 전환의 앞선 신호다.
+      - {instrument_id: VIX_RV_SPX, weight: 0.15, sign: 1}
 
   China:
     description: 중국 경기와 위안화. CNH 상승(위안 약세)은 역방향이다.

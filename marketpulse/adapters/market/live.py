@@ -16,6 +16,7 @@ mode 는 DELAYED 다. 무료 공급자의 일봉 종가를 실시간이라 표�
 from __future__ import annotations
 
 import logging
+import math
 import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -222,10 +223,18 @@ class LiveMarketAdapter(MarketAdapter):
             values = derive(spec.op, [amap[d][1] for d in shared], [bmap[d][1] for d in shared])
             # 시각은 더 늦게 찍힌 쪽을 쓴다. 파생값은 두 재료가 다 있는 시점의 값이다.
             stamps = [max(amap[d][0], bmap[d][0]) for d in shared]
-            raw[ins.id] = list(zip(stamps, values))
+            # vol_premium 은 첫 20봉이 비어 있다. 빈 봉은 싣지 않는다.
+            points_out = [(t, v) for t, v in zip(stamps, values) if math.isfinite(v)]
+            if len(points_out) < MIN_POINTS:
+                outcome.attempts.append(
+                    ("derived", f"유효 봉 {len(points_out)}개뿐 — 최소 {MIN_POINTS}개 필요")
+                )
+                self.outcomes[ins.id] = outcome
+                continue
+            raw[ins.id] = points_out
             outcome.provider = "derived"
             outcome.symbol = f"{spec.op}({spec.a},{spec.b})"
-            outcome.points = len(shared)
+            outcome.points = len(points_out)
             self.outcomes[ins.id] = outcome
 
         out: dict[str, MarketSeries] = {}

@@ -43,6 +43,32 @@ export interface DriverItem {
   z: number;
   direction: Direction;
   arrow: string;
+  /** 1주 전(5봉 전) 시점의 z_1d. null 은 히스토리가 짧아 못 잰 것. */
+  z_week_ago: number | null;
+  /** 장기 백분위 0~100. percentile_observations 가 252 미만이면 '1년' 이 아니다. */
+  percentile: number | null;
+  percentile_observations: number;
+}
+
+/** 지배 축과 한 자산의 연동 — 60일 변화량 상관. 인과가 아니다. */
+export interface AxisLink {
+  instrument_id: string;
+  label: string;
+  corr: number;
+  prior: number | null;
+  z: number | null;
+}
+
+export interface DominantAxis {
+  instrument_id: string;
+  label: string;
+  z: number;
+  z_week_ago: number | null;
+  arrow: string;
+  window: number;
+  positive: AxisLink[];
+  negative: AxisLink[];
+  note: string;
 }
 
 export interface RuleMatch {
@@ -66,6 +92,8 @@ export interface FactorScore {
   score: number;
   breakdown: ScoreBreakdown;
   data_quality: "OK" | "PARTIAL" | "INSUFFICIENT";
+  /** 5봉 전 시점에 같은 식으로 계산한 factor. */
+  week_ago: number | null;
 }
 
 export interface ConfirmationResult {
@@ -87,6 +115,8 @@ export interface MarketState {
   factors: Record<string, FactorScore>;
   hypotheses: StateHypothesis[];
   main_drivers: DriverItem[];
+  /** 지배 축. null 은 축 후보가 조용했거나 상관이 없는 것. */
+  dominant_axis: DominantAxis | null;
   cross_asset_confirmation: ConfirmationResult;
   narrative: string | null;
   narrative_source: "llm" | "template" | "none";
@@ -111,6 +141,8 @@ export interface ThemeState {
   confidence_breakdown: ScoreBreakdown | null;
   last_change: number;
   last_change_window: string;
+  /** 약 1주 전 저장 스냅샷의 테마 점수. 저장이 없으면 null — 0 이 아니다. */
+  week_ago_score: number | null;
   supporting_events: string[];
   supporting_instruments: string[];
   data_quality: "OK" | "PARTIAL" | "INSUFFICIENT";
@@ -132,7 +164,8 @@ export type DivergenceType =
   | "THEME_VS_ASSET"
   | "RISK_VS_VOL"
   | "OIL_VS_INFLATION_EXP"
-  | "BREADTH_VS_INDEX";
+  | "BREADTH_VS_INDEX"
+  | "CORRELATION_REGIME";
 
 export interface Divergence {
   id: string;
@@ -229,6 +262,12 @@ export interface RelationshipEdge {
   evidence: string[];
   created_at: string;
   verified_by: string | null;
+  /** 실측 상관 대조에 쓴 대표 자산 쌍. 예 "US10Y↔SPX". null 은 대조 못 함. */
+  corr_pair: string | null;
+  observed_corr: number | null;
+  observed_corr_prior: number | null;
+  corr_observations: number;
+  corr_check: "confirmed" | "weakened" | "reversed" | "unknown";
 }
 
 export interface ImpactMap {
@@ -248,6 +287,13 @@ export interface MovingItem {
   change_display: string;
   direction: Direction;
   arrow: string;
+  /** 1주 전(5봉 전) 시점의 z. */
+  z_week_ago: number | null;
+  /** 장기 백분위 0~100 와 그 계산에 쓰인 봉 수. */
+  percentile: number | null;
+  percentile_observations: number;
+  change_3m: number | null;
+  change_3m_display: string;
 }
 
 export interface DataHealth {
@@ -301,6 +347,19 @@ export type ThermometerBand =
   | "frozen"
   | "unknown";
 
+/** 온도계 재료 한 줄. 같은 눈금 위의 현재값과 1주 전 값. */
+export interface ThermoComponent {
+  key: string;
+  label: string;
+  kind: "factor" | "news";
+  value: number | null;
+  week_ago: number | null;
+  weight: number;
+  sign: number;
+  quality: string | null;
+  note: string;
+}
+
 /**
  * 센티멘트 온도계. 바늘이 셋 — 가격·뉴스·종합. null 은 '측정하지 못함'.
  * 두 바늘의 거리(gap)가 곧 "내러티브와 가격이 맞는가" 다.
@@ -322,8 +381,41 @@ export interface SentimentThermometer {
   price_breakdown: ScoreBreakdown | null;
   news_breakdown: ScoreBreakdown | null;
   confidence_breakdown: ScoreBreakdown | null;
+  /** 1주 전. 가격은 시계열에서, 뉴스·종합은 저장된 스냅샷에서만 온다. */
+  price_week_ago: number | null;
+  news_week_ago: number | null;
+  composite_week_ago: number | null;
+  week_ago_source: "none" | "series" | "snapshot";
+  week_ago_as_of: string | null;
+  components: ThermoComponent[];
   news_events: number;
   llm_events: number;
+  note: string;
+}
+
+export interface CalendarEvent {
+  id: string;
+  date: string;
+  label: string;
+  kind: string;
+  region: string | null;
+  weight: number;
+  /** 1차 출처로 확인한 날짜인가. false 면 '(미확인)'. */
+  verified: boolean;
+  note: string;
+  days_until: number | null;
+}
+
+/** 이벤트 창 판정. active 면 지속성 가중과 알림 임계가 조정돼 있다. */
+export interface EventWindow {
+  as_of: string;
+  active: boolean;
+  in_window: CalendarEvent[];
+  upcoming: CalendarEvent[];
+  window_days_before: number;
+  window_days_after: number;
+  persistence_scale: number;
+  alert_threshold_scale: number;
   note: string;
 }
 
@@ -333,6 +425,7 @@ export interface IntelligenceSnapshot {
   scenario: string | null;
   market_state: MarketState;
   thermometer: SentimentThermometer | null;
+  calendar: EventWindow | null;
   themes: ThemeState[];
   divergences: Divergence[];
   alerts: Alert[];

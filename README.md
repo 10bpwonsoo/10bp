@@ -200,6 +200,7 @@ python -m marketpulse.cli backtest --db data/snapshots.db \
 | `scoring.yaml` | 모든 가중치와 임계값 |
 | `lexicon.yaml` | 감성 사전 + 방향 사전. 두 축은 독립이다 |
 | `relationships.yaml` | 사건→테마→매크로→업종→자산 사전 정의 관계 46개 |
+| `calendar.yaml` | 중앙은행 회의 일정. `verified` 가 거짓이면 화면에 `(미확인)` |
 | `sources.yaml` | 종목별 공급자 우선순위. "어디서 가져오는가" |
 | `feeds.yaml` | RSS 뉴스 피드 |
 | `scoring.yaml` 의 `relationship` | 실측 반응을 판정하는 최소 \|z\| |
@@ -223,6 +224,7 @@ cp .env.example .env
 | `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약·웹검색에 쓰는 모델 |
 | `MARKETPULSE_NEWS_SEARCH` | `auto` | LLM 웹검색으로 기사 찾기. `auto` RSS 가 0건일 때만 / `on` 항상 병합 / `off` |
 | `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
+| `MARKETPULSE_HISTORY_BARS` | `300` | 어댑터에 요청하는 히스토리 봉 수. 1년 백분위(252)와 한 분기 전 상관(60+63)에 필요하다 |
 | `MARKETPULSE_LLM_SEARCH_TIMEOUT_SEC` | `90` | LLM 웹검색 호출 타임아웃. 서버 측 검색이 여러 번 돌아 추출(8초)보다 훨씬 길다 |
 | `MARKETPULSE_NEWS_LIMIT` | `60` | 실데이터에서 받을 기사 수 |
 | `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요. 있으면 자동으로 켜진다 |
@@ -310,6 +312,33 @@ Market State 패널 오른쪽의 게이지. −100(결빙) ~ +100(과열) 한 �
 둘의 **종합**(0.6 / 0.4). 두 바늘의 거리가 임계(30)를 넘으면 내러티브 괴리로
 표시한다. 새 데이터는 쓰지 않고, 한쪽이 없으면 나머지로만 재며 그 사실을
 문장과 신뢰도에 남긴다. 가중치는 `config/scoring.yaml` 의 `thermometer` 절.
+
+### GOAL Kickstart 에서 차용한 것 (2026-09-15)
+
+GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 여덟 가지를
+옮겼다. 전부 결정론이고, 새로 붙은 외부 데이터는 없다 — 이미 받던 시계열을
+더 길게(300봉) 받아 더 많이 읽을 뿐이다.
+
+| # | 무엇 | 어디에 | 근거 |
+|---|---|---|---|
+| 1 | **장기 백분위 + 3개월 변화** — 60일 z 옆에 "역사 속 위치" | What's Moving 열, Main Drivers | `MarketFeature.percentile_1y` · `percentile_observations`(252 미만이면 라벨에 봉 수) · `ret_3m` |
+| 2 | **재료 스트립** — 온도를 만든 factor·뉴스를 한 눈금 위에 ● 현재 / ◇ 1주 전 | 온도계 아래 | `SentimentThermometer.components` |
+| 3 | **1주 전 표식** — 가격에서 나오는 값은 시계열(5봉 전)에서, 뉴스가 섞인 값(온도계 뉴스·종합, 테마 점수)은 저장된 1주 전 스냅샷에서만 | 온도계 ◇, 히트맵 Δ1w 열, What's Moving 막대 ◇, Main Drivers | `z_1d_week_ago` · `FactorScore.week_ago` · `SnapshotRepository.at_or_before()` |
+| 4 | **상관 레짐 대조** — 사전 정의 관계를 두 끝 대표 자산의 60일 변화량 상관으로 대조. 확인/약화/뒤집힘. 뒤집힘과 감시 쌍의 분기 대비 부호 반전은 `CORRELATION_REGIME` 괴리 | Impact Map 긴 점선, Divergence | `MarketSnapshot.correlations`(CorrelationBook) · `RelationshipEdge.corr_check` · `divergence_rules.yaml correlation_regime` |
+| 5 | **지배 축** — 후보 중 \|z\| 최대 자산과 그것에 ±0.3 이상 연동된 자산 | Market State | `MarketState.dominant_axis` · `scoring.yaml market_state.axis_*` |
+| 6 | **이벤트 달력** — 중앙은행 회의 D-2 안이면 confidence 의 지속성 가중 ×0.5, 급변 알림 임계 ×1.25. 판정은 안 바꾼다 | Market State 배지 | `config/calendar.yaml` · `IntelligenceSnapshot.calendar` · 날짜 `verified` 플래그 |
+| 7 | **변동성 프리미엄** — VIX − S&P 20일 실현변동성 (연율 %p) | Volatility factor, `risk_event_without_vol_premium` 괴리, What's Moving | 파생 op `vol_premium` · `VIX_RV_SPX` · `VKOSPI_RV_KOSPI` |
+| 8 | **경기민감/방어** — XLY ÷ XLU | RiskAppetite factor | `CYC_DEF` |
+
+세 가지 정직성 규칙이 그대로 적용된다. 결측은 0 이 아니다(스트립의 결측 재료는
+값 없이 줄만 남고, 저장 스냅샷이 없으면 Δ1w 는 빈 칸이다). 상관은 인과가
+아니다(지배 축 문장이 그렇게 말한다). 미확인 날짜는 `(미확인)` 을 달고 나간다.
+임계값은 전부 `config/scoring.yaml` 의 `correlation` · `calendar` ·
+`market_state.axis_*` 절에 있다.
+
+빌리지 않은 것 — 자산배분 추천표, 로짓 침체·드로다운 확률, PCA 위험선호.
+앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
+그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
 ### 수급(flow) 신호는 꺼져 있다
 

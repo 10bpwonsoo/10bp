@@ -96,6 +96,8 @@ sources:
               {provider: github, path: "datasets/finance-vix/main/data/vix-daily.csv", date_col: DATE, value_col: CLOSE}]
   MOVE:      [{provider: yahoo, symbol: "^MOVE"}]
   VKOSPI:    [{provider: krx, dataset: index, symbol: "코스피 200 변동성지수"}]
+  # VIX_RV_SPX / VKOSPI_RV_KOSPI 는 derived_from(vol_premium) 으로 계산된다.
+  # CYC_DEF 도 derived_from(ratio) 이다. 여기 적지 않는다.
 
   # ── Credit ────────────────────────────────────────────
   US_HY_OAS: [{provider: fred, symbol: "BAMLH0A0HYM2", scale: 100.0}]

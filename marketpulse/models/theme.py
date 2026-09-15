@@ -103,6 +103,8 @@ class ThemeState(Base):
 
     last_change: float = 0.0
     last_change_window: str = "1tick"
+    #: 약 1주 전 저장 스냅샷의 테마 점수. 저장이 없으면 None — 0 이 아니다.
+    week_ago_score: float | None = None
 
     supporting_events: list[str] = Field(default_factory=list)
     supporting_instruments: list[str] = Field(default_factory=list)

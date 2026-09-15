@@ -51,6 +51,10 @@ class FactorScore(Base):
     score: float = Field(description="z 단위. 대략 -3 ~ +3")
     breakdown: ScoreBreakdown
     data_quality: DataQualityBand = DataQualityBand.OK
+    week_ago: float | None = Field(
+        default=None,
+        description="5봉 전 시점에 같은 식으로 계산한 factor. 오늘 값 옆의 '1주 전' 표식용",
+    )
 
 
 class RuleMatch(Base):
@@ -85,6 +89,39 @@ class DriverItem(Base):
     z: float
     direction: Direction
     arrow: str
+    z_week_ago: float | None = Field(default=None, description="1주 전 시점의 z_1d")
+    percentile: float | None = Field(default=None, description="장기 백분위 0~100")
+    percentile_observations: int = Field(default=0, description="백분위에 쓰인 봉 수")
+
+
+class AxisLink(Base):
+    """지배 축과 한 자산의 연동. 60일 변화량 상관이다."""
+
+    instrument_id: str
+    label: str
+    corr: float = Field(ge=-1.0, le=1.0)
+    prior: float | None = Field(default=None, description="한 분기 전 창의 상관")
+    z: float | None = Field(default=None, description="그 자산의 오늘 z_1d")
+
+
+class DominantAxis(Base):
+    """
+    지금 시장을 가장 크게 흔든 축과, 그 축에 무엇이 얼마나 연동돼 있는가.
+
+    GOAL Kickstart Exhibit 4 ("Fed 가격 반영과의 상관") 의 일반화다. 축은
+    후보 중 |z| 가 가장 큰 자산으로 결정론적으로 고른다. 연동은 롤링
+    상관이지 인과가 아니다 — 문장도 그렇게 쓴다.
+    """
+
+    instrument_id: str
+    label: str
+    z: float
+    z_week_ago: float | None = None
+    arrow: str = "→"
+    window: int = Field(default=60, description="상관 창 (봉)")
+    positive: list[AxisLink] = Field(default_factory=list, description="같은 방향으로 연동")
+    negative: list[AxisLink] = Field(default_factory=list, description="반대 방향으로 연동")
+    note: str = ""
 
 
 class ConfirmationResult(Base):
@@ -110,6 +147,9 @@ class MarketState(Base):
     factors: dict[str, FactorScore] = Field(default_factory=dict)
     hypotheses: list[StateHypothesis] = Field(default_factory=list)
     main_drivers: list[DriverItem] = Field(default_factory=list)
+    dominant_axis: DominantAxis | None = Field(
+        default=None, description="지배 축과 연동 자산. None 은 축 후보가 조용했거나 상관이 없는 것"
+    )
     cross_asset_confirmation: ConfirmationResult = Field(
         default_factory=ConfirmationResult
     )

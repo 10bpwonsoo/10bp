@@ -176,7 +176,40 @@ def derive(op: str, a: list[float], b: list[float]) -> list[float]:
     if op == "spread":
         # 금리 스프레드는 bp 로 표현한다. 4.20% - 3.90% = 30bp.
         return [float((x - y) * 100.0) for x, y in zip(a, b)]
+    if op == "vol_premium":
+        return vol_premium(a, b)
     raise ValueError(f"알 수 없는 파생 연산: {op}")
+
+
+#: 실현변동성 창. FeatureEngine 의 realized_vol_20d 와 같은 정의다.
+REALIZED_VOL_BARS = 20
+#: 연율화 계수. 영업일 기준.
+TRADING_DAYS = 252
+
+
+def vol_premium(implied: list[float], price: list[float]) -> list[float]:
+    """
+    내재변동성(연율 %) − 기초 가격의 20봉 실현변동성(연율 %).
+
+    GS GOAL 이 "3개월 내재 13.8 (40th pct) vs 1개월 실현 9.3 (25th pct)" 로
+    나란히 놓는 그 값이다. 처음 20봉은 실현변동성이 없어 NaN 이다 — 0 으로
+    채우면 "프리미엄이 없다" 는 거짓이 된다. 어댑터가 NaN 봉을 버린다.
+    """
+    out: list[float] = []
+    logs = [math.log(v) if v > 0 and math.isfinite(v) else float("nan") for v in price]
+    for i, iv in enumerate(implied):
+        if i < REALIZED_VOL_BARS:
+            out.append(float("nan"))
+            continue
+        window = [logs[j] - logs[j - 1] for j in range(i - REALIZED_VOL_BARS + 1, i + 1)]
+        if any(not math.isfinite(r) for r in window):
+            out.append(float("nan"))
+            continue
+        mean = sum(window) / len(window)
+        var = sum((r - mean) ** 2 for r in window) / (len(window) - 1)
+        realized = math.sqrt(var) * math.sqrt(TRADING_DAYS) * 100.0
+        out.append(float(iv - realized) if math.isfinite(iv) else float("nan"))
+    return out
 
 
 def stable_seed(*parts: str | int) -> int:

@@ -24,12 +24,28 @@ from typing import Sequence
 from ..models.common import ScoreBreakdown, ScoreContribution
 from ..models.news import NewsEvent
 from ..models.state import MarketState
-from ..models.thermometer import SentimentThermometer
+from ..models.thermometer import SentimentThermometer, ThermoComponent
 from .factors import QUALITY_CREDIT
 from .scoring import Component, load_scoring, renormalized_average, squash, weighted_z
 from .sentiment import decay_weight
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
+
+#: 매크로 factor 의 한국어 라벨. relationship.MACRO_LABELS 와 같은 표다 —
+#: 순환 import 를 피하려고 여기 다시 적는다.
+FACTOR_LABELS: dict[str, str] = {
+    "Growth": "성장",
+    "Inflation": "인플레이션",
+    "Rates": "금리",
+    "USD": "달러",
+    "Liquidity": "유동성",
+    "RiskAppetite": "위험선호",
+    "Credit": "신용",
+    "Volatility": "변동성",
+    "China": "중국",
+    "KoreaFlow": "한국 수급",
+    "KoreaBreadth": "한국 시장폭",
+}
 
 #: 뉴스 온도 계산 근거에 남길 기사 수. 전부 남기면 응답이 커진다.
 NEWS_BREAKDOWN_LIMIT = 8
@@ -42,10 +58,13 @@ def _cfg(config_dir: Path | None) -> dict:
 
 
 def price_temperature(
-    state: MarketState, *, config_dir: Path | None = None
+    state: MarketState, *, week_ago: bool = False, config_dir: Path | None = None
 ) -> tuple[float | None, ScoreBreakdown, float]:
     """
     가격 온도. Returns: (온도 또는 None, 근거, 품질 가중 확보율 0~1)
+
+    week_ago 가 참이면 factor 의 1주 전 값(FactorScore.week_ago)으로 같은
+    식을 돌린다. 가중치도 부호도 같다 — 잣대가 같아야 옆에 놓을 수 있다.
 
     확보율은 단순 개수가 아니라 factor 품질을 곱한다. 종목 하나로 만든
     factor(INSUFFICIENT) 는 있어도 없는 것처럼 센다 — 그것이 "RiskAppetite
@@ -64,9 +83,13 @@ def price_temperature(
 
     def resolve(name: str) -> float | None:
         fs = state.factors.get(name)
-        return fs.score if fs is not None else None
+        if fs is None:
+            return None
+        return fs.week_ago if week_ago else fs.score
 
-    z, breakdown, _ = weighted_z(components, resolve, method="thermometer_price_v1")
+    z, breakdown, _ = weighted_z(
+        components, resolve, method="thermometer_price_week_ago_v1" if week_ago else "thermometer_price_v1"
+    )
 
     total_w = sum(c.weight for c in components)
     credit = sum(
@@ -172,18 +195,92 @@ def _note(
     return " ".join(parts)
 
 
+def build_components(
+    state: MarketState,
+    news: float | None,
+    news_week_ago: float | None,
+    *,
+    config_dir: Path | None = None,
+) -> list[ThermoComponent]:
+    """
+    스트립 한 줄씩. factor 는 sign 을 곱해 "뜨거운 쪽이 +" 로 맞춘 뒤 squash.
+
+    결측 factor 도 줄은 남긴다 — 값이 None 인 채로. 화면이 "이 재료는
+    없었다" 를 보여야 온도가 무엇으로 만들어졌는지 정직해진다.
+    """
+    cfg = _cfg(config_dir)
+    std = load_scoring(config_dir)["standardize"]
+    scale, divisor = float(std["squash_scale"]), float(std["squash_divisor"])
+
+    def sq(z: float | None, sign: int) -> float | None:
+        return None if z is None else squash(sign * z, scale=scale, divisor=divisor)
+
+    out: list[ThermoComponent] = []
+    for c in cfg["price_components"]:
+        key = str(c["factor"])
+        sign = int(c.get("sign", 1))
+        fs = state.factors.get(key)
+        out.append(
+            ThermoComponent(
+                key=key,
+                label=FACTOR_LABELS.get(key, key),
+                kind="factor",
+                value=sq(fs.score, sign) if fs else None,
+                week_ago=sq(fs.week_ago, sign) if fs else None,
+                weight=float(c["weight"]),
+                sign=sign,
+                quality=fs.data_quality.value if fs else None,
+                note=(
+                    f"factor z × 부호({sign:+d}) 를 squash. 가격 온도 가중 {float(c['weight']):.2f}"
+                    if fs
+                    else "이 factor 는 계산되지 않았다 — 구성 자산이 없다"
+                ),
+            )
+        )
+    blend = cfg["blend"]
+    out.append(
+        ThermoComponent(
+            key="news",
+            label="뉴스 감성",
+            kind="news",
+            value=news,
+            week_ago=news_week_ago,
+            weight=float(blend["news"]),
+            sign=1,
+            quality=None,
+            note="감쇠·영향도·출처 가중 기사 감성. 1주 전 값은 저장된 스냅샷에서만 온다",
+        )
+    )
+    return out
+
+
 def compute_thermometer(
     state: MarketState,
     events: Sequence[NewsEvent],
     as_of: datetime,
     *,
     previous: SentimentThermometer | None = None,
+    week_ago: SentimentThermometer | None = None,
     config_dir: Path | None = None,
 ) -> SentimentThermometer:
+    """
+    previous 는 직전 틱(추세 화살표용), week_ago 는 약 1주 전 저장 스냅샷의
+    온도계(뉴스·종합의 1주 전 표식용)다. 가격의 1주 전은 저장 없이 시계열에서
+    잰다 — factor 가 이미 5봉 전 값을 들고 있다.
+    """
     cfg = _cfg(config_dir)
 
     price, price_bd, price_cov = price_temperature(state, config_dir=config_dir)
     news, news_bd, n_events = news_temperature(events, as_of, config_dir=config_dir)
+    price_week_ago, _, _ = price_temperature(state, week_ago=True, config_dir=config_dir)
+    news_week_ago = week_ago.news if week_ago is not None else None
+    composite_week_ago = week_ago.composite if week_ago is not None else None
+    if week_ago is not None:
+        source = "snapshot"
+    elif price_week_ago is not None:
+        source = "series"
+    else:
+        source = "none"
 
     blend = {k: float(v) for k, v in cfg["blend"].items()}
     composite, unknown = renormalized_average({"price": price, "news": news}, blend)
@@ -271,6 +368,12 @@ def compute_thermometer(
         price_breakdown=price_bd if price is not None else None,
         news_breakdown=news_bd if news is not None else None,
         confidence_breakdown=conf_bd if composite is not None else None,
+        price_week_ago=price_week_ago,
+        news_week_ago=news_week_ago,
+        composite_week_ago=composite_week_ago,
+        week_ago_source=source,  # type: ignore[arg-type]
+        week_ago_as_of=week_ago.as_of if week_ago is not None else None,
+        components=build_components(state, news, news_week_ago, config_dir=config_dir),
         news_events=n_events,
         llm_events=sum(1 for e in events if e.extractor == "llm"),
         note=_note(composite, price, news, band_label, gap_flag, threshold, n_events, delta),

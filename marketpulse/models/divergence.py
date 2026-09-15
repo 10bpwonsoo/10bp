@@ -23,6 +23,8 @@ class DivergenceType(StrEnum):
     RISK_VS_VOL = "RISK_VS_VOL"
     OIL_VS_INFLATION_EXP = "OIL_VS_INFLATION_EXP"
     BREADTH_VS_INDEX = "BREADTH_VS_INDEX"
+    #: 사전 정의 관계 또는 한 분기 전 상관과 지금 상관의 부호가 갈린다.
+    CORRELATION_REGIME = "CORRELATION_REGIME"
 
 
 class SeverityBand(StrEnum):

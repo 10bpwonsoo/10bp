@@ -24,7 +24,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Mapping, Sequence
 
 from ..ai.client import LLMClient, build_client
@@ -42,6 +42,8 @@ from ..models.divergence import Divergence
 from ..models.state import FactorScore, MarketState, StateLabel
 from ..models.theme import ThemeState
 from .alert import build_alerts, carry_forward
+from .calendar import ENGINE_VERSION as CALENDAR_VERSION, event_window
+from .correlation import ENGINE_VERSION as CORRELATION_VERSION
 from .divergence import detect_divergences, pending_candidates
 from .market_state import compute_market_state
 from .normalize import build_snapshot
@@ -66,8 +68,15 @@ ENGINE_VERSIONS: dict[str, str] = {
     "llm_extractor": "0.1.0",
     "summarizer": "0.1.0",
     "thermometer": THERMOMETER_VERSION,
-    "orchestrator": "0.4.0-p5",
+    "correlation": CORRELATION_VERSION,
+    "calendar": CALENDAR_VERSION,
+    "orchestrator": "0.5.0-p6",
 }
+
+#: "1주 전" 스냅샷을 찾을 때 허용하는 거리. 7일을 물었는데 이보다 더 오래된
+#: 것밖에 없으면 없는 것으로 친다. 그 이상은 1주 전이 아니다.
+WEEK_AGO_TARGET = timedelta(days=7)
+WEEK_AGO_TOLERANCE = timedelta(days=3)
 
 #: Theme Stability 계산에 쓰는 과거 틱 수 (설계서 STEP 5.7).
 THEME_HISTORY_TICKS = 6
@@ -115,6 +124,14 @@ def build_whats_moving(
                 change_display=_format_change(ins, feat.ret_1d),
                 direction=direction_for(feat.z_1d),
                 arrow=arrow_for(feat.z_1d),
+                z_week_ago=feat.z_1d_week_ago,
+                # 60일 z 는 "최근 두 달 대비 이례적인가" 만 답한다. "역사적으로
+                # 어디 있는가" 는 백분위가 답한다 — 10년물 5% 가 60일 z 로는
+                # +0.9σ 지만 1년 백분위로는 98% 인 식이다.
+                percentile=feat.percentile_1y,
+                percentile_observations=feat.percentile_observations,
+                change_3m=feat.ret_3m,
+                change_3m_display=_format_change(ins, feat.ret_3m),
             )
         )
     rows.sort(key=lambda r: abs(r.z or 0.0), reverse=True)
@@ -292,6 +309,7 @@ def build_intelligence(
     pending_divergences: Sequence[Divergence] = (),
     pending_out: list[Divergence] | None = None,
     llm_client: LLMClient | None = None,
+    week_ago: IntelligenceSnapshot | None = None,
 ) -> IntelligenceSnapshot:
     """
     순수 함수. 스냅샷과 뉴스를 받아 최종 인텔리전스를 만든다.
@@ -299,11 +317,18 @@ def build_intelligence(
     history 는 오래된 것부터 정렬된 과거 스냅샷이다. Persistence(상태 판정의
     지속성)와 Stability(테마 점수의 안정성) 계산에 쓴다. 비어 있으면 두 항은
     None 이 되고 confidence 가중치가 재정규화된다 — 0 으로 채우지 않는다.
+
+    week_ago 는 약 1주 전 저장 스냅샷이다 (GOAL Kickstart 의 'Latest vs
+    1-week ago' 관례). 뉴스가 섞인 값(온도계 뉴스·종합, 테마 점수)의 1주 전
+    표식에만 쓴다. 가격에서 나오는 값의 1주 전은 시계열에서 직접 잰다.
     """
     timings = dict(timings_ms or {})
     previous = history[-1] if history else None
     notes = list(warnings or [])
     themes_registry = get_themes().by_id()
+
+    # 이벤트 창. as_of 와 달력 파일만으로 결정된다 — 시계를 읽지 않는다.
+    calendar = event_window(market_snapshot.as_of)
 
     # LLM 은 파이프라인 바깥의 enrichment 다. 꺼져 있거나 실패하면 룰
     # 추출기로 돌아가고, 아래 정량 경로는 전혀 영향을 받지 않는다.
@@ -322,6 +347,7 @@ def build_intelligence(
         market_snapshot,
         instruments_by_id,
         previous_label=previous.market_state.primary_label if previous else None,
+        persistence_scale=calendar.persistence_scale,
     )
     timings["market_state"] = (time.perf_counter() - t) * 1000.0
 
@@ -336,6 +362,12 @@ def build_intelligence(
             th_id: theme_score_history(history, th_id) for th_id in themes_registry
         },
     )
+    if week_ago is not None:
+        week_scores = {ts.theme_id: ts.theme_score for ts in week_ago.themes}
+        themes = [
+            ts.model_copy(update={"week_ago_score": week_scores.get(ts.theme_id)})
+            for ts in themes
+        ]
     timings["theme"] = (time.perf_counter() - t) * 1000.0
 
     # 직전 틱의 확정 괴리와 미확정 후보를 합쳐 지속 기간을 잇는다.
@@ -374,6 +406,7 @@ def build_intelligence(
         observed=build_observations(
             market_snapshot, instruments_by_id, market_state.factors
         ),
+        correlations=market_snapshot.correlations,
     )
     timings["relationship"] = (time.perf_counter() - t) * 1000.0
 
@@ -415,6 +448,7 @@ def build_intelligence(
         events,
         market_snapshot.as_of,
         previous=previous.thermometer if previous else None,
+        week_ago=week_ago.thermometer if week_ago else None,
     )
     timings["thermometer"] = (time.perf_counter() - t) * 1000.0
 
@@ -441,6 +475,7 @@ def build_intelligence(
         ),
         previous_divergences=previous.divergences if previous else (),
         previous_alerts=previous.alerts if previous else (),
+        threshold_scale=calendar.alert_threshold_scale,
     )
     # 조건이 아직 참인 대상. 괴리가 이어지는 동안 그 알림은 해소가 아니다.
     live_subjects = {d.id for d in divergences} | {
@@ -470,6 +505,7 @@ def build_intelligence(
         scenario=scenario,
         market_state=market_state,
         thermometer=thermometer,
+        calendar=calendar,
         themes=themes,
         divergences=divergences,
         alerts=alerts,
@@ -502,6 +538,7 @@ def run_pipeline(
     as_of: datetime | None = None,
     history: Sequence[IntelligenceSnapshot] = (),
     pending_divergences: Sequence[Divergence] = (),
+    week_ago: IntelligenceSnapshot | None = None,
 ) -> IntelligenceSnapshot:
     """한 틱 실행. 대부분의 호출자는 스냅샷만 필요하다."""
     return run_pipeline_detailed(
@@ -509,6 +546,7 @@ def run_pipeline(
         as_of=as_of,
         history=history,
         pending_divergences=pending_divergences,
+        week_ago=week_ago,
     ).snapshot
 
 
@@ -518,6 +556,7 @@ def run_pipeline_detailed(
     as_of: datetime | None = None,
     history: Sequence[IntelligenceSnapshot] = (),
     pending_divergences: Sequence[Divergence] = (),
+    week_ago: IntelligenceSnapshot | None = None,
 ) -> PipelineResult:
     """I/O 를 포함한 한 tick 실행. 어댑터 -> 정규화 -> 엔진."""
     # 지연 import: 레지스트리 캐시와 순환 참조를 피한다.
@@ -585,5 +624,6 @@ def run_pipeline_detailed(
         pending_divergences=pending_divergences,
         pending_out=pending,
         llm_client=llm_client,
+        week_ago=week_ago,
     )
     return PipelineResult(snapshot=result, pending=pending)

@@ -89,6 +89,26 @@ class RelationshipEdge(Base):
     created_at: datetime = Field(default_factory=utcnow)
     verified_by: str | None = None
 
+    # ── 실측 상관 대조 (GOAL Kickstart 의 상관 모니터 차용) ─────────────
+    # 사전 정의 관계는 가설이다. 그 가설을 두 끝의 대표 자산 간 롤링 상관으로
+    # 대조한 결과가 여기 붙는다. 관계 자체(direction/strength)는 바꾸지 않는다
+    # — 사람이 적은 것과 시장이 보여준 것을 나란히 두는 것이 목적이다.
+    corr_pair: str | None = Field(
+        default=None, description='대조에 쓴 대표 자산 쌍. 예 "US10Y↔SPX"'
+    )
+    observed_corr: float | None = Field(default=None, description="현재 창의 변화량 상관")
+    observed_corr_prior: float | None = Field(
+        default=None, description="한 분기 전 창의 상관. 부호가 갈리면 관계가 바뀐 것"
+    )
+    corr_observations: int = Field(default=0, description="상관에 쓰인 봉 수")
+    corr_check: Literal["confirmed", "weakened", "reversed", "unknown"] = Field(
+        default="unknown",
+        description=(
+            "confirmed 기대 부호로 충분히 큼 / weakened 부호를 말할 만큼 크지 않음 / "
+            "reversed 기대와 반대 부호 / unknown 대조하지 못함"
+        ),
+    )
+
 
 class ImpactMap(Base):
     as_of: datetime

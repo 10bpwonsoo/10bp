@@ -37,6 +37,7 @@ from ..models.market import Instrument, MarketSnapshot
 from ..models.state import MarketState, StateLabel
 from ..models.theme import Theme, ThemeState
 from .korean import fix_particles
+from .relationship import predefined_edges, validate_edges
 from .scoring import load_scoring, squash, unsquash
 
 ENGINE_VERSION = "0.1.0"
@@ -341,6 +342,96 @@ def _theme_asset_candidates(
     return out
 
 
+def _correlation_candidates(
+    snapshot: MarketSnapshot,
+    theme_registry: Mapping[str, Theme],
+    instruments_by_id: Mapping[str, Instrument],
+    rules: dict,
+    *,
+    config_dir: Path | None = None,
+) -> list[_Candidate]:
+    """
+    상관 레짐 괴리 (GOAL Kickstart Exhibit 5·48 차용).
+
+    두 갈래다.
+      (a) 사전 정의 관계가 실측에서 **뒤집힌** 경우. 왼쪽은 사람이 적은 관계
+          (부호 × 강도), 오른쪽은 대표 자산 쌍의 60일 변화량 상관이다.
+          '약화'(상관이 작음)는 후보로 올리지 않는다 — 40여 개 관계 중 절반은
+          어느 날이든 조용하고, 그것까지 괴리라 부르면 패널이 잡음이 된다.
+      (b) 감시 쌍의 상관이 한 분기 전과 **부호가 갈린** 경우. 주식/채권처럼
+          "정상" 부호를 미리 정할 수 없는 관계는 기대 대신 과거와 비교한다.
+          불확실한 관계에 확정 부호를 붙이지 않기 위해서다 (개발 규칙 11).
+    """
+    spec = rules.get("correlation_regime")
+    book = snapshot.correlations
+    if not spec or book is None:
+        return []
+
+    out: list[_Candidate] = []
+
+    edge_templates = spec.get("edge_explanation") or {}
+    if edge_templates:
+        edges = validate_edges(
+            predefined_edges(config_dir), book, themes_by_id=theme_registry, config_dir=config_dir
+        )
+        for e in edges:
+            if e.corr_check != "reversed" or e.observed_corr is None or not e.corr_pair:
+                continue
+            sign = {"positive": 1, "negative": -1}.get(e.direction, 0)
+            if sign == 0:
+                continue
+            a_id, b_id = e.corr_pair.split("↔")
+            a = instruments_by_id.get(a_id)
+            b = instruments_by_id.get(b_id)
+            pair_label = f"{a.name if a else a_id} ↔ {b.name if b else b_id}"
+            left = sign * e.strength * 100.0
+            right = e.observed_corr * 100.0
+            out.append(
+                _Candidate(
+                    key=f"corr_edge:{e.id}",
+                    type=DivergenceType.CORRELATION_REGIME,
+                    rule_id="correlation_regime_edge",
+                    subject=pair_label,
+                    legs=[
+                        _leg("사전 정의 관계", left),
+                        _leg(f"{book.window}일 상관", right),
+                    ],
+                    gap=abs(left - right),
+                    magnitude=max(abs(left), abs(right)),
+                    templates=edge_templates,
+                    related_assets=[a_id, b_id],
+                )
+            )
+
+    pair_templates = spec.get("pair_explanation") or {}
+    for w in spec.get("pairs", []) or []:
+        pc = book.pair(str(w["a"]), str(w["b"]))
+        if pc is None or pc.corr is None or pc.prior is None:
+            continue
+        a = instruments_by_id.get(pc.a)
+        b = instruments_by_id.get(pc.b)
+        label = str(w.get("label") or f"{a.name if a else pc.a} ↔ {b.name if b else pc.b}")
+        left = pc.prior * 100.0
+        right = pc.corr * 100.0
+        out.append(
+            _Candidate(
+                key=f"corr_pair:{w['id']}",
+                type=DivergenceType.CORRELATION_REGIME,
+                rule_id="correlation_regime_pair",
+                subject=label,
+                legs=[
+                    _leg(f"{book.prior_shift}봉 전 상관", left),
+                    _leg(f"현재 {book.window}일 상관", right),
+                ],
+                gap=abs(left - right),
+                magnitude=max(abs(left), abs(right)),
+                templates=pair_templates,
+                related_assets=[pc.a, pc.b],
+            )
+        )
+    return out
+
+
 def _passes_trigger(c: "_Candidate", trigger: dict) -> bool:
     if c.gap < float(trigger["min_gap"]):
         return False
@@ -379,6 +470,9 @@ def detect_divergences(
     candidates += _state_vol_candidates(state, snapshot, rules, divisor, scale)
     candidates += _theme_asset_candidates(
         themes, theme_registry, snapshot, instruments_by_id, rules, divisor, scale
+    )
+    candidates += _correlation_candidates(
+        snapshot, theme_registry, instruments_by_id, rules, config_dir=config_dir
     )
 
     prior = {d.id: d for d in previous}
@@ -452,6 +546,9 @@ def pending_candidates(
         + _state_vol_candidates(state, snapshot, rules, divisor, scale)
         + _theme_asset_candidates(
             themes, theme_registry, snapshot, instruments_by_id, rules, divisor, scale
+        )
+        + _correlation_candidates(
+            snapshot, theme_registry, instruments_by_id, rules, config_dir=config_dir
         )
     )
     prior = {d.id: d for d in previous}

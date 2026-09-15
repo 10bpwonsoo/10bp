@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Collection, Mapping, Sequence
 
 from ..models.alert import Alert, AlertState, AlertTrigger, AlertType
-from ..models.divergence import Divergence, SeverityBand
+from ..models.divergence import Divergence, DivergenceType, SeverityBand
 from ..models.market import AssetClass, Instrument, MarketSnapshot
 from ..models.snapshot import DataHealth
 from ..models.state import MarketState
@@ -101,8 +101,10 @@ def _new_divergences(
     previous: Sequence[Divergence],
     min_gap: float,
     theme_names: Mapping[str, str],
+    asset_names: Mapping[str, str] | None = None,
 ) -> list[_Draft]:
     known = {d.id for d in previous}
+    names = asset_names or {}
     out: list[_Draft] = []
     for d in divergences:
         if d.id in known:
@@ -110,11 +112,13 @@ def _new_divergences(
         left, right = (d.legs + d.legs)[:2]
         # 무엇에 대한 괴리인지 제목에서 바로 읽혀야 한다. 타입만 적으면
         # 같은 제목이 여러 줄 늘어서고 화면에서 구분이 안 된다.
-        subject_label = (
-            theme_names.get(d.related_theme, d.related_theme)
-            if d.related_theme
-            else (d.related_assets[0] if d.related_assets else d.type.value)
-        )
+        if d.related_theme:
+            subject_label = theme_names.get(d.related_theme, d.related_theme)
+        elif d.type is DivergenceType.CORRELATION_REGIME and len(d.related_assets) >= 2:
+            # 상관 괴리는 두 자산의 관계에 대한 것이다. 한쪽만 적으면 반쪽이다.
+            subject_label = " ↔ ".join(names.get(a, a) for a in d.related_assets[:2])
+        else:
+            subject_label = d.related_assets[0] if d.related_assets else d.type.value
         out.append(
             _Draft(
                 type=AlertType.DIVERGENCE_OPENED,
@@ -344,12 +348,22 @@ def build_alerts(
     previous_themes: Mapping[str, ThemeState] | None = None,
     previous_divergences: Sequence[Divergence] = (),
     previous_alerts: Sequence[Alert] = (),
+    threshold_scale: float = 1.0,
     config_dir: Path | None = None,
 ) -> list[Alert]:
-    """순수 함수. 직전 틱과 비교해 '변화' 를 알린다."""
+    """
+    순수 함수. 직전 틱과 비교해 '변화' 를 알린다.
+
+    threshold_scale 은 이벤트 창(중앙은행 회의 직전)에서 급변 임계를 올리는
+    배율이다. 가격·변동성·테마 급변에만 걸린다 — 상태 전환·괴리 발생·데이터
+    품질은 임계가 아니라 사건이라 그대로 둔다.
+    """
     scoring = load_scoring(config_dir)
     cfg = scoring["alert"]
-    thresholds = cfg["thresholds"]
+    thresholds = dict(cfg["thresholds"])
+    if threshold_scale != 1.0:
+        for key in ("price_zscore", "vol_spike_z", "theme_change"):
+            thresholds[key] = float(thresholds[key]) * threshold_scale
     min_gap = float(scoring["divergence"]["trigger"]["min_gap"])
     theme_names = {t.theme_id: t.name for t in themes}
     now = snapshot.as_of
@@ -358,7 +372,8 @@ def build_alerts(
     drafts: list[_Draft] = []
     drafts += _state_change(state, previous_state, thresholds)
     drafts += _new_divergences(
-        divergences, previous_divergences, min_gap, theme_names
+        divergences, previous_divergences, min_gap, theme_names,
+        asset_names={k: v.name for k, v in instruments_by_id.items()},
     )
     drafts += _price_and_vol_spikes(snapshot, instruments_by_id, thresholds)
     drafts += _theme_moves(themes, previous_themes or {}, thresholds)

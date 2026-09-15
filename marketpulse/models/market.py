@@ -17,6 +17,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from .common import Base, DataMeta, DataMode
+from .correlation import CorrelationBook
 
 
 class AssetClass(StrEnum):
@@ -42,14 +43,20 @@ class DerivedSpec(Base):
     """
     다른 instrument 두 개에서 파생되는 값.
 
-    ratio  = a / b        (예: Copper/Gold)
-    spread = a - b        (예: 2s10s 커브 = US10Y - US2Y)
+    ratio       = a / b        (예: Copper/Gold)
+    spread      = a - b        (예: 2s10s 커브 = US10Y - US2Y)
+    vol_premium = a - 실현변동성(b)
+                  a 는 내재변동성 지수(VIX, 연율 %), b 는 그 기초 가격 지수(SPX).
+                  실현변동성은 b 의 20봉 로그수익률 표준편차를 연율화한 것이다.
+                  양수면 시장이 실현된 것보다 더 큰 변동을 값으로 치르고 있고,
+                  음수면 실현된 변동조차 값에 반영하지 않는 안일함이다.
+                  처음 20봉은 실현변동성을 잴 수 없어 비어 있다 (0 이 아니다).
 
     어댑터가 기초 자산을 확보한 뒤 계산한다. 실데이터 어댑터(P4)에서도
     같은 규칙이 적용되므로 엔진은 파생 여부를 알 필요가 없다.
     """
 
-    op: Literal["ratio", "spread"]
+    op: Literal["ratio", "spread", "vol_premium"]
     a: str
     b: str
 
@@ -126,15 +133,28 @@ class MarketFeature(Base):
     ret_1d: float | None = None
     ret_5d: float | None = None
     ret_20d: float | None = None
+    ret_3m: float | None = Field(
+        default=None, description="63봉(≈3개월) 변화. ret_1d 와 같은 표시 단위"
+    )
     z_1d: float | None = None
     z_5d: float | None = None
     z_20d: float | None = None
+    z_1d_week_ago: float | None = Field(
+        default=None,
+        description="5봉 전 시점에 계산한 z_1d. 오늘 값 옆의 '1주 전' 표식용",
+    )
     zscore_window: int = 60
     realized_vol_20d: float | None = None
     rsi_14: float | None = None
     ma_dist_20: float | None = None
     ma_dist_60: float | None = None
-    percentile_1y: float | None = None
+    percentile_1y: float | None = Field(
+        default=None,
+        description="최근 최대 252봉 안에서의 백분위 0~100. 히스토리가 짧으면 그만큼만",
+    )
+    percentile_observations: int = Field(
+        default=0, description="백분위 계산에 실제로 쓰인 봉 수. 252 미만이면 '1년' 이 아니다"
+    )
     observations: int = Field(default=0, description="z 계산에 실제로 쓰인 관측치 수")
     meta: DataMeta
 
@@ -189,6 +209,8 @@ class MarketSnapshot(Base):
     features: dict[str, MarketFeature] = Field(default_factory=dict)
     expected_instruments: list[str] = Field(default_factory=list)
     missing: list[str] = Field(default_factory=list)
+    #: 자산 간 롤링 상관. None 은 계산하지 않은 것이다 (시계열이 없는 경로).
+    correlations: CorrelationBook | None = None
 
     @property
     def coverage(self) -> float:

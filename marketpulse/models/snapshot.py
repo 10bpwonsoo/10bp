@@ -14,6 +14,7 @@ from typing import Literal
 from pydantic import Field
 
 from .alert import Alert
+from .calendar import EventWindow
 from .common import Base, DataMode, Direction
 from .divergence import Divergence
 from .news import NewsEvent
@@ -34,6 +35,14 @@ class MovingItem(Base):
     change_display: str = ""
     direction: Direction = "flat"
     arrow: str = "→"
+    #: 1주 전 그 시점의 z. None 은 히스토리가 짧아 못 잰 것이다.
+    z_week_ago: float | None = None
+    #: 장기 백분위(0~100)와 그 계산에 쓰인 봉 수. 252 미만이면 '1년' 이 아니다.
+    percentile: float | None = None
+    percentile_observations: int = 0
+    #: 3개월 변화. change 와 같은 표시 단위.
+    change_3m: float | None = None
+    change_3m_display: str = ""
 
 
 class DataHealth(Base):
@@ -60,6 +69,8 @@ class IntelligenceSnapshot(Base):
     market_state: MarketState
     #: 센티멘트 온도계. None 은 엔진이 돌지 않은 옛 스냅샷이다.
     thermometer: SentimentThermometer | None = None
+    #: 이벤트 창 판정. None 은 엔진이 돌지 않은 옛 스냅샷이다.
+    calendar: EventWindow | None = None
     themes: list[ThemeState] = Field(default_factory=list)
     divergences: list[Divergence] = Field(default_factory=list)
     alerts: list[Alert] = Field(default_factory=list)

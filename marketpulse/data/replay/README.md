@@ -4,8 +4,9 @@
 `sources.yaml` 을 고칠 필요가 없다 — 파일이 있으면 자동으로 **마지막 후보**로
 붙고, 네트워크 공급자가 전부 실패하면 여기로 떨어진다.
 
-넣을 수 있는 것은 **45종목**이다. 47종목 중 파생 2개(`CURVE_2S10S`,
-`COPPER_GOLD`)는 기초 자산에서 계산되므로 넣으면 안 된다.
+넣을 수 있는 것은 **45종목**이다. 50종목 중 파생 5개(`CURVE_2S10S`,
+`COPPER_GOLD`, `CYC_DEF`, `VIX_RV_SPX`, `VKOSPI_RV_KOSPI`)는 기초 자산에서
+계산되므로 넣으면 안 된다.
 
 ---
 
@@ -175,12 +176,15 @@ Yahoo Finance `finance.yahoo.com/quote/<심볼>/history` → Download.
 
 ---
 
-## 넣으면 안 되는 것 (2종목)
+## 넣으면 안 되는 것 (5종목)
 
 | id | 계산식 |
 |---|---|
 | `CURVE_2S10S` | `US10Y − US2Y` |
 | `COPPER_GOLD` | `COPPER ÷ GOLD` |
+| `CYC_DEF` | `XLY ÷ XLU` (경기민감/방어) |
+| `VIX_RV_SPX` | `VIX − SPX 의 20일 실현변동성(연율 %)` |
+| `VKOSPI_RV_KOSPI` | `VKOSPI − KOSPI 의 20일 실현변동성(연율 %)` |
 
 기초 자산에서 자동 계산된다. 따로 넣으면 두 값이 어긋나고, 그 어긋남이
 Growth factor 로 그대로 들어간다. `sources.yaml` 에도 공급자가 없고
@@ -208,7 +212,7 @@ python -m marketpulse.cli probe --mode DELAYED --only US10Y,KR_FOREIGN_NET -v
 
 ## 최소 구성
 
-47종목을 다 채울 필요는 없다. 빠진 것은 **missing** 이고 그만큼
+50종목을 다 채울 필요는 없다. 빠진 것은 **missing** 이고 그만큼
 coverage 와 confidence 가 떨어질 뿐, 다른 값이 오염되지 않는다.
 
 핵심 화면이 돌아가려면 이 정도면 된다.

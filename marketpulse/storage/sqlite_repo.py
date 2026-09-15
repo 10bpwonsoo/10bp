@@ -6,6 +6,7 @@ import json
 import sqlite3
 import threading
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterator, Sequence
 
@@ -113,6 +114,27 @@ class SqliteSnapshotRepository(SnapshotRepository):
         if row is None:
             return []
         return [Divergence.model_validate(d) for d in json.loads(row["pending"])]
+
+    def at_or_before(
+        self, stream_key: str, target: datetime, *, max_distance: timedelta
+    ) -> IntelligenceSnapshot | None:
+        # as_of 는 UTC isoformat 문자열이라 사전순이 곧 시간순이다.
+        with self._lock:
+            row = self._conn.execute(
+                """
+                SELECT payload, as_of FROM snapshots
+                WHERE stream_key = ? AND as_of <= ?
+                ORDER BY as_of DESC
+                LIMIT 1
+                """,
+                (stream_key, target.isoformat()),
+            ).fetchone()
+        if row is None:
+            return None
+        found = datetime.fromisoformat(row["as_of"])
+        if target - found > max_distance:
+            return None
+        return IntelligenceSnapshot.model_validate(json.loads(row["payload"]))
 
     def prune(self, stream_key: str, keep: int) -> int:
         with self._cursor() as cur:

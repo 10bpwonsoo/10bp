@@ -94,6 +94,9 @@ export function ThemeHeatmap({
           테마<span className="heat-hint"> · 누르면 관련 기사</span>
         </span>
         <span style={{ textAlign: "right" }}>Score</span>
+        <span style={{ textAlign: "right" }} title="1주 전 저장 스냅샷 대비 점수 변화">
+          Δ1w
+        </span>
         <span style={{ textAlign: "right" }}>News</span>
         <span style={{ textAlign: "right" }}>Price</span>
         <span style={{ textAlign: "right" }}>Conf</span>
@@ -169,6 +172,24 @@ export function ThemeHeatmap({
                   </span>
                 </ScoreTooltip>
               </span>
+              {/* 1주 전 대비 (GOAL Kickstart 의 'Latest vs 1-week ago' 관례).
+                  저장된 1주 전 스냅샷이 없으면 빈 칸이다 — 0 이 아니다. */}
+              {(() => {
+                const d = t.week_ago_score === null ? null : t.theme_score - t.week_ago_score;
+                return (
+                  <span
+                    className={`num ${d === null ? "" : d >= 0 ? "up" : "down"}`}
+                    style={{ textAlign: "right", color: d === null ? "var(--faint)" : undefined }}
+                    title={
+                      d === null
+                        ? "1주 전 저장 스냅샷이 없어 비교하지 못함"
+                        : `1주 전 ${t.week_ago_score!.toFixed(0)} → 지금 ${t.theme_score.toFixed(0)}`
+                    }
+                  >
+                    {d === null ? "–" : `${d >= 0 ? "+" : ""}${d.toFixed(0)}`}
+                  </span>
+                );
+              })()}
               {/* 수급 열은 뺐다 — 무료 공급자가 없어 항상 결측이었고, 그 역할은
                   뉴스 감성이 맡는다 (scoring.yaml theme.use_flow). */}
               {[

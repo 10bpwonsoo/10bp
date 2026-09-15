@@ -23,6 +23,7 @@ from marketpulse.ai.summarizer import summarize
 from marketpulse.config.registry import get_instruments, get_themes
 from marketpulse.config.settings import Settings
 from marketpulse.engines.alert import build_alerts, carry_forward
+from marketpulse.engines.calendar import event_window
 from marketpulse.engines.divergence import detect_divergences, pending_candidates
 from marketpulse.engines.market_state import compute_market_state
 from marketpulse.engines.normalize import build_snapshot
@@ -86,10 +87,12 @@ def run_tick(
     market_snapshot, events, instruments_by_id, themes_registry, *, previous, pending_in
 ) -> tuple[IntelligenceSnapshot, list]:
     """build_intelligence() 의 추출 이후 단계를 그대로 재현한다."""
+    calendar = event_window(market_snapshot.as_of)
     market_state = compute_market_state(
         market_snapshot,
         instruments_by_id,
         previous_label=previous.market_state.primary_label if previous else None,
+        persistence_scale=calendar.persistence_scale,
     )
     themes = compute_theme_states(
         list(themes_registry.values()),
@@ -112,6 +115,7 @@ def run_tick(
     impact_maps = build_impact_maps(
         events, themes_registry, instruments_by_id, market_snapshot.as_of,
         observed=build_observations(market_snapshot, instruments_by_id, market_state.factors),
+        correlations=market_snapshot.correlations,
     )
     # 요약은 비활성 클라이언트로 — market_state 가 이미 들고 있는 템플릿
     # 문장을 그대로 쓴다. API 호출 0건.
@@ -137,6 +141,7 @@ def run_tick(
         previous_themes={ts.theme_id: ts for ts in previous.themes} if previous else None,
         previous_divergences=previous.divergences if previous else (),
         previous_alerts=previous.alerts if previous else (),
+        threshold_scale=calendar.alert_threshold_scale,
     )
     live_subjects = {d.id for d in divergences} | {a.subject for a in alerts}
     alerts += carry_forward(
@@ -157,6 +162,7 @@ def run_tick(
         scenario=None,
         market_state=market_state,
         thermometer=thermometer,
+        calendar=calendar,
         themes=themes,
         divergences=divergences,
         alerts=alerts,

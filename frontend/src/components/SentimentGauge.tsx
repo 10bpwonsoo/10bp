@@ -1,4 +1,4 @@
-import type { SentimentThermometer } from "../api/types";
+import type { SentimentThermometer, ThermoComponent } from "../api/types";
 import { Pending } from "./Panel";
 import { ScoreTooltip } from "./ScoreTooltip";
 
@@ -158,6 +158,43 @@ export function SentimentGauge({ t }: { t: SentimentThermometer | null }) {
           </g>
         )}
 
+        {/* ── 1주 전 표식 (GOAL Kickstart 의 'Latest vs 1-week ago' 관례).
+            가격의 1주 전은 시계열에서 잰 것이고 뉴스·종합은 저장 스냅샷에서만
+            온다. 있는 것만 그린다 — 없는 것을 0 에 그리지 않는다. ── */}
+        {t.composite_week_ago !== null && (
+          <line
+            x1={xOf(t.composite_week_ago)}
+            x2={xOf(t.composite_week_ago)}
+            y1={TRACK_Y - 5}
+            y2={TRACK_Y + TRACK_H + 5}
+            stroke="var(--muted)"
+            strokeWidth={1.2}
+            strokeDasharray="2 2"
+          >
+            <title>1주 전 종합 {fmt(t.composite_week_ago)}</title>
+          </line>
+        )}
+        {t.news_week_ago !== null && (
+          <polygon
+            points={`${xOf(t.news_week_ago) - 4},${TRACK_Y - 11} ${xOf(t.news_week_ago) + 4},${TRACK_Y - 11} ${xOf(t.news_week_ago)},${TRACK_Y - 4}`}
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth={1.2}
+          >
+            <title>1주 전 뉴스 {fmt(t.news_week_ago)}</title>
+          </polygon>
+        )}
+        {t.price_week_ago !== null && (
+          <polygon
+            points={`${xOf(t.price_week_ago) - 4},${TRACK_Y + TRACK_H + 11} ${xOf(t.price_week_ago) + 4},${TRACK_Y + TRACK_H + 11} ${xOf(t.price_week_ago)},${TRACK_Y + TRACK_H + 4}`}
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth={1.2}
+          >
+            <title>1주 전 가격 {fmt(t.price_week_ago)}</title>
+          </polygon>
+        )}
+
         {/* 종합 바늘. 배경색 링을 먼저 그려 채움과 분리한다 */}
         <line x1={xc} x2={xc} y1={TRACK_Y - 8} y2={TRACK_Y + TRACK_H + 8} stroke="var(--surface)" strokeWidth={6} />
         <line x1={xc} x2={xc} y1={TRACK_Y - 8} y2={TRACK_Y + TRACK_H + 8} stroke="var(--ink)" strokeWidth={2}>
@@ -259,9 +296,101 @@ export function SentimentGauge({ t }: { t: SentimentThermometer | null }) {
             격차 {fmt(t.gap)}
           </span>
         )}
+        <span
+          className="num"
+          style={{ color: "var(--faint)", fontSize: 11 }}
+          title={
+            t.week_ago_source === "snapshot"
+              ? `1주 전 저장 스냅샷 (${t.week_ago_as_of ? new Date(t.week_ago_as_of).toLocaleDateString("ko-KR") : ""}) 과 시계열에서`
+              : t.week_ago_source === "series"
+                ? "가격의 1주 전은 시계열(5봉 전)에서 잰다. 뉴스·종합의 1주 전은 저장된 스냅샷이 없어 표시하지 않는다."
+                : "1주 전 값을 잴 수 없다"
+          }
+        >
+          {t.week_ago_source === "none"
+            ? "1주 전 –"
+            : `1주 전 △${fmt(t.price_week_ago)}${t.news_week_ago !== null ? ` ▽${fmt(t.news_week_ago)}` : ""}${t.composite_week_ago !== null ? ` 종합 ${fmt(t.composite_week_ago)}` : ""}`}
+        </span>
       </div>
 
+      <SentimentStrip components={t.components} composite={t.composite} compositeWeekAgo={t.composite_week_ago} />
+
       <p className="gauge-note">{t.note}</p>
+    </div>
+  );
+}
+
+/**
+ * 재료 스트립 (GOAL Kickstart Exhibit 34 차용).
+ *
+ * 온도를 만든 재료를 한 줄씩, 같은 눈금(-100~+100) 위에 ● 현재와 ◇ 1주 전으로
+ * 찍는다. "어느 재료가 온도를 올렸는가" 가 한눈에 보여야 온도계가 설명
+ * 가능해진다 (요구 15-6). 결측 재료도 줄은 남긴다 — 값 없이. 온도가 무엇
+ * 없이 만들어졌는지도 정보다.
+ */
+function SentimentStrip({
+  components,
+  composite,
+  compositeWeekAgo,
+}: {
+  components: ThermoComponent[];
+  composite: number | null;
+  compositeWeekAgo: number | null;
+}) {
+  if (components.length === 0) return null;
+  const pos = (v: number) => `${((Math.max(-100, Math.min(100, v)) + 100) / 200) * 100}%`;
+  const rows: Array<{ key: string; label: string; value: number | null; week: number | null; title: string; head?: boolean; missing?: boolean }> = [
+    {
+      key: "composite",
+      label: "종합",
+      value: composite,
+      week: compositeWeekAgo,
+      title: "가격·뉴스 가중 결합",
+      head: true,
+    },
+    ...components.map((c) => ({
+      key: c.key,
+      label: c.label,
+      value: c.value,
+      week: c.week_ago,
+      title: `${c.note}${c.quality ? ` · 품질 ${c.quality}` : ""}`,
+      missing: c.value === null,
+    })),
+  ];
+  return (
+    <div className="strip" role="table" aria-label="온도계 재료별 현재값과 1주 전 값">
+      <div className="strip-axis-head mono" aria-hidden="true">
+        <span />
+        <span className="strip-axis-head-mid">
+          <span>냉각</span>
+          <span>◇ 1주 전 · ● 현재</span>
+          <span>과열</span>
+        </span>
+        <span />
+      </div>
+      {rows.map((r) => (
+        <div
+          key={r.key}
+          className={`strip-row${r.head ? " strip-head" : ""}${r.missing ? " strip-missing" : ""}`}
+          role="row"
+          title={r.title}
+        >
+          <span className="strip-label">{r.label}</span>
+          <span className="strip-axis" aria-hidden="true">
+            <span className="strip-zero" />
+            {r.week !== null && <span className="strip-ghost" style={{ left: pos(r.week) }} />}
+            {r.value !== null && (
+              <span
+                className="strip-dot"
+                style={{ left: pos(r.value), background: r.value >= 0 ? "var(--up)" : "var(--down)" }}
+              />
+            )}
+          </span>
+          <span className={`num strip-val ${r.value === null ? "" : r.value >= 0 ? "up" : "down"}`}>
+            {r.value === null ? "결측" : fmt(r.value)}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

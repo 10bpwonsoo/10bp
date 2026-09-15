@@ -124,6 +124,25 @@ state_vs_volatility:
         {subject} 판정이 섰는데 VIX 반응은 {right_value}에 그쳤다.
         시장이 이번 리스크를 아직 전면적으로 가격에 반영하지 않았다.
 
+  # 같은 질문을 변동성 프리미엄(내재 − 실현)으로 한 번 더 묻는다. VIX 레벨은
+  # 실현변동성이 같이 오르면 따라 오르지만, 프리미엄이 붙지 않으면 시장이
+  # "앞으로" 의 변동을 값으로 치르지 않는 것이다. GS GOAL 이 내재와 실현을
+  # 나란히 놓는 이유다.
+  - id: risk_event_without_vol_premium
+    type: RISK_VS_VOL
+    states: [GEOPOLITICAL_RISK, RISK_OFF, INFLATION_SHOCK, LIQUIDITY_STRESS]
+    instrument: VIX_RV_SPX
+    instrument_label: 변동성 프리미엄
+    max_vol_z: 0.5
+    explanation:
+      opposing: >
+        {subject} 판정이 섰는데 변동성 프리미엄(VIX − 실현변동성)은 오히려
+        {right_value}까지 줄었다. 시장이 앞으로의 변동을 값으로 치르지 않고 있다.
+      unresponsive: >
+        {subject} 판정 신뢰도는 {active_value}으로(로) 움직였으나 변동성
+        프리미엄(VIX − 실현변동성)은(는) {quiet_value}에 그쳤다. 내재변동성이
+        실현된 것 이상을 반영하지 않고 있다.
+
 theme_vs_asset:
   id: theme_vs_constituent
   type: THEME_VS_ASSET
@@ -137,3 +156,39 @@ theme_vs_asset:
     unresponsive: >
       {subject} 테마는 {left_value}인데 구성 자산인 {right}는 {right_value}로
       테마 움직임에 동참하지 않고 있다.
+
+# ── 상관 레짐 (GOAL Kickstart Exhibit 5·46~50 차용) ──────────────────
+# 사전 정의 관계는 가설이고, 롤링 상관이 그 실측이다. 둘의 부호가 갈리면
+# "관계가 뒤집혔다" 는 괴리다. 값은 모두 상관 × 100 이라 다른 괴리와 같은
+# 눈금(-100~+100)에 놓이고, 같은 트리거(min_gap·min_magnitude·지속 2틱)를
+# 그대로 탄다.
+correlation_regime:
+  # (a) 사전 정의 관계가 뒤집힌 경우. 왼쪽 = 부호 × 강도 × 100, 오른쪽 = 실측 상관 × 100.
+  edge_explanation:
+    opposing: >
+      {subject}의 사전 정의 관계는 {left_value}인데 최근 실측 상관은
+      {right_value}으로(로) 부호가 반대다. 사람이 적어 둔 관계와 시장이
+      보여주는 관계가 지금 다르다. 이 관계를 전제로 한 영향 경로는 보류해야 한다.
+    unresponsive: >
+      {subject}의 {active}은(는) {active_value}으로(로) 움직였으나
+      {quiet}은(는) {quiet_value}에 그쳤다. 사람이 적어 둔 관계가 지금은
+      작동하지 않고 있다.
+  # (b) 감시 쌍. "정상" 부호를 미리 정할 수 없는 관계는 기대 대신 한 분기 전
+  # 상관과 비교한다. 주식/채권 상관의 양전환이 대표적이다 — 채권이 헤지가
+  # 아니라 변동성 원천이 되는 레짐이다.
+  pairs:
+    - {id: equity_bond,   a: SPX,   b: US10Y,  label: "S&P 500 ↔ 미 10년 금리"}
+    - {id: equity_dollar, a: SPX,   b: DXY,    label: "S&P 500 ↔ 달러"}
+    - {id: kospi_krw,     a: KOSPI, b: USDKRW, label: "KOSPI ↔ 원달러"}
+    - {id: oil_equity,    a: BRENT, b: SPX,    label: "브렌트 ↔ S&P 500"}
+    - {id: gold_rates,    a: GOLD,  b: US10Y,  label: "금 ↔ 미 10년 금리"}
+    - {id: growth_rates,  a: NDX,   b: US10Y,  label: "나스닥100 ↔ 미 10년 금리"}
+  pair_explanation:
+    opposing: >
+      {subject}의 상관이 한 분기 전 {left_value}에서 지금 {right_value}으로(로)
+      부호가 뒤집혔다. 두 자산이 서로에게 갖는 의미가 바뀌었다 — 한쪽을
+      다른 쪽의 헤지로 쓰고 있었다면 지금은 그렇지 않다.
+    unresponsive: >
+      {subject}의 {active}은(는) {active_value}으로(로) 움직였으나
+      {quiet}은(는) {quiet_value}에 그쳤다. 두 자산을 묶어 읽던 관계가
+      한 분기 사이에 사라졌거나 새로 생겼다.

@@ -22,6 +22,7 @@ from typing import Iterable, Mapping, Sequence
 import yaml
 
 from ..config.settings import CONFIG_DIR
+from ..models.correlation import CorrelationBook
 from ..models.market import Instrument
 from ..models.news import NewsEvent
 from ..models.relationship import (
@@ -31,9 +32,11 @@ from ..models.relationship import (
     RelationshipNode,
 )
 from ..models.theme import Theme
+from .correlation import classify
+from .factors import load_factor_specs
 from .scoring import load_scoring
 
-ENGINE_VERSION = "0.3.0"
+ENGINE_VERSION = "0.4.0"
 
 
 @dataclass(frozen=True)
@@ -111,6 +114,106 @@ def predefined_edges(config_dir: Path | None = None) -> list[RelationshipEdge]:
 def _sector_labels(config_dir: Path | None = None) -> dict[str, str]:
     spec = load_relationship_spec(config_dir)
     return {s["id"]: s["label"] for s in spec.get("sectors", [])}
+
+
+# ──────────────────────────────────────────────────────────
+# 실측 상관 대조
+# ──────────────────────────────────────────────────────────
+_EDGE_SIGN = {"positive": 1, "negative": -1, "ambiguous": 0}
+
+
+def representative_instrument(
+    node_id: str,
+    *,
+    edges: Sequence[RelationshipEdge],
+    themes_by_id: Mapping[str, Theme],
+    config_dir: Path | None = None,
+) -> tuple[str, int] | None:
+    """
+    노드를 대표하는 가격 자산과 그 부호.
+
+    가격이 있어야 상관을 잴 수 있다. 자산은 자기 자신이고, 매크로 factor 는
+    가중치가 가장 큰 구성 자산(부호 포함), 업종은 가장 강한 관계로 이어진
+    ETF, 테마는 가중치가 가장 큰 매핑 자산(방향 포함)이다. 사건은 가격이
+    없다. 규칙은 결정론적이다 — 같은 설정이면 같은 대표다 (요구 14).
+    """
+    kind, _, ref = node_id.partition(":")
+    if kind == "asset":
+        return ref, 1
+    if kind == "macro":
+        spec = load_factor_specs(config_dir).get(ref)
+        if not spec or not spec.get("components"):
+            return None
+        best = max(spec["components"], key=lambda c: (float(c["weight"]), c["instrument_id"]))
+        return str(best["instrument_id"]), int(best.get("sign", 1))
+    if kind == "sector":
+        outs = [
+            e for e in edges
+            if e.source_id == node_id and e.target_id.startswith("asset:") and e.origin == "predefined"
+        ]
+        if not outs:
+            return None
+        best = max(outs, key=lambda e: (e.strength, e.id))
+        return best.target_id.partition(":")[2], _EDGE_SIGN.get(best.direction, 0)
+    if kind == "theme":
+        theme = themes_by_id.get(ref)
+        if theme is None or not theme.instruments:
+            return None
+        candidates = list(theme.instruments)
+        # 수급 신호를 끈 설정(theme.use_flow=false)에서는 수급 자산이 테마를
+        # 대표할 수 없다. 켜져 있어도 가격이 아닌 것으로 상관을 재면 안 된다.
+        if not load_scoring(config_dir)["theme"].get("use_flow", True):
+            candidates = [
+                ti for ti in candidates
+                if not ti.instrument_id.startswith("KR_") or "NET" not in ti.instrument_id
+            ]
+        if not candidates:
+            return None
+        best = max(candidates, key=lambda ti: (ti.weight, ti.instrument_id))
+        return best.instrument_id, int(best.direction)
+    return None
+
+
+def validate_edges(
+    edges: Sequence[RelationshipEdge],
+    book: CorrelationBook | None,
+    *,
+    themes_by_id: Mapping[str, Theme],
+    config_dir: Path | None = None,
+) -> list[RelationshipEdge]:
+    """
+    사전 정의 관계를 실측 상관으로 대조한다 (개발 규칙 11 의 실행).
+
+    관계는 바꾸지 않는다. 대조 결과만 붙인다. 화면은 reversed/weakened 를
+    점선으로 그려 "사람이 적은 관계와 시장이 보여준 관계가 지금 다르다" 는
+    것을 보이게 한다.
+    """
+    if book is None:
+        return list(edges)
+    out: list[RelationshipEdge] = []
+    for e in edges:
+        a = representative_instrument(e.source_id, edges=edges, themes_by_id=themes_by_id, config_dir=config_dir)
+        b = representative_instrument(e.target_id, edges=edges, themes_by_id=themes_by_id, config_dir=config_dir)
+        if a is None or b is None or a[0] == b[0]:
+            out.append(e)
+            continue
+        pair = book.pair(a[0], b[0])
+        if pair is None:
+            out.append(e)
+            continue
+        expected = _EDGE_SIGN.get(e.direction, 0) * a[1] * b[1]
+        out.append(
+            e.model_copy(
+                update={
+                    "corr_pair": f"{a[0]}↔{b[0]}",
+                    "observed_corr": pair.corr,
+                    "observed_corr_prior": pair.prior,
+                    "corr_observations": pair.observations,
+                    "corr_check": classify(pair.corr, expected, config_dir=config_dir),
+                }
+            )
+        )
+    return out
 
 
 class NodeResolver:
@@ -384,6 +487,7 @@ def build_impact_maps(
     max_depth: int = DEFAULT_MAX_DEPTH,
     limit: int = DEFAULT_MAP_LIMIT,
     observed: Mapping[str, Observation] | None = None,
+    correlations: CorrelationBook | None = None,
     config_dir: Path | None = None,
 ) -> list[ImpactMap]:
     """
@@ -392,8 +496,12 @@ def build_impact_maps(
     테마가 붙지 않은 기사는 건너뛴다. 어디로 뻗어나갈지 알 수 없기 때문이다.
     이벤트가 하나도 쓸 만하지 않으면 테마 단독 맵으로 대체한다 — 뉴스가
     없다고 관계 그래프까지 사라지면 안 된다.
+
+    correlations 가 있으면 사전 정의 관계마다 실측 상관 대조 결과를 붙인다.
     """
-    base = predefined_edges(config_dir)
+    base = validate_edges(
+        predefined_edges(config_dir), correlations, themes_by_id=themes_by_id, config_dir=config_dir
+    )
     proposed = list(proposed_edges)
     edges = base + proposed
 

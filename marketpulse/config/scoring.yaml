@@ -25,6 +25,14 @@ market_state:
   # Main Drivers 에 표시할 최대 개수와 최소 |z|
   driver_limit: 6
   driver_min_z: 0.5
+  # 지배 축 (GOAL Kickstart Exhibit 4 차용). 후보 중 |z_1d| 최대를 고른다.
+  # 후보는 시장 전체를 흔들 수 있는 매크로 가격이다. 개별 업종 ETF 는
+  # 축이 아니라 피해자·수혜자 쪽이라 넣지 않는다.
+  axis_candidates: [US2Y, US10Y, DXY, BRENT, VIX, US_HY_OAS, USDKRW, GOLD, SPX, KOSPI, USDJPY]
+  axis_min_abs_z: 0.5
+  # 이 |상관| 미만은 연동으로 치지 않는다
+  axis_min_abs_corr: 0.30
+  axis_links_limit: 5
 
 confidence:
   # 신뢰도는 "얼마나 강한가" 가 아니라 "얼마나 확실한가" 다.
@@ -173,6 +181,35 @@ relationship:
   # "조달비용과 신용위험이 상쇄한다" 며 strength 0.45 로 적어 둔 관계를
   # 놓고 "예상과 반대로 움직였다" 고 말하는 것은 과장이다.
   reaction_min_link_strength: 0.5
+
+calendar:
+  # 이벤트 창 (calendar.yaml). GOAL Kickstart 의 '중앙은행 주간' 프레이밍.
+  window_days_before: 2   # 이벤트 D-2 부터 창
+  window_days_after: 0    # 발표 당일까지
+  # 창 안에서 confidence 의 persistence 가중에 곱하는 배율. 어제와 같은
+  # 판정이라는 사실이 회의 앞에서는 확신의 근거가 되지 못한다.
+  persistence_scale: 0.5
+  # 창 안에서 가격·변동성·테마 급변 알림 임계에 곱하는 배율. 회의 앞 포지션
+  # 정리는 일상이라 그만큼 문턱을 올린다.
+  alert_threshold_scale: 1.25
+  # '다음 이벤트' 로 보여줄 범위 (일)
+  upcoming_days: 14
+
+correlation:
+  # 자산 간 롤링 상관 (GOAL Kickstart 의 상관 모니터 차용).
+  # 사전 정의 관계는 가설이다. 이 상관이 그 가설의 실측 대조다.
+  window: 60           # 현재 창 (봉). z-score 창과 같게 둔다
+  prior_shift: 63      # '한 분기 전 창' 을 몇 봉 전으로 볼지
+  min_observations: 40 # 두 값이 모두 있는 봉이 이 미만이면 상관을 내지 않는다
+  # |상관| 이 이 이상이고 기대 부호와 같으면 관계가 확인된 것으로 본다
+  confirm_min_abs: 0.20
+  # 기대와 반대 부호로 이 이상이면 관계가 뒤집힌 것으로 본다.
+  # 그 사이는 '약화' — 부호를 말할 만큼 크지 않다.
+  # 확인보다 높게 잡는 이유: 60봉 상관의 표본 표준편차가 약 0.13 이라
+  # 0.2 는 서로 무관한 두 시계열에서도 여덟 번에 한 번 나온다. "뒤집혔다"
+  # 는 강한 주장이라 그보다 높은 증거를 요구한다 (confirmation 의 비대칭과
+  # 같은 논리).
+  reverse_min_abs: 0.30
 
 thermometer:
   # 센티멘트 온도계 — "지금 시장이 얼마나 뜨거운가" 를 -100(결빙) ~ +100(과열)

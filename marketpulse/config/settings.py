@@ -41,8 +41,10 @@ class Settings(BaseSettings):
 
     #: z-score rolling window. 일봉 60, 인트라데이 120 (설계서 STEP 5.1).
     zscore_window: int = 60
-    #: 시나리오 생성 시 만드는 히스토리 길이. zscore_window 보다 넉넉해야 한다.
-    history_bars: int = 180
+    #: 어댑터에 요청하는 히스토리 길이(봉). zscore_window 보다 넉넉해야 하고,
+    #: 1년 백분위(252봉)와 "3개월 전 상관"(60+63봉) 을 재려면 그보다 길어야
+    #: 한다. 무료 공급자는 1년치를 그냥 준다.
+    history_bars: int = 300
 
     #: LIVE/DELAYED 어댑터의 HTTP 타임아웃. 공급자 하나가 느리다고
     #: 전체 틱이 늘어지면 안 된다.

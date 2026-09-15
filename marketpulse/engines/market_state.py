@@ -21,7 +21,9 @@ from ..config.settings import CONFIG_DIR
 from ..models.common import ScoreBreakdown, ScoreContribution, arrow_for, direction_for
 from ..models.market import Instrument, MarketSnapshot
 from ..models.state import (
+    AxisLink,
     ConfirmationResult,
+    DominantAxis,
     DriverItem,
     FactorScore,
     MarketState,
@@ -191,11 +193,99 @@ def build_drivers(
                     z=z,
                     direction=direction_for(z),
                     arrow=arrow_for(z),
+                    z_week_ago=feat.z_1d_week_ago if horizon == "1d" else None,
+                    percentile=feat.percentile_1y,
+                    percentile_observations=feat.percentile_observations,
                 ),
             )
         )
     rows.sort(key=lambda r: (r[0], r[1]))
     return [r[2] for r in rows[:limit]]
+
+
+def build_dominant_axis(
+    snapshot: MarketSnapshot,
+    instruments_by_id: Mapping[str, Instrument],
+    *,
+    config_dir: Path | None = None,
+) -> DominantAxis | None:
+    """
+    지배 축 (GOAL Kickstart Exhibit 4 차용).
+
+    "지금 시장을 움직이는 축은 X 이고, 그 축에 각 자산이 얼마나 연동돼
+    있는가". 축은 설정된 후보(금리·달러·유가·변동성·신용 같은 매크로 가격)
+    중 |z_1d| 가 가장 큰 것이다. 후보가 전부 조용하면 축이 없다 — 억지로
+    고르지 않는다. 연동은 60일 변화량 상관이며 |상관| 이 임계 이상인 것만
+    양·음으로 나눠 올린다.
+    """
+    cfg = load_scoring(config_dir)["market_state"]
+    candidates: list[str] = list(cfg.get("axis_candidates", []) or [])
+    min_z = float(cfg.get("axis_min_abs_z", 0.5))
+    min_corr = float(cfg.get("axis_min_abs_corr", 0.3))
+    limit = int(cfg.get("axis_links_limit", 5))
+    book = snapshot.correlations
+    if book is None or not candidates:
+        return None
+
+    best: tuple[float, str] | None = None
+    for iid in candidates:
+        z = snapshot.z(iid)
+        if z is None or abs(z) < min_z or iid not in instruments_by_id:
+            continue
+        if best is None or abs(z) > best[0]:
+            best = (abs(z), iid)
+    if best is None:
+        return None
+
+    axis_id = best[1]
+    axis = instruments_by_id[axis_id]
+    feat = snapshot.features[axis_id]
+    z = float(feat.z_1d or 0.0)
+
+    links: list[AxisLink] = []
+    for pc in book.row(axis_id):
+        if pc.corr is None or abs(pc.corr) < min_corr:
+            continue
+        ins = instruments_by_id.get(pc.b)
+        if ins is None:
+            continue
+        links.append(
+            AxisLink(
+                instrument_id=pc.b,
+                label=ins.name,
+                corr=pc.corr,
+                prior=pc.prior,
+                z=snapshot.z(pc.b),
+            )
+        )
+    positive = sorted((l for l in links if l.corr > 0), key=lambda l: -l.corr)[:limit]
+    negative = sorted((l for l in links if l.corr < 0), key=lambda l: l.corr)[:limit]
+
+    def names(rows: Sequence[AxisLink]) -> str:
+        return ", ".join(f"{r.label} {r.corr:+.2f}" for r in rows[:3])
+
+    note = f"지금 시장을 가장 크게 흔든 축은 {axis.name} ({z:+.1f}σ)이다."
+    if positive or negative:
+        parts = []
+        if positive:
+            parts.append(f"같은 방향으로 {names(positive)}")
+        if negative:
+            parts.append(f"반대 방향으로 {names(negative)}")
+        note += f" {book.window}일 변화량 상관으로 " + ", ".join(parts) + "가 연동된다. 상관이지 인과가 아니다."
+    else:
+        note += f" {book.window}일 변화량 상관이 ±{min_corr:.1f} 를 넘는 자산은 없다 — 이 축은 아직 혼자 움직이고 있다."
+
+    return DominantAxis(
+        instrument_id=axis_id,
+        label=axis.name,
+        z=z,
+        z_week_ago=feat.z_1d_week_ago,
+        arrow=arrow_for(z),
+        window=book.window,
+        positive=positive,
+        negative=negative,
+        note=note,
+    )
 
 
 def _was_evaluable(hypothesis: StateHypothesis) -> bool:
@@ -217,6 +307,7 @@ def compute_confidence(
     coverage: float,
     persistence: float | None,
     *,
+    persistence_scale: float = 1.0,
     config_dir: Path | None = None,
 ) -> ScoreBreakdown:
     """
@@ -235,6 +326,11 @@ def compute_confidence(
     cfg = load_scoring(config_dir)["confidence"]
     weights: dict[str, float] = dict(cfg["weights"])
     full_gap = float(cfg["separation_full_gap"])
+    # 이벤트 직전에는 "어제도 같은 판정이었다" 가 확신의 근거가 되지 못한다.
+    # 회의 결과 하나로 판정이 바뀔 수 있는 창에서는 지속성 가중을 줄인다.
+    # 다른 항목으로 재정규화되므로 총합은 그대로다.
+    if persistence_scale != 1.0 and "persistence" in weights:
+        weights["persistence"] = weights["persistence"] * max(0.0, persistence_scale)
 
     top = hypotheses[0].score if hypotheses else 0.0
     # **겨룰 수 있었던 상대만 센다.** require 룰을 평가할 데이터조차 없어
@@ -268,7 +364,12 @@ def compute_confidence(
             normalized=parts[key],  # type: ignore[arg-type]
             weight=weights[key],
             contribution=weights[key] * parts[key],  # type: ignore[operator]
-            note=_CONF_NOTES[key],
+            note=_CONF_NOTES[key]
+            + (
+                f" (이벤트 창이라 가중 ×{persistence_scale:.2f})"
+                if key == "persistence" and persistence_scale != 1.0
+                else ""
+            ),
         )
         for key in weights
         if parts.get(key) is not None
@@ -298,11 +399,25 @@ def compute_market_state(
     *,
     previous_label: StateLabel | None = None,
     horizon: str = "1d",
+    persistence_scale: float = 1.0,
     config_dir: Path | None = None,
 ) -> MarketState:
-    """순수 함수. 스냅샷을 받아 시장 상태를 판정한다."""
+    """
+    순수 함수. 스냅샷을 받아 시장 상태를 판정한다.
+
+    persistence_scale 은 이벤트 창(중앙은행 회의 직전 등)에서 confidence 의
+    지속성 가중을 줄이는 배율이다. 1.0 이면 아무 효과가 없다.
+    """
     cfg = load_scoring(config_dir)["market_state"]
     factors = compute_factors(snapshot, config_dir=config_dir, horizon=horizon)
+    if horizon == "1d":
+        # 1주 전 그 시점의 factor. 같은 식·같은 가중치로 5봉 전 z 를 넣는다.
+        # 오늘 값 옆에 흐린 표식으로 놓기 위한 것이지 새 판정이 아니다.
+        prior = compute_factors(snapshot, config_dir=config_dir, horizon="1d_week_ago")
+        factors = {
+            name: fs.model_copy(update={"week_ago": prior[name].score if name in prior else None})
+            for name, fs in factors.items()
+        }
     hypotheses = evaluate_hypotheses(
         factors, snapshot, horizon=horizon, config_dir=config_dir
     )
@@ -331,6 +446,7 @@ def compute_market_state(
         confirmation,
         factor_coverage(factors, config_dir=config_dir),
         persistence,
+        persistence_scale=persistence_scale,
         config_dir=config_dir,
     )
 
@@ -343,6 +459,7 @@ def compute_market_state(
     )
 
     narrative = render_narrative(primary, secondary, drivers, confirmation, confidence.value)
+    axis = build_dominant_axis(snapshot, instruments_by_id, config_dir=config_dir)
 
     return MarketState(
         as_of=snapshot.as_of,
@@ -353,6 +470,7 @@ def compute_market_state(
         factors=dict(factors),
         hypotheses=hypotheses,
         main_drivers=drivers,
+        dominant_axis=axis,
         cross_asset_confirmation=confirmation,
         narrative=narrative,
         narrative_source="template",

@@ -97,6 +97,29 @@ const REL_LABEL: Record<RelationshipEdge["direction"], string> = {
   ambiguous: "?",
 };
 
+/** 실측 상관 대조 결과의 문장. 관계는 가설이고 이것이 그 실측이다. */
+const CORR_LABEL: Record<RelationshipEdge["corr_check"], string> = {
+  confirmed: "실측 상관이 기대 부호로 확인됨",
+  weakened: "실측 상관이 약함 — 관계가 지금은 작동하지 않는다",
+  reversed: "실측 상관이 기대와 반대 — 관계가 뒤집혔다",
+  unknown: "실측 상관을 재지 못함",
+};
+
+function corrText(e: RelationshipEdge): string {
+  if (e.observed_corr === null || !e.corr_pair) return "";
+  const cur = `${e.observed_corr >= 0 ? "+" : ""}${e.observed_corr.toFixed(2)}`;
+  const prior =
+    e.observed_corr_prior === null
+      ? ""
+      : ` (한 분기 전 ${e.observed_corr_prior >= 0 ? "+" : ""}${e.observed_corr_prior.toFixed(2)})`;
+  return `${e.corr_pair} 60일 상관 ${cur}${prior} · ${CORR_LABEL[e.corr_check]}`;
+}
+
+/** 실측이 관계를 뒷받침하지 못하는 선은 점선으로 그린다. */
+function edgeDoubted(e: RelationshipEdge): boolean {
+  return e.corr_check === "weakened" || e.corr_check === "reversed";
+}
+
 function tooltip(n: RelationshipNode, edge: RelationshipEdge | undefined): string {
   const bits = [`${TYPE_TAG[n.type]} · ${n.label}`];
   if (n.hop > 0) bits.push(`${n.hop}단계`);
@@ -111,6 +134,10 @@ function tooltip(n: RelationshipNode, edge: RelationshipEdge | undefined): strin
     bits.push(`경로 최약 고리 ${n.path_strength.toFixed(2)}`);
   }
   if (edge?.reason) bits.push(`← ${edge.reason}`);
+  if (edge) {
+    const c = corrText(edge);
+    if (c) bits.push(c);
+  }
   return bits.join("\n");
 }
 
@@ -221,6 +248,8 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
 
   const rootEvent = map.nodes.find((n) => n.type === "EVENT");
   const hasProposed = map.edges.some((e) => e.origin === "llm_proposed");
+  const reversed = map.edges.filter((e) => e.corr_check === "reversed").length;
+  const weakened = map.edges.filter((e) => e.corr_check === "weakened").length;
   const mismatches = map.nodes.filter((n) => n.reaction === "mismatch");
   const conflicts = map.nodes.filter((n) => n.sign_conflict);
   const lit = focus ? ancestry(focus, byId, byEdge) : null;
@@ -307,13 +336,27 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
                   <path
                     d={`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}
                     fill="none"
-                    stroke={on && lit ? "var(--accent)" : "var(--rule-hi, var(--surface-3))"}
+                    stroke={
+                      on && lit
+                        ? "var(--accent)"
+                        : e.corr_check === "reversed"
+                          ? "var(--crit)"
+                          : edgeDoubted(e)
+                            ? "var(--warn)"
+                            : "var(--rule-hi, var(--surface-3))"
+                    }
                     strokeWidth={0.5 + e.strength * 1.1}
                     strokeDasharray={
-                      e.origin !== "predefined" ? "3 3" : e.direction === "ambiguous" ? "1 4" : undefined
+                      e.origin !== "predefined"
+                        ? "3 3"
+                        : e.direction === "ambiguous"
+                          ? "1 4"
+                          : edgeDoubted(e)
+                            ? "5 3"
+                            : undefined
                     }
                   >
-                    <title>{e.reason}</title>
+                    <title>{[e.reason, corrText(e)].filter(Boolean).join("\n")}</title>
                   </path>
                   {e.direction === "negative" && (
                     <g>
@@ -431,8 +474,25 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
                 {edge && (
                   <span
                     className={`mono impact-rel${edge.direction !== "positive" ? " neg" : ""}`}
+                    title={corrText(edge) || undefined}
                   >
                     {REL_LABEL[edge.direction]}·{edge.strength.toFixed(2)}
+                    {edge.observed_corr !== null && (
+                      <span
+                        style={{
+                          marginLeft: 5,
+                          color:
+                            edge.corr_check === "reversed"
+                              ? "var(--crit)"
+                              : edge.corr_check === "weakened"
+                                ? "var(--warn)"
+                                : "var(--faint)",
+                        }}
+                      >
+                        ρ{edge.observed_corr >= 0 ? "+" : ""}
+                        {edge.observed_corr.toFixed(2)}
+                      </span>
+                    )}
                   </span>
                 )}
                 <span className="mono impact-exp">{signText(node)}</span>
@@ -480,6 +540,14 @@ export function ImpactMapPanel({ maps }: { maps: ImpactMapData[] }) {
           <span style={{ color: "var(--warn)" }}>● 경로 부호 상충 {conflicts.length}건</span>
         )}
         <span>{hasProposed ? "점선 = LLM 제안 관계" : "전부 사전 정의 관계 (실선)"}</span>
+        {(reversed > 0 || weakened > 0) && (
+          <span title="사전 정의 관계를 두 끝 대표 자산의 60일 변화량 상관으로 대조한 결과. 관계는 바꾸지 않고 실측을 옆에 둔다.">
+            긴 점선 = 실측 상관 미확인{" "}
+            {reversed > 0 && <span style={{ color: "var(--crit)" }}>반대 {reversed}</span>}
+            {reversed > 0 && weakened > 0 ? " · " : ""}
+            {weakened > 0 && <span style={{ color: "var(--warn)" }}>약함 {weakened}</span>}
+          </span>
+        )}
       </div>
     </div>
   );

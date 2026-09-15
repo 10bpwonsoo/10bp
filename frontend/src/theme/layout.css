@@ -593,12 +593,12 @@
    좁은 화면: 고정폭 열 다섯 개가 이름 칸을 0 으로 짓눌러 테마명이 사라졌다.
    이름을 첫 줄 전체로 올리고 숫자 다섯 개를 둘째 줄에 고르게 편다. */
 .heat-row {
-  grid-template-columns: minmax(0, 1.4fr) 64px 60px 60px 64px;
+  grid-template-columns: minmax(0, 1.4fr) 64px 52px 60px 60px 64px;
 }
 
 @media (max-width: 640px) {
   .heat-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 3px 6px;
   }
   .heat-row > :first-child {
@@ -611,4 +611,193 @@
   .theme-news-row {
     grid-template-columns: 44px minmax(0, 1fr);
   }
+}
+
+
+/* ── What's Moving — z | 1일 | 백분위 | 3개월 | 막대(◇ 1주 전) ───────
+   좁은 화면에서는 백분위·3개월·막대를 숨기고 이름 아래 한 줄 요약으로 낸다. */
+.moving-row {
+  grid-template-columns: 20px minmax(0, 1fr) 64px 76px 52px 68px minmax(60px, 1fr);
+}
+.moving-head {
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.moving-sub {
+  display: none;
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 1px;
+  white-space: normal;
+}
+.ghost-mark {
+  position: absolute;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  margin-left: -4px;
+  transform: rotate(45deg);
+  border: 1.2px solid var(--muted);
+  background: var(--surface);
+  box-sizing: border-box;
+}
+@media (max-width: 640px) {
+  .moving-row {
+    grid-template-columns: 20px minmax(0, 1fr) 64px 76px;
+  }
+  .moving-extra {
+    display: none;
+  }
+  .moving-sub {
+    display: block;
+  }
+}
+
+/* ── 온도계 재료 스트립 ───────────────────────── */
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+.strip-axis-head {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 44px;
+  gap: 8px;
+  font-size: 9px;
+  color: var(--faint);
+  letter-spacing: 0.06em;
+}
+.strip-axis-head-mid {
+  display: flex;
+  justify-content: space-between;
+}
+.strip-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.strip-head .strip-label {
+  color: var(--ink);
+  font-weight: 500;
+}
+.strip-missing .strip-label,
+.strip-missing .strip-val {
+  color: var(--faint);
+}
+.strip-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.strip-axis {
+  position: relative;
+  height: 10px;
+  background: var(--surface-2);
+  border-radius: 1px;
+}
+.strip-zero {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--rule-hi, var(--rule));
+}
+.strip-dot {
+  position: absolute;
+  top: 1px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  box-sizing: border-box;
+}
+.strip-ghost {
+  position: absolute;
+  top: 1.5px;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  transform: rotate(45deg);
+  border: 1.2px solid var(--muted);
+  background: var(--surface);
+  box-sizing: border-box;
+}
+.strip-val {
+  text-align: right;
+  font-size: 11px;
+}
+
+/* ── 지배 축 ─────────────────────────────────── */
+.axis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  align-items: baseline;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--surface-2) 55%, var(--surface));
+}
+.axis-head {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+.axis-k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-right: 2px;
+}
+.axis-links {
+  display: flex;
+  gap: 4px 10px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.axis-link {
+  font-size: 11px;
+  color: var(--ink-2);
+}
+
+/* ── 이벤트 창 표식 ───────────────────────────── */
+.cal-badge {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--faint);
+}
+.cal-active {
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  padding: 2px 8px;
+}
+.cal-k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cal-adj {
+  color: var(--muted);
+  font-size: 10px;
+}
+.cal-unverified {
+  color: var(--faint);
+  font-size: 10px;
 }

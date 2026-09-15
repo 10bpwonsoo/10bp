@@ -24,8 +24,12 @@ from pathlib import Path
 
 from ..adapters.base import AdapterError
 from ..config.settings import Settings, get_settings
-from ..engines.orchestrator import run_pipeline_detailed
-from ..models.common import DataMode
+from ..engines.orchestrator import (
+    WEEK_AGO_TARGET,
+    WEEK_AGO_TOLERANCE,
+    run_pipeline_detailed,
+)
+from ..models.common import DataMode, utcnow
 from ..storage.repository import SnapshotRepository
 from ..storage.sqlite_repo import SqliteSnapshotRepository
 
@@ -46,9 +50,12 @@ def run_once(
     key = stream_key(settings)
     history = repo.recent(key, limit=12)
     pending = repo.latest_pending(key)
+    week_ago = repo.at_or_before(
+        key, utcnow() - WEEK_AGO_TARGET, max_distance=WEEK_AGO_TOLERANCE
+    )
 
     result = run_pipeline_detailed(
-        settings, history=history, pending_divergences=pending
+        settings, history=history, pending_divergences=pending, week_ago=week_ago
     )
     repo.save(key, result.snapshot, result.pending)
     repo.prune(key, keep)
