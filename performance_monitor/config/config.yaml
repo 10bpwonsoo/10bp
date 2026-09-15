@@ -1,0 +1,235 @@
+# MP Performance Monitor - 설정
+#
+# 이 파일의 값은 모두 기존 notebook 코드에서 추출한 것이다.
+# 임의로 만든 값은 없다. (출처는 각 항목의 주석 참조)
+
+project:
+  name: "MP Performance Monitor"
+  # 데이터 루트. 상대경로는 performance_monitor/ 기준.
+  data_dir: "data"
+  processed_subdir: "processed"
+  raw_subdir: "raw"
+  archive_subdir: "archive"
+  reference_subdir: "reference"
+  log_dir: "logs"
+
+# ---------------------------------------------------------------------------
+# Benchmark
+# 출처: Function_calculation_return_contribution_ver2.ipynb CELL 15 (q_idx_data),
+#       CELL 3 (analysis_bm -> import_name)
+# ---------------------------------------------------------------------------
+benchmarks:
+  kospi200:
+    display_name: "KOSPI200"
+    index_code: "I.101"                 # fngdb.dbo.fns_ud u_cd
+    krx_index_name_en: "KOSPI 200"      # HWBI.KRX_CONSTITUENT_CLS index_name_en
+    weight_column: "weight_kospi200"
+    weight_next_column: "weight_kospi200_next"
+    model_prefix: "KS2"                 # import_name
+  kospi:
+    display_name: "KOSPI"
+    index_code: "I.001"
+    krx_index_name_en: "KOSPI"
+    weight_column: "weight_kospi"
+    weight_next_column: "weight_kospi_next"
+    model_prefix: "KSP"
+  krx300:
+    display_name: "KRX300"
+    index_code: "I.405"
+    krx_index_name_en: "KRX 300"
+    weight_column: "weight_krx300"
+    weight_next_column: "weight_krx300_next"
+    model_prefix: null                  # MP 미운용
+  kosdaq150:
+    display_name: "KOSDAQ150"
+    index_code: "I.253"
+    krx_index_name_en: "KOSDAQ 150"
+    weight_column: "weight_kosdaq150"
+    weight_next_column: "weight_kosdaq150_next"
+    model_prefix: null
+  kosdaq:
+    display_name: "KOSDAQ"
+    index_code: "I.201"
+    krx_index_name_en: "KOSDAQ"
+    weight_column: "weight_kosdaq"
+    weight_next_column: "weight_kosdaq_next"
+    model_prefix: null
+  nps:
+    display_name: "NPS (KOSPI+KOSDAQ150)"
+    index_code: null                    # 지수시총 합계로 산출
+    krx_index_name_en: null
+    weight_column: "weight_nps"
+    weight_next_column: "weight_nps_next"
+    model_prefix: null
+
+default_benchmark: kospi200
+
+# ---------------------------------------------------------------------------
+# Model / Sub-model
+# 출처: Function_calculation_return_contribution_ver2.ipynb CELL 3
+#   mp_list = [ <prefix>_CONSENSUS_FP, ..., Hanwha_Quant_<prefix>_MP ]
+#   mp_nm   = Hanwha_Quant_KS2_RP  (KS2) / Hanwha_Quant_KSP_MP (KSP)
+# 컬럼명 'RP'는 mp_weight를 rename한 이름이다.
+# ---------------------------------------------------------------------------
+models:
+  KS2:
+    # DB portfolio_id -> 화면 표시명
+    top_model_id: "Hanwha_Quant_KS2_RP"
+    top_model_column: "RP"
+    top_model_display: "KS2 RP (Core MP)"
+    sub_models:
+      - id: "KS2_CONSENSUS_FP"
+        display_name: "Consensus"
+      - id: "KS2_DIVIDEND_FP"
+        display_name: "Dividend"
+      - id: "KS2_INVESTMENT_FP"
+        display_name: "Investment"
+      - id: "KS2_LTREV_FP"
+        display_name: "LT Reversal"
+      - id: "KS2_NEWIAM_FP"
+        display_name: "New IAM"
+      - id: "KS2_PRICEMOMENTUM_FP"
+        display_name: "Price Momentum"
+      - id: "KS2_PROFITABILITY_FP"
+        display_name: "Profitability"
+      - id: "KS2_PROFITABILITYGROWTH_FP"
+        display_name: "Profitability Growth"
+      - id: "KS2_VALUE_FP"
+        display_name: "Value"
+      - id: "Hanwha_Quant_KS2_MP"
+        display_name: "KS2 MP (합성)"
+    # 현재 주석 처리되어 사용하지 않는 모델 (참고용)
+    disabled_sub_models:
+      - "KS2_SMALLSIZE_FP"
+  KSP:
+    top_model_id: "Hanwha_Quant_KSP_MP"
+    top_model_column: "RP"
+    top_model_display: "KSP MP (Core MP)"
+    sub_models:
+      - id: "KSP_CONSENSUS_FP"
+        display_name: "Consensus"
+      - id: "KSP_DIVIDEND_FP"
+        display_name: "Dividend"
+      - id: "KSP_INVESTMENT_FP"
+        display_name: "Investment"
+      - id: "KSP_LTREV_FP"
+        display_name: "LT Reversal"
+      - id: "KSP_NEWIAM_FP"
+        display_name: "New IAM"
+      - id: "KSP_PRICEMOMENTUM_FP"
+        display_name: "Price Momentum"
+      - id: "KSP_PROFITABILITY_FP"
+        display_name: "Profitability"
+      - id: "KSP_PROFITABILITYGROWTH_FP"
+        display_name: "Profitability Growth"
+      - id: "KSP_VALUE_FP"
+        display_name: "Value"
+      - id: "KSP_LIQUIDITY_FP"
+        display_name: "Liquidity"
+      - id: "Hanwha_Quant_KSP_MP"
+        display_name: "KSP MP (합성)"
+    disabled_sub_models:
+      - "KSP_SMALLSIZE_FP"
+
+# ---------------------------------------------------------------------------
+# 성과 분해 항목
+# 출처: CELL 40 (return_contribution_final index), CELL 53 (allocation_new/selection_new)
+# ---------------------------------------------------------------------------
+attribution:
+  summary_rows:
+    - total
+    - bm
+    - active
+    - market_timing
+    - specific
+    - risk_factor
+    - industry_factor
+    - country
+    - selection
+    - allocation
+    - selection_new
+    - allocation_new
+  # Performance_Analysis_Module CELL 21 plot_colums_list
+  plot_rows:
+    - active
+    - market_timing
+    - specific
+    - risk_factor
+    - industry_factor
+    - country
+    - selection
+    - allocation
+    - selection_new
+    - allocation_new
+  sector_field_primary: "q_sector"      # sector_compare_final
+  sector_field_secondary: "new_sector"  # new_sector_compare_final
+
+# ---------------------------------------------------------------------------
+# 비교 기간
+# 출처: Performance_Analysis_Module CELL 16~18 (AQUANT.dbo.WORKDATE_MAST_TB)
+#       CELL 28 (WTD/MTD/QTD/HTD/YTD/1Y)
+# ---------------------------------------------------------------------------
+periods:
+  - key: "WTD"
+    label: "1W (Report 기간)"
+    anchor: "report_start_date"
+  - key: "MTD"
+    label: "MTD"
+    anchor: "mtd_date"
+  - key: "QTD"
+    label: "QTD"
+    anchor: "qtd_date"
+  - key: "HTD"
+    label: "HTD"
+    anchor: "htd_date"
+  - key: "YTD"
+    label: "YTD"
+    anchor: "ytd_date"
+  - key: "1Y"
+    label: "1Y"
+    anchor: "y1_date"
+
+# ---------------------------------------------------------------------------
+# Optional 지표
+# 기존 코드에 없는 지표는 기본 OFF. 켜더라도 화면에 'Optional (기존 코드 외)'로 표기된다.
+# ---------------------------------------------------------------------------
+optional_metrics:
+  tracking_error: false   # 기존 MP 성과분해 코드에 없음 (risk profile 셀은 현재 미실행)
+  hit_ratio: false        # 기존 코드에 없음
+  turnover: false         # 기존 코드에 없음
+  volatility: true        # temp_return_final 로 계산 가능 (모델 비교용)
+
+# ---------------------------------------------------------------------------
+# 데이터 검증 임계값
+# ---------------------------------------------------------------------------
+validation:
+  weight_sum_tolerance: 0.005     # total weight 합 1.0 ± 0.5%p
+  bm_weight_sum_tolerance: 0.005
+  max_missing_price: 0
+  max_missing_benchmark: 0
+  max_duplicate: 0
+  # active contribution 합 vs (total-bm) 재검산 허용오차
+  contribution_reconciliation_tolerance: 1.0e-6
+
+# ---------------------------------------------------------------------------
+# DB 접속 (스냅샷 생성 시에만 사용. Dashboard 실행에는 불필요)
+# 값은 환경변수로 덮어쓸 수 있다: PM_MSSQL_URL / PM_TIBERO_DSN
+# 출처: shared_data.py, Function_calculation_return_contribution_ver2.ipynb CELL 2
+# ---------------------------------------------------------------------------
+database:
+  mssql_url_env: "PM_MSSQL_URL"
+  mssql_url_default: "mssql+pymssql://performer:newquant@172.32.1.100"
+  tibero_dsn_env: "PM_TIBERO_DSN"
+  tibero_dsn_default: "Driver={Tibero6};Server=172.31.3.62;Port=8629;UID=uquant;Database=PBIDB;Password=uquant1"
+  tibero_char_encoding: "euckr"
+
+# ---------------------------------------------------------------------------
+# 화면
+# ---------------------------------------------------------------------------
+ui:
+  top_n: 10
+  percent_format: "{:.2%}"
+  contribution_format: "{:.3%}"
+  # 인적분할/편출 등으로 기존 코드에서 제외하는 종목 (CELL 37/55, CELL 58)
+  excluded_items_in_sector_view:
+    - "A001230"   # 동국제강 (편출)

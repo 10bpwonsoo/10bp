@@ -1,0 +1,20 @@
+# 데이터 (주간 생성물 — 사내 데이터이므로 커밋하지 않는다)
+data/raw/*
+data/processed/*
+data/archive/*
+data/reference/*
+!data/**/.gitkeep
+
+# 로그
+logs/*
+!logs/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Streamlit 로컬 설정
+.streamlit/secrets.toml
