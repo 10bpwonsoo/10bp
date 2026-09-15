@@ -30,12 +30,12 @@ def _states(scenario, instruments, themes, instruments_by_id, as_of, **kwargs):
 
 
 @pytest.fixture
-def quiet(instruments, themes, instruments_by_id, as_of):
+def quiet(flow_on, instruments, themes, instruments_by_id, as_of):
     return _states("baseline", instruments, themes, instruments_by_id, as_of)
 
 
 @pytest.fixture
-def shock(instruments, themes, instruments_by_id, as_of):
+def shock(flow_on, instruments, themes, instruments_by_id, as_of):
     return _states("inflation_shock", instruments, themes, instruments_by_id, as_of)
 
 
@@ -65,7 +65,7 @@ class TestWeighting:
         weights = load_scoring()["theme"]["weights"]
         assert len(set(weights.values())) > 1
 
-    def test_price_carries_most_weight(self):
+    def test_price_carries_most_weight(self, flow_on):
         """
         가격은 유일하게 조작할 수 없는 실제 체결 정보다. 뉴스는 후행하거나
         과장될 수 있다. 시장이 뉴스를 검증하지, 그 반대가 아니다.

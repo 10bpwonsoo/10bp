@@ -61,11 +61,17 @@ sentiment:
     default: 1.0
 
 theme:
+  # 수급(flow) 신호를 쓰는가. 무료 공급자가 없어 항상 결측이었고, 2026-09-15
+  # 사용자 결정으로 뉴스 감성이 그 자리를 맡는다. false 면 수급 자산을
+  # 매핑에서 없는 것으로 취급한다 — 점수·확인·커버리지·괴리 전부에서.
+  # 수급이 붙는 날 true 로 돌리고 아래 가중치를 되돌리면 된다
+  # (원래: price 0.30 / news 0.25 / flow 0.20 / news_momentum 0.15 / vol -0.10).
+  use_flow: false
   # 각 component 를 z 단위로 맞춘 뒤 가중 평균하고 squash 한다.
   weights:
     price_momentum: 0.30   # 가격은 유일하게 조작 불가능한 실제 체결 정보다
-    news_sentiment: 0.25
-    flow_momentum: 0.20
+    news_sentiment: 0.45   # 수급의 0.20 을 흡수했다
+    flow_momentum: 0.00
     news_momentum: 0.15
     volatility: -0.10      # 테마 변동성 급등은 건전성이 아니라 불안정성이다
   confirmation:

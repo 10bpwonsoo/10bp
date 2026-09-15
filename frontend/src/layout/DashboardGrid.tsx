@@ -79,7 +79,7 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
         <NewsFeed events={snapshot.events} />
       </Panel>
 
-      <Panel title="Flow & Price Confirmation" flush note="네 신호 비교">
+      <Panel title="Flow & Price Confirmation" flush note="세 신호 비교">
         <ConfirmationMatrix themes={snapshot.themes} />
       </Panel>
 

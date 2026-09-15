@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from flowera import flow_era
 
 from marketpulse.config.settings import Settings
 from marketpulse.engines.alert import carry_forward, severity_of
@@ -14,17 +15,19 @@ from marketpulse.models.alert import AlertState, AlertType
 
 
 def _ticks(scenario: str, n: int = 3):
-    s = Settings(scenario=scenario)
-    results = [run_pipeline_detailed(s)]
-    for _ in range(n - 1):
-        prev = results[-1]
-        results.append(
-            run_pipeline_detailed(
-                s,
-                history=[r.snapshot for r in results],
-                pending_divergences=prev.pending,
+    s = Settings(scenario=scenario, llm_enabled=False)
+    # 알림 테스트의 괴리 사례는 수급 괴리다. 수급 시절 설정으로 돌린다.
+    with flow_era():
+        results = [run_pipeline_detailed(s)]
+        for _ in range(n - 1):
+            prev = results[-1]
+            results.append(
+                run_pipeline_detailed(
+                    s,
+                    history=[r.snapshot for r in results],
+                    pending_divergences=prev.pending,
+                )
             )
-        )
     return results
 
 
@@ -60,7 +63,8 @@ class TestChangeBased:
         비교할 직전 틱이 없으면 '변화' 를 말할 수 없다. 수준 기반
         알림(가격 급변)만 나온다.
         """
-        first = run_pipeline_detailed(Settings(scenario="ai_divergence"))
+        with flow_era():
+            first = run_pipeline_detailed(Settings(scenario="ai_divergence", llm_enabled=False))
         change_types = {
             AlertType.STATE_CHANGE,
             AlertType.THEME_SENTIMENT_SPIKE,

@@ -40,7 +40,7 @@ class TestRoundTrip:
         back = repo.recent(KEY)[0]
         assert back.model_dump(mode="json") == result.snapshot.model_dump(mode="json")
 
-    def test_pending_survives(self, repo, result):
+    def test_pending_survives(self, flow_on, repo, result):
         """미확정 후보를 잃으면 프로세스 재시작 때 지속 기간이 끊긴다."""
         assert result.pending
         repo.save(KEY, result.snapshot, result.pending)
@@ -123,7 +123,7 @@ class TestScheduler:
         assert "state=" in summary
         assert len(repo.recent(KEY)) == 1
 
-    def test_consecutive_ticks_confirm_divergences(self, repo):
+    def test_consecutive_ticks_confirm_divergences(self, flow_on, repo):
         """
         스케줄러를 몇 틱 돌려 두면 화면이 첫 순간부터 채워진다.
         첫 틱은 후보만, 둘째 틱부터 확정된다.

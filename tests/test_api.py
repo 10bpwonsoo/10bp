@@ -117,6 +117,11 @@ class TestP1Payload:
 
 
 class TestSignals:
+    @pytest.fixture(autouse=True)
+    def _flow_era(self, flow_on):
+        """요구 7 의 예시(수급 괴리)를 그대로 검증한다. 운영 설정은 use_flow=false."""
+        yield
+
     def _two_ticks(self, client, scenario="ai_divergence"):
         """괴리는 최소 두 틱이 있어야 확정된다."""
         get_service().clear()
@@ -185,6 +190,11 @@ class TestCaching:
 
 
 class TestHistoryContinuity:
+    @pytest.fixture(autouse=True)
+    def _flow_era(self, flow_on):
+        """요구 7 의 예시(수급 괴리)를 그대로 검증한다. 운영 설정은 use_flow=false."""
+        yield
+
     """
     캐시에 있는 것이 가장 최근 틱이다. 그것을 history 에 붙이지 않으면
     엔진이 보는 '직전 스냅샷' 이 한 틱 밀리고, divergence 의 지속 기간이

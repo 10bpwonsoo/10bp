@@ -5,7 +5,7 @@ import { SignalBar } from "./SignalBar";
 /**
  * 요구 10 의 [FLOW & PRICE CONFIRMATION].
  *
- * News · Flow · Price · Volatility 네 신호를 나란히 놓는다. 서로를 확인하는지
+ * News · Price · Volatility 세 신호를 나란히 놓는다. 서로를 확인하는지
  * 한눈에 보는 것이 목적이라 숫자보다 방향과 크기를 먼저 읽히게 했다.
  */
 const VERDICT: Record<ThemeState["cross_asset_confirmation"], { label: string; color: string }> = {
@@ -30,10 +30,10 @@ export function ConfirmationMatrix({ themes }: { themes: ThemeState[] }) {
     );
   }
 
+  // Flow 열은 뺐다. 무료 공급자가 없어 항상 '–' 였고 그 역할은 뉴스 감성이 맡는다.
   const columns: Array<[string, keyof ThemeState]> = [
     ["News", "news_sentiment"],
     ["Price", "price_momentum"],
-    ["Flow", "flow_momentum"],
     ["Vol", "volatility"],
   ];
 
@@ -42,7 +42,7 @@ export function ConfirmationMatrix({ themes }: { themes: ThemeState[] }) {
       <div
         className="row"
         style={{
-          gridTemplateColumns: "minmax(0,1.1fr) repeat(4, 1fr) 48px",
+          gridTemplateColumns: "minmax(0,1.1fr) repeat(3, 1fr) 48px",
           color: "var(--faint)",
           fontSize: 10,
           letterSpacing: "0.06em",
@@ -63,7 +63,7 @@ export function ConfirmationMatrix({ themes }: { themes: ThemeState[] }) {
           <div
             key={t.theme_id}
             className="row"
-            style={{ gridTemplateColumns: "minmax(0,1.1fr) repeat(4, 1fr) 48px" }}
+            style={{ gridTemplateColumns: "minmax(0,1.1fr) repeat(3, 1fr) 48px" }}
           >
             <span className="row-label">{t.name}</span>
             {columns.map(([label, field]) => {

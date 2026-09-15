@@ -8,6 +8,7 @@ TestRequirement7 이 요구사항의 예시 상황을 그대로 재현한다.
 from __future__ import annotations
 
 import pytest
+from flowera import flow_era
 
 from marketpulse.config.settings import Settings
 from marketpulse.engines.divergence import (
@@ -26,10 +27,12 @@ def _two_ticks(scenario: str):
     # module 스코프라 conftest 의 자격 증명 제거보다 먼저 돈다. 이 테스트는
     # 'LLM 없이' 가 전제이므로 명시적으로 끈다.
     s = Settings(scenario=scenario, llm_enabled=False)
-    first = run_pipeline_detailed(s)
-    second = run_pipeline_detailed(
-        s, history=[first.snapshot], pending_divergences=first.pending
-    )
+    # 요구 7 의 예시는 수급 괴리다. 수급 시절 설정으로 돌린다 (flowera 참조).
+    with flow_era():
+        first = run_pipeline_detailed(s)
+        second = run_pipeline_detailed(
+            s, history=[first.snapshot], pending_divergences=first.pending
+        )
     return first, second
 
 

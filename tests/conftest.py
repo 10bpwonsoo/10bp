@@ -8,6 +8,7 @@ import pytest
 
 from marketpulse.adapters.market.mock import MockMarketAdapter
 from marketpulse.adapters.news.mock import MockNewsAdapter
+from flowera import flow_era
 from marketpulse.config.registry import get_instruments, get_themes
 from marketpulse.config.settings import MOCK_DIR, Settings, reset_settings_cache
 
@@ -28,6 +29,12 @@ def _no_llm_credentials(monkeypatch):
     reset_settings_cache()
     yield
     reset_settings_cache()
+
+
+@pytest.fixture
+def flow_on():
+    with flow_era():
+        yield
 
 
 @pytest.fixture

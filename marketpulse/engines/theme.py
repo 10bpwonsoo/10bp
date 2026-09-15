@@ -234,6 +234,11 @@ def compute_theme_states(
     for theme in themes:
         theme_events = _theme_events(events, theme.id)
         price_map, flow_map = _partition(theme.instruments, instruments_by_id)
+        # 수급 신호를 끈 상태(scoring.yaml theme.use_flow=false)에서는 수급 자산을
+        # 애초에 매핑하지 않은 것으로 본다 — 점수·확인·커버리지 어디에도 들어가지
+        # 않고, 결손이 아니라 구조적 부재로 기록된다.
+        if not tcfg.get("use_flow", True):
+            flow_map = {}
 
         price_z, price_bd, price_cov = _momentum(
             price_map, snapshot, method="theme_price_weighted_z_v1", horizon=horizon

@@ -172,9 +172,15 @@ def _direction_from_display(value: float) -> Direction:
     return direction_for(value, deadband=10.0)
 
 
-def _theme_candidates(themes: Sequence[ThemeState], rules: dict) -> list[_Candidate]:
+def _theme_candidates(
+    themes: Sequence[ThemeState], rules: dict, *, use_flow: bool = True
+) -> list[_Candidate]:
     out: list[_Candidate] = []
     for spec in rules.get("theme_pairs", []):
+        # 수급 신호를 끈 설정(scoring.yaml theme.use_flow=false)에서는 수급이 한쪽인
+        # 짝을 평가하지 않는다. 규칙은 파일에 남겨 두어 수급이 붙는 날 그대로 산다.
+        if not use_flow and "flow_momentum" in (spec.get("left"), spec.get("right")):
+            continue
         min_events = int(spec.get("min_events", 0))
         for t in themes:
             left = getattr(t, spec["left"])
@@ -368,7 +374,7 @@ def detect_divergences(
     trigger = dcfg["trigger"]
 
     candidates: list[_Candidate] = []
-    candidates += _theme_candidates(themes, rules)
+    candidates += _theme_candidates(themes, rules, use_flow=bool(scoring["theme"].get("use_flow", True)))
     candidates += _instrument_candidates(snapshot, rules, divisor, scale)
     candidates += _state_vol_candidates(state, snapshot, rules, divisor, scale)
     candidates += _theme_asset_candidates(
@@ -441,7 +447,7 @@ def pending_candidates(
     trigger = dcfg["trigger"]
 
     candidates = (
-        _theme_candidates(themes, rules)
+        _theme_candidates(themes, rules, use_flow=bool(scoring["theme"].get("use_flow", True)))
         + _instrument_candidates(snapshot, rules, divisor, scale)
         + _state_vol_candidates(state, snapshot, rules, divisor, scale)
         + _theme_asset_candidates(

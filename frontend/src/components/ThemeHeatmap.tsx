@@ -96,7 +96,6 @@ export function ThemeHeatmap({
         <span style={{ textAlign: "right" }}>Score</span>
         <span style={{ textAlign: "right" }}>News</span>
         <span style={{ textAlign: "right" }}>Price</span>
-        <span style={{ textAlign: "right" }}>Flow</span>
         <span style={{ textAlign: "right" }}>Conf</span>
       </div>
 
@@ -170,10 +169,11 @@ export function ThemeHeatmap({
                   </span>
                 </ScoreTooltip>
               </span>
+              {/* 수급 열은 뺐다 — 무료 공급자가 없어 항상 결측이었고, 그 역할은
+                  뉴스 감성이 맡는다 (scoring.yaml theme.use_flow). */}
               {[
                 ["뉴스 감성", t.news_sentiment],
                 ["가격 모멘텀", t.price_momentum],
-                ["수급 모멘텀", t.flow_momentum],
               ].map(([label, v]) => (
                 <span
                   key={label as string}
