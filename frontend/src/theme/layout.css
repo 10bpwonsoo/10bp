@@ -587,3 +587,28 @@
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+/* ── 테마 히트맵 격자 ───────────────────────────
+   넓은 화면: 이름 | Score | News | Price | Flow | Conf 한 줄.
+   좁은 화면: 고정폭 열 다섯 개가 이름 칸을 0 으로 짓눌러 테마명이 사라졌다.
+   이름을 첫 줄 전체로 올리고 숫자 다섯 개를 둘째 줄에 고르게 편다. */
+.heat-row {
+  grid-template-columns: minmax(0, 1.4fr) 64px 56px 56px 56px 64px;
+}
+
+@media (max-width: 640px) {
+  .heat-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px 6px;
+  }
+  .heat-row > :first-child {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+  .heat-hint {
+    display: none;
+  }
+  .theme-news-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+}

@@ -52,8 +52,6 @@ function relatedEvents(events: NewsEventLite[], themeId: string): NewsEventLite[
     .slice(0, RELATED_LIMIT);
 }
 
-const GRID = "minmax(0,1.4fr) 64px 56px 56px 56px 64px";
-
 export function ThemeHeatmap({
   themes,
   events = [],
@@ -83,9 +81,8 @@ export function ThemeHeatmap({
   return (
     <div className="rows">
       <div
-        className="row"
+        className="row heat-row heat-head"
         style={{
-          gridTemplateColumns: GRID,
           color: "var(--faint)",
           fontSize: 10.5,
           letterSpacing: "0.06em",
@@ -93,7 +90,9 @@ export function ThemeHeatmap({
           fontFamily: "var(--font-mono)",
         }}
       >
-        <span>테마 · 누르면 관련 기사</span>
+        <span>
+          테마<span className="heat-hint"> · 누르면 관련 기사</span>
+        </span>
         <span style={{ textAlign: "right" }}>Score</span>
         <span style={{ textAlign: "right" }}>News</span>
         <span style={{ textAlign: "right" }}>Price</span>
@@ -108,7 +107,7 @@ export function ThemeHeatmap({
         return (
           <div key={t.theme_id}>
             <div
-              className="row row-toggle"
+              className="row row-toggle heat-row"
               role="button"
               tabIndex={0}
               aria-expanded={isOpen}
@@ -120,7 +119,6 @@ export function ThemeHeatmap({
                   setOpen(isOpen ? null : t.theme_id);
                 }
               }}
-              style={{ gridTemplateColumns: GRID }}
             >
               <span className="row-label">
                 <span
