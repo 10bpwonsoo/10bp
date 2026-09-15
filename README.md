@@ -249,6 +249,7 @@ curl 'http://127.0.0.1:8000/api/v1/snapshot?scenario=baseline'
 | `baseline` | 평시. 어느 상태 룰도 발동하지 않는다 (판정 없음) |
 | `inflation_shock` | 요구 14 의 검증 케이스. Oil +2σ / Rates +1.5σ / VIX +1.5σ / Equity −1.2σ → Inflation Shock / Risk-Off |
 | `ai_divergence` | 요구 7 의 예시. AI 뉴스·가격은 강한데 외국인 수급이 빠진다. 수급 신호를 끈 현재 설정(`theme.use_flow: false`)에서는 수급 괴리 대신 뉴스↔가격·테마↔자산 괴리만 잡힌다 |
+| `ai_sentiment` | 수급을 끈 설정에서의 요구 7 예시. AI 뉴스 톤은 강하게 긍정적인데 반도체·AI 가격은 제자리 → NEWS_VS_PRICE(무반응) 괴리, 온도계 '뉴스가 가격보다 뜨겁다'. 대시보드의 'AI 센티' 탭 |
 
 > **괴리와 알림은 두 틱이 필요하다.** 한 틱짜리 격차는 노이즈와 구분되지
 > 않아 표시하지 않고, 알림은 직전 틱과 비교해야 "변화" 를 말할 수 있다.
