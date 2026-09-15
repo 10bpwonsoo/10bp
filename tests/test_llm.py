@@ -83,6 +83,18 @@ class TestAutoEnable:
         monkeypatch.delenv("MARKETPULSE_LLM_ENABLED", raising=False)
         assert Settings().llm_enabled is False
 
+    def test_prefixed_key_also_turns_it_on(self, monkeypatch):
+        """실행 환경이 ANTHROPIC_API_KEY 를 걸러내면 MARKETPULSE_ 접두사로 우회한다."""
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("MARKETPULSE_LLM_ENABLED", raising=False)
+        monkeypatch.setenv("MARKETPULSE_ANTHROPIC_API_KEY", "sk-ant-test")
+        s = Settings()
+        assert s.llm_enabled is True
+        assert s.anthropic_api_key == "sk-ant-test"
+        assert "sk-ant" not in repr(s), "키는 repr 에도 나오면 안 된다"
+        client = build_client(s)
+        assert client._api_key == "sk-ant-test"
+
     def test_explicit_setting_wins(self, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
         monkeypatch.setenv("MARKETPULSE_LLM_ENABLED", "false")

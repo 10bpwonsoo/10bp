@@ -50,8 +50,15 @@ class Settings(BaseSettings):
     #: 실데이터에서 뉴스를 몇 건까지 받을지.
     news_limit: int = 60
 
+    #: Anthropic API 키. 보통은 SDK 가 ANTHROPIC_API_KEY 에서 직접 읽는다.
+    #: 이 필드(MARKETPULSE_ANTHROPIC_API_KEY)는 실행 환경이 ANTHROPIC_API_KEY
+    #: 라는 이름을 따로 다루거나 걸러낼 때의 우회로다. 값은 로그·화면 어디에도
+    #: 나가지 않는다 (요구 15-8).
+    anthropic_api_key: str | None = Field(default=None, repr=False)
     llm_enabled: bool = Field(
-        default_factory=lambda: bool(os.environ.get("ANTHROPIC_API_KEY")),
+        default_factory=lambda: bool(
+            os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("MARKETPULSE_ANTHROPIC_API_KEY")
+        ),
         description=(
             "기본값은 '키가 있으면 켠다'. 켜 두고 키가 없으면 매 틱 인증 실패를 "
             "겪고, 꺼 두고 키가 있으면 기능이 논다. MARKETPULSE_LLM_ENABLED 로 "

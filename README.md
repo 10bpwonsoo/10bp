@@ -224,7 +224,8 @@ cp .env.example .env
 | `MARKETPULSE_NEWS_SEARCH` | `auto` | LLM 웹검색으로 기사 찾기. `auto` RSS 가 0건일 때만 / `on` 항상 병합 / `off` |
 | `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
 | `MARKETPULSE_NEWS_LIMIT` | `60` | 실데이터에서 받을 기사 수 |
-| `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요 |
+| `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요. 있으면 자동으로 켜진다 |
+| `MARKETPULSE_ANTHROPIC_API_KEY` | – | 실행 환경이 `ANTHROPIC_API_KEY` 를 따로 다루거나 걸러낼 때의 우회로. 같은 효과 |
 | `FRED_API_KEY` | – | 금리·크레딧을 FRED 에서 받을 때만 필요 |
 
 어떤 모드에서도 **모의 데이터가 실데이터 이름표를 달고 나가지 않는다.**

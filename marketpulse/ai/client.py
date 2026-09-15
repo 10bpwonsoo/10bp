@@ -120,9 +120,12 @@ class LLMClient:
         model: str = "claude-opus-5",
         timeout_sec: float = DEFAULT_TIMEOUT_SEC,
         max_retries: int = 1,
+        api_key: str | None = None,
     ) -> None:
         self.enabled = enabled
         self.model = model
+        #: None 이면 SDK 가 환경변수·프로필에서 찾는다. 값은 절대 로그에 남기지 않는다.
+        self._api_key = api_key
         self.timeout_sec = timeout_sec
         self.max_retries = max_retries
         self._circuit = _Circuit()
@@ -159,9 +162,12 @@ class LLMClient:
             return LLMFailure(self._client_error, "unavailable", permanent=True)
 
         try:
-            # 키를 코드에 넣지 않는다. SDK 가 환경변수와 프로필에서 찾는다.
+            # 키를 코드에 넣지 않는다. 설정으로 받은 것이 있으면 그것을, 없으면
+            # SDK 가 환경변수와 프로필에서 찾는다.
             self._client = anthropic.Anthropic(
-                timeout=self.timeout_sec, max_retries=self.max_retries
+                api_key=self._api_key or None,
+                timeout=self.timeout_sec,
+                max_retries=self.max_retries,
             )
         except Exception as exc:  # 구성 오류
             self._client_error = str(exc)
@@ -386,8 +392,10 @@ class LLMClient:
 
 
 @lru_cache(maxsize=8)
-def _cached_client(enabled: bool, model: str, timeout_sec: float) -> LLMClient:
-    return LLMClient(enabled=enabled, model=model, timeout_sec=timeout_sec)
+def _cached_client(
+    enabled: bool, model: str, timeout_sec: float, api_key: str | None
+) -> LLMClient:
+    return LLMClient(enabled=enabled, model=model, timeout_sec=timeout_sec, api_key=api_key)
 
 
 def build_client(settings: Any) -> LLMClient:
@@ -402,6 +410,7 @@ def build_client(settings: Any) -> LLMClient:
         bool(getattr(settings, "llm_enabled", False)),
         os.getenv("MARKETPULSE_LLM_MODEL", "claude-opus-5"),
         float(getattr(settings, "llm_timeout_sec", DEFAULT_TIMEOUT_SEC)),
+        getattr(settings, "anthropic_api_key", None) or None,
     )
 
 
