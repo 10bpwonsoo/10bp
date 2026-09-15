@@ -33,11 +33,31 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await res.json()) as T;
 }
 
-const qs = (scenario?: string) =>
-  scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
+const qs = (scenario?: string, extra: Record<string, string> = {}) => {
+  const params = new URLSearchParams(extra);
+  if (scenario) params.set("scenario", scenario);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+};
 
-export const fetchSnapshot = (scenario?: string, signal?: AbortSignal) =>
-  get<IntelligenceSnapshot>(`/api/v1/snapshot${qs(scenario)}`, signal);
+export const fetchSnapshot = (
+  scenario?: string,
+  signal?: AbortSignal,
+  opts: { refresh?: boolean } = {},
+) =>
+  get<IntelligenceSnapshot>(
+    `/api/v1/snapshot${qs(scenario, opts.refresh ? { refresh: "true" } : {})}`,
+    signal,
+  );
+
+/**
+ * 정적 배포본이면 참. 배포본의 fetch 가로채기가 이 플래그를 세운다.
+ * 서버가 없으므로 '지금 업데이트' 는 새 수집을 할 수 없고, 버튼이 그 사실을 말한다.
+ */
+export function staticBundle(): { collected: string } | null {
+  const w = window as unknown as { __MP_STATIC__?: { collected: string } };
+  return w.__MP_STATIC__ ?? null;
+}
 
 /**
  * 가벼운 상태 조회. 스냅샷을 받기 전에 **모드**를 알아야 한다 —

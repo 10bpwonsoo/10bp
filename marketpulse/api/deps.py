@@ -187,9 +187,10 @@ def resolve_settings(
     return settings.model_copy(update={"scenario": scenario})
 
 
-def load_snapshot(settings: Settings) -> IntelligenceSnapshot:
+def load_snapshot(settings: Settings, *, force: bool = False) -> IntelligenceSnapshot:
+    """force 면 TTL 캐시를 건너뛰고 지금 새로 수집·계산한다 (화면의 '지금 업데이트')."""
     try:
-        return get_service().get(settings)
+        return get_service().get(settings, force=force)
     except AdapterError as exc:
         # 어댑터 부재는 설정 문제다. 500 이 아니라 503 으로 알린다.
         raise HTTPException(status_code=503, detail=str(exc)) from exc

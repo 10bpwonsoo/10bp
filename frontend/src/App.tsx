@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchInfo, fetchScenarios } from "./api/client";
+import { fetchInfo, fetchScenarios, staticBundle } from "./api/client";
 import type { ApiInfo, DataMode, ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
 import { DataModeBadge } from "./components/DataModeBadge";
+import { RefreshButton } from "./components/RefreshButton";
 import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
 import { DashboardGrid } from "./layout/DashboardGrid";
 
@@ -13,7 +14,11 @@ export default function App() {
   // 모드를 알기 전에는 스냅샷을 요청하지 않는다. 시나리오를 붙일지 말지가
   // 모드에 달려 있고, 요청을 띄웠다가 취소하면 느린 실데이터 수집이 매번
   // 처음부터 다시 시작한다.
-  const { snapshot, error, loading } = useSnapshot(scenario, mode !== null);
+  const { snapshot, error, loading, lastUpdated, refreshNow, refreshing } = useSnapshot(
+    scenario,
+    mode !== null,
+  );
+  const bundle = staticBundle();
 
   useEffect(() => {
     const c = new AbortController();
@@ -56,6 +61,13 @@ export default function App() {
         {snapshot ? (
           <DataModeBadge health={snapshot.data_health} scenario={snapshot.scenario} />
         ) : null}
+        <RefreshButton
+          onClick={refreshNow}
+          busy={refreshing}
+          lastUpdated={lastUpdated}
+          mode={mode}
+          staticNote={bundle?.collected ?? null}
+        />
       </header>
 
       {error ? (

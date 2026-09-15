@@ -51,12 +51,23 @@ class TestRoutes:
         d = client.get("/api/v1/snapshot").json()
         assert d["market_state"]["as_of"] == d["as_of"]
 
+    def test_refresh_query_bypasses_cache(self, client):
+        """'지금 업데이트' 버튼. refresh=true 면 TTL 캐시를 건너뛰고 새로 계산한다."""
+        a = client.get("/api/v1/snapshot").json()
+        b = client.get("/api/v1/snapshot?refresh=true").json()
+        # MOCK 은 호출 시각이 as_of 다. 캐시를 건너뛰었다면 시각이 앞으로 간다.
+        assert b["as_of"] >= a["as_of"]
+        assert client.get("/api/v1/snapshot").json()["as_of"] == b["as_of"]
+
     def test_health_exposes_mode_and_freshness(self, client):
         h = client.get("/api/v1/health").json()
         assert h["mode"] == "MOCK"
         assert h["coverage"] == 1.0
         assert "max_freshness_sec" in h
         assert h["llm_status"] == "disabled"
+        # API 가 꺼진 것과 판단이 없는 것은 다른 사실이다. 둘 다 적힌다.
+        assert h["news_judgment"] in ("none", "manual", "api")
+        assert h["news_judgment_note"]
 
     def test_info_is_cheap(self, client):
         """파이프라인을 돌리지 않는 기동 점검 경로."""

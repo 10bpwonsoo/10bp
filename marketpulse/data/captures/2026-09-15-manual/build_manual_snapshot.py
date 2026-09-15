@@ -133,7 +133,7 @@ def run_tick(
     )
     health = build_data_health(
         market_snapshot, [], llm_enabled=False,
-        timings_ms={}, warnings=notes, llm_status="disabled",
+        timings_ms={}, warnings=notes, llm_status="disabled", events=events,
     )
     alerts = build_alerts(
         market_state, themes, divergences, market_snapshot, health, instruments_by_id,

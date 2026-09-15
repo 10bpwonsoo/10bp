@@ -11,6 +11,9 @@ export interface SnapshotStore {
   loading: boolean;
   lastUpdated: Date | null;
   refresh: () => void;
+  /** 서버 캐시를 건너뛰고 지금 새로 수집·계산한다. 화면의 '지금 업데이트'. */
+  refreshNow: () => Promise<void>;
+  refreshing: boolean;
 }
 
 export function useSnapshot(scenario?: string, enabled = true): SnapshotStore {
@@ -29,6 +32,22 @@ export function useSnapshot(scenario?: string, enabled = true): SnapshotStore {
   }, []);
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshNow = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const data = await fetchSnapshot(scenario, undefined, { refresh: true });
+      if (!mounted.current) return;
+      setSnapshot(data);
+      setLastUpdated(new Date());
+      setError(null);
+    } catch (err) {
+      if (!mounted.current) return;
+      setError(err instanceof ApiError ? err.message : "알 수 없는 오류가 발생했습니다");
+    } finally {
+      if (mounted.current) setRefreshing(false);
+    }
+  }, [scenario]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -62,5 +81,5 @@ export function useSnapshot(scenario?: string, enabled = true): SnapshotStore {
     };
   }, [scenario, tick, enabled]);
 
-  return { snapshot, error, loading, lastUpdated, refresh };
+  return { snapshot, error, loading, lastUpdated, refresh, refreshNow, refreshing };
 }

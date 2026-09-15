@@ -347,3 +347,27 @@ class TestWeekAgoLookup:
         assert repo.at_or_before("k", as_of + timedelta(days=5), max_distance=timedelta(days=3)) is None
         assert repo.at_or_before("k", as_of - timedelta(days=1), max_distance=timedelta(days=3)) is None
         repo.close()
+
+
+# ── 뉴스 판단 주체 배지 ─────────────────────────────────────
+class TestNewsJudgment:
+    def test_rule_only_is_none(self, settings, as_of):
+        snap = run_pipeline_detailed(settings, as_of=as_of).snapshot
+        assert snap.data_health.news_judgment == "none"
+        assert "룰" in snap.data_health.news_judgment_note
+
+    def test_manual_events_are_manual(self, settings, as_of):
+        from marketpulse.engines.orchestrator import news_judgment
+        from marketpulse.models.news import NewsEvent, ValidationReport
+
+        e = NewsEvent(
+            id="m1", source_item_ids=["x"], event="t", event_type="other", themes=["ai"],
+            theme_sentiment={"ai": 10}, theme_direction={"ai": "up"}, sentiment=10,
+            impact_score=30, novelty_score=30, time_horizon="short", reason="r", source="s",
+            timestamp=as_of, extractor="manual", validation=ValidationReport(schema_ok=True),
+            confidence=0.5,
+        )
+        kind, note = news_judgment([e], "disabled")
+        assert kind == "manual" and "자동으로 갱신되지 않는다" in note
+        assert news_judgment([e.model_copy(update={"extractor": "llm"})], "disabled")[0] == "api"
+        assert news_judgment([], "ok")[0] == "api"

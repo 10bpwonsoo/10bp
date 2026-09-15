@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from ...config.settings import Settings
 from ...models.snapshot import IntelligenceSnapshot, MovingItem
@@ -24,9 +24,15 @@ SettingsDep = Annotated[Settings, Depends(resolve_settings)]
 
 
 @router.get("/snapshot", response_model=IntelligenceSnapshot)
-def get_snapshot(settings: SettingsDep) -> IntelligenceSnapshot:
+def get_snapshot(
+    settings: SettingsDep,
+    refresh: Annotated[
+        bool,
+        Query(description="참이면 TTL 캐시를 건너뛰고 지금 새로 수집·계산한다. 화면의 '지금 업데이트' 버튼."),
+    ] = False,
+) -> IntelligenceSnapshot:
     """현재 시장 인텔리전스 전체."""
-    return load_snapshot(settings)
+    return load_snapshot(settings, force=refresh)
 
 
 @router.get("/market-state", response_model=MarketState)

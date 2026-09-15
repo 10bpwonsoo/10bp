@@ -35,7 +35,7 @@ from ..config.registry import get_instruments, get_themes
 from ..config.settings import Settings
 from ..models.common import DataMode, arrow_for, direction_for, utcnow
 from ..models.market import Instrument, MarketSnapshot
-from ..models.news import RawNewsItem
+from ..models.news import NewsEvent, RawNewsItem
 from ..models.snapshot import DataHealth, IntelligenceSnapshot, MovingItem
 from ..models.alert import Alert
 from ..models.divergence import Divergence
@@ -230,6 +230,30 @@ def build_observations(
     return out
 
 
+def news_judgment(
+    events: Sequence[NewsEvent], llm_status: str
+) -> tuple[str, str]:
+    """
+    뉴스를 누가 판단했는가. (등급, 설명)
+
+    "LLM disabled" 는 API 경로가 꺼졌다는 뜻일 뿐, 수기 판단이 들어갔는지는
+    말하지 않는다. 화면 배지는 이 값을 쓴다.
+    """
+    n_llm = sum(1 for e in events if e.extractor == "llm")
+    n_manual = sum(1 for e in events if e.extractor == "manual")
+    n_rule = sum(1 for e in events if e.extractor == "rule")
+    if llm_status == "ok" or n_llm > 0:
+        return "api", f"Anthropic API 가 기사 {n_llm}건을 구조화했다. 매 틱 자동으로 갱신된다."
+    if n_manual > 0:
+        return "manual", (
+            f"Claude 가 이 세션에서 기사 {n_manual}건을 직접 읽고 태깅했다. "
+            "API 호출이 아니며 자동으로 갱신되지 않는다 — 다시 읽어 달라고 해야 바뀐다."
+        )
+    if n_rule > 0:
+        return "none", f"룰 사전 태깅 {n_rule}건뿐이다. Claude 도 API 도 기사를 읽지 않았다."
+    return "none", "판단된 기사가 없다."
+
+
 def build_data_health(
     snapshot: MarketSnapshot,
     news_items: list[RawNewsItem],
@@ -238,6 +262,7 @@ def build_data_health(
     timings_ms: dict[str, float],
     warnings: list[str] | None = None,
     llm_status: str | None = None,
+    events: Sequence[NewsEvent] = (),
 ) -> DataHealth:
     stale = [
         iid for iid, p in snapshot.points.items() if p.meta.is_stale
@@ -245,6 +270,8 @@ def build_data_health(
     max_fresh = max(
         (p.meta.freshness_sec for p in snapshot.points.values()), default=0
     )
+    status = llm_status or ("disabled" if not llm_enabled else "ok")
+    judgment, judgment_note = news_judgment(events, status)
     return DataHealth(
         mode=snapshot.mode,
         coverage=snapshot.coverage,
@@ -254,7 +281,9 @@ def build_data_health(
         stale=sorted(stale),
         max_freshness_sec=max_fresh,
         news_items=len(news_items),
-        llm_status=llm_status or ("disabled" if not llm_enabled else "ok"),
+        llm_status=status,  # type: ignore[arg-type]
+        news_judgment=judgment,  # type: ignore[arg-type]
+        news_judgment_note=judgment_note,
         engine_timings_ms={k: round(v, 2) for k, v in timings_ms.items()},
         warnings=list(warnings or []),
     )
@@ -459,6 +488,7 @@ def build_intelligence(
         timings_ms=timings,
         warnings=notes,
         llm_status=llm_client.status if llm_client else None,
+        events=events,
     )
 
     t = time.perf_counter()

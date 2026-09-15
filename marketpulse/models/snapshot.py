@@ -57,6 +57,13 @@ class DataHealth(Base):
     max_freshness_sec: int = 0
     news_items: int = 0
     llm_status: Literal["disabled", "ok", "degraded", "failed"] = "disabled"
+    #: 이 스냅샷의 뉴스를 **누가** 판단했는가. llm_status 는 API 경로의 상태일
+    #: 뿐이라 "disabled" 만으로는 수기 판단이 들어갔는지 알 수 없다.
+    #:   none   룰 사전 태깅만. Claude 도 API 도 기사를 읽지 않았다
+    #:   manual Claude 가 세션에서 직접 읽고 태깅했다 (extractor="manual")
+    #:   api    Anthropic API 가 매 틱 자동으로 구조화한다 (extractor="llm")
+    news_judgment: Literal["none", "manual", "api"] = "none"
+    news_judgment_note: str = ""
     engine_timings_ms: dict[str, float] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 

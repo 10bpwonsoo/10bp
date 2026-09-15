@@ -306,6 +306,9 @@ export interface DataHealth {
   max_freshness_sec: number;
   news_items: number;
   llm_status: "disabled" | "ok" | "degraded" | "failed";
+  /** 뉴스를 누가 판단했는가. none 룰 태깅만 / manual Claude 수기 / api 자동. */
+  news_judgment: "none" | "manual" | "api";
+  news_judgment_note: string;
   engine_timings_ms: Record<string, number>;
   warnings: string[];
 }

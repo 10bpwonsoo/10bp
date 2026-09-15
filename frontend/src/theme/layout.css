@@ -801,3 +801,41 @@
   color: var(--faint);
   font-size: 10px;
 }
+
+/* ── 지금 업데이트 ─────────────────────────────── */
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.refresh-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.refresh-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--surface);
+}
+.refresh-btn:disabled {
+  border-color: var(--rule);
+  background: transparent;
+  color: var(--faint);
+  cursor: default;
+}
+.refresh-note {
+  font-size: 10.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .refresh {
+    margin-left: 0;
+  }
+}

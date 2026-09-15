@@ -6,6 +6,16 @@ const LABEL: Record<DataHealth["mode"], string> = {
   MOCK: "모의",
 };
 
+/**
+ * 뉴스를 누가 판단했는가. "LLM disabled" 는 API 경로가 꺼졌다는 말일 뿐이라
+ * 수기 판단이 들어갔는지를 말하지 못했다. 세 상태로 나눈다.
+ */
+const JUDGMENT: Record<DataHealth["news_judgment"], { label: string; color: string }> = {
+  none: { label: "뉴스 판단 없음", color: "var(--faint)" },
+  manual: { label: "뉴스 판단 수기", color: "var(--warn)" },
+  api: { label: "뉴스 판단 API", color: "var(--ok)" },
+};
+
 function freshness(sec: number): string {
   if (sec < 60) return `${sec}초 전`;
   if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
@@ -50,12 +60,13 @@ export function DataModeBadge({
       </span>
       <span
         className="num"
-        style={{
-          fontSize: 11,
-          color: health.llm_status === "disabled" ? "var(--faint)" : "var(--ok)",
-        }}
+        style={{ fontSize: 11, color: JUDGMENT[health.news_judgment].color }}
+        title={`${health.news_judgment_note}\nAPI 경로 상태: ${health.llm_status}`}
       >
-        LLM {health.llm_status}
+        {JUDGMENT[health.news_judgment].label}
+        {health.llm_status !== "disabled" && health.llm_status !== "ok"
+          ? ` · API ${health.llm_status}`
+          : ""}
       </span>
     </div>
   );
