@@ -68,7 +68,7 @@ export function DashboardGrid({ snapshot }: { snapshot: IntelligenceSnapshot }) 
       </Panel>
 
       <Panel title="Theme Heatmap" span={2} flush note={`${snapshot.themes.length}개`}>
-        <ThemeHeatmap themes={snapshot.themes} />
+        <ThemeHeatmap themes={snapshot.themes} events={snapshot.events} />
       </Panel>
 
       <Panel title="What's Moving" flush note="z-score 순">

@@ -33,7 +33,15 @@ export function NewsFeed({ events }: { events: NewsEventLite[] }) {
         const tags = Object.entries(e.theme_sentiment);
         return (
           <article key={e.id} className="row" style={{ gridTemplateColumns: "1fr", gap: 5 }}>
-            <div style={{ color: "var(--ink)", lineHeight: 1.45 }}>{e.event}</div>
+            <div style={{ color: "var(--ink)", lineHeight: 1.45 }}>
+              {e.url ? (
+                <a href={e.url} target="_blank" rel="noopener noreferrer" className="news-link">
+                  {e.event}
+                </a>
+              ) : (
+                e.event
+              )}
+            </div>
 
             {tags.length > 0 && (
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>

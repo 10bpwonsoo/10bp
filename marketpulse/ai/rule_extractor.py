@@ -118,6 +118,7 @@ def extract_events(
                 id=f"rule-{item.id}",
                 source_item_ids=[item.id],
                 event=item.title,
+                url=item.url,
                 event_type=_event_type(text),
                 themes=[t.id for t, _ in matched],
                 theme_sentiment=theme_sentiment,

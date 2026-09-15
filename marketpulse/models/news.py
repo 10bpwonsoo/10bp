@@ -128,6 +128,9 @@ class NewsEvent(Base):
 
     reason: str = ""
     source: str = ""
+    #: 원문 링크. 화면에서 헤드라인을 누르면 기사로 간다. 검색 결과처럼
+    #: 링크가 곧 출처인 경우가 있어 provenance 의 일부다.
+    url: str | None = None
     timestamp: datetime
 
     # ── 출처 추적 ──

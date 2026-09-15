@@ -276,6 +276,8 @@ export interface NewsEventLite {
   impact_score: number;
   reason: string;
   source: string;
+  /** 원문 링크. 없으면 헤드라인만 보인다. */
+  url: string | null;
   timestamp: string;
   extractor: "llm" | "rule" | "manual";
   confidence: number;

@@ -258,6 +258,7 @@ def validate_event(
         second_order=[],  # LLM 이 제안한 2차 관계는 별도 경로로 처리한다
         reason=str(raw.get("reason") or "")[:600],
         source=item.publisher or item.meta.source,
+        url=item.url,
         timestamp=item.published_at,
         extractor="llm",
         extractor_model=model,
