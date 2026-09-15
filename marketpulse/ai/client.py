@@ -105,6 +105,16 @@ class _Circuit:
             self.permanently_open = False
 
 
+def _status_reason(exc: Any) -> str:
+    """오류 응답의 message 만 뽑는다. 없으면 예외 문자열 그대로."""
+    body = getattr(exc, "body", None)
+    if isinstance(body, dict):
+        err = body.get("error")
+        if isinstance(err, dict) and err.get("message"):
+            return str(err["message"])
+    return str(exc)
+
+
 class LLMClient:
     """
     구조화 출력 전용 얇은 래퍼.
@@ -121,9 +131,11 @@ class LLMClient:
         timeout_sec: float = DEFAULT_TIMEOUT_SEC,
         max_retries: int = 1,
         api_key: str | None = None,
+        search_timeout_sec: float = 90.0,
     ) -> None:
         self.enabled = enabled
         self.model = model
+        self.search_timeout_sec = search_timeout_sec
         #: None 이면 SDK 가 환경변수·프로필에서 찾는다. 값은 절대 로그에 남기지 않는다.
         self._api_key = api_key
         self.timeout_sec = timeout_sec
@@ -273,15 +285,21 @@ class LLMClient:
             return LLMFailure(str(exc), "auth", permanent=True)
         except anthropic.RateLimitError as exc:
             self._circuit.record_failure()
+            self._client_error = f"요청 한도 초과: {exc}"
             return LLMFailure(str(exc), "rate_limit")
         except anthropic.APITimeoutError as exc:
             self._circuit.record_failure()
+            self._client_error = f"응답 시간 초과: {exc}"
             return LLMFailure(str(exc), "timeout")
         except anthropic.APIConnectionError as exc:
             self._circuit.record_failure()
+            self._client_error = f"연결 실패: {exc}"
             return LLMFailure(str(exc), "api")
         except anthropic.APIStatusError as exc:
             self._circuit.record_failure()
+            # 400 "credit balance is too low" 처럼 키는 맞는데 계정이 막힌 경우가
+            # 여기로 온다. 이유가 화면에 나가야 사용자가 조치한다.
+            self._client_error = f"API {exc.status_code}: {_status_reason(exc)}"
             return LLMFailure(f"{exc.status_code}: {exc}", "api")
         except TypeError as exc:
             # SDK 는 자격 증명을 찾지 못하면 요청을 만들 때 TypeError 를 낸다
@@ -344,6 +362,8 @@ class LLMClient:
                     {"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}
                 ],
                 output_config={"effort": EXTRACT_EFFORT},
+                # 검색은 서버가 여러 번 돌리고 돌아온다. 추출용 8초로는 항상 끊긴다.
+                timeout=self.search_timeout_sec,
             )
         )
         if isinstance(response, LLMFailure):
@@ -393,9 +413,15 @@ class LLMClient:
 
 @lru_cache(maxsize=8)
 def _cached_client(
-    enabled: bool, model: str, timeout_sec: float, api_key: str | None
+    enabled: bool, model: str, timeout_sec: float, api_key: str | None, search_timeout_sec: float
 ) -> LLMClient:
-    return LLMClient(enabled=enabled, model=model, timeout_sec=timeout_sec, api_key=api_key)
+    return LLMClient(
+        enabled=enabled,
+        model=model,
+        timeout_sec=timeout_sec,
+        api_key=api_key,
+        search_timeout_sec=search_timeout_sec,
+    )
 
 
 def build_client(settings: Any) -> LLMClient:
@@ -411,6 +437,7 @@ def build_client(settings: Any) -> LLMClient:
         os.getenv("MARKETPULSE_LLM_MODEL", "claude-opus-5"),
         float(getattr(settings, "llm_timeout_sec", DEFAULT_TIMEOUT_SEC)),
         getattr(settings, "anthropic_api_key", None) or None,
+        float(getattr(settings, "llm_search_timeout_sec", 90.0)),
     )
 
 

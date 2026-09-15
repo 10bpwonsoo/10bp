@@ -396,6 +396,12 @@ def build_intelligence(
         note = f"LLM 사용 불가: {reason} 정량 파이프라인은 정상 동작한다."
         if note not in notes:
             notes.append(note)
+    elif llm_client is not None and llm_client.status == "degraded" and llm_client.last_error:
+        # 키는 맞는데 계정 크레딧이 없다든지, 한도에 걸렸다든지. "degraded" 한
+        # 단어로는 무엇을 고쳐야 하는지 알 수 없다.
+        note = f"LLM 호출 실패 중: {llm_client.last_error} 룰 기반으로 대체했다."
+        if note not in notes:
+            notes.append(note)
     market_state = market_state.model_copy(
         update={"narrative": narrative, "narrative_source": narrative_source}
     )

@@ -66,6 +66,10 @@ class Settings(BaseSettings):
         ),
     )
     llm_timeout_sec: float = 8.0
+    #: 웹검색 호출은 Anthropic 서버가 검색을 여러 번 돌리고 돌아오므로 추출보다
+    #: 훨씬 길다 (실측 60초). 8초로 자르면 항상 timeout 이다. 이 경로는 RSS 가
+    #: 죽었을 때만 타므로 파이프라인 지연 상한(STEP 7.4)의 예외로 둔다.
+    llm_search_timeout_sec: float = 90.0
     #: LLM 웹검색으로 기사를 찾는 경로. 검색은 Anthropic 서버가 하므로 RSS
     #: 호스트가 막혀 있어도 동작한다. auto 는 RSS 가 0건일 때만 쓴다 —
     #: 매 틱 검색을 돌리면 비용이 들고, RSS 가 살아 있으면 필요도 없다.

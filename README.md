@@ -223,6 +223,7 @@ cp .env.example .env
 | `MARKETPULSE_LLM_MODEL` | `claude-opus-5` | 이벤트 추출·요약·웹검색에 쓰는 모델 |
 | `MARKETPULSE_NEWS_SEARCH` | `auto` | LLM 웹검색으로 기사 찾기. `auto` RSS 가 0건일 때만 / `on` 항상 병합 / `off` |
 | `MARKETPULSE_HTTP_TIMEOUT_SEC` | `8` | 실데이터 공급자 타임아웃 |
+| `MARKETPULSE_LLM_SEARCH_TIMEOUT_SEC` | `90` | LLM 웹검색 호출 타임아웃. 서버 측 검색이 여러 번 돌아 추출(8초)보다 훨씬 길다 |
 | `MARKETPULSE_NEWS_LIMIT` | `60` | 실데이터에서 받을 기사 수 |
 | `ANTHROPIC_API_KEY` | – | LLM 을 켤 때만 필요. 있으면 자동으로 켜진다 |
 | `MARKETPULSE_ANTHROPIC_API_KEY` | – | 실행 환경이 `ANTHROPIC_API_KEY` 를 따로 다루거나 걸러낼 때의 우회로. 같은 효과 |
