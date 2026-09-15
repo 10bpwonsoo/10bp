@@ -23,7 +23,9 @@ from marketpulse.models.divergence import DivergenceType, SeverityBand
 
 def _two_ticks(scenario: str):
     """괴리는 최소 두 틱이 있어야 확정된다."""
-    s = Settings(scenario=scenario)
+    # module 스코프라 conftest 의 자격 증명 제거보다 먼저 돈다. 이 테스트는
+    # 'LLM 없이' 가 전제이므로 명시적으로 끈다.
+    s = Settings(scenario=scenario, llm_enabled=False)
     first = run_pipeline_detailed(s)
     second = run_pipeline_detailed(
         s, history=[first.snapshot], pending_divergences=first.pending
