@@ -133,8 +133,6 @@ def report(as_of: str | None = None, model: str | None = None,
     -------
     dict — figures / tables. 추가 가공이 필요하면 여기서 꺼내 쓴다.
     """
-    from IPython.display import HTML, display
-
     config = load_config()
     bundle = load(as_of)
     manifest = bundle["manifest"]
@@ -244,6 +242,10 @@ def report(as_of: str | None = None, model: str | None = None,
     }
 
     if show:
+        # IPython 은 화면에 그릴 때만 필요하다. show=False 로 숫자만 쓸 때는
+        # 노트북 밖(배치·테스트)에서도 돌아야 하므로 여기서 import 한다.
+        from IPython.display import HTML, display
+
         display(HTML(header + kpis))
         display(summary.style.hide(axis="index"))
         for key in ("cumulative", "attribution", "stocks", "models", "sector"):

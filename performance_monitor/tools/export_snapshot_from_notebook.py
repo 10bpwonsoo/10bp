@@ -28,6 +28,56 @@ from src.config import load_config  # noqa: E402
 from src.data_loader import SnapshotStore  # noqa: E402
 from src.logging_utils import RunLog, get_logger  # noqa: E402
 
+# export() 가 반드시 필요로 하는 notebook 변수 (계산 결과 + 파라미터)
+REQUIRED_VARS = [
+    "analysis_bm", "mp_end_date", "report_start_date", "mp_start_date",
+    "return_contribution_final", "final_mp",
+    "temp_return_final", "betalog_final",
+]
+# 있으면 더 많은 화면이 채워지는 변수
+OPTIONAL_VARS = [
+    "compare_final", "sector_compare_final", "new_sector_compare_final",
+    "sector_index_market_cap", "new_sector_index_market_cap",
+    "info_stock", "rtn_bpm", "alphalog_final",
+    "list_bpm_factor", "list_bpm_sector", "bm_pre_rebal",
+    "mtd_date", "qtd_date", "htd_date", "ytd_date", "y1_date",
+]
+
+
+def check(namespace: dict, show: bool = True) -> dict:
+    """notebook 에 필요한 변수가 다 있는지 먼저 확인한다.
+
+        pm.check_namespace(globals())
+
+    ``export`` 는 **계산을 하지 않는다.** 노트북이 이미 만들어 둔 객체를 그대로
+    저장할 뿐이므로, 주간 분석 노트북을 **같은 커널에서** 끝까지 돌린 뒤에
+    호출해야 한다. 이 함수는 어디까지 돌았는지 보여 준다.
+    """
+    missing = [name for name in REQUIRED_VARS if name not in namespace]
+    present = [name for name in REQUIRED_VARS if name in namespace]
+    opt_present = [name for name in OPTIONAL_VARS if name in namespace]
+    opt_missing = [name for name in OPTIONAL_VARS if name not in namespace]
+
+    if show:
+        if missing:
+            print(f"✗ 필수 변수 {len(missing)}개가 없습니다: {', '.join(missing)}")
+            print("  export_snapshot 은 계산을 하지 않습니다. 노트북이 만들어 둔")
+            print("  결과를 저장할 뿐이므로, 주간 분석 노트북을 **같은 커널에서**")
+            print("  끝까지 실행한 뒤 호출하십시오.")
+            print("  화면만 먼저 보시려면: pm.demo_snapshot()  (합성 데이터)")
+        else:
+            print(f"✓ 필수 변수 {len(present)}개 모두 있습니다. "
+                  "pm.export_snapshot(globals()) 을 실행하십시오.")
+        if opt_missing:
+            print(f"\n  선택 변수 {len(opt_present)}/{len(OPTIONAL_VARS)}개 있음. "
+                  f"없는 것: {', '.join(opt_missing)}")
+            print("  (없어도 되지만 일부 화면이 비거나 기간 프리셋이 줄어듭니다)")
+
+    return {"missing": missing, "present": present,
+            "optional_present": opt_present, "optional_missing": opt_missing,
+            "ready": not missing}
+
+
 # (스냅샷 테이블명, notebook 변수명, 필수여부)
 EXPORT_MAP = [
     ("final_mp", "final_mp", True),
@@ -79,12 +129,19 @@ def export(namespace: dict, config_dir: str | None = None,
     config = load_config(config_dir)
     log = RunLog(get_logger(log_dir=config.log_dir))
 
+    # 빠진 것이 있으면 첫 번째에서 죽지 말고 전부 모아서 알려 준다.
+    absent = [name for name in REQUIRED_VARS if name not in namespace]
+    if absent:
+        raise KeyError(
+            f"notebook 에 다음 변수가 없습니다: {', '.join(absent)}\n"
+            "  export_snapshot 은 계산을 하지 않습니다. 노트북이 이미 만들어 둔\n"
+            "  결과를 그대로 저장할 뿐이므로, 주간 분석 노트북을 **같은 커널에서**\n"
+            "  끝까지 실행한 뒤 호출하십시오.\n"
+            "    pm.check_namespace(globals())   # 어디까지 왔는지 확인\n"
+            "    pm.demo_snapshot()              # 화면만 먼저 볼 때 (합성 데이터)"
+        )
+
     def need(name: str):
-        if name not in namespace:
-            raise KeyError(
-                f"notebook 에 '{name}' 변수가 없습니다. "
-                "Function_calculation_return_contribution_ver2.ipynb 를 먼저 실행하세요."
-            )
         return namespace[name]
 
     analysis_bm = need("analysis_bm")

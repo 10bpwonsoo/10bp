@@ -257,6 +257,8 @@ pm.current_version()
 | `launch_dashboard` 가 streamlit 을 못 찾는다 | 프로젝트 폴더에 `.venv` 를 만들고 `requirements.txt` 설치. 안내문에 명령이 나온다 |
 | `Network paths are not supported` | 프로그램이 네트워크 드라이브에 있다. 로컬로 옮기고 `PM_DATA_DIR` 로 데이터만 공유 폴더 지정 (`docs/OFFLINE_INSTALL.md`) |
 | 스냅샷이 없다고 나온다 | `pm.export_snapshot(globals())` 를 먼저 실행 |
+| `notebook 에 다음 변수가 없습니다` | `export_snapshot` 은 계산을 하지 않는다. 주간 분석 노트북을 **같은 커널에서** 끝까지 실행한 뒤 호출해야 한다. `pm.check_namespace(globals())` 로 확인 |
+| 실제 데이터 없이 화면만 먼저 보고 싶다 | `pm.demo_snapshot()` → `pm.report()` (합성 데이터. 화면에 경고가 표시된다) |
 | `No module named 'pm_engine'` | `sys.path` 경로가 틀렸다. **상대 경로 금지** — 설치 시 출력된 절대 경로를 쓰거나 `tools/pm_path_cell.py` 를 셀에 붙여넣어 자동으로 찾게 한다 |
 | `Plotly ... not compatible with ... Kaleido` | 무시해도 된다. `fig.write_image()`(정적 이미지 저장)에만 해당하며 `pm.report()` 는 영향 없다 |
 | 서버가 곧바로 죽는다 | 출력에 로그 경로와 마지막 내용이 나온다 |

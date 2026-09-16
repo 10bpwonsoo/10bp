@@ -76,7 +76,7 @@ __all__ = [
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
     "launch_dashboard", "stop_dashboard", "dashboard_status",
-    "report", "snapshots",
+    "report", "snapshots", "check_namespace", "demo_snapshot",
     "check_github", "update", "update_from_github", "update_from_file",
     "current_version",
 ]
@@ -114,6 +114,34 @@ def export_snapshot(namespace: dict, **kwargs):
     from tools.export_snapshot_from_notebook import export
 
     return export(namespace, **kwargs)
+
+
+def check_namespace(namespace: dict, **kwargs):
+    """스냅샷을 만들 준비가 됐는지 먼저 확인한다.
+
+        pm.check_namespace(globals())
+
+    `export_snapshot` 은 계산을 하지 않는다. 노트북이 이미 만들어 둔 결과를
+    저장할 뿐이므로, 주간 분석 노트북을 **같은 커널에서** 끝까지 돌려야 한다.
+    이 함수는 어느 변수가 있고 없는지 보여 준다.
+    """
+    from tools.export_snapshot_from_notebook import check
+
+    return check(namespace, **kwargs)
+
+
+def demo_snapshot(weeks: int = 26, stocks: int = 120, report_days: int = 5,
+                  seed: int = 20260911):
+    """합성 데이터로 스냅샷을 만든다. **점검용이며 실제 운용 성과가 아니다.**
+
+        pm.demo_snapshot(); pm.report()
+
+    실제 데이터 없이 화면·설치가 제대로 됐는지 확인할 때만 쓴다.
+    화면 상단에 데모 데이터라는 경고가 항상 표시된다.
+    """
+    from tools.make_demo_snapshot import main as _demo
+
+    return _demo(weeks, stocks, report_days, seed)
 
 
 def compare(namespace: dict, **kwargs):
