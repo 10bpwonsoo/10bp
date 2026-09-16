@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -179,7 +181,12 @@ def compute_betalog(alphalog_final: pd.DataFrame, Alog_final: pd.DataFrame) -> p
         index=alphalog_final.index,
         columns=alphalog_final.columns,
     )
-    return betalog_final.fillna(0)
+    # 원본 CELL 40 의 fillna(0) 을 그대로 쓴다. object dtype 다운캐스팅에 대해
+    # pandas 2.x 가 FutureWarning 을 내지만, 1.5.3 / 2.3.3 / 3.0.5 에서 결과가
+    # 같음을 확인했으므로 **이 호출에 한해서만** 숨긴다.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", FutureWarning)
+        return betalog_final.fillna(0)
 
 
 def build_scaling_factors(temp_return_final: pd.DataFrame,

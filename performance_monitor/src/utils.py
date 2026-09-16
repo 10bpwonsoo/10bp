@@ -5,6 +5,8 @@ pandas 버전 차이를 흡수하는 얇은 헬퍼만 둔다.
 """
 from __future__ import annotations
 
+import warnings
+
 import pandas as pd
 
 PANDAS_MAJOR = int(pd.__version__.split(".")[0])
@@ -17,12 +19,17 @@ def stack_dropna(obj, level=-1):
     NaN 을 떨어뜨리는 것에 의존한다. pandas >= 2.1 의 ``stack`` 은 NaN 을 보존하므로
     명시적으로 제거해 준다.
     """
-    try:
-        out = obj.stack(level, dropna=True)  # pandas < 2.1
-    except (TypeError, ValueError):
-        # pandas >= 2.1: dropna 인자 제거. stack 후 직접 떨어뜨린다.
-        out = obj.stack(level)
-        out = out.dropna(how="all") if isinstance(out, pd.DataFrame) else out.dropna()
+    # 원본 notebook 표현식을 그대로 쓰는 자리라 pandas 가 FutureWarning 을 낸다.
+    # pandas 1.5.3 / 2.3.3 / 3.0.5 에서 결과가 동일함을 테스트로 확인했으므로,
+    # **이 호출에 한해서만** 경고를 숨긴다. (전역 억제가 아니다)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", FutureWarning)
+        try:
+            out = obj.stack(level, dropna=True)  # pandas < 2.1
+        except (TypeError, ValueError):
+            # pandas >= 2.1: dropna 인자 제거. stack 후 직접 떨어뜨린다.
+            out = obj.stack(level)
+            out = out.dropna(how="all") if isinstance(out, pd.DataFrame) else out.dropna()
     return out
 
 

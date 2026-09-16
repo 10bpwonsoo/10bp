@@ -4,6 +4,10 @@
 
     import pm_engine as pm
 
+    # 0) 노트북에서 대시보드 보기 - 둘 중 편한 쪽
+    pm.launch_dashboard()   # 서버를 띄운다 → http://<이 서버>:8501
+    pm.report()             # 노트북 셀 안에 바로 그린다 (포트 못 열 때)
+
     # 1) 계산 (기존 notebook 변수를 그대로 넘긴다)
     Alog, alphalog, betalog = pm.performance.build_scaling_factors(
         temp_return_final, return_contribution_final, report_date_list)
@@ -48,14 +52,43 @@ from src import (  # noqa: E402,F401
     validation,
 )
 
+from src.launcher import (  # noqa: E402,F401
+    dashboard_status,
+    launch_dashboard,
+    stop_dashboard,
+)
+
 __all__ = [
     "attribution", "benchmark", "config", "dashboard_engine", "data_loader",
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
+    "launch_dashboard", "stop_dashboard", "dashboard_status",
+    "report", "snapshots",
 ]
 
 run_attribution = pipeline.run_attribution
 load_config = config.load_config
+
+
+def report(*args, **kwargs):
+    """노트북 셀 안에 대시보드 요약 화면을 그린다.
+
+        pm.report()                      # 최신 스냅샷 / 상위 모델 / 주간
+        pm.report(preset='MTD')          # 월간
+        pm.report(model='KS2_VALUE_FP')  # 특정 하위 모델
+
+    Dashboard 와 **같은 엔진**으로 계산하므로 숫자가 같다.
+    """
+    from src.notebook_report import report as _report
+
+    return _report(*args, **kwargs)
+
+
+def snapshots():
+    """쓸 수 있는 스냅샷 목록."""
+    from src.notebook_report import available_snapshots
+
+    return available_snapshots()
 
 
 def export_snapshot(namespace: dict, **kwargs):
