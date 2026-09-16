@@ -26,3 +26,6 @@ wheelhouse/
 .pm_version.json
 *.new
 *.bak
+
+# 생성물 (tools/make_bootstrap.py 출력)
+dist/
