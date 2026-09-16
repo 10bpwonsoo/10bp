@@ -92,7 +92,7 @@ export function StockIntelligence({ inv }: { inv: InvestmentIntelligence }) {
         <section>
           <div className="ii-group mono">대체데이터 · 글로벌 peer</div>
           {[...s.alternative, ...s.peers].map((p) => (
-            <div key={p.id} className="row ii-exp-row" title={p.why}>
+            <div key={p.id} className="row ii-peer-row" title={p.why}>
               <span className="row-label">{p.label}{p.quality === "MISSING" ? <span className="row-sub"> 없음</span> : null}</span>
               <span className={`num ${(p.change_1d ?? 0) >= 0 ? "up" : "down"}`}>{pct(p.change_1d)}</span>
               <span className="num" style={{ color: "var(--faint)" }}>{sig(p.z)}</span>

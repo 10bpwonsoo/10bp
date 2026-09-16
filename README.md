@@ -340,6 +340,48 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
+### Investment Intelligence (2026-09-16)
+
+기존 대시보드 **아래**에 붙은 두 번째 층이다. 기존 엔진·스냅샷·API·WebSocket·
+컴포넌트는 손대지 않았고, 새 층은 자기 API(`/api/v1/investment`)와 자기
+캐시(MOCK 4초, DELAYED/LIVE 15분)로 돈다. 사슬은
+MARKET → ALTERNATIVE DATA → INDUSTRY → STOCK → PRICE/FLOW → FUNDAMENTAL → ANALYST → CLAUDE.
+
+| # | 패널 | 엔진 | 무엇을 말하나 |
+|---|------|------|---------------|
+| 1 | Today's Market Drivers | `investment.py` | 임계(\|z\| ≥ 0.8) 이상 움직인 시장 변수와 그것에 민감한 종목 |
+| 2 | Alternative Data Pulse | `alternative_data.py` | 41개 대체지표를 1D/1W/1M/3M·z·백분위 + **왜 중요한가·누가 영향받나** 로. 없는 것은 MISSING 으로 남긴다 |
+| 3 | Market → Stock Impact | `stock_exposure.py` `stock_impact.py` | 충격 × 노출 × 통계 신뢰 × 사업 관련성 × 현재 관련성. 20/60/120일 beta·상관과 `stock_exposures.yaml` 의 사업 노출을 나란히 |
+| 4 | Semiconductor Intelligence | `semiconductor.py` | 메모리 현물 · 글로벌 peer · 국내 3사 · EPS 의 방향 합의 |
+| 5 | Commodity → Industry → Stock | `commodity_impact.py` | 원자재 z → 산업 → 매출/원가/수요 경로별 수혜·피해와 실측 반응 |
+| 6 | Unusual Stock Movers | `stock_anomaly.py` | 수익률·거래량·상대 z. 뉴스 없는 거래량 급증은 UNEXPLAINED_ACTIVITY — '매집' 이라고 하지 않는다 |
+| 7 | Theme → Stock | `investment.py` | 기존 테마 점수가 종목에서 확인되는가(confirmed/muted/mismatch) |
+| 8 | Analyst Revision Monitor | `analyst.py` | EPS·목표가·투자의견 변화. 공개 API 가 없어 `data/replay/analyst/<ID>.csv` 적재만 |
+| 9 | Price vs Fundamental Divergence | `stock_divergence.py` | 가격↓/EPS↑, 가격↑/산업데이터↓, 업종↑/종목↓ 등. 지속 틱마다 severity 가 오른다 |
+| 10 | Stock Intelligence | `stock_explanation.py` | WHAT / WHY / WHAT CHANGED / WHAT NEXT 를 먼저. 원인은 CONFIRMED_DATA … UNKNOWN 6종에 확신 HIGH/MEDIUM/LOW |
+| 11 | Watchlist Intelligence | `investment.py` | 20종목 한 줄 + 배지(NEW_EVENT, EPS_REVISION, ALTERNATIVE_DATA_SIGNAL, COMMODITY_IMPACT, UNUSUAL_MOVE, THEME_*) |
+| 12 | Claude Commentary | `commentary.py` | API 를 부르지 않는다. `data/commentary/<date>.json` 의 수기 해설을 FACT/NEWS/ANALYST/INTERPRETATION/UNKNOWN 으로 분리해 보여준다 |
+
+설정은 `config/universe.yaml`(36종목·41대체지표), `config/stock_exposures.yaml`
+(사업 노출), `config/intelligence.yaml`(모든 임계·가중치)에 있다. 코드에
+숫자를 박지 않았다.
+
+**실데이터.** 종목·미국 peer·원자재·중국 지수·대리 ETF 는 Yahoo 차트 API 로
+받고 `alt_daily` 테이블에 일별 upsert 한다. 같은 날 이미 받은 계열은 다시
+받지 않고, 공급자가 실패하면 저장된 마지막 값을 **STALE** 로 돌려준다.
+DRAM·NAND 현물, BDI·SCFI, 중국 PMI, 석탄·니켈·아연·나프타, 외국인·기관 수급,
+애널리스트 컨센서스는 공개 API 가 없거나 이 환경에서 차단된다 — 화면에
+'없음' 으로 남기고 억지로 채우지 않는다. CSV 를 `data/replay/alternative/<ID>.csv`
+(date,close) 또는 `data/replay/analyst/<ID>.csv` (date,broker,rating,target_price,eps_fy1)
+에 넣으면 그 자리가 채워진다.
+
+**말하지 않는 것.** 상관을 인과로 쓰지 않는다(lead/lag 는 "역사적으로 앞서는
+경향" 까지). 거래 주체를 단정하지 않는다. 통계 부호와 사업 노출 부호가
+다르면 점수를 깎고 '상충' 을 남기되 어느 쪽이 맞다고 하지 않는다.
+
+MOCK 시나리오 6개가 추가됐다: `commodity_shock` `memory_upcycle` `oil_spike`
+`china_stress` `rates_stock_divergence` `eps_price_divergence`.
+
 ### 수급(flow) 신호는 꺼져 있다
 
 `config/scoring.yaml` 의 `theme.use_flow: false`. 국내 수급(외국인·기관 순매수)은

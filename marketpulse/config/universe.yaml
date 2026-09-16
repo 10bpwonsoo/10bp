@@ -146,7 +146,7 @@ alternative:
   - {id: LRCX,  name: Lam Research,   group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: LRCX}], source_type: EXCHANGE, why: "식각 장비. 메모리 CAPEX 에 민감.", affected: [HANMI_SEMI], mock_base: 271, mock_vol: 0.026}
   - {id: TEL,   name: Tokyo Electron, group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: "8035.T"}], source_type: EXCHANGE, why: "장비 peer.", affected: [HANMI_SEMI], mock_base: 51690, mock_vol: 0.025}
   # 중국
-  - {id: CSI300, name: CSI 300,       group: china, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "000300.SS"}], source_type: EXCHANGE, why: "중국 본토 대형주. 중국 수요 심리.", affected: [POSCO, LGCHEM, LOTTE_CHEM, PAN_OCEAN], mock_base: 4478, mock_vol: 0.014}
+  - {id: CSI300, name: CSI 300,       group: china, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "000300.SS"}, {provider: yahoo, symbol: ASHR}], source_type: EXCHANGE, why: "중국 본토 대형주. 중국 수요 심리. 본토 지수가 막히면 ASHR(CSI 300 ETF, 미국 상장) 로 대신한다 — 화면의 source 가 어느 쪽인지 말한다.", affected: [POSCO, LGCHEM, LOTTE_CHEM, PAN_OCEAN], mock_base: 4478, mock_vol: 0.014}
   - {id: HSI,    name: 항셍,           group: china, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "^HSI"}], source_type: EXCHANGE, why: "홍콩 상장 중국 기업. 외국인 시각의 중국.", affected: [POSCO, HMM], mock_base: 24696, mock_vol: 0.016}
   - {id: CHINA_PMI, name: 중국 제조업 PMI, group: china, asset_class: commodity, unit: index, series_kind: level, sources: [{provider: csv, symbol: CHINA_PMI}], source_type: OFFICIAL,
      why: "중국 제조업 경기. 50 기준. 무료 API 가 없어 CSV 로만 받는다.", affected: [POSCO, LGCHEM, PAN_OCEAN], mock_base: 50.2, mock_vol: 0.4}

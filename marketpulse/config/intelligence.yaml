@@ -69,7 +69,7 @@ alternative:
   stale_days: 5
   # 선물 연속 계열에서 하루 |z| 가 이 이상이면 롤오버 의심. 실제 충격일 수도
   # 있으므로 버리지 않고 표시만 한다.
-  rollover_suspect_z: 3.5
+  rollover_suspect_z: 2.0
   # 화면에 올릴 순서
   groups: [semiconductor, energy, metals, chemicals, agriculture, shipping, china, peer]
   # z 가 이 이상이면 '움직임' 으로 상단에 올린다

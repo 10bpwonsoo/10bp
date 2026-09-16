@@ -406,12 +406,14 @@ def run_investment(
         scenario = None
         failed = [o for o in adapter.outcomes.values() if not o.ok]
         for o in failed[:6]:
-            warnings.append(f"{o.instrument_id}: {o.reason}")
+            # 화면에 로컬 절대경로를 내보내지 않는다
+            warnings.append(f"{o.instrument_id}: {o.reason}".replace(str(settings.replay_dir), "data/replay"))
         if len(failed) > 6:
             warnings.append(f"… 외 {len(failed) - 6}개 계열도 실패")
     timings["fetch"] = (time.perf_counter() - t) * 1000.0
 
-    commentary = load_commentary(COMMENTARY_DIR, as_of, config_dir=settings.config_dir)
+    # 수기 해설은 실데이터에 대한 것이다. MOCK 시나리오에 실제 날짜의 해설을 붙이면 거짓이 된다.
+    commentary = [] if settings.data_mode is DataMode.MOCK else load_commentary(COMMENTARY_DIR, as_of, config_dir=settings.config_dir)
     return build_investment(
         base, series, as_of=as_of, mode=adapter.mode, scenario=scenario, analyst_specs=analyst_specs,
         replay_dir=settings.replay_dir, commentary=commentary, previous=previous,
