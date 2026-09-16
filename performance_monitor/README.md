@@ -22,6 +22,11 @@ python tools/make_demo_snapshot.py
 ./run_dashboard.sh          # http://localhost:8501
 ```
 
+> **네트워크 드라이브(`M:\` 등)에서는 실행할 수 없다.** Streamlit 이 UNC 경로 실행을
+> 막는다(자격증명 노출 방지). 프로그램은 로컬 디스크에 두고, 데이터만 공유 폴더를
+> 보게 하면 된다 — `set PM_DATA_DIR=M:/공유폴더/데이터`.
+> 자세한 내용은 [`docs/OFFLINE_INSTALL.md`](docs/OFFLINE_INSTALL.md).
+
 화면 왼쪽 **기간 프리셋**에서 `일간 / 주간 / 월간` 을 고르면 해당 기간 성과가 바로 나온다.
 
 사내 서버 배포:

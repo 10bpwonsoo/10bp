@@ -11,6 +11,8 @@ PORT="${PM_PORT:-8501}"
 # 외부 telemetry 차단 (Streamlit 사용통계 수집 off)
 export STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
+python3 tools/preflight.py || exit 1
+
 if [[ "${1:-local}" == "server" ]]; then
   exec python -m streamlit run app.py \
     --server.port "$PORT" \

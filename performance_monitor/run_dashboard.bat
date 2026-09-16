@@ -48,13 +48,11 @@ if not %ERRORLEVEL%==0 (
     exit /b 1
 )
 
-REM --- 스냅샷 확인 -----------------------------------------------------------
-dir /b "data\processed\snapshot_*" >nul 2>nul
+REM --- 환경 점검 (네트워크 경로 / 스냅샷 유무) --------------------------------
+%PY% tools\preflight.py
 if not %ERRORLEVEL%==0 (
-    echo [WARN] data\processed 에 스냅샷이 없습니다. 화면이 비어 보입니다.
-    echo        점검용 합성 데이터를 만들려면:
-    echo            %PY% tools\make_demo_snapshot.py
-    echo.
+    pause
+    exit /b 1
 )
 
 REM --- 실행 ------------------------------------------------------------------

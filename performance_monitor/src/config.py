@@ -24,6 +24,18 @@ class AppConfig:
     # --- paths -------------------------------------------------------------
     @property
     def data_dir(self) -> Path:
+        """데이터 루트.
+
+        환경변수 ``PM_DATA_DIR`` 이 우선한다. 프로그램은 로컬 디스크에 두고
+        스냅샷만 공유 폴더(네트워크 드라이브)에 둘 때 쓴다 —
+        Streamlit 은 프로그램이 네트워크 경로에 있으면 실행을 거부하지만,
+        데이터를 네트워크에서 읽는 것은 문제되지 않는다.
+
+            set PM_DATA_DIR=M:/공유폴더/performance_monitor_data
+        """
+        override = os.environ.get("PM_DATA_DIR")
+        if override:
+            return Path(override)
         return self._resolve(self.raw["project"]["data_dir"])
 
     @property

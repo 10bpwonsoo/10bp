@@ -205,10 +205,56 @@ schtasks /create /tn "MP Snapshot Weekly" ^
 이 배치는 사내 DB 와 `jackhammer` / `vrksa` 가 필요하다.
 노트북에서 `pm.export_snapshot(globals())` 로 만드는 방식을 쓰면 배치 등록은 불필요하다.
 
+### 네트워크 드라이브(공유 폴더)에서는 실행할 수 없다
+
+`M:\\...` 같은 매핑 드라이브나 `\\\\서버\\공유\\...` 에 두고 실행하면 이렇게 멈춘다.
+
+```
+streamlit.errors.StreamlitAPIException:
+Unable to create Page. Network paths are not supported.
+```
+
+Streamlit 이 **의도적으로** 막는 것이다. 페이지 스크립트가 UNC 경로면 SMB 연결이
+일어나면서 Windows 자격증명이 노출될 수 있어 넣은 보안 장치이고, 우회 대상이 아니다.
+매핑 드라이브도 `Path.resolve()` 에서 UNC(`\\\\서버\\공유\\...`)로 풀리므로 똑같이 걸린다.
+
+**해결 — 프로그램은 로컬 디스크, 데이터는 공유 폴더**
+
+제한은 **프로그램 위치에만** 적용된다. 스냅샷을 네트워크에서 읽는 것은 문제없다.
+팀이 같은 스냅샷을 보게 하려면 이 구성이 오히려 적합하다.
+
+```bat
+REM 1) 폴더 전체를 로컬로 복사
+xcopy /E /I "M:\...\performance_monitor" "C:\apps\performance_monitor"
+cd /d C:\apps\performance_monitor
+
+REM 2) 데이터만 공유 폴더를 보게 한다 (역슬래시 대신 슬래시 권장)
+set PM_DATA_DIR=M:/0 Public_Land/.../performance_monitor_data
+
+REM 3) 실행
+setup.bat
+```
+
+매번 `set` 하기 번거로우면 `config\config.yaml` 에 적어두면 된다.
+
+```yaml
+project:
+  data_dir: 'M:/0 Public_Land/.../performance_monitor_data'
+```
+
+이렇게 하면 팀원 각자는 로컬에서 실행하고, 스냅샷은 한 곳을 공유한다.
+주간 스냅샷을 공유 폴더에 만들어 두면 모두가 같은 숫자를 본다.
+
+`setup.bat` / `run_dashboard.bat` 은 실행 전에 `tools/preflight.py` 로 이 상황을
+먼저 점검해, 위 traceback 대신 조치 방법을 한국어로 안내한다.
+
+---
+
 ### Windows 에서 주의할 점
 
 | 항목 | 내용 |
 |---|---|
+| **네트워크 드라이브** | **실행 불가.** `Network paths are not supported` 오류. 위 절 참조 — 프로그램은 로컬, 데이터만 공유 폴더 |
 | 경로 길이 | 260자 제한에 걸릴 수 있다. `C:\apps\` 처럼 짧은 경로에 두는 편이 안전 |
 | 줄바꿈 | `.bat` 은 CRLF 여야 한다. Git 설정이 `core.autocrlf=true` 면 자동 처리됨 |
 | 한글 깨짐 | cmd 기본 코드페이지(949) 문제. 로그가 깨지면 `chcp 65001` 후 실행 |

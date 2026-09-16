@@ -1,6 +1,8 @@
 """Portfolio / Model / Validation / Snapshot 계층 테스트."""
 from __future__ import annotations
 
+import pathlib
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -381,3 +383,54 @@ def test_entry_points_put_project_root_on_path():
         assert "parent.parent" in text and "sys.path.insert" in text, name
         # 한 단계 더 올라가면(parent.parent.parent) 상위 폴더 이름에 의존하게 된다
         assert "parent.parent.parent" not in text, f"{name}: 루트를 한 단계 더 올라감"
+
+
+# ---------------------------------------------------------------------------
+# 실행 환경 점검 (Windows 네트워크 드라이브)
+# ---------------------------------------------------------------------------
+def test_unc_detection_matches_streamlit_rule():
+    """Streamlit 의 is_windows_unc_path 와 같은 규칙이어야 한다.
+
+    Streamlit 은 페이지 스크립트가 UNC 경로면 실행을 거부한다. 매핑 드라이브
+    (M: 등)는 Path.resolve() 에서 UNC 로 풀리므로 똑같이 걸린다.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from tools.preflight import is_unc
+
+    for bad in (r"\\server\share\app", "//server/share/app",
+                r"/\server\share", r"\/server/share"):
+        assert is_unc(bad), bad
+    for ok in (r"C:\apps\performance_monitor", "/srv/performance_monitor",
+               r"M:\folder\app", "relative/path"):
+        assert not is_unc(ok), ok
+
+
+def test_data_dir_can_point_to_shared_folder(tmp_path, monkeypatch):
+    """PM_DATA_DIR 로 데이터만 공유 폴더에 둘 수 있어야 한다.
+
+    프로그램은 로컬 디스크, 스냅샷은 네트워크 공유 — 팀 공유 시나리오.
+    """
+    from src.config import load_config
+
+    shared = tmp_path / "shared_snapshots"
+    monkeypatch.setenv("PM_DATA_DIR", str(shared))
+    load_config.cache_clear()
+    try:
+        config = load_config()
+        assert config.data_dir == shared
+        assert config.processed_dir == shared / "processed"
+    finally:
+        monkeypatch.delenv("PM_DATA_DIR", raising=False)
+        load_config.cache_clear()
+
+
+def test_data_dir_defaults_to_project_folder(monkeypatch):
+    from src.config import load_config
+
+    monkeypatch.delenv("PM_DATA_DIR", raising=False)
+    load_config.cache_clear()
+    config = load_config()
+    assert config.data_dir == config.root / "data"
+    load_config.cache_clear()
