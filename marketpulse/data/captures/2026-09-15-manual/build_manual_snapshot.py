@@ -128,8 +128,8 @@ def run_tick(
     )
     notes = list(summary_notes)
     notes.append(
-        "이 스냅샷의 뉴스 60건 중 28건은 Claude(이 세션)가 API 없이 직접 읽고 "
-        "태깅했다 — extractor='manual'. 자동화된 Anthropic API 추출이 아니다."
+        f"이 스냅샷의 뉴스 이벤트 {len(events)}건은 전부 Claude(이 세션)가 API 없이 직접 읽고 "
+        "태깅했다 — extractor='manual'. 자동화된 Anthropic API 추출이 아니며 저절로 갱신되지 않는다."
     )
     health = build_data_health(
         market_snapshot, [], llm_enabled=False,
