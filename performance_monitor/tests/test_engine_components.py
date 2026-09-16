@@ -241,3 +241,74 @@ def test_data_status_reports_missing(toy):
     assert status["checks"]["Portfolio Data"] == "정상"
     assert status["checks"]["Benchmark Data"] == "정상"
     assert status["n_stocks"] == len(toy["items"])
+
+
+# ---------------------------------------------------------------------------
+# 기간 프리셋 (일간 / 주간 / 월간 ...)
+# ---------------------------------------------------------------------------
+def _preset_dates():
+    return list(pd.DatetimeIndex(list(pd.bdate_range("2026-01-02", periods=180, tz="UTC"))))
+
+
+def test_preset_daily_covers_exactly_one_business_day():
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    end = dates[-1]
+    start, stop, note = resolve_preset("1D", dates, end, "2026-09-04", {})
+    assert start == dates[-2] and stop == end and note is None
+    # 기준일은 제외되므로 성과 구간은 정확히 1영업일
+    assert len([d for d in dates if start < d <= stop]) == 1
+
+
+def test_preset_weekly_uses_snapshot_report_start():
+    """주간은 노트북의 report_start_date 를 그대로 기준일로 쓴다."""
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    end = dates[-1]
+    anchor = dates[-6]
+    start, stop, note = resolve_preset(
+        "1W", dates, end, str(anchor)[:10], {})
+    assert start == anchor and stop == end and note is None
+    assert len([d for d in dates if start < d <= stop]) == 5
+
+
+def test_preset_weekly_falls_back_when_anchor_missing():
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    start, stop, note = resolve_preset("1W", dates, dates[-1], None, {})
+    assert start == dates[-6]
+    assert "5영업일" in note
+
+
+def test_preset_monthly_uses_workdate_anchor():
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    end = dates[-1]
+    anchor = dates[-15]
+    start, stop, note = resolve_preset(
+        "MTD", dates, end, "2026-09-04", {"MTD": str(anchor)[:10]})
+    assert start == anchor and stop == end and note is None
+
+
+def test_preset_reports_missing_anchor_instead_of_guessing():
+    """기준일이 없으면 임의로 만들지 않고 사유를 알린다."""
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    start, stop, note = resolve_preset("QTD", dates, dates[-1], "2026-09-04", {})
+    assert start is None and stop is None
+    assert "QTD" in note
+
+
+def test_preset_rejects_anchor_outside_snapshot_window():
+    from src.ui import resolve_preset
+
+    dates = _preset_dates()
+    start, stop, note = resolve_preset(
+        "YTD", dates, dates[-1], "2026-09-04", {"YTD": "2020-01-02"})
+    assert start is None
+    assert "벗어납니다" in note

@@ -211,14 +211,38 @@ def main(weeks: int, stocks: int, report_days: int, seed: int) -> Path:
     store.write_table("rtn_bpm", data["rtn_bpm"])
     store.write_table("info_stock", data["info_stock"])
 
-    anchors = {
-        "WTD": str(report_date_list[0])[:10],
-        "MTD": str(dates[-21])[:10] if len(dates) > 21 else str(dates[0])[:10],
-        "QTD": str(dates[-63])[:10] if len(dates) > 63 else str(dates[0])[:10],
-        "HTD": str(dates[0])[:10],
-        "YTD": str(dates[0])[:10],
-        "1Y": str(dates[0])[:10],
+    # 비교기간 기준일. 운영에서는 WORKDATE_MAST_TB 조회값이지만,
+    # 데모에서는 같은 의미(직전 월말/분기말/반기말/연말 영업일)를 달력으로 계산한다.
+    end = dates[-1]
+
+    def _last_bd_before(period_end):
+        """period_end 이전(미포함)의 마지막 영업일."""
+        prior = [d for d in dates if d <= period_end]
+        return prior[-1] if prior else None
+
+    def _prev_month_end(ts, months=1):
+        first = ts.normalize().replace(day=1)
+        for _ in range(months):
+            first = (first - pd.Timedelta(days=1)).replace(day=1)
+        return first + pd.offsets.MonthEnd(0)
+
+    anchors = {"WTD": str(report_date_list[0])[:10]}
+    candidates = {
+        "MTD": _prev_month_end(end),
+        "QTD": _last_bd_before(pd.Timestamp(f"{end.year}-{((end.month - 1) // 3) * 3:02d}-28", tz="UTC"))
+        if end.month > 3 else None,
+        "HTD": _last_bd_before(pd.Timestamp(f"{end.year}-06-30", tz="UTC"))
+        if end.month > 6 else None,
+        "YTD": dates[0],
+        "1Y": dates[0],
     }
+    for key, value in candidates.items():
+        if value is None:
+            continue
+        anchor = _last_bd_before(pd.Timestamp(value))
+        if anchor is not None and anchor < end:
+            anchors[key] = str(anchor)[:10]
+    log.info(f"anchors: {anchors}")
     store.write_json("anchors", anchors)
 
     log.info(f"데모 스냅샷 완료: {store.path}")

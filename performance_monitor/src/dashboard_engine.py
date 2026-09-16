@@ -95,10 +95,15 @@ def compute_period(bundle: dict, report_date_list, sector_field: str = "new_sect
                 sector_exc.index, sector_field, suffix=suffix,
             )
         else:
+            have = f"{str(available.min())[:10]} ~ {str(available.max())[:10]}"
+            want = f"{str(report_date_list[0])[:10]} ~ {str(report_date_list[-1])[:10]}"
             sector_note = (
-                "선택 기간이 스냅샷의 섹터 BM 시총 보유 구간을 벗어나 "
-                "Allocation / Selection 을 재계산할 수 없습니다. "
-                "(원본 코드도 report 구간만 조회합니다)"
+                f"섹터 Allocation / Selection 은 이 기간({want})에 대해 계산할 수 없습니다.\n\n"
+                f"스냅샷의 섹터 BM 지수시총 보유 구간은 **{have}** 뿐입니다. "
+                "원본 코드(CELL 53)도 `report_start_date ~ mp_end_date` 구간만 조회하기 때문입니다.\n\n"
+                "→ **주간(1W)** 프리셋을 쓰거나, 노트북의 `report_start_date` 를 "
+                "원하는 기간 시작일로 두고 스냅샷을 다시 만드십시오. "
+                "나머지 항목(수익률·종목·팩터 기여도)은 이 기간에도 정상 계산됩니다."
             )
     else:
         sector_note = "스냅샷에 섹터 BM 시총 데이터가 없습니다."

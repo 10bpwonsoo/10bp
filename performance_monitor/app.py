@@ -71,7 +71,7 @@ st.markdown("---")
 # ---------------------------------------------------------------------------
 # WEEKLY PERFORMANCE SUMMARY
 # ---------------------------------------------------------------------------
-st.markdown("#### WEEKLY PERFORMANCE SUMMARY")
+st.markdown(f"#### PERFORMANCE SUMMARY — {ctx['preset_label']}")
 left, right = st.columns([1.15, 1])
 
 with left:
@@ -81,7 +81,7 @@ with left:
     )
     plot["Excess"] = curve[model] - curve["bm"]
     st.plotly_chart(
-        ui.line_chart(plot, "누적 성과 (MP / Benchmark / Excess)", height=330,
+        ui.line_chart(plot, f"누적 성과 (MP / Benchmark / Excess) · {ctx['preset_label']}", height=330,
                       bm_column="Benchmark"),
         use_container_width=True,
     )

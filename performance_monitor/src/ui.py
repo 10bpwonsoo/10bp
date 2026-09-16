@@ -35,6 +35,20 @@ SERIES_COLORS = [
     "#9f1239", "#0f766e",
 ]
 
+# 기간 프리셋. 기준일(시작일)은 원본 규칙대로 '직전 영업일'이며 성과에서 제외된다.
+#   1D  : 종료일 직전 영업일          → 하루 성과
+#   1W  : 스냅샷의 report_start_date  → 노트북과 동일한 주간 구간
+#   MTD/QTD/HTD/YTD/1Y : anchors(WORKDATE_MAST_TB 조회값)
+PERIOD_PRESETS = [
+    ("1D", "일간 (1D)"),
+    ("1W", "주간 (1W)"),
+    ("MTD", "월간 (MTD)"),
+    ("QTD", "분기 (QTD)"),
+    ("YTD", "연초 이후 (YTD)"),
+    ("1Y", "최근 1년 (1Y)"),
+    ("CUSTOM", "사용자 지정"),
+]
+
 MENU = [
     ("Dashboard", "app.py"),
     ("Performance", "pages/1_Performance.py"),
@@ -108,13 +122,13 @@ def sidebar(require_model: bool = True) -> dict | None:
         )
         return None
 
-    labels = [f"{s.as_of}  ·  {s.benchmark or '?'}" for s in snapshots]
-    default_index = st.session_state.get("snapshot_index", 0)
-    default_index = min(default_index, len(snapshots) - 1)
-    picked = st.sidebar.selectbox("데이터 기준일", range(len(snapshots)),
-                                  index=default_index, format_func=lambda i: labels[i])
-    st.session_state["snapshot_index"] = picked
-    snapshot = snapshots[picked]
+    by_path = {str(s.path): s for s in snapshots}
+    labels = {str(s.path): f"{s.as_of}  ·  {s.benchmark or '?'}" for s in snapshots}
+    picked = _stateful_pick(
+        st.sidebar.selectbox, "데이터 기준일", list(by_path), "snapshot_path",
+        format_func=lambda path: labels[path],
+    )
+    snapshot = by_path[picked]
 
     bundle = load_bundle(snapshot)
     manifest = bundle.get("manifest", {})
@@ -130,28 +144,53 @@ def sidebar(require_model: bool = True) -> dict | None:
     all_dates = pd.DatetimeIndex(temp_return_final.index).sort_values()
     snapshot_report_start = manifest.get("report_start_date")
     snapshot_end = manifest.get("mp_end_date")
+    anchors = bundle.get("anchors") or {}
 
     default_start = _nearest(all_dates, snapshot_report_start) or all_dates[0]
     default_end = _nearest(all_dates, snapshot_end) or all_dates[-1]
-
     date_options = list(all_dates)
-    start_pick = st.sidebar.selectbox(
-        "분석 시작일 (기준일)", date_options,
-        index=date_options.index(default_start),
-        format_func=lambda d: str(d)[:10],
-        help="원본 코드와 동일하게 **직전 영업일**을 기준일로 넣는다. "
-             "이 날의 수익률은 기간 성과에 포함되지 않는다.",
+
+    preset_key = _stateful_pick(
+        st.sidebar.radio, "기간 프리셋", [p[0] for p in PERIOD_PRESETS],
+        "period_preset", default_index=1,          # 기본 = 주간 (성과회의 기준)
+        format_func=lambda k: dict(PERIOD_PRESETS)[k],
+        help="일간/주간/월간을 바로 고른다. 기준일(시작일)은 원본 코드와 동일하게 "
+             "**직전 영업일**이며 그 날 수익률은 기간 성과에서 제외된다.",
     )
-    end_candidates = [d for d in date_options if d > start_pick]
-    if not end_candidates:
-        st.sidebar.error("종료일 후보가 없습니다. 시작일을 앞당기세요.")
-        return None
-    end_default = default_end if default_end in end_candidates else end_candidates[-1]
-    end_pick = st.sidebar.selectbox(
-        "분석 종료일", end_candidates,
-        index=end_candidates.index(end_default),
-        format_func=lambda d: str(d)[:10],
-    )
+
+    if preset_key == "CUSTOM":
+        start_pick = _stateful_pick(
+            st.sidebar.selectbox, "분석 시작일 (기준일)", date_options, "custom_start",
+            default_index=date_options.index(default_start),
+            format_func=lambda d: str(d)[:10],
+            help="원본 코드와 동일하게 **직전 영업일**을 기준일로 넣는다. "
+                 "이 날의 수익률은 기간 성과에 포함되지 않는다.",
+        )
+        end_candidates = [d for d in date_options if d > start_pick]
+        if not end_candidates:
+            st.sidebar.error("종료일 후보가 없습니다. 시작일을 앞당기세요.")
+            return None
+        end_default = default_end if default_end in end_candidates else end_candidates[-1]
+        end_pick = _stateful_pick(
+            st.sidebar.selectbox, "분석 종료일", end_candidates, "custom_end",
+            default_index=end_candidates.index(end_default),
+            format_func=lambda d: str(d)[:10],
+        )
+    else:
+        start_pick, end_pick, note = resolve_preset(
+            preset_key, date_options, default_end, snapshot_report_start, anchors
+        )
+        if start_pick is None:
+            st.sidebar.error(note)
+            st.sidebar.caption("'사용자 지정'으로 직접 기간을 고르십시오.")
+            return None
+        st.sidebar.caption(
+            f"기준일 **{str(start_pick)[:10]}** → 종료일 **{str(end_pick)[:10]}**"
+            f"  ({len([d for d in date_options if start_pick < d <= end_pick])} 영업일)"
+        )
+        if note:
+            st.sidebar.caption(note)
+
     report_date_list = [d for d in date_options if start_pick <= d <= end_pick]
 
     recomputed = not (
@@ -171,26 +210,22 @@ def sidebar(require_model: bool = True) -> dict | None:
 
     model = None
     if require_model:
-        default_model = st.session_state.get("model", top_column)
-        if default_model not in models:
-            default_model = top_column if top_column in models else models[-1]
-        model = st.sidebar.selectbox("상위 Model / MP", models,
-                                     index=models.index(default_model),
-                                     format_func=label_of)
-        st.session_state["model"] = model
+        fallback = models.index(top_column) if top_column in models else len(models) - 1
+        model = _stateful_pick(
+            st.sidebar.selectbox, "상위 Model / MP", models, "model",
+            default_index=fallback, format_func=label_of,
+        )
 
-    sub_models = st.sidebar.multiselect(
-        "하위 Model (비교용)", [m for m in models if m != model],
-        default=st.session_state.get("sub_models", [m for m in models if m != model]),
-        format_func=label_of,
+    sub_models = _stateful_multiselect(
+        st.sidebar.multiselect, "하위 Model (비교용)",
+        [m for m in models if m != model], "sub_models", format_func=label_of,
     )
-    st.session_state["sub_models"] = sub_models
 
-    sector_field = st.sidebar.radio(
-        "섹터 기준", ["q_sector", "new_sector"],
-        index=1,
-        format_func=lambda v: "q_sector (vrksa 기본)" if v == "q_sector" else "new_sector (수기 조정)",
-        horizontal=False,
+    sector_field = _stateful_pick(
+        st.sidebar.radio, "섹터 기준", ["q_sector", "new_sector"], "sector_field",
+        default_index=1,
+        format_func=lambda v: "q_sector (vrksa 기본)" if v == "q_sector"
+        else "new_sector (수기 조정)",
     )
 
     if manifest.get("source") == "demo_synthetic":
@@ -217,10 +252,85 @@ def sidebar(require_model: bool = True) -> dict | None:
         "sector_field": sector_field,
         "display_names": display,
         "recomputed": recomputed,
-        "anchors": bundle.get("anchors", {}) or {},
+        "preset": preset_key,
+        "preset_label": dict(PERIOD_PRESETS)[preset_key],
+        "anchors": anchors,
         "list_bpm_factor": manifest.get("list_bpm_factor", []),
         "list_bpm_sector": manifest.get("list_bpm_sector", []),
     }
+
+
+def resolve_preset(key: str, date_options: list, end_date,
+                   snapshot_report_start, anchors: dict):
+    """프리셋 → (기준일, 종료일, 안내문).
+
+    기준일은 원본 코드의 ``report_start_date`` 와 같은 의미다 —
+    **직전 영업일이며 그 날 수익률은 기간 성과에 포함되지 않는다.**
+    """
+    dates = pd.DatetimeIndex(date_options)
+    prior = [d for d in date_options if d < end_date]
+    if not prior:
+        return None, None, "종료일 이전 영업일이 없습니다."
+
+    if key == "1D":
+        return prior[-1], end_date, None
+
+    if key == "1W":
+        start = _nearest(dates, snapshot_report_start)
+        if start is not None and start < end_date:
+            return start, end_date, None
+        # 스냅샷에 report_start_date 가 없으면 5영업일 전을 기준일로
+        start = prior[-5] if len(prior) >= 5 else date_options[0]
+        return start, end_date, "스냅샷 기준일이 없어 5영업일 전을 기준일로 잡았습니다."
+
+    anchor = anchors.get(key)
+    if anchor is None:
+        return None, None, (
+            f"스냅샷에 {key} 기준일이 없습니다. "
+            "노트북의 WORKDATE_MAST_TB 조회 결과를 함께 export 하면 사용할 수 있습니다."
+        )
+    start = _nearest(dates, anchor)
+    if start is None or start >= end_date:
+        return None, None, f"{key} 기준일({anchor})이 스냅샷 데이터 구간을 벗어납니다."
+    return start, end_date, None
+
+
+def _stateful_pick(widget, label, options, key, default_index=0, **kwargs):
+    """선택값이 rerun·페이지 이동에도 유지되는 selectbox / radio.
+
+    Streamlit 특성 두 가지를 함께 피해야 한다.
+
+    1. ``index`` 인자를 session_state 에서 계산해 넘기면 위젯 identity 가 매번
+       바뀌어 사용자의 선택이 버려진다 → ``key`` 로 상태를 맡긴다.
+    2. 멀티페이지에서 페이지를 옮기면 그리지 않은 위젯의 state 는 정리된다
+       → 별도 보관 키(``_pm_*``)에 값을 복사해 두고 매 실행마다 되살린다.
+
+    스냅샷이 바뀌어 선택지에서 사라진 값은 기본값으로 되돌린다.
+    """
+    store, wkey = f"_pm_{key}", f"_pmw_{key}"
+    # 위젯 키가 살아 있으면 그 값이 최신(사용자 클릭), 없으면 보관 값에서 복원
+    value = st.session_state.get(wkey, st.session_state.get(store))
+    if value not in options:
+        value = options[min(default_index, len(options) - 1)]
+    st.session_state[wkey] = value
+
+    picked = widget(label, options, key=wkey, **kwargs)
+    st.session_state[store] = picked
+    return picked
+
+
+def _stateful_multiselect(widget, label, options, key, default=None, **kwargs):
+    """선택값이 유지되는 multiselect. 선택지에서 사라진 값은 조용히 떨어뜨린다."""
+    store, wkey = f"_pm_{key}", f"_pmw_{key}"
+    value = st.session_state.get(wkey, st.session_state.get(store))
+    if value is None:
+        value = list(options if default is None else default)
+    value = [v for v in value if v in options]
+    st.session_state[wkey] = value
+
+    picked = widget(label, options, key=wkey, **kwargs)
+    st.session_state[store] = picked
+    return picked
 
 
 def _nearest(dates: pd.DatetimeIndex, value):
@@ -250,7 +360,7 @@ def header(ctx: dict, title: str = "MP PERFORMANCE MONITOR") -> None:
 
     st.markdown(f"<div class='pm-title'>{title}</div>", unsafe_allow_html=True)
     chips = (
-        f"<span class='pm-chip'>기간 <b>{period}</b></span>"
+        f"<span class='pm-chip'>{ctx.get('preset_label','기간')} <b>{period}</b></span>"
         f"<span class='pm-chip'>Model <b>{model_label}</b></span>"
         f"<span class='pm-chip'>Benchmark <b>{config.benchmark_display(ctx['analysis_bm'])}</b></span>"
         f"<span class='pm-chip'>Data As of <b>{status['data_as_of']}</b></span>"
@@ -355,7 +465,9 @@ def line_chart(frame: pd.DataFrame, title: str = "", height: int = 420,
         ))
     fig.update_yaxes(tickformat=tickformat, zeroline=True, zerolinecolor="#cbd5e1",
                      gridcolor="#f1f5f9")
-    fig.update_xaxes(gridcolor="#f8fafc")
+    # 구간이 짧으면(예: 일간) plotly 가 시간 단위로 눈금을 쪼개므로 날짜로 고정한다.
+    dtick = "D1" if len(frame.index) <= 10 else None
+    fig.update_xaxes(gridcolor="#f8fafc", tickformat="%Y-%m-%d", dtick=dtick)
     fig.update_layout(title=title, height=height, plot_bgcolor="white",
                       margin=dict(l=10, r=10, t=40 if title else 10, b=10),
                       legend=dict(orientation="h", yanchor="bottom", y=1.0,
