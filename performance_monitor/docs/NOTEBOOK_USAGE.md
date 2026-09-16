@@ -263,6 +263,8 @@ pm.current_version()
 | `Plotly ... not compatible with ... Kaleido` | 무시해도 된다. `fig.write_image()`(정적 이미지 저장)에만 해당하며 `pm.report()` 는 영향 없다 |
 | 서버가 곧바로 죽는다 | 출력에 로그 경로와 마지막 내용이 나온다 |
 | 다른 PC 에서 접속 안 됨 | `host='0.0.0.0'`(기본) + 방화벽 포트 개방 |
+| 8501 포트가 막혀 있다 | `pm.jupyter_proxy()` 로 확인. jupyter-server-proxy 가 있으면 `pm.launch_dashboard()` 가 Jupyter 포트로 띄운다. 없으면 `pm.report()` |
+| `streamlit 을 실행할 파이썬을 찾지 못했습니다` | 프로젝트 폴더에 `.venv` 를 만들거나, 설치가 불가하면 `pm.report()` 를 쓴다 |
 | `pm.update()` 가 GitHub 에 못 닿는다 | 사내망에서 막힌 것이다. 반입한 zip 으로: `pm.update(r'C:\temp\...zip')` |
 | 업데이트했는데 그대로다 | 커널 재시작 후 `import pm_engine as pm` 부터 다시 실행 |
 | `config.yaml.new` 가 생겼다 | 설정이 새 버전과 다르다. 직접 비교해서 필요한 줄만 옮긴다 (기존 설정은 그대로 유지됨) |

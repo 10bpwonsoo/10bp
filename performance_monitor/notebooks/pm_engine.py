@@ -59,6 +59,7 @@ from src import (  # noqa: E402,F401
 
 from src.launcher import (  # noqa: E402,F401
     dashboard_status,
+    detect_jupyter_proxy,
     launch_dashboard,
     stop_dashboard,
 )
@@ -75,7 +76,7 @@ __all__ = [
     "attribution", "benchmark", "config", "dashboard_engine", "data_loader",
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
-    "launch_dashboard", "stop_dashboard", "dashboard_status",
+    "launch_dashboard", "stop_dashboard", "dashboard_status", "jupyter_proxy",
     "report", "snapshots", "check_namespace", "demo_snapshot",
     "check_github", "update", "update_from_github", "update_from_file",
     "current_version",
@@ -114,6 +115,17 @@ def export_snapshot(namespace: dict, **kwargs):
     from tools.export_snapshot_from_notebook import export
 
     return export(namespace, **kwargs)
+
+
+def jupyter_proxy(port: int = 8501):
+    """Jupyter 주소를 통해 대시보드에 접속할 수 있는지 확인한다.
+
+        pm.jupyter_proxy()
+
+    사내에서 8501 같은 포트가 막혀 있을 때, jupyter-server-proxy 가 있으면
+    **이미 열려 있는 Jupyter 포트**로 대시보드에 들어갈 수 있다.
+    """
+    return detect_jupyter_proxy(port, verbose=True)
 
 
 def check_namespace(namespace: dict, **kwargs):

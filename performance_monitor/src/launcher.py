@@ -19,7 +19,8 @@ from pathlib import Path
 
 from .config import load_config
 
-__all__ = ["launch_dashboard", "stop_dashboard", "dashboard_status", "find_python"]
+__all__ = ["launch_dashboard", "stop_dashboard", "dashboard_status", "find_python",
+           "detect_jupyter_proxy"]
 
 ROOT = Path(__file__).resolve().parent.parent
 _PROCESS: subprocess.Popen | None = None
@@ -58,6 +59,45 @@ def find_python() -> tuple[Path, str]:
     )
 
 
+def detect_jupyter_proxy(port: int | None = None, verbose: bool = False) -> dict:
+    """Jupyter 주소를 통해 대시보드에 접속할 수 있는지 확인한다.
+
+    `jupyter-server-proxy` 가 설치돼 있으면, 새 포트를 열지 않고 **이미 열려 있는
+    Jupyter 포트**로 대시보드에 들어갈 수 있다. 사내에서 8501 이 막혀 있을 때
+    유일하게 현실적인 경로다.
+
+        pm.jupyter_proxy()        # 쓸 수 있는지 확인
+    """
+    result = {"available": False, "prefix": "/", "base_url_path": "", "path": "",
+              "detail": ""}
+    try:
+        import jupyter_server_proxy  # noqa: F401
+    except ImportError:
+        result["detail"] = ("jupyter-server-proxy 가 없습니다. "
+                            "이 서버에서는 Jupyter 경유 접속을 쓸 수 없습니다.")
+        if verbose:
+            print(f"✗ {result['detail']}")
+            print("  관리자가 설치해 주면 8501 을 열지 않고도 볼 수 있습니다:")
+            print("      pip install jupyter-server-proxy   (설치 후 Jupyter 재시작)")
+            print("  설치가 어려우면 pm.report() 를 쓰십시오. 노트북 안에 그려집니다.")
+        return result
+
+    # JupyterHub 는 사용자별 접두어를 환경변수로 준다 (예: /user/jupyter-soojeon/)
+    prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/")
+    if not prefix.endswith("/"):
+        prefix += "/"
+    result.update(available=True, prefix=prefix, detail="jupyter-server-proxy 감지됨")
+    if port is not None:
+        result["base_url_path"] = f"{prefix}proxy/{port}"
+        result["path"] = f"{prefix}proxy/{port}/"
+    if verbose:
+        print(f"✓ {result['detail']}")
+        print(f"  Jupyter 접두어: {prefix}")
+        print(f"  접속 주소     : <Jupyter 주소>{prefix}proxy/8501/")
+        print("  → pm.launch_dashboard() 가 자동으로 이 경로에 맞춰 띄웁니다.")
+    return result
+
+
 def _port_in_use(port: int, host: str = "127.0.0.1") -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.settimeout(0.4)
@@ -83,15 +123,23 @@ def _check_network_path() -> None:
 
 def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
                      open_browser: bool = False, wait: float = 25.0,
-                     data_dir: str | None = None) -> str:
+                     data_dir: str | None = None,
+                     jupyter_proxy: bool | None = None) -> str:
     """Dashboard 서버를 백그라운드로 띄우고 접속 주소를 돌려준다.
 
     Parameters
     ----------
-    port        기본 8501. 이미 쓰는 중이면 다음 빈 포트를 자동으로 잡는다
-    host        기본 0.0.0.0 (다른 PC 에서도 접속 가능).
-                이 서버에서만 보려면 '127.0.0.1'
-    data_dir    스냅샷 위치를 따로 지정 (공유 폴더 등). None 이면 설정값
+    port           기본 8501. 이미 쓰는 중이면 다음 빈 포트를 자동으로 잡는다
+    host           기본 0.0.0.0 (다른 PC 에서도 접속 가능).
+                   이 서버에서만 보려면 '127.0.0.1'
+    data_dir       스냅샷 위치를 따로 지정 (공유 폴더 등). None 이면 설정값
+    jupyter_proxy  Jupyter 주소를 통해 접속한다 (포트가 막혀 있을 때).
+                   None 이면 jupyter-server-proxy 설치 여부로 자동 판단.
+
+    포트가 막힌 사내망에서는 ``jupyter_proxy`` 경로가 유일한 현실적 방법이다.
+    새 포트를 여는 대신 **이미 열려 있는 Jupyter 포트**로 들어간다. 이 경우
+    Streamlit 이 정적 파일과 websocket 주소를 접두어에 맞춰 내보내도록
+    ``--server.baseUrlPath`` 를 넘겨야 하며, 서버는 127.0.0.1 에만 묶는다.
     """
     global _PROCESS, _URL
 
@@ -102,6 +150,19 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     _check_network_path()
     python, description = find_python()
     port = _free_port(port, host)
+
+    proxy = detect_jupyter_proxy(port)
+    if jupyter_proxy is None:
+        jupyter_proxy = proxy["available"]
+    elif jupyter_proxy and not proxy["available"]:
+        raise RuntimeError(
+            "jupyter-server-proxy 가 설치돼 있지 않아 Jupyter 경유로 띄울 수 없습니다.\n"
+            "  관리자에게 설치를 요청하거나(pip install jupyter-server-proxy),\n"
+            "  포트를 못 여는 환경이면 pm.report() 를 쓰십시오."
+        )
+    if jupyter_proxy:
+        # 프록시가 localhost 로 붙으므로 외부에 열 필요가 없다.
+        host = "127.0.0.1"
 
     config = load_config()
     env = dict(os.environ)
@@ -116,6 +177,12 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
                "--server.port", str(port), "--server.address", host,
                "--server.headless", "true",
                "--browser.gatherUsageStats", "false"]
+    if jupyter_proxy:
+        # 접두어를 알려 주지 않으면 정적 파일과 websocket 을 '/' 에서 찾다가
+        # 빈 화면이 된다. CORS/XSRF 는 프록시를 거치므로 끈다.
+        command += ["--server.baseUrlPath", proxy["base_url_path"],
+                    "--server.enableCORS", "false",
+                    "--server.enableXsrfProtection", "false"]
 
     log_path = config.log_dir / "dashboard_server.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,10 +204,17 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     hostname = socket.gethostname()
     _URL = f"http://localhost:{port}"
     print(f"Dashboard 실행 중  (python: {description})")
-    print(f"  이 서버에서      : http://localhost:{port}")
-    if host == "0.0.0.0":
-        print(f"  다른 PC 에서     : http://{hostname}:{port}   "
-              f"(방화벽에서 {port} 포트 개방 필요)")
+    if jupyter_proxy:
+        _URL = proxy["path"]
+        print("  접속 주소        : 지금 보고 계신 Jupyter 주소에서 "
+              f"'/lab...' 부분을 아래로 바꾸십시오")
+        print(f"                     {proxy['path']}")
+        print("                     (새 포트를 열지 않고 Jupyter 포트로 들어갑니다)")
+    else:
+        print(f"  이 서버에서      : http://localhost:{port}")
+        if host == "0.0.0.0":
+            print(f"  다른 PC 에서     : http://{hostname}:{port}   "
+                  f"(방화벽에서 {port} 포트 개방 필요)")
     print(f"  스냅샷           : {processed}  ({len(snapshots)}개)")
     if not snapshots:
         print("  ⚠ 스냅샷이 없어 화면이 비어 보입니다. "
@@ -148,18 +222,10 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     print(f"  로그             : {log_path}")
     print("  중지             : pm.stop_dashboard()")
 
-    _print_jupyter_proxy_hint(port)
+    if not jupyter_proxy:
+        print("  포트가 막혀 있으면: jupyter-server-proxy 설치 후 재시도하거나 "
+              "pm.report() 를 쓰십시오.")
     return _URL
-
-
-def _print_jupyter_proxy_hint(port: int) -> None:
-    """jupyter-server-proxy 가 있으면 노트북 주소로도 접속할 수 있다."""
-    try:
-        import jupyter_server_proxy  # noqa: F401
-    except ImportError:
-        return
-    print(f"  Jupyter 경유     : <노트북주소>/proxy/{port}/   "
-          "(jupyter-server-proxy 감지됨 — 포트를 못 여는 경우 사용)")
 
 
 def stop_dashboard() -> None:
