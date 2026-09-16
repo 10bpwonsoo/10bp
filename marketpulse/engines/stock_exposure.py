@@ -80,7 +80,7 @@ def compute_exposures(
             prim = next((w for w in wins if w.window == primary), wins[0] if wins else ExposureWindow(window=primary))
             f: FundamentalExposure | None = fund.get(d)
             agree = None
-            if f is not None and prim.corr is not None and abs(prim.corr) >= 0.1:
+            if f is not None and prim.corr is not None and abs(prim.corr) >= float(cfg["min_abs_corr_for_sign"]):
                 agree = (prim.corr > 0) == (f.direction > 0)
             note = ""
             if f is not None and agree is False:

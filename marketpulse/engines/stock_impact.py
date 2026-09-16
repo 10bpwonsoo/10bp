@@ -50,8 +50,8 @@ def impact_for(
         stat_conf = min(1.0, abs(row.corr) / full)
         stat_sign = 1 if row.corr > 0 else -1
     else:
-        exposure_val = 0.5
-        stat_conf = 0.3
+        exposure_val = float(cfg["no_stat_exposure"])
+        stat_conf = float(cfg["no_stat_confidence"])
         stat_sign = row.fundamental.direction if row.fundamental else 1
 
     rel_map = cfg["fund_relevance"]
@@ -60,7 +60,8 @@ def impact_for(
     cur_rel = float(cfg["current_relevance"]["extreme" if extreme else "normal"])
 
     sign = row.fundamental.direction if row.fundamental else stat_sign
-    conflict = row.fundamental is not None and row.corr is not None and abs(row.corr) >= 0.1 and stat_sign != row.fundamental.direction
+    min_corr = float(cfg["min_abs_corr_for_sign"])
+    conflict = row.fundamental is not None and row.corr is not None and abs(row.corr) >= min_corr and stat_sign != row.fundamental.direction
     penalty = float(cfg["sign_conflict_penalty"]) if conflict else 1.0
 
     score = shock * exposure_val * stat_conf * fund_rel * cur_rel * penalty
@@ -78,7 +79,7 @@ def impact_for(
     if conflict:
         contribs.append(ScoreContribution(key="sign_conflict", normalized=penalty, weight=1.0, contribution=penalty, note="통계 부호 ≠ 사업 부호"))
 
-    direction = direction_for(shock_z * sign, deadband=0.3)
+    direction = direction_for(shock_z * sign, deadband=float(cfg["direction_deadband"]))
     rationale = row.fundamental.rationale if row.fundamental else "통계 관계만 있다 — 사업 구조상 근거는 정의되지 않았다"
     return StockImpact(
         stock_id=meta.id, stock_name=meta.name, driver_id=driver_id, driver_label=driver_label,

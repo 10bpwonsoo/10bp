@@ -27,6 +27,13 @@ impact:
   # 통계와 사업 노출의 부호가 다르면 점수를 이만큼 깎고 '상충' 을 남긴다
   sign_conflict_penalty: 0.5
   min_score: 8
+  # 통계가 없을 때(사업 노출만 있을 때) 쓰는 노출·신뢰 — '모른다' 는 낮은 확신이다
+  no_stat_exposure: 0.5
+  no_stat_confidence: 0.3
+  # |corr| 가 이보다 작으면 통계 부호를 판정하지 않는다
+  min_abs_corr_for_sign: 0.1
+  # 방향 판정 데드밴드 (z × 부호)
+  direction_deadband: 0.3
 
 # ── Unusual Move Detector ─────────────────────────────────
 anomaly:
@@ -38,6 +45,8 @@ anomaly:
   # 뉴스: 종목 테마에 태그된 기사가 이 개수 이상이면 '뉴스 있음'
   news_min_events: 1
   limit: 8
+  # severity = 100·tanh(max|z| / divisor)
+  severity_divisor: 3.0
 
 # ── Price vs Fundamental Divergence ───────────────────────
 stock_divergence:

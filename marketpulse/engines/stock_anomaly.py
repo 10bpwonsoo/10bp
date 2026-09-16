@@ -65,7 +65,7 @@ def detect_anomalies(
             label = "RETURN_SPIKE"
 
         mag = max(abs(rz or 0.0), abs(vz or 0.0), abs(relz or 0.0))
-        severity = 100.0 * math.tanh(mag / 3.0)
+        severity = 100.0 * math.tanh(mag / float(cfg["severity_divisor"]))
         if label == "UNEXPLAINED_ACTIVITY":
             note = (
                 f"{meta.name}: {' · '.join(flags)}. 테마 기사가 없다. 거래 주체는 알 수 없다 — "

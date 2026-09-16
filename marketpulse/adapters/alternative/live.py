@@ -89,13 +89,13 @@ class AltLiveAdapter:
         log = self.store.fetch_log(iid)
         return bool(log and log.get("fetched_date") == today)
 
-    def _persist(self, iid: str, pts, vols, source: str) -> None:
+    def _persist(self, iid: str, pts, vols, source: str, fetched_date: str | None = None) -> None:
         if self.store is None:
             return
         vol_by_date = {t.date().isoformat(): v for t, v in vols}
         rows = [(t.date().isoformat(), v, vol_by_date.get(t.date().isoformat())) for t, v in pts]
         try:
-            self.store.upsert_daily(iid, rows, source)
+            self.store.upsert_daily(iid, rows, source, fetched_date=fetched_date)
         except Exception:  # 저장 실패가 화면을 막으면 안 된다
             logger.exception("%s 일별 저장 실패", iid)
 
@@ -161,7 +161,7 @@ class AltLiveAdapter:
                         continue
                     src = f"{name}:{spec.get('symbol', ins.id)}"
                     outcome.provider, outcome.symbol = name, str(spec.get("symbol", ins.id))
-                    self._persist(ins.id, pts, vols, src)
+                    self._persist(ins.id, pts, vols, src, today)
                     break
 
             # 3. 전부 실패 — 저장소의 마지막 값을 STALE 로

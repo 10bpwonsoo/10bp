@@ -23,6 +23,7 @@ from ..config.registry import get_instruments, get_intelligence_config, get_stoc
 from ..config.settings import Settings
 from ..models.common import DataMode, utcnow
 from ..models.intelligence import (
+    SourceSpec,
     AltDataPoint, AnalystSnapshot, Commentary, DriverCard, IntelligenceHealth, InvestmentIntelligence,
     StockIntelligence, StockRow, ThemeStockRow, WatchlistRow,
 )
@@ -398,7 +399,7 @@ def run_investment(
         scenario = settings.scenario
     else:
         sources = {a.id: a.sources for a in u.alternative}
-        sources.update({s.id: [__import__("marketpulse.models.intelligence", fromlist=["SourceSpec"]).SourceSpec(provider="yahoo", symbol=s.symbol)] for s in u.stocks})
+        sources.update({s.id: [SourceSpec(provider="yahoo", symbol=s.symbol)] for s in u.stocks})
         instruments = [s.as_instrument() for s in u.stocks] + [a.as_instrument() for a in u.alternative] + shared
         series = adapter.fetch_series(instruments, sources, bars=settings.history_bars, as_of=as_of)
         analyst_specs = None

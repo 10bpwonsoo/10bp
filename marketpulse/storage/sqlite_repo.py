@@ -155,9 +155,11 @@ class SqliteSnapshotRepository(SnapshotRepository):
 
     # ── Investment Intelligence (2026-09-16 신설, 전부 추가) ─────────
     def upsert_daily(
-        self, series_id: str, rows: Sequence[tuple[str, float, float | None]], source: str
+        self, series_id: str, rows: Sequence[tuple[str, float, float | None]], source: str,
+        *, fetched_date: str | None = None,
     ) -> int:
-        """(date, value, volume) 행을 upsert 한다. 거래량 None 은 NULL 이다."""
+        """(date, value, volume) 행을 upsert 한다. 거래량 None 은 NULL 이다.
+        fetched_date 는 수집 기준일(as_of). 없으면 오늘이다."""
         if not rows:
             return 0
         with self._cursor() as cur:
@@ -178,7 +180,7 @@ class SqliteSnapshotRepository(SnapshotRepository):
                     fetched_date = excluded.fetched_date, last_bar = excluded.last_bar,
                     source = excluded.source, points = excluded.points
                 """,
-                (series_id, utcnow().date().isoformat(), max(r[0] for r in rows), source, len(rows)),
+                (series_id, fetched_date or utcnow().date().isoformat(), max(r[0] for r in rows), source, len(rows)),
             )
         return len(rows)
 
