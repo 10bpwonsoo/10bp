@@ -312,3 +312,36 @@ def test_preset_rejects_anchor_outside_snapshot_window():
         "YTD", dates, dates[-1], "2026-09-04", {"YTD": "2020-01-02"})
     assert start is None
     assert "벗어납니다" in note
+
+
+# ---------------------------------------------------------------------------
+# 등락 색상 관례 (양수=적색 / 음수=청색)
+# ---------------------------------------------------------------------------
+def test_sign_color_follows_kr_convention():
+    """국내 관례: 양수는 적색, 음수는 청색."""
+    from src.ui import COLOR_SCHEMES, sign_color, sign_colors
+
+    scheme = sign_colors()
+    assert scheme == COLOR_SCHEMES["kr"], "기본값은 국내 관례(kr) 여야 한다"
+    assert sign_color(0.01) == scheme["positive"]
+    assert sign_color(-0.01) == scheme["negative"]
+    assert sign_color(0.0) == scheme["positive"], "0 은 양수로 취급"
+
+
+def test_sign_color_schemes_are_distinct_and_inverted():
+    from src.ui import COLOR_SCHEMES
+
+    kr, gl = COLOR_SCHEMES["kr"], COLOR_SCHEMES["global"]
+    assert kr["positive"] != kr["negative"]
+    # 두 관례는 부호-색 대응이 서로 반대여야 한다
+    assert kr["positive"] != gl["positive"]
+    assert kr["negative"] != gl["negative"]
+
+
+def test_series_colors_do_not_start_with_sign_colors():
+    """범주형 계열색이 부호색(적/청)과 앞에서 겹치면 오독을 부른다."""
+    from src.ui import COLOR_SCHEMES, SERIES_COLORS
+
+    sign_values = {c.lower() for s in COLOR_SCHEMES.values() for c in s.values()}
+    assert not (set(c.lower() for c in SERIES_COLORS[:4]) & sign_values)
+    assert len(set(SERIES_COLORS)) == len(SERIES_COLORS), "계열색 중복 없음"

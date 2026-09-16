@@ -23,16 +23,24 @@ from src.config import load_config  # noqa: E402
 from src.data_loader import SnapshotStore, data_status, list_snapshots  # noqa: E402
 from src.logging_utils import get_logger  # noqa: E402
 
-# 운용 데스크 모니터용 팔레트: 양(+)=청색 계열, 음(-)=적색 계열.
-# 한국 시장 관례(상승=적색)와 혼동을 피하려 기여도 부호는 색상+부호 둘 다로 표기한다.
-POSITIVE = "#2563eb"
-NEGATIVE = "#dc2626"
+# 등락 색상 관례. config.yaml 의 ui.color_convention 으로 전환한다.
+#   kr     : 양수=적색, 음수=청색  (국내 시장 관례, 기본값)
+#   global : 양수=청색, 음수=적색  (해외 관례)
+COLOR_SCHEMES = {
+    "kr": {"positive": "#d32020", "negative": "#1d4ed8"},
+    "global": {"positive": "#2563eb", "negative": "#dc2626"},
+}
+DEFAULT_SCHEME = "kr"
+
+HIGHLIGHT = "#0f172a"   # 선택 모델 강조선 (부호와 무관한 색)
 NEUTRAL = "#64748b"
 BM_COLOR = "#94a3b8"
+# 다중 시계열용 범주형 색상.
+# 적색/청색은 부호(등락)를 뜻하므로 앞쪽에 두지 않는다 — 계열 구분과 혼동되지 않게.
 SERIES_COLORS = [
-    "#2563eb", "#dc2626", "#059669", "#d97706", "#7c3aed",
-    "#0891b2", "#be185d", "#4d7c0f", "#b45309", "#1e40af",
-    "#9f1239", "#0f766e",
+    "#0f766e", "#7c3aed", "#b45309", "#0891b2", "#be185d",
+    "#4d7c0f", "#475569", "#a16207", "#15803d", "#c2410c",
+    "#1e40af", "#9f1239",
 ]
 
 # 기간 프리셋. 기준일(시작일)은 원본 규칙대로 '직전 영업일'이며 성과에서 제외된다.
@@ -417,6 +425,21 @@ def warn_if_validation_failed(ctx: dict) -> None:
 # ---------------------------------------------------------------------------
 # 표 / 차트 헬퍼
 # ---------------------------------------------------------------------------
+def sign_colors() -> dict:
+    """설정에 따른 등락 색상. ``{"positive": ..., "negative": ...}``"""
+    scheme = load_config().ui.get("color_convention", DEFAULT_SCHEME)
+    return COLOR_SCHEMES.get(scheme, COLOR_SCHEMES[DEFAULT_SCHEME])
+
+
+def sign_color(value) -> str:
+    """값의 부호에 맞는 색."""
+    colors = sign_colors()
+    try:
+        return colors["positive"] if float(value) >= 0 else colors["negative"]
+    except (TypeError, ValueError):
+        return NEUTRAL
+
+
 def pct_frame(frame: pd.DataFrame, digits: int = 2):
     """퍼센트 서식 적용 (숫자 컬럼만)."""
     numeric = frame.select_dtypes(include=[np.number]).columns
@@ -427,7 +450,8 @@ def bar_chart(series: pd.Series, title: str = "", height: int = 380,
               tickformat: str = ".2%", horizontal: bool = False):
     """부호별 색상 bar chart."""
     series = pd.Series(series).astype(float).dropna()
-    colors = [POSITIVE if v >= 0 else NEGATIVE for v in series.values]
+    scheme = sign_colors()
+    colors = [scheme["positive"] if v >= 0 else scheme["negative"] for v in series.values]
     if horizontal:
         fig = go.Figure(go.Bar(x=series.values, y=[str(i) for i in series.index],
                                orientation="h", marker_color=colors,
@@ -455,7 +479,7 @@ def line_chart(frame: pd.DataFrame, title: str = "", height: int = 420,
         if column == bm_column:
             style = dict(color=BM_COLOR, width=2, dash="dash")
         elif column == highlight:
-            style = dict(color=POSITIVE, width=3)
+            style = dict(color=HIGHLIGHT, width=3)
         else:
             style = dict(color=SERIES_COLORS[color_index % len(SERIES_COLORS)], width=1.5)
             color_index += 1
@@ -486,7 +510,9 @@ def contribution_weight_chart(frame: pd.DataFrame, contribution_col: str,
 
     frame = frame.dropna(subset=[contribution_col])
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    colors = [POSITIVE if v >= 0 else NEGATIVE for v in frame[contribution_col].astype(float)]
+    scheme = sign_colors()
+    colors = [scheme["positive"] if v >= 0 else scheme["negative"]
+              for v in frame[contribution_col].astype(float)]
     fig.add_trace(
         go.Bar(name="Contribution", x=[str(i) for i in frame.index],
                y=frame[contribution_col].astype(float), marker_color=colors,
@@ -496,8 +522,8 @@ def contribution_weight_chart(frame: pd.DataFrame, contribution_col: str,
     fig.add_trace(
         go.Scatter(name="Active Weight", x=[str(i) for i in frame.index],
                    y=frame[weight_col].astype(float), mode="lines+markers",
-                   line=dict(color="#0f172a", width=1.5),
-                   marker=dict(size=5, color="#0f172a"),
+                   line=dict(color=NEUTRAL, width=1.5),
+                   marker=dict(size=5, color=NEUTRAL),
                    hovertemplate="%{x}<br>Active W %{y:.2%}<extra></extra>"),
         secondary_y=True,
     )

@@ -48,7 +48,9 @@ active = float(rcf.loc["active", model])
 ui.metric_row([
     ("MP Return", fmt_pct(total)),
     ("Benchmark", fmt_pct(bm)),
-    ("Excess Return", fmt_pct(active), fmt_pct(active),
+    # delta 는 값과 중복인 데다 Streamlit 이 초록/빨강으로만 칠해
+    # 등락 색상 관례(양수=적, 음수=청)와 어긋나므로 쓰지 않는다.
+    ("Excess Return", fmt_pct(active), None,
      "total − bm (원본 return_contribution_final.loc['active'])"),
     ("Specific", fmt_pct(float(rcf.loc["specific", model])),
      None, "active − market_timing − risk_factor − industry_factor − country"),
@@ -82,6 +84,7 @@ with left:
     plot["Excess"] = curve[model] - curve["bm"]
     st.plotly_chart(
         ui.line_chart(plot, f"누적 성과 (MP / Benchmark / Excess) · {ctx['preset_label']}", height=330,
+                      highlight=ctx["display_names"].get(model, model),
                       bm_column="Benchmark"),
         use_container_width=True,
     )

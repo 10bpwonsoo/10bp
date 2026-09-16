@@ -46,7 +46,8 @@ if mode == "MP vs Benchmark":
     plot = curve[[model, "bm"]].rename(
         columns={model: ctx["display_names"].get(model, model), "bm": "Benchmark"})
     plot["Excess"] = curve[model] - curve["bm"]
-    st.plotly_chart(ui.line_chart(plot, height=430, bm_column="Benchmark"),
+    st.plotly_chart(ui.line_chart(plot, height=430, bm_column="Benchmark",
+                                  highlight=ctx["display_names"].get(model, model)),
                     use_container_width=True)
 elif mode == "Excess Return":
     selected = [model] + [m for m in ctx["sub_models"]]
