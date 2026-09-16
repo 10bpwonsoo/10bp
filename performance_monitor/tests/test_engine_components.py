@@ -345,3 +345,39 @@ def test_series_colors_do_not_start_with_sign_colors():
     sign_values = {c.lower() for s in COLOR_SCHEMES.values() for c in s.values()}
     assert not (set(c.lower() for c in SERIES_COLORS[:4]) & sign_values)
     assert len(set(SERIES_COLORS)) == len(SERIES_COLORS), "계열색 중복 없음"
+
+
+# ---------------------------------------------------------------------------
+# 배포 이식성 — 프로젝트 폴더 이름에 의존하지 않아야 한다
+# ---------------------------------------------------------------------------
+def test_tools_do_not_hardcode_package_folder_name():
+    """폴더를 C:\\apps\\mp_dashboard 등으로 풀어도 tools/ 가 동작해야 한다.
+
+    `from performance_monitor.src import ...` 처럼 폴더 이름을 패키지명으로
+    쓰면 반입 경로가 달라지는 순간 ModuleNotFoundError 가 난다.
+    """
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    offenders = []
+    for path in sorted((root / "tools").glob("*.py")) + [root / "notebooks" / "pm_engine.py"]:
+        if not path.exists():
+            continue
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith(("import ", "from ")) and "performance_monitor." in stripped:
+                offenders.append(f"{path.name}:{lineno}  {stripped}")
+    assert not offenders, "폴더 이름을 패키지명으로 쓰고 있습니다:\n" + "\n".join(offenders)
+
+
+def test_entry_points_put_project_root_on_path():
+    """tools/ 스크립트는 자기 위치 기준으로 프로젝트 루트를 잡아야 한다."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    for name in ("make_demo_snapshot.py", "export_snapshot_from_notebook.py",
+                 "compare_with_notebook.py", "build_snapshot.py"):
+        text = (root / "tools" / name).read_text(encoding="utf-8")
+        assert "parent.parent" in text and "sys.path.insert" in text, name
+        # 한 단계 더 올라가면(parent.parent.parent) 상위 폴더 이름에 의존하게 된다
+        assert "parent.parent.parent" not in text, f"{name}: 루트를 한 단계 더 올라감"

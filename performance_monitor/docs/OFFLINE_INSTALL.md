@@ -267,7 +267,7 @@ Dashboard 실행에는 DB 접속조차 필요 없다.
 |---|---|
 | `pip install` 이 timeout | 미러 미설정. 2절의 `--no-index --find-links` 사용 |
 | wheel 설치 시 `not a supported wheel on this platform` | 다른 OS/Python 용 wheel. 대상 환경을 맞춰 다시 받을 것 |
-| `pyarrow` 설치 실패 | 없어도 된다. 스냅샷이 자동으로 pickle 로 폴백한다. `requirements.txt` 에서 빼도 무방 |
+| `pyarrow` 설치 실패 | **뺄 수 없다.** streamlit 이 `pyarrow>=7.0,<26` 을 필수로 요구한다. wheel 이 27MB 로 가장 크지만 반드시 포함해야 한다. (코드 자체는 pyarrow 가 없으면 스냅샷을 pickle 로 폴백하지만, 그래도 streamlit 이 안 뜬다) |
 | `openpyxl` 없음 | Excel 내보내기만 안 된다. CSV 는 정상 |
 | 브라우저에서 접속 불가 | `--server.address 0.0.0.0` 필요. 서버 방화벽에서 8501 포트 개방 확인 |
 | 한글이 네모로 깨짐 | 서버가 아니라 **보는 PC** 의 폰트 문제. 화면은 브라우저가 그리므로 보통 문제없음 |

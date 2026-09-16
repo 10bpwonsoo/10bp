@@ -61,8 +61,7 @@ def main(args) -> int:
             "\nwheel 내려받기에 실패했습니다.\n"
             "- 특정 패키지에 대상 환경용 wheel 이 없을 수 있습니다 "
             "(그 경우 사내 서버와 동일한 OS/Python 에서 다시 실행하십시오)\n"
-            "- pyarrow 는 없어도 됩니다. 스냅샷이 pickle 로 자동 폴백합니다.\n"
-            "  requirements.txt 에서 빼고 다시 시도해 보십시오.",
+            "- pyarrow 는 wheel 이 가장 크지만 streamlit 의 필수 의존성이라 뺄 수 없습니다.",
             file=sys.stderr,
         )
         return result.returncode

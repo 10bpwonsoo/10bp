@@ -20,12 +20,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+# 프로젝트 루트를 경로에 넣는다. 폴더 이름이 무엇이든(예: C:\\apps\\mp_dashboard)
+# 동작하도록 패키지 이름이 아니라 상대 위치로 잡는다.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from performance_monitor.src import pipeline  # noqa: E402
-from performance_monitor.src.config import load_config  # noqa: E402
-from performance_monitor.src.data_loader import SnapshotStore  # noqa: E402
-from performance_monitor.src.logging_utils import RunLog, get_logger  # noqa: E402
+from src import pipeline  # noqa: E402
+from src.config import load_config  # noqa: E402
+from src.data_loader import SnapshotStore  # noqa: E402
+from src.logging_utils import RunLog, get_logger  # noqa: E402
 
 IDX = pd.IndexSlice
 SECTORS = ["반도체", "2차전지", "자동차", "은행", "화장품", "방산", "헬스케어",

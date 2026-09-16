@@ -36,13 +36,14 @@ from pathlib import Path
 
 import pandas as pd
 
+# 프로젝트 루트. 폴더 이름이 무엇이든(예: C:\\apps\\mp_dashboard) 동작하도록
+# 패키지 이름이 아니라 상대 위치로 잡는다.
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT.parent))
 sys.path.insert(0, str(ROOT))
 
-from performance_monitor.src.config import load_config  # noqa: E402
-from performance_monitor.src.logging_utils import RunLog, get_logger  # noqa: E402
-from performance_monitor.tools.export_snapshot_from_notebook import export  # noqa: E402
+from src.config import load_config  # noqa: E402
+from src.logging_utils import RunLog, get_logger  # noqa: E402
+from tools.export_snapshot_from_notebook import export  # noqa: E402
 
 CONTRIB_NOTEBOOK = "Function_calculation_return_contribution_ver2.ipynb"
 
@@ -90,7 +91,7 @@ def resolve_auto_dates(config, log: RunLog) -> tuple[str, str]:
 
     원본 Performance_Analysis_Module CELL 16 의 WORKDATE_MAST_TB 규칙과 동일하다.
     """
-    from performance_monitor.src.data_loader import DbSource
+    from src.data_loader import DbSource
 
     source = DbSource(config)
     today = pd.Timestamp.today().strftime("%Y%m%d")
@@ -178,7 +179,7 @@ def main(args) -> int:
 
     # 비교기간 기준일 (원본 Performance_Analysis_Module CELL 16~18)
     try:
-        from performance_monitor.src.data_loader import DbSource
+        from src.data_loader import DbSource
 
         source = DbSource(config)
         anchors = source.load_period_anchors(mp_end_date)

@@ -21,11 +21,12 @@ from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+# 프로젝트 루트를 경로에 넣는다 (폴더 이름에 의존하지 않는다).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from performance_monitor.src.config import load_config  # noqa: E402
-from performance_monitor.src.data_loader import SnapshotStore  # noqa: E402
-from performance_monitor.src.logging_utils import RunLog, get_logger  # noqa: E402
+from src.config import load_config  # noqa: E402
+from src.data_loader import SnapshotStore  # noqa: E402
+from src.logging_utils import RunLog, get_logger  # noqa: E402
 
 # (스냅샷 테이블명, notebook 변수명, 필수여부)
 EXPORT_MAP = [

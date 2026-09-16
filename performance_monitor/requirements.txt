@@ -9,7 +9,7 @@ PyYAML>=5.4
 streamlit>=1.20
 plotly>=5.5
 openpyxl>=3.0          # Excel export
-pyarrow>=6.0           # parquet 스냅샷 (없으면 pickle 로 자동 폴백)
+pyarrow>=7.0           # parquet 스냅샷. streamlit 의 필수 의존성이라 뺄 수 없다
 
 # 테스트 (선택)
 pytest>=7.0
