@@ -355,6 +355,18 @@ Duplicate            : 0
 - 모든 계산은 Python / pandas / NumPy / 기존 내부 코드 / 내부 데이터 기반
 - **인터넷 연결 없이 동작한다.** Claude·GPT 는 개발 과정에서만 사용했고, 완성된 시스템은 독립 실행된다.
 
+### 폐쇄망 반입
+
+GitHub / PyPI 가 차단된 사내망에 들여오는 절차는
+**[`docs/OFFLINE_INSTALL.md`](docs/OFFLINE_INSTALL.md)** 에 정리했다.
+
+- 소스: 사내 Git 미러 / `git bundle` 파일 1개 / 압축파일 중 택1
+- 패키지: 사내 PyPI 미러, 없으면 `python tools/make_wheelhouse.py` 로 wheelhouse 반입
+  후 `pip install --no-index --find-links=wheelhouse -r requirements.txt`
+
+`--no-index` 설치 → 테스트 46건 통과 → 데모 스냅샷 → 화면 기동까지
+인터넷 없는 가상환경에서 실제로 검증했다. 화면 로딩 중 외부 도메인 요청 0건.
+
 DB 접속정보는 환경변수로 주입한다:
 
 ```bash
