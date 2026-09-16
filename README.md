@@ -399,6 +399,12 @@ MOCK 시나리오 6개가 추가됐다: `commodity_shock` `memory_upcycle` `oil_
 
 네트워크 없이 돈다. 엔진이 순수 함수이기 때문이다.
 
+프런트 렌더 테스트(Investment Intelligence 12패널 + App 에서 기존 패널이 먼저 오는지):
+
+```bash
+cd frontend && npm test
+```
+
 > ⚠️ 루트 `conftest.py` 가 `upbit_trading/` 수집을 막는다. 그 안의
 > `test_sql_load.py` 는 이름만 테스트일 뿐 **import 되는 순간 SQL Server 에
 > 접속해 데이터베이스를 만들고 라이브 Upbit API 를 호출하는** 스크립트다.

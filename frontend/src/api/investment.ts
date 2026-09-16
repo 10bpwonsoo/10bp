@@ -31,7 +31,7 @@ export interface DriverCard {
 export interface AltDataPoint {
   id: string; label: string; group: string; value: number | null; unit: string; change_1d: number | null; change_1w: number | null;
   change_1m: number | null; change_3m: number | null; z: number | null; percentile: number | null; percentile_observations: number;
-  quality: Quality; stale: boolean; rollover_suspect: boolean; source: string | null; source_type: SourceType; proxy_for: string | null;
+  quality: Quality; stale: boolean; rollover_suspect: boolean; rollover_followup?: "reverted" | "persisted" | null; source: string | null; source_type: SourceType; proxy_for: string | null;
   why: string; affected: string[]; affected_names: string[]; as_of: string | null; note: string;
 }
 export interface Evidence { key: string; label: string; value: number | null; display: string; source: string }

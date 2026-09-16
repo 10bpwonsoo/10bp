@@ -1,8 +1,10 @@
 # Market Pulse AI — 세션 작업 정리 (2026-09-16)
 
-브랜치 `claude/market-pulse-ai-design-r7pmsm`, 커밋 30개 (전부 푸시됨), 테스트 552건 통과.
-배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 14),
-화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 9).
+브랜치 `claude/market-pulse-ai-design-r7pmsm`, 커밋 34개 (전부 푸시됨), 백엔드 테스트 618건 + 프런트 렌더 테스트 23건 통과.
+배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 16),
+화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 10).
+
+> 2026-09-16 후반에 **Investment Intelligence** 층이 기존 대시보드 아래에 추가됐다 — 5절.
 
 ---
 
@@ -160,9 +162,46 @@
 
 ---
 
+## 5. Investment Intelligence (2026-09-16 후반 추가)
+
+기존 대시보드·엔진·API·컴포넌트는 그대로 두고 그 **아래**에 두 번째 층을 붙였다.
+사슬 MARKET → ALTERNATIVE DATA → INDUSTRY → STOCK → PRICE/FLOW → FUNDAMENTAL → ANALYST → CLAUDE.
+
+### 구현
+- 설정: `config/universe.yaml` (36종목·41대체지표, 종목별 aliases), `config/stock_exposures.yaml` (사업 노출), `config/intelligence.yaml` (모든 임계·가중치).
+- 엔진 13개: `stock_features` `stock_exposure` (20/60/120일 beta·상관) `stock_impact` (충격×노출×통계신뢰×사업관련성×현재관련성) `stock_anomaly` (뉴스 없는 거래량 급증 = UNEXPLAINED_ACTIVITY, '매집' 금지) `alternative_data` (MISSING/STALE/롤오버 의심 + 다음 봉 확인) `commodity_impact` `analyst` (CSV 만) `lead_lag` ("앞서는 경향" 까지) `stock_explanation` (원인 6종 × 확신 3단) `stock_divergence` `semiconductor` `commentary` (수기 JSON, API 아님) `investment` (오케스트레이터).
+- 어댑터: `AltLiveAdapter` (Yahoo 차트 + CSV, `alt_daily` 일별 upsert, 같은 날 재사용, 실패 시 STALE), `AltMockAdapter` (시나리오 shocks·volume_shocks·analyst).
+- API: `/api/v1/investment`, `/investment/stocks/{id}`, `/investment/alternative?group=`. 별도 캐시(MOCK 4초 / DELAYED 15분).
+- 프런트: 12패널 + Investment Data Health, `InvestmentSection` 이 `DashboardGrid` 바로 아래.
+- MOCK 시나리오 6개 추가: commodity_shock, memory_upcycle, oil_spike, china_stress, rates_stock_divergence, eps_price_divergence.
+- 테스트: `tests/test_investment.py` 66건, `frontend/src/__tests__/investment.test.tsx` 23건 (vitest + Testing Library; App 렌더에서 기존 9패널이 먼저, 12패널이 뒤에 오는지 확인).
+
+### 실데이터 (2026-09-16 07:26 UTC 캡처, `data/captures/2026-09-16-manual/investment.json`)
+종목 36/36, 대체데이터 31/41. CSI 300 은 본토 지수가 막혀 ASHR ETF 로 대체(source 에 표기).
+못 받은 것: DRAM·DDR5·NAND·DXI 현물, 석탄·니켈·아연·나프타, SCFI, 중국 PMI, 외국인·기관 수급(KRX), 애널리스트 컨센서스.
+모두 화면에 '없음' 으로 남기고 CSV 슬롯(`data/replay/alternative/`, `data/replay/analyst/`)만 열어 뒀다.
+수기 해설 `data/commentary/2026-09-16.json` — 시장 1 · 종목 6 · 대체데이터 2, FACT/NEWS/ANALYST/INTERPRETATION/UNKNOWN 분리.
+
+### 후속 조치 (같은 날)
+- NEW_EVENT 배지: 테마 태그만으로는 켜지지 않고 종목을 직접 지목한(entity·affected_assets·제목/요약의 종목명·alias) 기사만 센다 — 전에는 20줄 전부에 붙어 정보가 없었다.
+- 롤오버 의심의 다음 봉 판정: 직전 실행의 의심 계열이 새 봉에서 되돌리면 `reverted`, 이어지면 `persisted` 를 note 에 적는다.
+- 프런트 렌더 테스트 도입 (`npm test`).
+
+### 남은 것
+- 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
+- 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.
+- 정적 배포본은 서버가 없어 '지금 업데이트' 가 비활성.
+
+---
+
 ## 커밋 이력 (최신순)
 
 ```
+(이 커밋) NEW_EVENT 배지를 종목 지목 기사로 좁히고 롤오버 다음 봉 판정과 프런트 렌더 테스트를 더한다
+50ab17f Real-data capture, manual commentary and polish for Investment Intelligence
+2ddabcf Add Investment Intelligence tests and move remaining thresholds to config
+b536584 Add Investment Intelligence layer below the existing dashboard
+5996c23 docs: 세션 작업 정리 (2026-09-16)
 6cc7962 2026-09-16 실데이터 3차 수기 캡처
 c4c061a LLM 배지를 '뉴스 판단 없음/수기/API' 세 상태로 바꾸고 '지금 업데이트' 버튼을 단다
 c210205 GOAL Kickstart 에서 빌린 여덟 가지를 화면과 엔진에 넣는다

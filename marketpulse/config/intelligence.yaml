@@ -70,6 +70,8 @@ alternative:
   # 선물 연속 계열에서 하루 |z| 가 이 이상이면 롤오버 의심. 실제 충격일 수도
   # 있으므로 버리지 않고 표시만 한다.
   rollover_suspect_z: 2.0
+  # 다음 봉의 반대 방향 z 가 전일 |z| 의 이 비율 이상이면 '되돌림(롤오버였다)' 로 판정
+  rollover_revert_ratio: 0.5
   # 화면에 올릴 순서
   groups: [semiconductor, energy, metals, chemicals, agriculture, shipping, china, peer]
   # z 가 이 이상이면 '움직임' 으로 상단에 올린다
@@ -115,6 +117,9 @@ watchlist:
     eps_revision_pct: 2.0
     alt_signal_z: 1.5
     commodity_impact_min: 25.0
+    # NEW_EVENT 배지: 종목을 직접 지목한(entity·affected_assets) 기사가 이 수 이상일 때만.
+    # 테마 태그만 붙은 기사로는 켜지지 않는다 — 그러면 모든 줄에 배지가 붙어 정보가 없다.
+    news_min_stock_events: 1
 
 # ── 화면 문장 규칙 ────────────────────────────────────────
 commentary:

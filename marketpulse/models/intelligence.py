@@ -54,6 +54,7 @@ class StockMeta(Base):
     peers: list[str] = Field(default_factory=list, description="universe.alternative 의 peer id")
     drivers: list[str] = Field(default_factory=list, description="노출을 잴 드라이버 id")
     themes: list[str] = Field(default_factory=list, description="themes.yaml 의 테마 id")
+    aliases: list[str] = Field(default_factory=list, description="기사 본문에서 이 종목을 가리키는 다른 표기 (영문명·약칭)")
     mock_base: float = 100.0
     mock_vol: float = 0.02
 
@@ -214,6 +215,8 @@ class AltDataPoint(Base):
     quality: Quality = "MISSING"
     stale: bool = False
     rollover_suspect: bool = False
+    rollover_followup: Literal["reverted", "persisted"] | None = Field(
+        default=None, description="직전 실행에서 롤오버 의심이던 계열의 다음 봉 판정. 되돌리면 reverted, 이어지면 persisted")
     source: str | None = None
     source_type: SourceType = "UNKNOWN"
     proxy_for: str | None = None

@@ -66,6 +66,25 @@ def _fmt(ins: Instrument | None, value: float | None) -> str:
     return f"{value:+.2f}"
 
 
+def _mentions_stock(event, meta) -> bool:
+    """기사가 이 종목을 직접 지목했는가. 테마 태그만으로는 True 가 아니다."""
+    keys = {meta.id.lower(), meta.name.lower(), meta.symbol.lower(), meta.symbol.split(".")[0].lower()}
+    keys |= {a.lower() for a in meta.aliases if a}
+    # 수기·룰 태깅 기사는 entity 가 비어 있을 수 있다 — 제목·요약에 종목명이 있으면 지목으로 본다
+    text = f"{event.event} {event.reason}".lower()
+    if any(k in text for k in keys if len(k) >= 2 and k != meta.id.lower()):
+        return True
+    for ent in event.entities:
+        n = (ent.name or "").lower()
+        t = (ent.ticker or "").lower()
+        if n in keys or t in keys or (n and any(k in n for k in keys if len(k) >= 3)):
+            return True
+    for a in event.affected_assets:
+        if (a.instrument_id or "").lower() in keys or (a.label or "").lower() in keys:
+            return True
+    return False
+
+
 def shared_driver_ids(config_dir=None) -> list[str]:
     """유니버스가 참조하는 기존 instruments.yaml 의 id (드라이버·peer·벤치마크)."""
     u = get_universe(config_dir)
@@ -168,7 +187,8 @@ def build_investment(
 
     # 4. 대체데이터
     t = time.perf_counter()
-    alt_points = build_alt_points(u.alternative, features, series_by_id, stocks_by_id, as_of, config_dir=config_dir)
+    prev_alt = {p.id: p for p in previous.alternative} if previous else None
+    alt_points = build_alt_points(u.alternative, features, series_by_id, stocks_by_id, as_of, previous=prev_alt, config_dir=config_dir)
     alt_map = {p.id: p for p in alt_points}
     # 공유 드라이버도 point 로 (설명·peer 패널용)
     for did in shared_driver_ids(config_dir):
@@ -205,6 +225,9 @@ def build_investment(
     # 7. 뉴스 → 종목 (테마 경유) · 이상 거래 · 원인 · 괴리
     t = time.perf_counter()
     news_counts = {m.id: sum(1 for e in base.events if any(th in e.themes for th in m.themes)) for m in stocks}
+    # 종목을 직접 지목한 기사 — entity 이름·티커 또는 affected_assets 가 종목과 일치할 때만.
+    # 테마 경유 집계(news_counts)는 원인 후보용으로 남기고, 워치리스트 배지는 이쪽을 쓴다.
+    stock_news_counts = {m.id: sum(1 for e in base.events if _mentions_stock(e, m)) for m in stocks}
     anomalies = detect_anomalies(stocks, stock_features, news_counts, as_of, config_dir=config_dir)
     anomaly_map = {a.stock_id: a for a in anomalies}
     market_f = features.get(u.benchmark_market)
@@ -321,7 +344,7 @@ def build_investment(
             badges.append("THEME_STRENGTHENING")
         elif th_state and th_state.last_change <= -float(thr["theme_change"]):
             badges.append("THEME_WEAKENING")
-        if news_counts.get(sid, 0) > 0:
+        if stock_news_counts.get(sid, 0) >= int(thr.get("news_min_stock_events", 1)):
             badges.append("NEW_EVENT")
         if a and a.available and a.eps_revision_1m is not None and abs(a.eps_revision_1m) >= float(thr["eps_revision_pct"]):
             badges.append("EPS_REVISION")

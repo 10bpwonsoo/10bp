@@ -600,3 +600,69 @@ class TestApi:
         b = client.get("/api/v1/investment?scenario=oil_spike&refresh=true").json()
         assert b["scenario"] == "oil_spike"
         assert client.get("/api/v1/investment?scenario=nope").status_code == 404
+
+
+# ── 2026-09-16 후속: 종목 고유 뉴스 배지 · 롤오버 다음 봉 확인 ───────────
+class TestFollowups:
+    def test_new_event_badge_needs_stock_mention_not_theme(self, universe, as_of):
+        from marketpulse.engines.investment import _mentions_stock
+        from marketpulse.models.news import AssetImpact, Entity, NewsEvent
+        sam = universe.stock_by_id()["SAMSUNG"]; hyn = universe.stock_by_id()["SKHYNIX"]
+        theme_only = NewsEvent(id="e1", event="반도체 테마 기사", event_type="other", themes=["semiconductor"], timestamp=as_of, source="t")
+        named = NewsEvent(id="e2", event="삼성전자 자사주 매입", event_type="other", themes=["semiconductor"], timestamp=as_of, source="t",
+                          entities=[Entity(name="삼성전자", type="company")])
+        by_ticker = NewsEvent(id="e3", event="x", event_type="other", themes=[], timestamp=as_of, source="t",
+                              entities=[Entity(name="Samsung Electronics", type="company", ticker="005930.KS")])
+        by_asset = NewsEvent(id="e4", event="x", event_type="other", themes=[], timestamp=as_of, source="t",
+                             affected_assets=[AssetImpact(instrument_id="SKHYNIX", label="SK하이닉스", direction="up")])
+        assert not _mentions_stock(theme_only, sam)
+        assert _mentions_stock(named, sam) and not _mentions_stock(named, hyn)
+        assert _mentions_stock(by_ticker, sam)
+        assert _mentions_stock(by_asset, hyn) and not _mentions_stock(by_asset, sam)
+
+    def test_watchlist_new_event_only_for_named_stocks(self, mock_inv):
+        # MOCK 기사는 테마만 태그돼 있어 어떤 줄에도 NEW_EVENT 가 붙지 않아야 한다
+        assert not any("NEW_EVENT" in r.badges for r in mock_inv.watchlist)
+
+    def _fut(self, universe, as_of, last, prev_last=None):
+        cfg = get_intelligence_config()["alternative"]
+        fut = next(a for a in universe.alternative if a.id == "GASOLINE")
+        vals = _walk(5, 200, base=2.0, vol=0.01, last=last)
+        if prev_last is not None:
+            vals = np.concatenate([vals[:-1], [vals[-2] * math.exp(prev_last), vals[-2] * math.exp(prev_last) * math.exp(last)]])
+        s = _series("GASOLINE", vals, as_of)
+        f = compute_feature(fut.as_instrument(), s, window=60)
+        return fut, s, f
+
+    def test_rollover_reverted_on_next_bar(self, universe, as_of):
+        fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
+        p1 = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of)[0]
+        assert p1.rollover_suspect and p1.rollover_followup is None
+        # 다음 날 +6% 되돌림
+        tomorrow = as_of + timedelta(days=3)  # 금요일 기준 → 다음 영업일(월)
+        vals = list(s1.values) + [s1.values[-1] * math.exp(0.06)]
+        s2 = _series("GASOLINE", vals, tomorrow)
+        f2 = compute_feature(fut.as_instrument(), s2, window=60)
+        p2 = build_alt_points([fut], {"GASOLINE": f2}, {"GASOLINE": s2}, universe.stock_by_id(), tomorrow, previous={"GASOLINE": p1})[0]
+        assert p2.rollover_followup == "reverted" and "롤오버였을 가능성" in p2.note
+
+    def test_rollover_persisted_on_next_bar(self, universe, as_of):
+        fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
+        p1 = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of)[0]
+        tomorrow = as_of + timedelta(days=3)  # 금요일 기준 → 다음 영업일(월)
+        vals = list(s1.values) + [s1.values[-1] * math.exp(-0.002)]
+        s2 = _series("GASOLINE", vals, tomorrow)
+        f2 = compute_feature(fut.as_instrument(), s2, window=60)
+        p2 = build_alt_points([fut], {"GASOLINE": f2}, {"GASOLINE": s2}, universe.stock_by_id(), tomorrow, previous={"GASOLINE": p1})[0]
+        assert p2.rollover_followup == "persisted" and "실제 충격" in p2.note
+
+    def test_same_bar_rerun_does_not_judge(self, universe, as_of):
+        fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
+        p1 = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of)[0]
+        p1b = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of, previous={"GASOLINE": p1})[0]
+        assert p1b.rollover_followup is None
+
+    def test_previous_alt_points_flow_through_build_investment(self, settings, base_snapshot, as_of):
+        first = run_investment(settings, base_snapshot, as_of=as_of)
+        again = run_investment(settings, base_snapshot, as_of=as_of, previous=first)
+        assert all(p.rollover_followup is None for p in again.alternative)  # 같은 봉이므로 판정 없음

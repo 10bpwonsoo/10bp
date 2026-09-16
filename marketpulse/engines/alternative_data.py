@@ -31,12 +31,15 @@ def build_alt_points(
     stocks_by_id: Mapping[str, StockMeta],
     as_of: datetime,
     *,
+    previous: Mapping[str, AltDataPoint] | None = None,
     config_dir=None,
 ) -> list[AltDataPoint]:
     cfg = get_intelligence_config(config_dir)["alternative"]
     stale_after = timedelta(days=int(cfg["stale_days"]))
     roll_z = float(cfg["rollover_suspect_z"])
     order = {g: i for i, g in enumerate(cfg["groups"])}
+    revert_ratio = float(cfg.get("rollover_revert_ratio", 0.5))
+    prev = previous or {}
 
     out: list[AltDataPoint] = []
     for a in alternative:
@@ -57,13 +60,23 @@ def build_alt_points(
         note = ""
         if rollover:
             note = f"하루 |z| {abs(f.z_1d):.1f} — 선물 롤오버 가능성. 실제 충격인지 다음 봉으로 확인."
+        # 직전 실행이 롤오버를 의심했고 그 뒤 새 봉이 왔으면, 되돌렸는지 이어졌는지 말한다
+        followup = None
+        pv = prev.get(a.id)
+        if pv is not None and pv.rollover_suspect and pv.z is not None and pv.as_of is not None and s.as_of > pv.as_of and f.z_1d is not None:
+            if (f.z_1d * pv.z) < 0 and abs(f.z_1d) >= revert_ratio * abs(pv.z):
+                followup = "reverted"
+                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에서 되돌려졌다 — 롤오버였을 가능성이 높다."
+            else:
+                followup = "persisted"
+                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에도 이어진다 — 실제 충격 쪽이다."
         if a.proxy_for:
             note = (note + " " if note else "") + f"대리 지표: {a.proxy_for}."
         out.append(AltDataPoint(
             id=a.id, label=a.name, group=a.group, value=s.last, unit=a.unit,
             change_1d=f.ret_1d, change_1w=f.ret_5d, change_1m=f.ret_20d, change_3m=f.ret_3m,
             z=f.z_1d, percentile=f.percentile_1y, percentile_observations=f.percentile_observations,
-            quality=quality, stale=stale, rollover_suspect=rollover, source=s.meta.source,  # type: ignore[arg-type]
+            quality=quality, stale=stale, rollover_suspect=rollover, rollover_followup=followup, source=s.meta.source,  # type: ignore[arg-type]
             source_type=a.source_type, proxy_for=a.proxy_for, why=a.why, affected=list(a.affected),
             affected_names=names, as_of=s.as_of, note=note,
         ))
