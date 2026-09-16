@@ -1,0 +1,196 @@
+# Market Pulse AI — 세션 작업 정리 (2026-09-16)
+
+브랜치 `claude/market-pulse-ai-design-r7pmsm`, 커밋 30개 (전부 푸시됨), 테스트 552건 통과.
+배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 14),
+화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 9).
+
+---
+
+## 1. 구현한 기능 목록
+
+### P0~P2 (기반)
+- 데이터 계약: pydantic 모델 전부에 출처·모드·신선도 메타(`DataMeta`)와 계산 근거(`ScoreBreakdown`) 강제.
+- MOCK 파이프라인: 시나리오 JSON에 "체제 + 충격(σ)"만 적으면 시드 고정 합성 시계열 생성. 충격값이 z-score로 정확히 재현됨.
+- FeatureEngine: rolling z (기준선에서 현재값 제외), 결측은 None (0 아님).
+- FactorEngine 11개 (Growth·Inflation·Rates·USD·Liquidity·RiskAppetite·Credit·Volatility·China·KoreaFlow·KoreaBreadth), 결측 시 가중치 재정규화.
+- MarketStateEngine: require + support 2단 룰, 8개 상태 라벨, Confidence = 분리도·확인·커버리지·지속성.
+- ThemeEngine 13개 테마 × 뉴스·가격·변동성, Cross-asset 확인, 안정성.
+- SentimentEngine: 사전 기반 룰 태깅, 시간감쇠·영향도·출처 가중.
+- DivergenceEngine: opposing / unresponsive 두 형태, 2틱 지속 조건, severity = tanh(gap)·지속·중요도.
+- AlertEngine: 수준이 아니라 직전 틱 대비 변화, dedupe·쿨다운·보존창.
+- SQLite 저장소, 스케줄러, FastAPI 단일 스냅샷 엔드포인트, WebSocket 스트림.
+- React 대시보드 9개 패널, 토큰 기반 CSS, 폰 대응.
+
+### P3~P4 (LLM · 실데이터)
+- Impact Map: 사건→테마→매크로→업종→자산 BFS, 전파 단계 열 배치, 예상 부호 vs 실측 반응.
+- LLM 이벤트 추출·검증·요약, 실패 시 룰·템플릿으로 자동 대체 (LLM 없이도 전 화면 동작).
+- LLM 웹검색 어댑터 (`web_search_20260209`), RSS 0건일 때만 검색.
+- 실데이터 어댑터: Yahoo·Stooq·FRED·KRX·GitHub 미러·로컬 CSV 우선순위 폴백. 종목별 실패 사유가 화면에 남음.
+- 백테스트: 과거 재생으로 신호 채점, look-ahead 제거.
+- 실데이터 오류 수정: ^TNX 스케일, US2Y 심볼, 파생 시계열 날짜 정렬, CNH 심볼.
+
+### P5 이후 (세션 후반)
+- 센티멘트 온도계: 가격 온도·뉴스 온도·종합, 격차 30 이상이면 내러티브 괴리 표시.
+- 수기 태깅 경로: API 크레딧 없이 Claude가 기사를 읽고 `extractor="manual"`로 정직하게 표시. 3차례 캡처.
+- 수급 신호 off (`theme.use_flow: false`), 뉴스 감성이 그 자리를 흡수. 히트맵 행 클릭 시 관련 기사 4건, 원문 링크.
+- GOAL Kickstart 차용 8종:
+  1. 장기 백분위 + 3개월 변화 (What's Moving, Main Drivers)
+  2. 재료 스트립 (온도계 아래, ● 현재 / ◇ 1주 전)
+  3. 1주 전 표식 (온도계 ◇, 히트맵 Δ1w, What's Moving 막대 ◇)
+  4. 상관 레짐 대조 — 사전 정의 관계를 60일 상관으로 확인/약화/뒤집힘, `CORRELATION_REGIME` 괴리
+  5. 지배 축 — |z| 최대 후보와 ±0.3 이상 연동 자산
+  6. 이벤트 달력 — 중앙은행 회의 D-2 안이면 지속성 ×0.5, 알림 임계 ×1.25
+  7. 변동성 프리미엄 파생 종목 (VIX − S&P 실현변동성)
+  8. 경기민감/방어 파생 종목 (XLY ÷ XLU)
+- 뉴스 판단 배지 3상태 (없음 / 수기 / API), '지금 업데이트' 버튼 (`?refresh=true`로 TTL 캐시 우회).
+
+---
+
+## 2. 디렉터리 구조 (3단계)
+
+```
+10bp/
+├── README.md · pyproject.toml · requirements*.txt · .env.example · conftest.py
+├── docs/
+│   ├── 00-analysis-and-architecture.md      설계서
+│   └── 01-session-summary-2026-09-16.md     이 문서
+├── marketpulse/                             백엔드 패키지
+│   ├── adapters/
+│   │   ├── market/   live.py · mock.py · providers.py · scenario.py · synthetic.py
+│   │   ├── news/     rss.py · llm_search.py · mock.py
+│   │   └── base.py · http.py · registry.py
+│   ├── ai/           client.py · event_extractor.py · rule_extractor.py · summarizer.py · validation.py
+│   ├── analysis/     backtest.py
+│   ├── api/
+│   │   ├── routes/   snapshot.py · signals.py · graph.py · news.py · health.py · stream.py
+│   │   └── deps.py · main.py
+│   ├── config/       settings.py · registry.py
+│   │                 instruments · factors · state_rules · themes · lexicon · relationships
+│   │                 divergence_rules · scoring · sources · feeds · calendar  (.yaml 11개)
+│   ├── data/
+│   │   ├── captures/ 2026-09-14-llm · 2026-09-15-llm · 2026-09-15-llm-3
+│   │   │             2026-09-15-manual · 2026-09-15-manual-2 · 2026-09-16-manual
+│   │   ├── mock/     scenario_{baseline,inflation_shock,ai_divergence,ai_sentiment}.json
+│   │   └── replay/   README.md (CSV 적재 안내)
+│   ├── engines/      features · normalize · factors · market_state · confirmation · sentiment
+│   │                 theme · direction · divergence · alert · relationship · thermometer
+│   │                 correlation · calendar · scoring · korean · orchestrator
+│   ├── models/       common · market · news · state · theme · divergence · alert
+│   │                 relationship · thermometer · correlation · calendar · snapshot
+│   ├── scheduler/    runner.py
+│   ├── storage/      repository.py · sqlite_repo.py · schema.sql
+│   ├── vendor/       indicators.py
+│   └── cli.py
+├── frontend/
+│   ├── src/
+│   │   ├── api/         client.ts · types.ts · useSnapshot.ts
+│   │   ├── components/  AlertTimeline · ConfirmationMatrix · DataHealthPanel · DataModeBadge
+│   │   │                DivergencePanel · ImpactMap · MarketStateHeader · NewsFeed · Panel
+│   │   │                RefreshButton · RuleTrace · ScenarioSwitcher · ScoreTooltip
+│   │   │                SentimentGauge · SignalBar · ThemeHeatmap · WhatsMoving  (.tsx 17개)
+│   │   ├── layout/      DashboardGrid.tsx
+│   │   ├── theme/       tokens.css · layout.css
+│   │   └── App.tsx · main.tsx
+│   └── index.html · vite.config.ts · package.json
+├── tests/            conftest.py · flowera.py · fixtures/ · test_*.py 20개
+└── upbit_trading/    기존 코드 (건드리지 않음)
+```
+
+---
+
+## 3. 핵심 컴포넌트와 역할
+
+파이프라인 순서 — `run_pipeline_detailed()`가 I/O를 하고 `build_intelligence()`는 순수 함수다.
+어댑터 → 정규화 → 이벤트 추출 → 시장 상태 → 테마 → 괴리 → Impact Map → 요약 → 온도계 → 알림 → 스냅샷.
+
+### 백엔드
+
+| 계층 | 파일 | 역할 |
+|---|---|---|
+| 어댑터 | `adapters/market/live.py` | sources.yaml 순서로 공급자 시도, 파생 종목(ratio·spread·vol_premium) 계산, 실패 사유 기록 |
+| | `adapters/market/synthetic.py` | 시나리오의 σ 충격을 정확히 재현하는 결정론 시계열 |
+| | `adapters/news/rss.py` · `llm_search.py` | RSS 수집, RSS가 비면 LLM 웹검색으로 대체 |
+| 정규화 | `engines/features.py` | z_1d/5d/20d, 1주 전 z, 3개월 변화, 백분위(실제 봉 수 동반), 실현변동성 |
+| | `engines/correlation.py` | 60일 변화량 상관 행렬 + 한 분기 전 창. 날짜로 정렬 |
+| 판정 | `engines/factors.py` | 부호·가중 z 평균, 결측 재정규화, 품질 등급 |
+| | `engines/market_state.py` | 룰 채점, Confidence, Main Drivers, 지배 축 |
+| | `engines/theme.py` · `sentiment.py` | 테마 점수, 뉴스 감성(감쇠·영향도·출처) |
+| | `engines/thermometer.py` | 가격·뉴스·종합 온도, 재료 스트립, 1주 전 |
+| 괴리 | `engines/divergence.py` | 테마쌍·자산쌍·상태vs변동성·테마vs자산·상관 레짐 5갈래, 2틱 지속 |
+| | `engines/relationship.py` | Impact Map BFS, 예상 부호 전파, 실측 상관으로 관계 대조 |
+| | `engines/alert.py` | 변화 기반 알림, 이벤트 창에서 임계 ×1.25 |
+| | `engines/calendar.py` | 중앙은행 일정 창 판정, 지속성·알림 배율 |
+| AI | `ai/client.py` | Anthropic 클라이언트, 서킷 브레이커, 실패 사유 기록 |
+| | `ai/rule_extractor.py` | LLM 없을 때의 사전 기반 태깅 |
+| 서비스 | `api/deps.py` | TTL 캐시, 히스토리 12틱, 1주 전 스냅샷 조회, `force` 갱신 |
+| | `storage/sqlite_repo.py` | 스냅샷 저장, `at_or_before()` |
+| 설정 | `config/scoring.yaml` | 모든 가중치·임계값. 코드에 숫자 없음 |
+| | `config/calendar.yaml` | 회의 일정, `verified` 플래그 |
+
+### 프론트엔드
+
+| 컴포넌트 | 역할 |
+|---|---|
+| `MarketStateHeader` | 판정·Confidence·Main Drivers(백분위·◇1주 전)·지배 축·이벤트 창 배지 |
+| `SentimentGauge` | 온도계 SVG(세 바늘 + 1주 전 표식) + 재료 스트립 |
+| `ThemeHeatmap` | 테마 행(Score·Δ1w·News·Price·Conf), 클릭 시 관련 기사 |
+| `WhatsMoving` | z 순 변수, %ile·3개월·막대 위 ◇ |
+| `ImpactMap` | 지도/목록 보기, 상관 미확인 관계 점선, 단계별 실측 점도표 |
+| `DivergencePanel` · `AlertTimeline` · `ConfirmationMatrix` · `NewsFeed` · `DataHealthPanel` | 각 패널 |
+| `DataModeBadge` · `RefreshButton` | 모드·신선도·커버리지·뉴스 판단 3상태, 지금 업데이트 |
+| `ScoreTooltip` · `RuleTrace` | 모든 점수의 계산 근거, 발동 룰 |
+
+---
+
+## 4. 마지막 작업과 남은 TODO
+
+### 마지막 작업 (커밋 `6cc7962`)
+9/16 02:05 UTC 기준 실데이터 3차 수기 캡처. 시장 35/50 종목, RSS 78건 중 31건 + 해외 12건 수기 태깅.
+판정 없음 29%, 온도계 −9, 지배 축 USD/JPY, FOMC D-day 이벤트 창, 괴리 3건(상관 레짐 2 + Rates 뉴스↔가격).
+
+### 남은 TODO
+- **API 크레딧** — Anthropic 계정 잔액 0. 키는 `MARKETPULSE_ANTHROPIC_API_KEY`로 이미 들어가 있어 크레딧만 채우면 `뉴스 판단 API`로 자동 전환.
+- **데이터 공백 15종목** — KRX 8종(국고채·V-KOSPI·KRX반도체·수급 4종)은 포털이 세션을 거부. FRED 2종(BE10Y·US_HY_OAS)은 `FRED_API_KEY` 필요. 시장폭 3종은 무료 공급자 없음. KOSPI200은 오늘 Yahoo 일시 실패.
+- **1주 전 표식의 뉴스·종합 부분** — 서버를 1주일 이상 돌려 저장 스냅샷이 쌓여야 채워짐. 지금 배포본은 `–`.
+- **달력 날짜 검증** — 이번 주 3건만 1차 출처 확인. 나머지 `verified: false`는 `(미확인)` 표시 중.
+- **추가 탭 제안 (미착수)** — 중앙은행 주간·지정학 충격·유동성 경색·성장 충격·가짜 Risk-On 시나리오, 1주 전 비교·리플레이·수기 vs 룰 보기.
+- **GOAL 9번(내러티브 골격)** — 요청대로 미반영.
+- **설계상 미해결** — 얇은 데이터에서 Confidence 과신 문제(승인 요청 ④), 가이드 A절에 기록.
+- **수기 태깅 갱신** — 자동이 아니므로 새 기사 반영은 매번 요청 필요.
+
+---
+
+## 커밋 이력 (최신순)
+
+```
+6cc7962 2026-09-16 실데이터 3차 수기 캡처
+c4c061a LLM 배지를 '뉴스 판단 없음/수기/API' 세 상태로 바꾸고 '지금 업데이트' 버튼을 단다
+c210205 GOAL Kickstart 에서 빌린 여덟 가지를 화면과 엔진에 넣는다
+3e3afae 모의 'AI 괴리' 탭을 'AI 센티' 로 바꾼다
+c22bb7f 수급 신호를 끄고 그 자리를 뉴스 감성에 맡긴다
+69212c2 좁은 화면에서 테마 히트맵의 테마명이 사라지던 것을 고친다
+3d86fef 테마 히트맵 행을 누르면 관련 기사 4건이 펼쳐지고, 기사에 원문 링크를 단다
+755c085 API 크레딧 없이 수기 태깅으로 뉴스 구조화 결과를 캡처한다
+01dda86 LLM 없이 도는 괴리 테스트는 LLM 을 명시적으로 끈다
+4b3ef46 LLM 실패 사유를 화면에 올리고 웹검색 타임아웃을 분리한다
+f83ad5e LLM 켠 실데이터 캡처 3차 (2026-09-15)
+800fa05 LLM 켠 실데이터 캡처 (2026-09-15) — SKIPPED
+462eab6 MARKETPULSE_ANTHROPIC_API_KEY 로도 LLM 을 켤 수 있게 한다
+017fa6d LLM 실데이터 캡처 미실행 기록 (2026-09-14): ANTHROPIC_API_KEY 미설정
+19c9eb3 ANTHROPIC_API_KEY 가 있으면 LLM 을 자동으로 켠다
+81bfca9 네트워크가 열린 뒤 드러난 실데이터 오류 셋을 고친다
+f7a8d29 LLM 웹검색으로 기사를 찾고 센티멘트 온도계를 Market State 옆에 붙인다
+645a053 과거 재생으로 신호를 채점하고 look-ahead 와 과신 두 건을 고친다
+d87080b 베타: 막힌 네트워크에서 GitHub 미러로 실데이터를 붙인다
+9f98157 CSV 적재 경로를 실사용 가능하게 고치고 목록을 정리한다
+cf70a76 P4: 실데이터 어댑터 · RSS · WebSocket · 신호 백테스트
+685b509 테마 방향과 감성 톤을 분리한다
+14c8e3a Impact Map 레이아웃 교체 — 전파 단계 열 + 실측 반응
+df1a07d P3: Impact Map · LLM 이벤트 추출 · AI 시장 요약
+ace00ed feat(P2): Divergence · Alert · Confirmation Matrix · 저장소 · 스케줄러
+2628e37 feat(P1): Market State Engine · Theme Score · Sentiment · 룰 추출
+f92364d feat(P0): 대시보드 프론트엔드 + 실행 문서
+bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·CLI
+4340d75 docs: Market Pulse AI 사전 분석 및 아키텍처 설계서 추가
+32b7b36 Initial commit: upbit_cursor.py + upbit_trading 모듈
+```
