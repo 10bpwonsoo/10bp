@@ -220,6 +220,26 @@ schtasks /create /tn "MP Snapshot Weekly" ^
 
 ## 3. 설치 확인
 
+### 가장 쉬운 방법 — setup 스크립트
+
+압축을 푼 폴더에서 한 번만 실행하면 Python 확인 → 가상환경 → 설치 → 테스트 →
+데모 스냅샷 → 화면 실행까지 알아서 진행한다. `wheelhouse` 폴더가 있으면
+자동으로 오프라인 설치를 쓴다.
+
+```bat
+REM Windows
+setup.bat
+```
+
+```bash
+# macOS / Linux
+chmod +x setup.sh && ./setup.sh
+```
+
+두 번째부터는 `run_dashboard.bat` (또는 `./run_dashboard.sh`) 만 실행하면 된다.
+
+### 수동으로 확인하려면
+
 ```bash
 cd performance_monitor
 
@@ -266,7 +286,8 @@ Dashboard 실행에는 DB 접속조차 필요 없다.
 | 증상 | 원인 / 조치 |
 |---|---|
 | `pip install` 이 timeout | 미러 미설정. 2절의 `--no-index --find-links` 사용 |
-| wheel 설치 시 `not a supported wheel on this platform` | 다른 OS/Python 용 wheel. 대상 환경을 맞춰 다시 받을 것 |
+| wheel 설치 시 `not a supported wheel on this platform` | 다른 OS/Python 용 wheel. wheel 파일명의 `cp3XX`·플랫폼 태그가 대상과 같아야 한다 |
+| `No matching distribution found for exceptiongroup / tomli / colorama` | wheelhouse 가 조건부 의존성을 빠뜨린 것. `pip download --python-version` 은 `python_version < "3.11"`, `platform_system == "Windows"` 같은 마커 의존성을 놓치는 경우가 있다. `tools/make_wheelhouse.py` 가 이를 자동 보강하므로 **최신 버전으로 다시 생성**할 것 |
 | `pyarrow` 설치 실패 | **뺄 수 없다.** streamlit 이 `pyarrow>=7.0,<26` 을 필수로 요구한다. wheel 이 27MB 로 가장 크지만 반드시 포함해야 한다. (코드 자체는 pyarrow 가 없으면 스냅샷을 pickle 로 폴백하지만, 그래도 streamlit 이 안 뜬다) |
 | `openpyxl` 없음 | Excel 내보내기만 안 된다. CSV 는 정상 |
 | 브라우저에서 접속 불가 | `--server.address 0.0.0.0` 필요. 서버 방화벽에서 8501 포트 개방 확인 |

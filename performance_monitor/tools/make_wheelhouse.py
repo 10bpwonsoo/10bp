@@ -21,9 +21,72 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
+
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _target_environment(python_version: str | None, platform: str | None) -> dict:
+    """마커 평가용 환경. 지정이 없으면 현재 인터프리터 기준."""
+    if python_version:
+        major, minor = python_version[0], python_version[1:]
+        version = f"{major}.{minor}"
+    else:
+        version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    system = "Windows" if (platform or "").startswith("win") else (
+        "Darwin" if "macos" in (platform or "") else "Linux")
+    return {
+        "python_version": version,
+        "python_full_version": version + ".0",
+        "sys_platform": {"Windows": "win32", "Darwin": "darwin"}.get(system, "linux"),
+        "platform_system": system,
+        "os_name": "nt" if system == "Windows" else "posix",
+        "implementation_name": "cpython",
+        "platform_machine": "AMD64" if system == "Windows" else "x86_64",
+        "extra": "",
+    }
+
+
+def _installed_names(target: Path) -> set:
+    names = set()
+    for whl in target.glob("*.whl"):
+        names.add(canonicalize_name(whl.name.split("-")[0]))
+    return names
+
+
+def _missing_requirements(target: Path, env: dict) -> list:
+    """받아둔 wheel 들의 METADATA 를 읽어, 대상 환경에서 필요한데 없는 것을 찾는다.
+
+    ``pip download --python-version`` 은 ``python_version < "3.11"`` 같은
+    조건부 의존성(exceptiongroup, tomli ...)을 놓치는 경우가 있다.
+    실제로 대상 서버에서 설치할 때 그 지점에서 실패하므로 여기서 메꾼다.
+    """
+    have = _installed_names(target)
+    missing = {}
+    for whl in sorted(target.glob("*.whl")):
+        try:
+            with zipfile.ZipFile(whl) as zf:
+                meta_name = next(n for n in zf.namelist()
+                                 if n.endswith(".dist-info/METADATA"))
+                metadata = zf.read(meta_name).decode("utf-8", "replace")
+        except (StopIteration, zipfile.BadZipFile, KeyError):
+            continue
+        for line in metadata.splitlines():
+            if not line.startswith("Requires-Dist:"):
+                continue
+            try:
+                req = Requirement(line.split(":", 1)[1].strip())
+            except Exception:  # noqa: BLE001 - 메타데이터 파싱 실패는 건너뛴다
+                continue
+            if req.marker is not None and not req.marker.evaluate(env):
+                continue
+            if canonicalize_name(req.name) not in have:
+                missing[canonicalize_name(req.name)] = str(req).split(";")[0].strip()
+    return sorted(missing.values())
 
 
 def main(args) -> int:
@@ -65,6 +128,26 @@ def main(args) -> int:
             file=sys.stderr,
         )
         return result.returncode
+
+    # --- 조건부 의존성 보강 ------------------------------------------------
+    env = _target_environment(args.python_version, args.platform)
+    for attempt in range(5):
+        missing = _missing_requirements(target, env)
+        if not missing:
+            break
+        print(f"\n[보강 {attempt + 1}] 대상 환경(python {env['python_version']}, "
+              f"{env['platform_system']})에서 필요한데 빠진 패키지: {', '.join(missing)}")
+        extra = list(command) + missing
+        # -r requirements.txt 는 이미 처리했으므로 제거하고 개별 패키지만 받는다
+        for flag in ("-r", str(requirements)):
+            if flag in extra:
+                extra.remove(flag)
+        if subprocess.run(extra).returncode != 0:
+            print("[WARN] 보강 다운로드 실패 - 대상 서버에서 설치가 막힐 수 있습니다.",
+                  file=sys.stderr)
+            break
+    else:
+        print("[WARN] 의존성이 5회 안에 닫히지 않았습니다.", file=sys.stderr)
 
     files = sorted(target.glob("*"))
     total = sum(f.stat().st_size for f in files) / 1048576
