@@ -103,3 +103,28 @@ def build_news_adapter(settings: Settings) -> NewsAdapter:
 def mode_warnings(settings: Settings) -> list[str]:
     """모드 선택 자체에서 오는 경고. 파이프라인이 data_health 에 싣는다."""
     return [LIVE_IS_DELAYED] if settings.data_mode is DataMode.LIVE else []
+
+
+# ── Investment Intelligence (2026-09-16 신설, 전부 추가) ──────────
+@lru_cache(maxsize=4)
+def _alt_live(replay_dir, config_dir, timeout, store_path):
+    from ..adapters.alternative.live import AltLiveAdapter
+
+    store = None
+    if store_path:
+        from ..storage.sqlite_repo import SqliteSnapshotRepository
+
+        store = SqliteSnapshotRepository(store_path)
+    return AltLiveAdapter(
+        replay_dir=replay_dir, config_dir=config_dir,
+        client=HttpClient(timeout_sec=timeout), store=store,
+    )
+
+
+def build_alt_adapter(settings: Settings, *, store_path: str | None = None):
+    """종목·대체데이터 어댑터. MOCK 은 시나리오, 그 외는 Yahoo·CSV + 일별 저장소."""
+    if settings.data_mode is DataMode.MOCK:
+        from ..adapters.alternative.mock import AltMockAdapter
+
+        return AltMockAdapter(settings.mock_dir, settings.scenario, zscore_window=settings.zscore_window)
+    return _alt_live(settings.replay_dir, settings.config_dir, settings.http_timeout_sec, store_path)

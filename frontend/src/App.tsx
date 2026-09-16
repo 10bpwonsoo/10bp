@@ -6,6 +6,7 @@ import { DataModeBadge } from "./components/DataModeBadge";
 import { RefreshButton } from "./components/RefreshButton";
 import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
 import { DashboardGrid } from "./layout/DashboardGrid";
+import { InvestmentSection } from "./investment/InvestmentSection";
 
 export default function App() {
   const [mode, setMode] = useState<DataMode | null>(null);
@@ -83,7 +84,11 @@ export default function App() {
       ) : null}
 
       {snapshot ? (
-        <DashboardGrid snapshot={snapshot} />
+        <>
+          <DashboardGrid snapshot={snapshot} />
+          {/* 기존 대시보드 아래의 신규 영역. 별도 엔드포인트·캐시라 기존 화면이 먼저 뜬다. */}
+          <InvestmentSection scenario={scenario} enabled={mode !== null} />
+        </>
       ) : (
         <div className="grid">
           <section className="panel span-3">

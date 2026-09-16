@@ -153,6 +153,134 @@ class SqliteSnapshotRepository(SnapshotRepository):
             )
             return cur.rowcount
 
+    # ── Investment Intelligence (2026-09-16 신설, 전부 추가) ─────────
+    def upsert_daily(
+        self, series_id: str, rows: Sequence[tuple[str, float, float | None]], source: str
+    ) -> int:
+        """(date, value, volume) 행을 upsert 한다. 거래량 None 은 NULL 이다."""
+        if not rows:
+            return 0
+        with self._cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO alt_daily (series_id, date, value, volume, source)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (series_id, date) DO UPDATE SET
+                    value = excluded.value, volume = excluded.volume, source = excluded.source
+                """,
+                [(series_id, d, v, vol, source) for d, v, vol in rows],
+            )
+            cur.execute(
+                """
+                INSERT INTO alt_fetch_log (series_id, fetched_date, last_bar, source, points)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (series_id) DO UPDATE SET
+                    fetched_date = excluded.fetched_date, last_bar = excluded.last_bar,
+                    source = excluded.source, points = excluded.points
+                """,
+                (series_id, utcnow().date().isoformat(), max(r[0] for r in rows), source, len(rows)),
+            )
+        return len(rows)
+
+    def load_daily(
+        self, series_id: str, *, limit: int = 400
+    ) -> list[tuple[str, float, float | None, str]]:
+        """오래된 것부터 (date, value, volume, source)."""
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT date, value, volume, source FROM alt_daily
+                WHERE series_id = ? ORDER BY date DESC LIMIT ?
+                """,
+                (series_id, limit),
+            ).fetchall()
+        return [(r["date"], r["value"], r["volume"], r["source"]) for r in reversed(rows)]
+
+    def fetch_log(self, series_id: str) -> dict | None:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM alt_fetch_log WHERE series_id = ?", (series_id,)
+            ).fetchone()
+        return dict(row) if row else None
+
+    def save_investment(self, stream_key: str, as_of: datetime, payload: str) -> None:
+        with self._cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO investment_snapshots (stream_key, as_of, created_at, payload)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT (stream_key, as_of) DO UPDATE SET
+                    payload = excluded.payload, created_at = excluded.created_at
+                """,
+                (stream_key, as_of.isoformat(), utcnow().isoformat(), payload),
+            )
+
+    def latest_investment(self, stream_key: str) -> str | None:
+        with self._lock:
+            row = self._conn.execute(
+                """
+                SELECT payload FROM investment_snapshots
+                WHERE stream_key = ? ORDER BY as_of DESC LIMIT 1
+                """,
+                (stream_key,),
+            ).fetchone()
+        return row["payload"] if row else None
+
+    def upsert_analyst(
+        self, rows: Sequence[tuple[str, str, str, str | None, float | None, float | None]], source: str
+    ) -> int:
+        """(stock_id, date, broker, rating, target_price, eps_fy1)."""
+        if not rows:
+            return 0
+        with self._cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO analyst_revision (stock_id, date, broker, rating, target_price, eps_fy1, source)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (stock_id, date, broker) DO UPDATE SET
+                    rating = excluded.rating, target_price = excluded.target_price,
+                    eps_fy1 = excluded.eps_fy1, source = excluded.source
+                """,
+                [(*r, source) for r in rows],
+            )
+        return len(rows)
+
+    def load_analyst(self, stock_id: str, *, limit: int = 200) -> list[dict]:
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT * FROM analyst_revision WHERE stock_id = ?
+                ORDER BY date DESC LIMIT ?
+                """,
+                (stock_id, limit),
+            ).fetchall()
+        return [dict(r) for r in reversed(rows)]
+
+    def save_commentary(
+        self, *, kind: str, entity: str, as_of: datetime, source_mode: str, confidence: str, payload: str
+    ) -> None:
+        with self._cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO commentary (kind, entity, as_of, created_at, source_mode, confidence, payload)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (kind, entity, as_of.isoformat(), utcnow().isoformat(), source_mode, confidence, payload),
+            )
+
+    def load_commentary(self, entity: str | None = None, *, limit: int = 50) -> list[dict]:
+        with self._lock:
+            if entity is None:
+                rows = self._conn.execute(
+                    "SELECT * FROM commentary ORDER BY as_of DESC LIMIT ?", (limit,)
+                ).fetchall()
+            else:
+                rows = self._conn.execute(
+                    "SELECT * FROM commentary WHERE entity = ? ORDER BY as_of DESC LIMIT ?",
+                    (entity, limit),
+                ).fetchall()
+        return [dict(r) for r in rows]
+
     def close(self) -> None:
         with self._lock:
             self._conn.close()

@@ -1,0 +1,324 @@
+{
+  "name": "eps_price_divergence",
+  "title": "EPS 상향인데 주가 하락 — 가격·펀더멘털 괴리",
+  "description": "삼성전자·현대차 EPS 컨센서스 상향(+6%, +5%)에 주가는 한 달 하락. 반대로 카카오는 EPS 하향(-7%)에 주가 상승. Analyst Revision 4분면과 Price vs Fundamental Divergence 가 이것을 잡는다.",
+  "seed": 20260917,
+  "bars": 180,
+  "class_defaults": {
+    "equity": {
+      "vol": 0.0105,
+      "mean_reversion": 0.02
+    },
+    "rate": {
+      "vol": 0.045,
+      "mean_reversion": 0.05,
+      "floor": 0.05
+    },
+    "fx": {
+      "vol": 0.0045,
+      "mean_reversion": 0.03
+    },
+    "commodity": {
+      "vol": 0.0155,
+      "mean_reversion": 0.02
+    },
+    "volatility": {
+      "vol": 0.055,
+      "mean_reversion": 0.1,
+      "floor": 8.0
+    },
+    "credit": {
+      "vol": 6.0,
+      "mean_reversion": 0.06,
+      "floor": 120.0
+    },
+    "flow": {
+      "vol": 420.0,
+      "mean_reversion": 0.35
+    },
+    "breadth": {
+      "vol": 0.085,
+      "mean_reversion": 0.4
+    }
+  },
+  "regimes": {
+    "KOSPI": {
+      "base": 2684.0
+    },
+    "KOSPI200": {
+      "base": 358.4
+    },
+    "KOSDAQ": {
+      "base": 762.0,
+      "vol": 0.0135
+    },
+    "SPX": {
+      "base": 5847.0,
+      "vol": 0.0092
+    },
+    "NDX": {
+      "base": 20830.0,
+      "vol": 0.0121
+    },
+    "RUT": {
+      "base": 2312.0,
+      "vol": 0.0128
+    },
+    "HSCEI": {
+      "base": 7248.0,
+      "vol": 0.0142
+    },
+    "NIKKEI": {
+      "base": 39820.0,
+      "vol": 0.0118
+    },
+    "SX5E": {
+      "base": 5012.0,
+      "vol": 0.0098
+    },
+    "XLK": {
+      "base": 245.6,
+      "vol": 0.0124
+    },
+    "XLE": {
+      "base": 91.8,
+      "vol": 0.0131
+    },
+    "XLF": {
+      "base": 48.3,
+      "vol": 0.0096
+    },
+    "XLU": {
+      "base": 79.4,
+      "vol": 0.0089
+    },
+    "XLY": {
+      "base": 205.1,
+      "vol": 0.0112
+    },
+    "SOXX": {
+      "base": 246.2,
+      "vol": 0.0178
+    },
+    "ITA": {
+      "base": 148.3,
+      "vol": 0.0105
+    },
+    "JETS": {
+      "base": 24.1,
+      "vol": 0.0152
+    },
+    "KRX_SEMI": {
+      "base": 4118.0,
+      "vol": 0.0165
+    },
+    "US2Y": {
+      "base": 3.85,
+      "vol": 0.042
+    },
+    "US10Y": {
+      "base": 4.22,
+      "vol": 0.048
+    },
+    "US30Y": {
+      "base": 4.54,
+      "vol": 0.05
+    },
+    "KR3Y": {
+      "base": 2.94,
+      "vol": 0.03
+    },
+    "KR10Y": {
+      "base": 3.17,
+      "vol": 0.034
+    },
+    "BE10Y": {
+      "base": 2.31,
+      "vol": 0.021
+    },
+    "USDKRW": {
+      "base": 1362.0,
+      "vol": 0.0041
+    },
+    "DXY": {
+      "base": 103.4,
+      "vol": 0.0032
+    },
+    "USDJPY": {
+      "base": 148.2,
+      "vol": 0.0048
+    },
+    "EURUSD": {
+      "base": 1.0863,
+      "vol": 0.0035
+    },
+    "USDCNH": {
+      "base": 7.213,
+      "vol": 0.0026
+    },
+    "WTI": {
+      "base": 78.4,
+      "vol": 0.0172,
+      "floor": 20.0
+    },
+    "BRENT": {
+      "base": 82.1,
+      "vol": 0.0168,
+      "floor": 20.0
+    },
+    "GOLD": {
+      "base": 2412.0,
+      "vol": 0.0094,
+      "floor": 800.0
+    },
+    "COPPER": {
+      "base": 4.28,
+      "vol": 0.0131,
+      "floor": 1.0
+    },
+    "NATGAS": {
+      "base": 2.95,
+      "vol": 0.031,
+      "floor": 0.5
+    },
+    "VIX": {
+      "base": 14.8,
+      "vol": 0.058,
+      "floor": 9.0,
+      "cap": 80.0
+    },
+    "MOVE": {
+      "base": 98.0,
+      "vol": 0.036,
+      "floor": 40.0,
+      "cap": 250.0
+    },
+    "VKOSPI": {
+      "base": 16.2,
+      "vol": 0.05,
+      "floor": 9.0,
+      "cap": 70.0
+    },
+    "US_HY_OAS": {
+      "base": 318.0,
+      "vol": 5.6
+    },
+    "KR_FOREIGN_NET": {
+      "base": 0.0,
+      "vol": 430.0,
+      "mean_reversion": 0.38
+    },
+    "KR_INSTITUTION_NET": {
+      "base": 0.0,
+      "vol": 360.0,
+      "mean_reversion": 0.42
+    },
+    "KR_RETAIL_NET": {
+      "base": 0.0,
+      "vol": 390.0,
+      "mean_reversion": 0.4
+    },
+    "KR_TRADING_VALUE": {
+      "base": 11500.0,
+      "vol": 880.0,
+      "mean_reversion": 0.3,
+      "floor": 3000.0
+    },
+    "KOSPI_ADV_RATIO": {
+      "base": 0.5,
+      "vol": 0.082,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "SPX_ADV_RATIO": {
+      "base": 0.52,
+      "vol": 0.078,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "KOSPI_NHNL": {
+      "base": 4.0,
+      "vol": 26.0,
+      "mean_reversion": 0.35
+    }
+  },
+  "quiet_z": 0.85,
+  "shocks": {
+    "SAMSUNG": -1.6,
+    "HYUNDAI_MOTOR": -1.4,
+    "KAKAO": 1.5,
+    "CELLTRION": -0.8
+  },
+  "news": [
+    {
+      "id": "mock-base-001",
+      "title": "엔비디아, 차세대 AI 가속기 양산 일정 앞당겨… 공급망 증설 주문 확대",
+      "body": "엔비디아가 차세대 AI 가속기의 양산 일정을 기존 계획보다 앞당기기로 하면서 HBM과 파운드리 공급망 전반에 증설 주문이 확대되고 있다. 국내 메모리 업체들의 수주 잔고도 늘어난 것으로 전해졌다.",
+      "publisher": "Mock Newswire",
+      "hours_ago": 2.5
+    },
+    {
+      "id": "mock-base-002",
+      "title": "외국인, 코스피 5거래일 연속 순매수… 반도체 대형주에 집중",
+      "body": "외국인 투자자가 코스피에서 5거래일 연속 순매수를 이어갔다. 매수세는 반도체 대형주에 집중됐으며, 기관은 차익 실현 물량을 내놓았다.",
+      "publisher": "Mock Newswire",
+      "hours_ago": 4.0
+    },
+    {
+      "id": "mock-base-003",
+      "title": "OPEC+ 증산 기조 유지 전망에 유가 약보합",
+      "body": "OPEC+가 기존 증산 기조를 유지할 것이라는 관측이 나오면서 브렌트유와 WTI가 약보합에 머물렀다. 수요 측 지표는 특별한 변화를 보이지 않았다.",
+      "publisher": "Mock Newswire",
+      "hours_ago": 6.5
+    },
+    {
+      "id": "mock-base-004",
+      "title": "연준 위원 \"물가 둔화 흐름 확인\"… 국채 금리 소폭 상승",
+      "body": "연방준비제도 위원이 물가 둔화 흐름이 확인되고 있다고 언급했다. 시장은 이를 중립적으로 해석했고 미 10년물 국채 금리는 소폭 올랐다.",
+      "publisher": "Mock Newswire",
+      "hours_ago": 9.0
+    },
+    {
+      "id": "mock-base-005",
+      "title": "주요 상장사 자사주 매입 공시 잇따라… 밸류업 기대 지속",
+      "body": "주요 상장사들이 자사주 매입 계획을 잇따라 공시하면서 기업가치 제고 기대가 이어지고 있다. 지배구조 개선 논의도 함께 진행되고 있다.",
+      "publisher": "Mock Newswire",
+      "hours_ago": 12.0
+    }
+  ],
+  "volume_shocks": {
+    "SAMSUNG": 1.8
+  },
+  "analyst": {
+    "SAMSUNG": {
+      "eps_revision_1w": 1.5,
+      "eps_revision_1m": 6.0,
+      "eps_revision_3m": 9.0,
+      "tp_change_1m": 4.0,
+      "rating": "BUY",
+      "brokers": 22
+    },
+    "HYUNDAI_MOTOR": {
+      "eps_revision_1m": 5.0,
+      "eps_revision_3m": 7.0,
+      "tp_change_1m": 3.5,
+      "rating": "BUY",
+      "brokers": 16
+    },
+    "KAKAO": {
+      "eps_revision_1m": -7.0,
+      "eps_revision_3m": -12.0,
+      "tp_change_1m": -6.0,
+      "rating": "HOLD",
+      "rating_change": "BUY→HOLD",
+      "brokers": 14
+    },
+    "SKHYNIX": {
+      "eps_revision_1m": 2.5,
+      "eps_revision_3m": 5.0,
+      "tp_change_1m": 3.0,
+      "rating": "BUY",
+      "brokers": 18
+    }
+  }
+}

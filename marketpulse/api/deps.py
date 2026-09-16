@@ -194,3 +194,64 @@ def load_snapshot(settings: Settings, *, force: bool = False) -> IntelligenceSna
     except AdapterError as exc:
         # 어댑터 부재는 설정 문제다. 500 이 아니라 503 으로 알린다.
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+# ── Investment Intelligence (2026-09-16 신설, 전부 추가) ──────────
+#: 종목 계층 캐시 수명. 기존 스냅샷보다 길다 — 계산이 무겁고 일봉이라 하루에
+#: 한 번 바뀐다. MOCK 은 시나리오 전환이 바로 보여야 하므로 짧게.
+INVESTMENT_TTL_SEC: dict[DataMode, float] = {
+    DataMode.MOCK: CACHE_TTL_SEC,
+    DataMode.DELAYED: 900.0,
+    DataMode.LIVE: 900.0,
+}
+
+
+class InvestmentService:
+    """
+    Investment Intelligence 캐시. 기존 SnapshotService 위에 얹힌다 —
+    기존 스냅샷을 먼저 받고(그쪽 캐시를 그대로 탄다) 그 위에 종목 계층을 만든다.
+    """
+
+    def __init__(self, base: SnapshotService, *, store_path: str | None = None) -> None:
+        self._base = base
+        self._store_path = store_path
+        self._cache: dict[str, tuple[object, float]] = {}
+        self._previous: dict[str, object] = {}
+        self._lock = threading.Lock()
+
+    def get(self, settings: Settings, *, force: bool = False):
+        from ..engines.investment import run_investment
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        ttl = INVESTMENT_TTL_SEC.get(settings.data_mode, CACHE_TTL_SEC)
+        now = time.monotonic()
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and not force and (now - hit[1]) < ttl:
+                return hit[0]
+            previous = self._previous.get(key)
+        base = self._base.get(settings, force=force)
+        result = run_investment(settings, base, previous=previous, store_path=self._store_path)  # type: ignore[arg-type]
+        with self._lock:
+            self._cache[key] = (result, time.monotonic())
+            self._previous[key] = result
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+            self._previous.clear()
+
+
+_investment = InvestmentService(_service)
+
+
+def get_investment_service() -> InvestmentService:
+    return _investment
+
+
+def load_investment(settings: Settings, *, force: bool = False):
+    try:
+        return get_investment_service().get(settings, force=force)
+    except AdapterError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc

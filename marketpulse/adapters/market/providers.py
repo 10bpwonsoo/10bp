@@ -112,6 +112,54 @@ class YahooProvider(Provider):
             raw, bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of
         )
 
+    def fetch_with_volume(
+        self, spec: dict, *, bars: int, as_of: datetime
+    ) -> tuple[list[Point], list[tuple[datetime, float]]]:
+        """
+        종가와 거래량을 함께. Investment Intelligence 의 종목 계층이 쓴다.
+
+        기존 fetch() 는 손대지 않는다 — 크로스에셋 파이프라인은 거래량이
+        필요 없고, 같은 응답을 두 번 요청하지 않도록 여기서 한 번에 파싱한다.
+        Returns: (종가 points, 거래량 points). 거래량이 없는 심볼(지수·선물
+        일부)은 두 번째가 비어 있다.
+        """
+        symbol = str(spec["symbol"])
+        start = as_of - timedelta(days=int(bars * CALENDAR_SLACK) + 10)
+        raw = self.client.get(
+            self.BASE + symbol,
+            params={
+                "period1": int(start.timestamp()),
+                "period2": int(as_of.timestamp()),
+                "interval": "1d",
+                "events": "div,split",
+            },
+        )
+        scale = float(spec.get("scale", 1.0))
+        return self.parse(raw, bars=bars, scale=scale, as_of=as_of), self.parse_volume(
+            raw, bars=bars, as_of=as_of
+        )
+
+    @staticmethod
+    def parse_volume(
+        raw: bytes, *, bars: int, as_of: datetime | None = None
+    ) -> list[tuple[datetime, float]]:
+        """거래량 계열. 없으면 빈 목록 — 0 으로 채우지 않는다."""
+        try:
+            doc = json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+        results = ((doc or {}).get("chart") or {}).get("result") or []
+        if not results:
+            return []
+        node = results[0]
+        stamps = node.get("timestamp") or []
+        quote = ((node.get("indicators") or {}).get("quote") or [{}])[0]
+        volumes = quote.get("volume") or []
+        if not stamps or not volumes or len(volumes) != len(stamps):
+            return []
+        pts = [(_utc(t), float(v)) for t, v in zip(stamps, volumes) if v is not None and v > 0]
+        return _clean(pts, bars, as_of)
+
     @staticmethod
     def parse(
         raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None

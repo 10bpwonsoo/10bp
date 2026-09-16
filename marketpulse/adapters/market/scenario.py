@@ -43,12 +43,35 @@ class NewsSpec(Base):
     language: str = "ko"
 
 
+class AnalystSpec(Base):
+    """
+    시나리오에 적는 종목 컨센서스 상태 (Investment Intelligence, 2026-09-16).
+
+    실데이터에서는 공개 API 가 없어 CSV 로만 받는 값이다. MOCK 에서는 이
+    한 줄로 EPS·목표가 리비전과 등급을 준다. % 는 1개월 기준이다.
+    """
+
+    eps_revision_1w: float = 0.0
+    eps_revision_1m: float = 0.0
+    eps_revision_3m: float = 0.0
+    tp_change_1w: float = 0.0
+    tp_change_1m: float = 0.0
+    tp_change_3m: float = 0.0
+    rating: str = "HOLD"
+    rating_change: str | None = None
+    brokers: int = 12
+
+
 class Scenario(Base):
     name: str
     title: str = ""
     description: str = ""
     seed: int = 20260911
     bars: int = 180
+    #: Investment Intelligence — 종목 거래량의 마지막 봉 목표 z (로그 거래량 기준).
+    volume_shocks: dict[str, float] = Field(default_factory=dict)
+    #: Investment Intelligence — 종목별 컨센서스 상태.
+    analyst: dict[str, AnalystSpec] = Field(default_factory=dict)
 
     #: 자산군별 기본 체제. 개별 instrument 가 override 할 수 있다.
     class_defaults: dict[AssetClass, RegimeSpec] = Field(default_factory=dict)
