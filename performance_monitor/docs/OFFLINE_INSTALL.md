@@ -122,6 +122,102 @@ pip install --no-index --find-links=wheelhouse -r requirements.txt
 
 ---
 
+## 2-1. Windows Server + Python 3.10 (현재 대상 환경)
+
+사내 서버가 **Windows Server / Python 3.10 (64bit)** 인 경우의 구체 절차다.
+
+### 반입물
+
+| 파일 | 내용 |
+|---|---|
+| `performance_monitor_code.tar.gz` (또는 `.zip`) | 소스 |
+| `wheelhouse_win_amd64_py310.zip` | 패키지 46개 (94MB) |
+
+wheel 이 `win_amd64` / `cp310` 으로 맞춰져 있어야 한다. 직접 만들려면 **인터넷 되는 PC**에서:
+
+```bash
+python tools/make_wheelhouse.py --platform win_amd64 --python-version 310
+```
+
+### 설치 (Windows 서버에서, cmd)
+
+```bat
+REM 1) 압축 해제 후 프로젝트 폴더로
+cd C:\apps\performance_monitor
+
+REM 2) Python 3.10 확인
+py -3.10 --version
+
+REM 3) 가상환경 생성 (시스템 Python 오염 방지)
+py -3.10 -m venv .venv
+
+REM 4) 인터넷 없이 설치
+.venv\Scripts\pip install --no-index --find-links=wheelhouse -r requirements.txt
+
+REM 5) 확인
+.venv\Scripts\python -m pytest tests\ -q
+.venv\Scripts\python tools\make_demo_snapshot.py --weeks 6 --stocks 30
+
+REM 6) 실행
+run_dashboard.bat
+```
+
+`run_dashboard.bat` 은 `.venv` 가 있으면 자동으로 쓴다.
+
+### 사내 서버로 공개
+
+```bat
+run_dashboard.bat server
+REM → http://<서버주소>/performance
+```
+
+방화벽에서 포트를 열어야 한다 (관리자 권한 cmd).
+
+```bat
+netsh advfirewall firewall add rule name="MP Performance Monitor" ^
+    dir=in action=allow protocol=TCP localport=8501
+```
+
+포트를 바꾸려면 `set PM_PORT=9000` 후 실행.
+
+### 서버 부팅 시 자동 실행
+
+추가 설치 없이 **작업 스케줄러**로 등록하는 방법 (관리자 cmd):
+
+```bat
+schtasks /create /tn "MP Performance Monitor" ^
+    /tr "C:\apps\performance_monitor\run_dashboard.bat server" ^
+    /sc onstart /ru SYSTEM /rl HIGHEST /f
+```
+
+NSSM 등 서비스 래퍼를 쓸 수 있으면 그쪽이 로그·재시작 관리에 더 낫다.
+
+### 주간 스냅샷 자동 생성 (배치)
+
+Linux 의 cron 대신 작업 스케줄러를 쓴다. 매주 금요일 18:10:
+
+```bat
+schtasks /create /tn "MP Snapshot Weekly" ^
+    /tr "C:\apps\performance_monitor\.venv\Scripts\python.exe C:\apps\performance_monitor\tools\build_snapshot.py --auto" ^
+    /sc weekly /d FRI /st 18:10 /ru <계정> /f
+```
+
+이 배치는 사내 DB 와 `jackhammer` / `vrksa` 가 필요하다.
+노트북에서 `pm.export_snapshot(globals())` 로 만드는 방식을 쓰면 배치 등록은 불필요하다.
+
+### Windows 에서 주의할 점
+
+| 항목 | 내용 |
+|---|---|
+| 경로 길이 | 260자 제한에 걸릴 수 있다. `C:\apps\` 처럼 짧은 경로에 두는 편이 안전 |
+| 줄바꿈 | `.bat` 은 CRLF 여야 한다. Git 설정이 `core.autocrlf=true` 면 자동 처리됨 |
+| 한글 깨짐 | cmd 기본 코드페이지(949) 문제. 로그가 깨지면 `chcp 65001` 후 실행 |
+| Tibero ODBC | 스냅샷 생성 시에만 필요. Windows 용 Tibero6 ODBC 드라이버가 설치·등록돼 있어야 `pyodbc` 가 붙는다 |
+| pymssql | `pip install pymssql` 필요 (requirements 에는 없음 — 스냅샷 생성 전용) |
+| PowerShell 실행정책 | `.bat` 은 영향 없음. `.ps1` 로 감쌀 때만 문제 |
+
+---
+
 ## 3. 설치 확인
 
 ```bash
