@@ -257,6 +257,8 @@ pm.current_version()
 | `launch_dashboard` 가 streamlit 을 못 찾는다 | 프로젝트 폴더에 `.venv` 를 만들고 `requirements.txt` 설치. 안내문에 명령이 나온다 |
 | `Network paths are not supported` | 프로그램이 네트워크 드라이브에 있다. 로컬로 옮기고 `PM_DATA_DIR` 로 데이터만 공유 폴더 지정 (`docs/OFFLINE_INSTALL.md`) |
 | 스냅샷이 없다고 나온다 | `pm.export_snapshot(globals())` 를 먼저 실행 |
+| `No module named 'pm_engine'` | `sys.path` 경로가 틀렸다. **상대 경로 금지** — 설치 시 출력된 절대 경로를 쓰거나 `tools/pm_path_cell.py` 를 셀에 붙여넣어 자동으로 찾게 한다 |
+| `Plotly ... not compatible with ... Kaleido` | 무시해도 된다. `fig.write_image()`(정적 이미지 저장)에만 해당하며 `pm.report()` 는 영향 없다 |
 | 서버가 곧바로 죽는다 | 출력에 로그 경로와 마지막 내용이 나온다 |
 | 다른 PC 에서 접속 안 됨 | `host='0.0.0.0'`(기본) + 방화벽 포트 개방 |
 | `pm.update()` 가 GitHub 에 못 닿는다 | 사내망에서 막힌 것이다. 반입한 zip 으로: `pm.update(r'C:\temp\...zip')` |
