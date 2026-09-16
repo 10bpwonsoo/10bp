@@ -18,3 +18,11 @@ __pycache__/
 
 # Streamlit 로컬 설정
 .streamlit/secrets.toml
+
+# 오프라인 설치용 wheel (용량이 크고 플랫폼별로 다르다)
+wheelhouse/
+
+# 업데이트 도구(src/updater.py)가 설치본에 남기는 것
+.pm_version.json
+*.new
+*.bak

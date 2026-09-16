@@ -1,4 +1,4 @@
-"""Notebook 에서 Dashboard 와 **동일한** Analytics Engine 을 쓰기 위한 shim.
+r"""Notebook 에서 Dashboard 와 **동일한** Analytics Engine 을 쓰기 위한 shim.
 
 기존 노트북을 그대로 두면서, 필요한 셀에서만 아래처럼 쓰면 된다::
 
@@ -17,6 +17,11 @@
 
     # 3) 노트북 결과 vs 엔진 결과 대조 (PHASE 10)
     pm.compare(globals())
+
+    # 4) 코드 업데이트 (data/ 는 건드리지 않는다)
+    pm.check_github()                       # 사내망에서 GitHub 가 열리는지 확인
+    pm.update()                             # 열리면 GitHub 에서
+    pm.update(r'C:\temp\performance_monitor_win.zip')   # 막혀 있으면 반입 파일로
 
 이렇게 하면 계산식이 한 곳(`performance_monitor/src/`)에만 존재하게 되어
 앞으로 로직을 고칠 때 Notebook 과 Dashboard 가 갈라지지 않는다.
@@ -58,12 +63,22 @@ from src.launcher import (  # noqa: E402,F401
     stop_dashboard,
 )
 
+from src.updater import (  # noqa: E402,F401
+    check_github,
+    current_version,
+    update,
+    update_from_file,
+    update_from_github,
+)
+
 __all__ = [
     "attribution", "benchmark", "config", "dashboard_engine", "data_loader",
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
     "launch_dashboard", "stop_dashboard", "dashboard_status",
     "report", "snapshots",
+    "check_github", "update", "update_from_github", "update_from_file",
+    "current_version",
 ]
 
 run_attribution = pipeline.run_attribution

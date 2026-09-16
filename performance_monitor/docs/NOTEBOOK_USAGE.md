@@ -167,6 +167,88 @@ active (전 모델)         ...         ...         0.00e+00     OK
 
 ---
 
+## 코드 업데이트 — `pm.update()`
+
+새 버전을 받는 경로다. **git 은 필요 없다** (zip 을 받아 덮어쓴다).
+
+### 먼저 확인 — 이 서버에서 GitHub 가 열리나?
+
+데스크톱에서 막혀 있어도 노트북 서버는 다른 경로로 나갈 수 있으므로
+한 번 확인해 볼 가치가 있다.
+
+```python
+pm.check_github()
+```
+
+```
+✓ GitHub 연결 가능 (HTTP 200)
+  프록시: http://proxy.내부주소:8080
+  → pm.update() 로 바로 받을 수 있습니다.
+```
+
+막혀 있으면 이렇게 나온다.
+
+```
+✗ GitHub 에 닿지 않습니다 (URLError: [Errno 101] Network is unreachable)
+  프록시 환경변수가 없습니다. 사내 프록시가 있다면:
+      import os
+      os.environ['HTTPS_PROXY'] = 'http://프록시주소:포트'
+      pm.check_github()
+  → 반입한 파일로 업데이트하십시오:
+      pm.update(r'C:\temp\performance_monitor_win.zip')
+```
+
+사내 프록시 주소를 알고 있다면 위 두 줄을 실행한 뒤 다시 확인해 보십시오.
+그래도 안 되면 망 자체가 막힌 것이라 **코드로 뚫을 수 없다.** 아래 파일 경로를 쓴다.
+
+### GitHub 가 열릴 때
+
+```python
+pm.update(dry_run=True)   # 무엇이 바뀌는지만 먼저 본다
+pm.update()               # 실제 적용
+```
+
+저장소가 비공개라 `HTTP 404` 가 나오면 개인 액세스 토큰이 필요하다.
+
+```python
+pm.update_from_github(token='ghp_...')
+```
+
+### GitHub 가 막혀 있을 때 (사내망 기본)
+
+인터넷 되는 PC 에서 zip 을 내려받아 반입한 뒤:
+
+```python
+pm.update(r'C:\temp\performance_monitor_win.zip')   # .zip / .tar.gz / 폴더
+```
+
+### 무엇이 바뀌고 무엇이 그대로인가
+
+| 대상 | 처리 |
+|---|---|
+| `src/` `tools/` `app.py` `pages/` `notebooks/` `docs/` | 덮어쓴다 |
+| `data/` (주간 스냅샷) | **건드리지 않는다** |
+| `logs/` `.venv/` `wheelhouse/` | **건드리지 않는다** |
+| `config/` | **덮어쓰지 않는다.** 새 버전이 다르면 옆에 `.yaml.new` 로 두고 알려 준다 |
+
+`config/` 에는 DB 주소·모델 목록 같은 사내 설정이 들어 있어 자동으로 바꾸지 않는다.
+`config.yaml.new` 가 생기면 직접 비교해서 필요한 줄만 옮기십시오.
+
+지운 파일을 따라 지우지는 않는다(덧씌우기만 한다). 완전히 깨끗하게 새로 깔려면
+새 폴더에 압축을 풀고 `data/` 만 옮기면 된다.
+
+### 적용 후
+
+```python
+pm.current_version()
+# {'source': 'file:performance_monitor_win.zip', 'installed_at': '2026-09-16T16:40:02'}
+```
+
+> ⚠ **커널을 재시작해야** 바뀐 코드가 반영된다. 이미 import 된 모듈은 그대로이기 때문이다.
+> 재시작 후 `import pm_engine as pm` 부터 다시 실행하십시오.
+
+---
+
 ## 막히는 지점
 
 | 증상 | 조치 |
@@ -177,3 +259,6 @@ active (전 모델)         ...         ...         0.00e+00     OK
 | 스냅샷이 없다고 나온다 | `pm.export_snapshot(globals())` 를 먼저 실행 |
 | 서버가 곧바로 죽는다 | 출력에 로그 경로와 마지막 내용이 나온다 |
 | 다른 PC 에서 접속 안 됨 | `host='0.0.0.0'`(기본) + 방화벽 포트 개방 |
+| `pm.update()` 가 GitHub 에 못 닿는다 | 사내망에서 막힌 것이다. 반입한 zip 으로: `pm.update(r'C:\temp\...zip')` |
+| 업데이트했는데 그대로다 | 커널 재시작 후 `import pm_engine as pm` 부터 다시 실행 |
+| `config.yaml.new` 가 생겼다 | 설정이 새 버전과 다르다. 직접 비교해서 필요한 줄만 옮긴다 (기존 설정은 그대로 유지됨) |

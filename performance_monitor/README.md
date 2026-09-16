@@ -130,6 +130,15 @@ pm.launch_dashboard()   # 서버를 띄운다 → http://<이 서버>:8501
 pm.report()             # 노트북 셀 안에 요약 화면을 그린다 (포트 못 열 때)
 ```
 
+새 버전의 코드를 받는 것도 노트북에서 한다. `git` 은 필요 없고, `data/`·`config/` 는
+건드리지 않는다 (자세히: [`docs/NOTEBOOK_USAGE.md`](docs/NOTEBOOK_USAGE.md)).
+
+```python
+pm.check_github()                                   # 사내망에서 GitHub 가 열리는지 확인
+pm.update()                                         # 열리면 GitHub 에서
+pm.update(r'C:\temp\performance_monitor_win.zip')   # 막혀 있으면 반입한 파일로
+```
+
 Dashboard 를 새로고침하면 사이드바 **데이터 기준일** 에 새 스냅샷이 자동으로 뜬다.
 파일명을 코드에 하드코딩하지 않으며, 최신 스냅샷은 `manifest.json` 의 `as_of` 로 판단한다.
 
