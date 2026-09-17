@@ -20,6 +20,7 @@
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -29,7 +30,7 @@ from .colors import sign_colors
 from .config import load_config
 from .utils import fmt_pct
 
-__all__ = ["export_html"]
+__all__ = ["export_html", "publish", "jupyter_root"]
 
 CSS = """
 :root { --pos:%(pos)s; --neg:%(neg)s; --ink:#0f172a; --muted:#64748b;
@@ -208,3 +209,81 @@ def export_html(as_of: str | None = None, model: str | None = None,
         print("  인터넷 없이 열립니다 (plotly.js 포함).")
         print("  메일 용량이 문제면 pm.export_html(slim=True) 로 줄일 수 있습니다.")
     return out
+
+
+# ---------------------------------------------------------------------------
+# Jupyter 가 서빙하는 위치에 올려서 브라우저로 보기
+# ---------------------------------------------------------------------------
+def jupyter_root() -> Path:
+    """Jupyter 서버가 파일을 서빙하는 최상위 폴더."""
+    import json
+    import subprocess
+    import sys
+
+    try:
+        out = subprocess.run([sys.executable, "-m", "jupyter", "server", "list",
+                              "--json"], capture_output=True, text=True, timeout=30)
+        for line in out.stdout.splitlines():
+            info = json.loads(line)
+            if info.get("root_dir"):
+                return Path(info["root_dir"])
+    except Exception:  # noqa: BLE001 - 환경마다 다르게 실패한다
+        pass
+    return Path.home()
+
+
+def publish(subdir: str = "performance_reports", **kwargs) -> str:
+    """리포트를 만들어 **Jupyter 주소로 열 수 있는 곳**에 둔다.
+
+        pm.publish()                  # 주간
+        pm.publish(preset='MTD')      # 월간
+
+    새 포트를 열거나 jupyter-server-proxy 를 설치할 필요가 없다. 지금 쓰고 있는
+    Jupyter 포트가 그대로 쓰인다. 사내에서는 물론, VPN 으로 붙은 휴대폰에서도
+    같은 주소로 열린다.
+
+    돌려주는 것은 ``/user/<사번>/files/...`` 경로다. 브라우저 주소창의
+    ``/lab...`` 부분을 이 경로로 바꾸면 된다.
+    """
+    root = jupyter_root()
+    target_dir = root / subdir
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    path = export_html(out=None, **kwargs)
+    final = target_dir / path.name
+    if final != path:
+        final.write_bytes(path.read_bytes())
+    try:
+        os.chmod(final, 0o600)   # 같은 서버의 다른 사용자가 읽지 못하게
+    except OSError:
+        pass
+
+    prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/")
+    if not prefix.endswith("/"):
+        prefix += "/"
+    try:
+        relative = final.relative_to(root).as_posix()
+    except ValueError:
+        relative = final.name
+    url_path = "%sfiles/%s" % (prefix, relative)
+
+    print()
+    print("Jupyter 주소로 열 수 있습니다:")
+    print("   " + url_path)
+    print("   (주소창의 '/lab...' 부분을 위 경로로 바꾸십시오)")
+    print("   새 포트를 열지 않았습니다. VPN 으로 붙은 휴대폰에서도 같은 주소로 열립니다.")
+
+    try:
+        from IPython.display import HTML, display
+
+        display(HTML(
+            '<a href="%s" target="_blank" rel="noopener" '
+            'style="display:inline-block;margin:.4rem 0;padding:.45rem .9rem;'
+            'background:#d32020;color:#fff;border-radius:4px;font-weight:600;'
+            'text-decoration:none;font-family:system-ui,sans-serif">'
+            '리포트 열기 (새 탭)</a>'
+            '<div style="color:#64748b;font-size:.8rem;'
+            'font-family:system-ui,sans-serif">%s</div>' % (url_path, url_path)))
+    except ImportError:
+        pass
+    return url_path

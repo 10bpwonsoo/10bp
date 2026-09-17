@@ -77,7 +77,7 @@ __all__ = [
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
     "launch_dashboard", "stop_dashboard", "dashboard_status", "jupyter_proxy",
-    "report", "snapshots", "check_namespace", "demo_snapshot", "export_html",
+    "report", "snapshots", "check_namespace", "demo_snapshot", "export_html", "publish",
     "check_github", "update", "update_from_github", "update_from_file",
     "current_version",
 ]
@@ -130,6 +130,20 @@ def export_html(*args, **kwargs):
     from src.report_html import export_html as _export_html
 
     return _export_html(*args, **kwargs)
+
+
+def publish(*args, **kwargs):
+    """리포트를 Jupyter 주소로 열 수 있는 곳에 올린다.
+
+        pm.publish()                 # 주간
+        pm.publish(preset='MTD')     # 월간
+
+    새 포트도, jupyter-server-proxy 도 필요 없다. 지금 쓰는 Jupyter 포트를
+    그대로 쓰므로 사내에서 바로 열리고, VPN 붙은 휴대폰에서도 같은 주소로 열린다.
+    """
+    from src.report_html import publish as _publish
+
+    return _publish(*args, **kwargs)
 
 
 def jupyter_proxy(port: int = 8501):
