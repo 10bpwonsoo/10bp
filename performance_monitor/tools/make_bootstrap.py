@@ -39,6 +39,8 @@ MINIMAL = [
     "tools/compare_with_notebook.py",
     "tools/make_demo_snapshot.py",
     "tools/preflight.py",
+    "tools/diagnose_proxy.py",
+    "tools/fix_proxy_install.py",
     "requirements.txt",
 ]
 # 같은 서버에서 Streamlit 대시보드까지 띄우려면 이것도 필요하다

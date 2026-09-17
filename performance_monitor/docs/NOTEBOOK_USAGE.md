@@ -264,6 +264,7 @@ pm.current_version()
 | 서버가 곧바로 죽는다 | 출력에 로그 경로와 마지막 내용이 나온다 |
 | 다른 PC 에서 접속 안 됨 | `host='0.0.0.0'`(기본) + 방화벽 포트 개방 |
 | 8501 포트가 막혀 있다 | `pm.jupyter_proxy()` 로 확인. jupyter-server-proxy 가 있으면 `pm.launch_dashboard()` 가 Jupyter 포트로 띄운다. 없으면 `pm.report()` |
+| 프록시 주소가 **404**, `extension list` 에 `jupyter_server_proxy` 없음 | 커널과 Jupyter 서버가 다른 환경이다(TLJH). `%run tools/fix_proxy_install.py` 로 서버 파이썬에 설치한다 |
 | 프록시 주소가 **404** | 설치만 하고 **Jupyter 서버를 재시작하지 않았거나**(커널 재시작으로는 안 된다: File → Hub Control Panel → Stop/Start My Server), 구버전 코드다. `!jupyter server extension list` 에 `jupyter_server_proxy` 가 enabled 로 보여야 한다 |
 | `streamlit 을 실행할 파이썬을 찾지 못했습니다` | 프로젝트 폴더에 `.venv` 를 만들거나, 설치가 불가하면 `pm.report()` 를 쓴다 |
 | `pm.update()` 가 GitHub 에 못 닿는다 | 사내망에서 막힌 것이다. 반입한 zip 으로: `pm.update(r'C:\temp\...zip')` |
