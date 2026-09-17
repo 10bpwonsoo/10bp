@@ -1,0 +1,71 @@
+# 기업행위(CA) 수기 반영 내역
+#
+# 출처: Function_calculation_return_contribution_ver2.ipynb CELL 30~36
+# 노트북에서는 매 건마다 셀을 복사해 수기로 수정했다. 값은 원본 그대로이며,
+# `enabled: false` 는 원본에서 raw 셀(미실행) 상태였음을 뜻한다.
+#
+# 처리 로직은 src/corporate_actions.py 가 노트북 셀과 동일한 순서로 수행한다.
+
+# 1. 인적분할 (spin-off)
+#    거래정지 마지막날 total weight 를 분할비율로 나누고,
+#    평가가격 대비 상장일 종가로 수익률을 보정한다.
+spin_offs:
+  - name: "한화 인적분할 (한화머시너리앤서비스홀딩스)"
+    enabled: false            # 원본 CELL 30 = raw
+    last_susp_date: "2026-08-24"
+    new_list_date: "2026-08-25"
+    old_code: "A000880"
+    new_code: "A0220W0"
+    old_susp_price: 83800
+    new_susp_price: 17040
+    old_close_price: 118100
+    new_close_price: 10010
+    ratio_old: 0.7563533
+    ratio_new: 0.2436467
+
+  - name: "삼성바이오로직스 인적분할 (삼성에피스홀딩스)"
+    enabled: true             # 원본 CELL 31 = code (실행됨)
+    last_susp_date: "2025-11-21"
+    new_list_date: "2025-11-24"
+    old_code: "A207940"
+    new_code: "A0126Z0"
+    old_susp_price: 1221000
+    new_susp_price: 1221000
+    old_close_price: 1789000
+    new_close_price: 438500
+    ratio_old: 0.6503913
+    ratio_new: 0.3496087
+
+  - name: "한화에어로스페이스 인적분할 (한화인더스트리얼솔루션즈)"
+    enabled: false            # 원본 CELL 34 = raw
+    last_susp_date: "2024-09-26"
+    new_list_date: "2024-09-27"
+    old_code: "A012450"
+    new_code: "A489790"
+    old_susp_price: 290000
+    new_susp_price: 29000
+    old_close_price: 317000
+    new_close_price: 35400
+    ratio_old: 0.9002797
+    ratio_new: 0.0997203
+
+# 2. 편출 (deletion) — 해당일 모델 weight 를 0 으로 설정
+deletions:
+  - name: "금양 편출"
+    enabled: false            # 원본 CELL 36 = raw
+    date: "2025-03-10"
+    item: "A001570"
+  - name: "동국제강(동국홀딩스) 편출"
+    enabled: false            # 원본 CELL 38 = 전체 주석
+    date: "2023-06-21"
+    item: "A001230"
+
+# 3. active weight 수기 조정
+#    출처: CELL 45 (raw). BM 편입 전날 포지션 인식 오류 보정.
+active_weight_overrides:
+  - name: "삼성바이오로직스 2025-11-21 _next active weight 보정"
+    enabled: false            # 원본 CELL 45 = raw
+    date: "2025-11-21"
+    item: "A207940"
+    # rule: <col>_next = <col> + bm   (모든 모델 컬럼에 적용)
+    rule: "add_bm_to_next"

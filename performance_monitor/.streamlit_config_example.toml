@@ -1,0 +1,23 @@
+# 사내 서버 배포용 예시. ~/.streamlit/config.toml 또는 performance_monitor/.streamlit/config.toml 로 복사.
+[browser]
+gatherUsageStats = false      # 외부 telemetry 차단 (필수)
+
+[server]
+headless = true
+port = 8501
+address = "0.0.0.0"
+baseUrlPath = "performance"   # http://internal-server/performance
+enableCORS = true
+enableXsrfProtection = true
+maxUploadSize = 50
+
+[theme]
+base = "light"
+primaryColor = "#2563eb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#0f172a"
+font = "sans serif"
+
+[runner]
+fastReruns = true
