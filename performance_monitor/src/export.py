@@ -13,7 +13,8 @@ import pandas as pd
 from . import dashboard_engine as de
 from . import model_analysis, performance, portfolio, validation
 
-__all__ = ["build_weekly_workbook", "build_sheets", "excel_safe"]
+__all__ = ["build_weekly_workbook", "build_sheets", "excel_safe",
+           "display_safe"]
 
 
 def _strip_tz(index):
@@ -43,6 +44,25 @@ def excel_safe(frame: pd.DataFrame) -> pd.DataFrame:
         values = out[column]
         if isinstance(values.dtype, pd.DatetimeTZDtype):
             out[column] = values.map(lambda v: str(v)[:10])
+    return out
+
+
+def display_safe(frame: pd.DataFrame) -> pd.DataFrame:
+    """st.dataframe 표시용으로 혼합 dtype 컬럼을 문자열로 바꾼다.
+
+    Summary 시트의 '값' 은 문자열("KOSPI200")과 숫자(0.0123)가 섞여 있다.
+    엑셀에서는 숫자 서식이 필요하므로 그대로 두어야 하지만, Arrow 는 object
+    컬럼의 혼합 타입을 변환하지 못해 화면에 오류 로그를 남긴다. **표시할 때만**
+    문자열로 맞춘다. 파일로 내보내는 내용은 건드리지 않는다.
+    """
+    out = frame.copy()
+    for column in out.columns:
+        values = out[column]
+        if values.dtype != object:
+            continue
+        kinds = {type(v) for v in values if v is not None and v == v}
+        if len(kinds) > 1:
+            out[column] = values.map(lambda v: "" if v is None or v != v else str(v))
     return out
 
 

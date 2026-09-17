@@ -60,7 +60,8 @@ sheets = export.build_sheets(bundle, period, model, ctx["config"],
                              ctx["display_names"], ctx["anchors"])
 picked = st.selectbox("표 선택", list(sheets.keys()), key="exp_sheet")
 frame = sheets[picked]
-st.dataframe(frame, use_container_width=True, height=440)
+# 표시용으로만 혼합 dtype 을 맞춘다. 내려받는 파일 내용은 그대로다.
+st.dataframe(export.display_safe(frame), use_container_width=True, height=440)
 ui.download_buttons(frame, picked.lower(), "exp_single")
 
 st.markdown("---")

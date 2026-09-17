@@ -77,7 +77,7 @@ __all__ = [
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
     "launch_dashboard", "stop_dashboard", "dashboard_status", "jupyter_proxy",
-    "report", "snapshots", "check_namespace", "demo_snapshot", "export_html", "publish",
+    "report", "snapshots", "check_namespace", "demo_snapshot", "export_html", "publish", "export_bundle",
     "check_github", "update", "update_from_github", "update_from_file",
     "current_version",
 ]
@@ -130,6 +130,20 @@ def export_html(*args, **kwargs):
     from src.report_html import export_html as _export_html
 
     return _export_html(*args, **kwargs)
+
+
+def export_bundle(*args, **kwargs):
+    """사외 호스팅용 스냅샷 번들(zip)을 만든다.
+
+        pm.export_bundle()                    # 전체
+        pm.export_bundle(level='anonymous')   # 종목 식별자 가림
+
+    대시보드는 DB 가 아니라 스냅샷만 읽으므로, 이 zip 을 옮기면 그쪽에서
+    같은 대시보드가 필터까지 그대로 동작한다.
+    """
+    from src.external_bundle import export_bundle as _export_bundle
+
+    return _export_bundle(*args, **kwargs)
 
 
 def publish(*args, **kwargs):

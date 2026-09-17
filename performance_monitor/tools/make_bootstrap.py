@@ -44,7 +44,8 @@ MINIMAL = [
     "requirements.txt",
 ]
 # 같은 서버에서 Streamlit 대시보드까지 띄우려면 이것도 필요하다
-DASHBOARD = ["app.py", "pages/*.py", ".streamlit_config_example.toml"]
+DASHBOARD = ["app.py", "pages/*.py", ".streamlit_config_example.toml",
+             "run_external.sh"]
 
 
 def collect(minimal: bool) -> list[Path]:
