@@ -137,9 +137,9 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
                    None 이면 jupyter-server-proxy 설치 여부로 자동 판단.
 
     포트가 막힌 사내망에서는 ``jupyter_proxy`` 경로가 유일한 현실적 방법이다.
-    새 포트를 여는 대신 **이미 열려 있는 Jupyter 포트**로 들어간다. 이 경우
-    Streamlit 이 정적 파일과 websocket 주소를 접두어에 맞춰 내보내도록
-    ``--server.baseUrlPath`` 를 넘겨야 하며, 서버는 127.0.0.1 에만 묶는다.
+    새 포트를 여는 대신 **이미 열려 있는 Jupyter 포트**로 들어간다. 프록시가
+    접두어를 떼고 넘기므로 Streamlit 은 루트에서 서비스하고(baseUrlPath 를 주지
+    않는다), 서버는 127.0.0.1 에만 묶는다.
     """
     global _PROCESS, _URL
 
@@ -178,10 +178,13 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
                "--server.headless", "true",
                "--browser.gatherUsageStats", "false"]
     if jupyter_proxy:
-        # 접두어를 알려 주지 않으면 정적 파일과 websocket 을 '/' 에서 찾다가
-        # 빈 화면이 된다. CORS/XSRF 는 프록시를 거치므로 끈다.
-        command += ["--server.baseUrlPath", proxy["base_url_path"],
-                    "--server.enableCORS", "false",
+        # baseUrlPath 를 주면 안 된다. jupyter-server-proxy 는 '<접두어>proxy/<포트>'
+        # 를 **떼고** 백엔드로 넘기므로, streamlit 은 루트에서 서비스해야 한다.
+        # (접두어를 주면 프록시가 넘긴 '/' 요청에 대해 streamlit 이 404 를 낸다 —
+        #  실제 jupyter-server-proxy 4.5 로 확인했다.)
+        # 정적 파일이 상대경로(./static/...)라 접두어 아래에서도 그대로 풀린다.
+        # CORS/XSRF 는 프록시를 거치므로 끈다.
+        command += ["--server.enableCORS", "false",
                     "--server.enableXsrfProtection", "false"]
 
     log_path = config.log_dir / "dashboard_server.log"
@@ -206,10 +209,9 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     print(f"Dashboard 실행 중  (python: {description})")
     if jupyter_proxy:
         _URL = proxy["path"]
-        print("  접속 주소        : 지금 보고 계신 Jupyter 주소에서 "
-              f"'/lab...' 부분을 아래로 바꾸십시오")
-        print(f"                     {proxy['path']}")
-        print("                     (새 포트를 열지 않고 Jupyter 포트로 들어갑니다)")
+        print(f"  접속 주소        : {proxy['path']}")
+        print("                     (새 포트를 열지 않고 Jupyter 포트로 들어갑니다.")
+        print("                      주소창의 '/user/…/' 뒷부분을 위 경로로 바꾸면 됩니다)")
     else:
         print(f"  이 서버에서      : http://localhost:{port}")
         if host == "0.0.0.0":
@@ -225,7 +227,30 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     if not jupyter_proxy:
         print("  포트가 막혀 있으면: jupyter-server-proxy 설치 후 재시도하거나 "
               "pm.report() 를 쓰십시오.")
+    else:
+        _display_link(proxy["path"])
     return _URL
+
+
+def _display_link(path: str) -> None:
+    """노트북 출력에 클릭할 수 있는 링크를 띄운다.
+
+    `path` 는 '/' 로 시작하는 절대경로라 브라우저가 현재 호스트에 붙여서
+    해석한다. 주소를 손으로 고쳐 치지 않아도 된다. (JupyterLab 은 출력 안의
+    <script> 를 실행하지 않으므로 자바스크립트는 쓰지 않는다.)
+    """
+    try:
+        from IPython.display import HTML, display
+    except ImportError:  # 노트북 밖에서 호출된 경우
+        return
+    display(HTML(
+        f'<a href="{path}" target="_blank" rel="noopener" '
+        'style="display:inline-block;margin:.4rem 0;padding:.45rem .9rem;'
+        'background:#d32020;color:#fff;border-radius:4px;font-weight:600;'
+        'text-decoration:none;font-family:system-ui,sans-serif">'
+        'Dashboard 열기 ↗</a>'
+        f'<div style="color:#64748b;font-size:.8rem;font-family:system-ui,sans-serif">'
+        f'{path}</div>'))
 
 
 def stop_dashboard() -> None:
