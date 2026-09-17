@@ -25,6 +25,7 @@ __all__ = ["launch_dashboard", "stop_dashboard", "dashboard_status", "find_pytho
 ROOT = Path(__file__).resolve().parent.parent
 _PROCESS: subprocess.Popen | None = None
 _URL: str | None = None
+_PORT: int | None = None
 
 
 def find_python() -> tuple[Path, str]:
@@ -141,7 +142,7 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     접두어를 떼고 넘기므로 Streamlit 은 루트에서 서비스하고(baseUrlPath 를 주지
     않는다), 서버는 127.0.0.1 에만 묶는다.
     """
-    global _PROCESS, _URL
+    global _PROCESS, _URL, _PORT
 
     if _PROCESS is not None and _PROCESS.poll() is None:
         print(f"이미 실행 중입니다: {_URL}\n중지하려면 pm.stop_dashboard()")
@@ -192,6 +193,7 @@ def launch_dashboard(port: int = 8501, host: str = "0.0.0.0",
     handle = open(log_path, "ab")
     _PROCESS = subprocess.Popen(command, cwd=str(ROOT), env=env,
                                 stdout=handle, stderr=subprocess.STDOUT)
+    _PORT = port
 
     deadline = time.time() + wait
     while time.time() < deadline:
@@ -255,11 +257,11 @@ def _display_link(path: str) -> None:
 
 def stop_dashboard() -> None:
     """실행 중인 Dashboard 서버를 종료한다."""
-    global _PROCESS, _URL
+    global _PROCESS, _URL, _PORT
 
     if _PROCESS is None or _PROCESS.poll() is not None:
         print("실행 중인 서버가 없습니다.")
-        _PROCESS, _URL = None, None
+        _PROCESS, _URL, _PORT = None, None, None
         return
     _PROCESS.terminate()
     try:
@@ -267,11 +269,12 @@ def stop_dashboard() -> None:
     except subprocess.TimeoutExpired:
         _PROCESS.kill()
     print("Dashboard 를 종료했습니다.")
-    _PROCESS, _URL = None, None
+    _PROCESS, _URL, _PORT = None, None, None
 
 
 def dashboard_status() -> dict:
     """현재 상태."""
     running = _PROCESS is not None and _PROCESS.poll() is None
     return {"running": running, "url": _URL if running else None,
+            "port": _PORT if running else None,
             "pid": _PROCESS.pid if running else None}
