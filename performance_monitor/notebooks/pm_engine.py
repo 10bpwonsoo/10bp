@@ -77,7 +77,7 @@ __all__ = [
     "model_analysis", "performance", "pipeline", "portfolio", "utils", "validation",
     "export_snapshot", "compare", "run_attribution", "load_config",
     "launch_dashboard", "stop_dashboard", "dashboard_status", "jupyter_proxy",
-    "report", "snapshots", "check_namespace", "demo_snapshot",
+    "report", "snapshots", "check_namespace", "demo_snapshot", "export_html",
     "check_github", "update", "update_from_github", "update_from_file",
     "current_version",
 ]
@@ -115,6 +115,21 @@ def export_snapshot(namespace: dict, **kwargs):
     from tools.export_snapshot_from_notebook import export
 
     return export(namespace, **kwargs)
+
+
+def export_html(*args, **kwargs):
+    """리포트를 HTML 파일 하나로 내보낸다 (휴대폰·사외 열람용).
+
+        pm.export_html()                # 주간
+        pm.export_html(preset='MTD')    # 월간
+        pm.export_html(slim=True)       # 파일 작게 (볼 때 인터넷 필요)
+
+    서버를 노출하지 않고 **파일 하나**로 만들어 승인된 사내 채널로 보낸다.
+    내부용·대외비 표시가 들어간다. 계산은 Dashboard 와 같은 엔진을 쓴다.
+    """
+    from src.report_html import export_html as _export_html
+
+    return _export_html(*args, **kwargs)
 
 
 def jupyter_proxy(port: int = 8501):
