@@ -63,13 +63,13 @@ def build_alt_points(
         # 직전 실행이 롤오버를 의심했고 그 뒤 새 봉이 왔으면, 되돌렸는지 이어졌는지 말한다
         followup = None
         pv = prev.get(a.id)
-        if pv is not None and pv.rollover_suspect and pv.z is not None and pv.as_of is not None and s.as_of > pv.as_of and f.z_1d is not None:
+        if pv is not None and pv.rollover_suspect and pv.z is not None and pv.as_of is not None and s.as_of.date() > pv.as_of.date() and f.z_1d is not None:
             if (f.z_1d * pv.z) < 0 and abs(f.z_1d) >= revert_ratio * abs(pv.z):
                 followup = "reverted"
-                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에서 되돌려졌다 — 롤오버였을 가능성이 높다."
+                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에서 되돌려졌다 — 일회성 급변(오류·일시 충격)이었다. 롤오버 단차라면 되돌리지 않는다."
             else:
                 followup = "persisted"
-                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에도 이어진다 — 실제 충격 쪽이다."
+                note = (note + " " if note else "") + f"전일 급변({pv.z:+.1f}σ)이 다음 봉에서 되돌려지지 않았다 — 일회성 오류는 아니다. 실제 수요 충격과 월물 교체(롤오버) 단차 둘 다 이렇게 남으므로 어느 쪽인지는 이 데이터만으로 가리지 못한다."
         if a.proxy_for:
             note = (note + " " if note else "") + f"대리 지표: {a.proxy_for}."
         out.append(AltDataPoint(

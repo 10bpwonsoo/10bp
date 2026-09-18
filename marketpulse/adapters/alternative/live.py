@@ -56,6 +56,10 @@ class AltLiveAdapter:
         #: SqliteSnapshotRepository (선택). 없으면 매번 네트워크다.
         self.store = store
         self.outcomes: dict[str, FetchOutcome] = {}
+        #: 이번 수집에서 저장소의 기존 봉 값이 바뀐 계열: id → (바뀐 봉 수, 최대 변화 %). 선물 연속
+        #: 계열은 월물 교체·확정 전 값 때문에 어제 봉이 오늘 다르게 온다. 숨기지 않고 경고로 올린다.
+        self.revisions: dict[str, tuple[int, float]] = {}
+        self.revision_min_pct = 0.5
         #: 네트워크 호출 사이의 예의 지연(초). Yahoo 는 100여 심볼을 연달아 치면
         #: 429 를 돌려준다. 저장소에서 읽을 때는 기다리지 않는다.
         self.politeness_sec = 0.25
@@ -95,6 +99,10 @@ class AltLiveAdapter:
         vol_by_date = {t.date().isoformat(): v for t, v in vols}
         rows = [(t.date().isoformat(), v, vol_by_date.get(t.date().isoformat())) for t, v in pts]
         try:
+            existing = {d: v for d, v, _, _ in self.store.load_daily(iid, limit=len(rows) + 5)}
+            changed = [abs(v / existing[d] - 1.0) * 100.0 for d, v, _ in rows if d in existing and existing[d] and abs(v / existing[d] - 1.0) * 100.0 >= self.revision_min_pct]
+            if changed:
+                self.revisions[iid] = (len(changed), max(changed))
             self.store.upsert_daily(iid, rows, source, fetched_date=fetched_date)
         except Exception:  # 저장 실패가 화면을 막으면 안 된다
             logger.exception("%s 일별 저장 실패", iid)

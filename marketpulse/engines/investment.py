@@ -433,6 +433,8 @@ def run_investment(
             warnings.append(f"{o.instrument_id}: {o.reason}".replace(str(settings.replay_dir), "data/replay"))
         if len(failed) > 6:
             warnings.append(f"… 외 {len(failed) - 6}개 계열도 실패")
+        for iid, (n, pct) in sorted(getattr(adapter, "revisions", {}).items(), key=lambda kv: -kv[1][1])[:8]:
+            warnings.append(f"{iid}: 저장된 봉 {n}개의 값이 이번 수집에서 바뀜 (최대 {pct:.1f}%) — 확정 전 값이었거나 월물 교체. 전 화면의 급변은 이 수정을 반영하지 않았다")
     timings["fetch"] = (time.perf_counter() - t) * 1000.0
 
     # 수기 해설은 실데이터에 대한 것이다. MOCK 시나리오에 실제 날짜의 해설을 붙이면 거짓이 된다.

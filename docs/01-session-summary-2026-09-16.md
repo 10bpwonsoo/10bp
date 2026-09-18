@@ -1,8 +1,8 @@
 # Market Pulse AI — 세션 작업 정리 (2026-09-16)
 
 브랜치 `claude/market-pulse-ai-design-r7pmsm`, 커밋 34개 (전부 푸시됨), 백엔드 테스트 618건 + 프런트 렌더 테스트 23건 통과.
-배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 16),
-화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 10).
+배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 17, 2026-09-17 종가),
+화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 11).
 
 > 2026-09-16 후반에 **Investment Intelligence** 층이 기존 대시보드 아래에 추가됐다 — 5절.
 
@@ -184,8 +184,15 @@
 
 ### 후속 조치 (같은 날)
 - NEW_EVENT 배지: 테마 태그만으로는 켜지지 않고 종목을 직접 지목한(entity·affected_assets·제목/요약의 종목명·alias) 기사만 센다 — 전에는 20줄 전부에 붙어 정보가 없었다.
-- 롤오버 의심의 다음 봉 판정: 직전 실행의 의심 계열이 새 봉에서 되돌리면 `reverted`, 이어지면 `persisted` 를 note 에 적는다.
+- 롤오버 의심의 다음 봉 판정: 직전 실행의 의심 계열이 새 봉에서 되돌리면 `reverted`(일회성), 이어지면 `persisted`(실제 충격인지 롤오버 단차인지는 가리지 못한다고 적는다) 를 note 에 남긴다.
 - 프런트 렌더 테스트 도입 (`npm test`).
+
+### 2026-09-18 갱신 (4차 수기 캡처, `data/captures/2026-09-18-manual/`)
+- 시장 봉은 9/17 종가까지(9/18 장중 봉 제외), 기준 시각은 수집 시각 9/18 01:13 UTC. 시장 35/50, RSS 80건 + 해외검색 10건 중 43건 수기 태깅.
+- 판정 Risk-On 88%(VIX −2.2σ, S&P +1.6σ, 나스닥 +1.4σ), 온도계 +42(가격 +59 / 뉴스 +16), 괴리 6건(상관 레짐 2 + 뉴스↔가격 4), 알림 10건.
+- Investment Intelligence: 종목 36/36, 대체 31/41. 드라이버 6(DXY·VIX·USD/KRW·US10Y·SPX·MOVE), Impact 는 USD/KRW 경유 5건. 9/16 롤오버 의심(휘발유·난방유)은 이번 수집에서 같은 봉이 +0.6%/−0.3% 로 **수정**돼 왔다(확정 전 값) — 저장 봉 수정 감지(`AltLiveAdapter.revisions`)를 추가해 Data Health 경고로 올린다. 수기 해설 시장 1 · 종목 7 · 대체 2.
+- 데이터 주의: Yahoo 가 ^KS11·BZ=F·HG=F·KRW=X 의 9/17 일봉을 주지 않아 그 계열은 9/16 이 마지막이고 종목 상대 z 는 전부 결측.
+- 롤오버 후속: 다음 봉 판정은 날짜로 비교(저장소는 날짜만 남긴다). `persisted` 문구는 "실제 충격인지 월물 단차인지는 가리지 못한다" 로 — 단차도 되돌리지 않기 때문.
 
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).

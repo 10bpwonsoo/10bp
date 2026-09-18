@@ -644,7 +644,7 @@ class TestFollowups:
         s2 = _series("GASOLINE", vals, tomorrow)
         f2 = compute_feature(fut.as_instrument(), s2, window=60)
         p2 = build_alt_points([fut], {"GASOLINE": f2}, {"GASOLINE": s2}, universe.stock_by_id(), tomorrow, previous={"GASOLINE": p1})[0]
-        assert p2.rollover_followup == "reverted" and "롤오버였을 가능성" in p2.note
+        assert p2.rollover_followup == "reverted" and "되돌려졌다" in p2.note
 
     def test_rollover_persisted_on_next_bar(self, universe, as_of):
         fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
@@ -654,7 +654,7 @@ class TestFollowups:
         s2 = _series("GASOLINE", vals, tomorrow)
         f2 = compute_feature(fut.as_instrument(), s2, window=60)
         p2 = build_alt_points([fut], {"GASOLINE": f2}, {"GASOLINE": s2}, universe.stock_by_id(), tomorrow, previous={"GASOLINE": p1})[0]
-        assert p2.rollover_followup == "persisted" and "실제 충격" in p2.note
+        assert p2.rollover_followup == "persisted" and "되돌려지지 않았다" in p2.note and "가리지 못한다" in p2.note
 
     def test_same_bar_rerun_does_not_judge(self, universe, as_of):
         fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
@@ -666,3 +666,34 @@ class TestFollowups:
         first = run_investment(settings, base_snapshot, as_of=as_of)
         again = run_investment(settings, base_snapshot, as_of=as_of, previous=first)
         assert all(p.rollover_followup is None for p in again.alternative)  # 같은 봉이므로 판정 없음
+
+    def test_store_revision_is_detected_not_hidden(self, tmp_path, as_of, universe):
+        """어제 저장한 봉의 값이 오늘 공급자에서 다르게 오면 revisions 에 남는다 (선물 확정 전 값·월물 교체)."""
+        from marketpulse.adapters.alternative.live import AltLiveAdapter
+        from marketpulse.storage.sqlite_repo import SqliteSnapshotRepository
+        (tmp_path / "alternative").mkdir()
+        a = next(x for x in universe.alternative if x.id == "DRAM_SPOT")
+        stamps = business_timestamps(as_of, 120)
+        vals = _walk(77, 120, base=3.0)
+        path = tmp_path / "alternative" / "DRAM_SPOT.csv"
+        path.write_text("date,close\n" + "\n".join(f"{t.date().isoformat()},{v:.4f}" for t, v in zip(stamps, vals)), encoding="utf-8")
+        store = SqliteSnapshotRepository(":memory:")
+        ad = AltLiveAdapter(replay_dir=tmp_path, store=store)
+        ad.fetch_series([a.as_instrument()], {a.id: a.sources}, bars=100, as_of=as_of)
+        assert ad.revisions == {}
+        # 다음 날: 마지막 봉이 7% 낮게 다시 온다
+        vals2 = vals.copy(); vals2[-1] *= 0.93
+        path.write_text("date,close\n" + "\n".join(f"{t.date().isoformat()},{v:.4f}" for t, v in zip(stamps, vals2)), encoding="utf-8")
+        ad2 = AltLiveAdapter(replay_dir=tmp_path, store=store)
+        ad2.fetch_series([a.as_instrument()], {a.id: a.sources}, bars=100, as_of=as_of + timedelta(days=1))
+        assert "DRAM_SPOT" in ad2.revisions
+        n, pct = ad2.revisions["DRAM_SPOT"]
+        assert n == 1 and pct == pytest.approx(7.0, abs=0.1)
+
+    def test_rollover_followup_ignores_same_bar_with_different_timestamp(self, universe, as_of):
+        """저장소는 날짜만, Yahoo 는 세션 시각을 남긴다. 같은 날 봉을 새 봉으로 오인하면 안 된다."""
+        fut, s1, f1 = self._fut(universe, as_of, last=-0.07)
+        p1 = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of)[0]
+        p1_midnight = p1.model_copy(update={"as_of": p1.as_of.replace(hour=0, minute=0)})
+        p1b = build_alt_points([fut], {"GASOLINE": f1}, {"GASOLINE": s1}, universe.stock_by_id(), as_of, previous={"GASOLINE": p1_midnight})[0]
+        assert p1b.rollover_followup is None
