@@ -471,11 +471,15 @@ export interface StateHistoryPoint {
   thermo_confidence: number;
   /** 온도계 재료 스트립과 같은 항목. null 은 결측 */
   components: Record<string, number | null>;
+  /** 온도계 밴드(공포·탐욕): frozen | cool | neutral | warm | overheated | unknown */
+  band: string;
+  band_label: string;
   coverage: number;
   factors: Record<string, number>;
   hypotheses: Record<string, number>;
   drivers: string[];
 }
+export interface BandSegment { band: string; band_label: string; start: string; end: string; days: number; mean_composite: number | null }
 export interface StateSegment { label: StateLabel; start: string; end: string; days: number; mean_confidence: number }
 export interface MarketStateHistory {
   as_of: string;
@@ -484,6 +488,12 @@ export interface MarketStateHistory {
   segments: StateSegment[];
   changes: number;
   days_by_label: Record<string, number>;
+  band_segments: BandSegment[];
+  days_by_band: Record<string, number>;
+  band_labels: Record<string, string>;
+  band_changes: number;
+  current_band_streak: number;
+  previous_band: string | null;
   current_streak: number;
   previous_label: StateLabel | null;
   confidence_first_half: number | null;

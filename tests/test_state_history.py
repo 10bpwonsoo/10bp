@@ -63,6 +63,9 @@ class TestReplay:
         # 온도계도 같은 식 — 재료 키는 온도계 스트립과 같다
         assert set(h.component_labels) == set(last.components)
         assert last.price_temperature is not None and last.composite is not None
+        from marketpulse.engines.thermometer import compute_thermometer
+        thermo = compute_thermometer(state, [], as_of)
+        assert (last.band, last.band_label) == (thermo.band, thermo.band_label)
         assert "RiskAppetite" in last.components and h.component_labels["RiskAppetite"] == "위험선호"
 
     def test_news_temperature_only_where_events_exist(self, mock_series):
@@ -84,6 +87,17 @@ class TestReplay:
         assert h.changes == len(h.segments) - 1
         assert sum(h.days_by_label.values()) == len(h.points)
         assert h.current_streak == h.segments[-1].days
+        # 공포·탐욕(온도 밴드) 기준의 같은 통계 — 1차 분류
+        assert sum(s.days for s in h.band_segments) == len(h.points)
+        assert h.band_changes == len(h.band_segments) - 1
+        assert sum(h.days_by_band.values()) == len(h.points)
+        assert h.current_band_streak == h.band_segments[-1].days
+        assert set(h.days_by_band) <= set(h.band_labels)
+        assert {"frozen", "cool", "neutral", "warm", "overheated", "unknown"} <= set(h.band_labels)
+        for seg in h.band_segments:
+            vals = [p.composite for p in h.points if seg.start <= p.date <= seg.end and p.composite is not None]
+            assert seg.mean_composite == (pytest.approx(sum(vals) / len(vals), abs=0.06) if vals else None)
+        assert h.summary.startswith("최근") and "공포·탐욕" in h.summary and "판정 라벨로는" in h.summary
         assert h.summary.startswith("최근 22거래일") and "현재" in h.summary
         assert "뉴스 온도" in h.note
         for a, b in zip(h.segments, h.segments[1:]):

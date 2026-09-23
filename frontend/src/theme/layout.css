@@ -971,6 +971,10 @@
 .sh-summary { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
 .sh-now b { font-weight: 600; }
 .sh-segs { display: flex; gap: 10px; flex-wrap: wrap; font-size: 10.5px; color: var(--muted); }
+/* 보조 줄 — 판정 라벨(require 룰). 1차 분류인 밴드보다 한 단계 옅게 */
+.sh-sub { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; font-size: 10px; color: var(--muted); padding-top: 4px; border-top: 1px dashed var(--rule-soft); }
+.sh-sub-k { color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+.sh-sub-now b { font-weight: 600; }
 .sh-note { font-size: 10.5px; color: var(--faint); line-height: 1.45; }
 @media (max-width: 1100px) {
   .sh-pt-val { display: none; }

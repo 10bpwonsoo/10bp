@@ -55,6 +55,14 @@
   --lbl-geopolitical: #c2b24a;
   --lbl-neutral: #6b6e5f;
 
+  /* 온도계 밴드 = 공포·탐욕. 결빙(극단적 공포) → 과열(극단적 탐욕) 발산형 */
+  --band-frozen: #3d78c2;
+  --band-cool: #7fb0e0;
+  --band-neutral: #8b8e7c;
+  --band-warm: #e69a90;
+  --band-overheated: #d9463a;
+  --band-unknown: #4a4c42;
+
   --font-sans: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
   --font-mono: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SFMono-Regular",
@@ -102,6 +110,13 @@
     --lbl-policy: #386643;
     --lbl-geopolitical: #7d7014;
     --lbl-neutral: #9a9c8e;
+
+    --band-frozen: #1c5795;
+    --band-cool: #7ba7d4;
+    --band-neutral: #a9ab9d;
+    --band-warm: #e09a92;
+    --band-overheated: #b8332a;
+    --band-unknown: #cfd0c6;
   }
 }
 

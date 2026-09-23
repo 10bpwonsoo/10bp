@@ -4,8 +4,11 @@ import type { MarketStateHistory, StateHistoryPoint, StateLabel } from "../api/t
  * Market State · 온도계 한 달 히스토리 (2026-09-23).
  *
  * 같은 시계열을 날짜별로 잘라 같은 엔진(판정 → 온도계)을 다시 돌린 값이다.
+ * 1차 분류는 온도계 밴드 = 시장 공포·탐욕(결빙=극단적 공포 · 냉각=공포 · 중립 · 온기=탐욕 ·
+ * 과열=극단적 탐욕). 판정 라벨(Risk-Off, Geopolitical Risk …)은 require 룰이 걸린 날에만 붙어
+ * 한 달을 나누기엔 성기므로 보조로 내린다(툴팁 + 아래 한 줄).
  * ① 온도 차트: 종합·가격·뉴스 온도(온도계의 세 바늘)를 날마다 찍고, 그 뒤에 그날
- *    판정의 확신(%)을 옅은 기둥으로 깔아 보조지표로 읽는다. 위의 얇은 띠가 판정 라벨.
+ *    판정의 확신(%)을 옅은 기둥으로 깔아 보조지표로 읽는다. 위의 얇은 띠가 그날 공포·탐욕 밴드.
  * ② 재료 히트맵: 온도계 재료 스트립(위험선호·변동성·성장·신용·한국 수급·뉴스 감성)의
  *    날짜별 값. 결측은 비워 둔다 — 0 으로 그리지 않는다.
  * 화면은 숫자를 만들지 않는다. 서버가 준 것을 그대로 그린다.
@@ -36,14 +39,37 @@ export const LABEL_COLOR: Record<string, string> = {
 function colorOf(label: StateLabel): string {
   return LABEL_COLOR[label] ?? "var(--lbl-neutral)";
 }
+
+/** 온도 밴드 → 공포·탐욕 읽기. 밴드 id 는 scoring.yaml thermometer.bands 와 같다. */
+export const BAND_FG: Record<string, string> = {
+  frozen: "극단적 공포",
+  cool: "공포",
+  neutral: "중립",
+  warm: "탐욕",
+  overheated: "극단적 탐욕",
+  unknown: "측정 불가",
+};
+const BAND_ORDER = ["frozen", "cool", "neutral", "warm", "overheated", "unknown"];
+const BAND_KNOWN = new Set(BAND_ORDER);
+export function bandColor(band: string): string {
+  return `var(--band-${BAND_KNOWN.has(band) ? band : "unknown"})`;
+}
+/** "냉각(공포)" 처럼 서버 라벨 + 공포·탐욕 읽기. 중립·측정 불가는 괄호를 붙이지 않는다. */
+export function bandName(band: string, labels: Record<string, string>): string {
+  const base = labels[band] ?? band;
+  const fg = BAND_FG[band];
+  if (!fg || fg === base || band === "neutral" || band === "unknown") return base;
+  return `${base}(${fg})`;
+}
+const bandRank = (b: string) => { const i = BAND_ORDER.indexOf(b); return i < 0 ? BAND_ORDER.length : i; };
 function md(d: string): string {
   return d.slice(5).replace("-", "/");
 }
 const sgn = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(0)}`;
 const fmt = (v: number | null) => (v === null ? "–" : sgn(v));
 
-function cellTitle(p: StateHistoryPoint, labels: Record<string, string>): string {
-  const head = `${p.date} · ${LABEL_KO[p.label] ?? p.label}${p.secondary_label ? ` / ${LABEL_KO[p.secondary_label]}` : ""} · 판정 확신 ${p.confidence.toFixed(0)}%`;
+function cellTitle(p: StateHistoryPoint, labels: Record<string, string>, bands: Record<string, string> = {}): string {
+  const head = `${p.date} · ${bandName(p.band, bands)} · 판정 라벨 ${LABEL_KO[p.label] ?? p.label}${p.secondary_label ? ` / ${LABEL_KO[p.secondary_label]}` : ""} (확신 ${p.confidence.toFixed(0)}%)`;
   const temps = `종합 ${fmt(p.composite)} · 가격 ${fmt(p.price_temperature)} · 뉴스 ${fmt(p.news_temperature)}${p.news_events ? ` (${p.news_events}건)` : ""} · 온도계 신뢰도 ${p.thermo_confidence.toFixed(0)}%`;
   const comps = Object.entries(p.components).map(([k, v]) => `${labels[k] ?? k} ${fmt(v)}`).join(" · ");
   const drv = p.drivers.length ? `주도: ${p.drivers.join(" · ")}` : "주도 변수 없음";
@@ -66,7 +92,10 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
   const n = pts.length;
   const cols = `repeat(${n}, minmax(0, 1fr))`;
   const labels = history.component_labels;
+  const bands = history.band_labels ?? {};
   const compKeys = Object.keys(labels);
+  const bandEntries = Object.entries(history.days_by_band ?? {}).sort((a, b) => bandRank(a[0]) - bandRank(b[0]));
+  const labelEntries = Object.entries(history.days_by_label).sort((a, b) => b[1] - a[1]);
   const xOf = (i: number) => (n === 1 ? 50 : ((i + 0.5) / n) * 100);
   const yOf = (t: number) => 50 - t / 2; // -100..+100 → 100..0 (%)
   const path = (pick: (p: StateHistoryPoint) => number | null) => {
@@ -90,23 +119,21 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
   return (
     <div className="sh" data-testid="state-history">
       <div className="sh-head">
-        <span className="sh-k">최근 {n}거래일</span>
-        <span className="sh-legend">
-          {Object.entries(history.days_by_label)
-            .sort((a, b) => b[1] - a[1])
-            .map(([k, v]) => (
-              <span key={k} className="sh-leg">
-                <i style={{ background: colorOf(k as StateLabel) }} />
-                {LABEL_KO[k] ?? k} <span className="num">{v}</span>
-              </span>
-            ))}
+        <span className="sh-k">최근 {n}거래일 · 공포·탐욕</span>
+        <span className="sh-legend" data-testid="band-legend">
+          {bandEntries.map(([k, v]) => (
+            <span key={k} className="sh-leg">
+              <i style={{ background: bandColor(k) }} />
+              {bandName(k, bands)} <span className="num">{v}</span>
+            </span>
+          ))}
         </span>
       </div>
 
       {/* ① 온도 — 종합·가격·뉴스. 뒤의 옅은 기둥 = 그날 판정 확신(%), 위의 띠 = 판정 라벨 */}
       <div className="sh-cap mono">
         ① 온도 <span className="sh-key"><i className="sh-key-comp" /> 종합</span> <span className="sh-key"><i className="sh-key-price" /> 가격</span> <span className="sh-key"><i className="sh-key-news" /> 뉴스{newsDays < n ? ` (${newsDays}일만 기사 있음)` : ""}</span>
-        <span className="sh-key"><i className="sh-key-conf" /> 판정 확신 % (보조, 오른쪽 눈금)</span> · 위 띠 = 판정 라벨
+        <span className="sh-key"><i className="sh-key-conf" /> 판정 확신 % (보조, 오른쪽 눈금)</span> · 위 띠 = 그날 공포·탐욕 밴드(종합 온도 구간)
       </div>
       <div className="sh-row sh-row-3">
         <div className="sh-y mono" aria-hidden="true">
@@ -118,10 +145,10 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
           <div className="sh-gl sh-gl-0" aria-hidden="true" />
           <div className="sh-gl sh-gl-p" aria-hidden="true" />
           <div className="sh-gl sh-gl-m" aria-hidden="true" />
-          {/* 판정 확신 기둥 (보조지표) + 라벨 띠 */}
+          {/* 판정 확신 기둥 (보조지표) + 공포·탐욕 띠 */}
           {pts.map((p, i) => (
-            <div key={`c-${p.date}`} className="sh-conf" style={{ gridColumn: i + 1 }} role="listitem" data-label={p.label} data-date={p.date} data-confidence={p.confidence.toFixed(0)} title={cellTitle(p, labels)}>
-              <i className="sh-conf-band" style={{ background: colorOf(p.label) }} />
+            <div key={`c-${p.date}`} className="sh-conf" style={{ gridColumn: i + 1 }} role="listitem" data-band={p.band} data-label={p.label} data-date={p.date} data-confidence={p.confidence.toFixed(0)} title={cellTitle(p, labels, bands)}>
+              <i className="sh-conf-band" style={{ background: bandColor(p.band) }} />
               <i className="sh-conf-bar" style={{ height: `${Math.max(2, p.confidence)}%` }} />
             </div>
           ))}
@@ -133,7 +160,7 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
           {pts.map((p, i) => {
             const t = p.composite;
             return (
-              <div key={p.date} className="sh-pt" style={{ gridColumn: i + 1 }} data-date={p.date} data-temp={t === null ? "" : t.toFixed(0)} title={cellTitle(p, labels)}>
+              <div key={p.date} className="sh-pt" style={{ gridColumn: i + 1 }} data-date={p.date} data-temp={t === null ? "" : t.toFixed(0)} title={cellTitle(p, labels, bands)}>
                 {p.price_temperature !== null && <i className="sh-dot sh-dot-price" style={{ top: `${yOf(p.price_temperature)}%` }} />}
                 {p.news_temperature !== null && <i className="sh-dot sh-dot-news" style={{ top: `${yOf(p.news_temperature)}%` }} />}
                 {t === null ? (
@@ -206,20 +233,34 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
 
       <div className="sh-summary">
         <span className="sh-now">
-          지금 <b style={{ color: colorOf(last.label) }}>{LABEL_KO[last.label] ?? last.label}</b> {history.current_streak}일째
-          {history.previous_label ? <span style={{ color: "var(--muted)" }}> · 직전 {LABEL_KO[history.previous_label] ?? history.previous_label}</span> : null}
-          <span style={{ color: "var(--muted)" }}> · 전환 {history.changes}회</span>
+          지금 <b style={{ color: bandColor(last.band) }}>{bandName(last.band, bands)}</b> {history.current_band_streak}일째
+          {history.previous_band ? <span style={{ color: "var(--muted)" }}> · 직전 {bandName(history.previous_band, bands)}</span> : null}
+          <span style={{ color: "var(--muted)" }}> · 밴드 전환 {history.band_changes}회</span>
           <span className="num" style={{ color: "var(--muted)" }}> · 종합 {fmt(last.composite)} (가격 {fmt(last.price_temperature)} · 뉴스 {fmt(last.news_temperature)})</span>
           {history.temperature_first_half !== null && history.temperature_second_half !== null ? (
             <span className="num" style={{ color: "var(--muted)" }}> · 온도 전반 {sgn(history.temperature_first_half)} → 후반 {sgn(history.temperature_second_half)}</span>
           ) : null}
         </span>
-        <span className="sh-segs">
-          {history.segments.slice(-6).map((s) => (
-            <span key={`${s.label}-${s.start}`} className="mono sh-seg" title={`${s.start} ~ ${s.end} · 평균 확신 ${s.mean_confidence.toFixed(0)}%`}>
-              <i style={{ background: colorOf(s.label) }} />{md(s.start)}{s.days > 1 ? `–${md(s.end)}` : ""} {LABEL_KO[s.label] ?? s.label} {s.days}일
+        <span className="sh-segs" data-testid="band-segments">
+          {(history.band_segments ?? []).slice(-6).map((s) => (
+            <span key={`${s.band}-${s.start}`} className="mono sh-seg" title={`${s.start} ~ ${s.end} · 평균 종합 온도 ${s.mean_composite === null ? "–" : sgn(s.mean_composite)}`}>
+              <i style={{ background: bandColor(s.band) }} />{md(s.start)}{s.days > 1 ? `–${md(s.end)}` : ""} {bandName(s.band, bands)} {s.days}일
             </span>
           ))}
+        </span>
+        {/* 보조: 판정 라벨(require 룰). 밴드와 달리 룰이 걸린 날에만 붙는다 */}
+        <span className="sh-sub mono" data-testid="label-secondary" title="판정 라벨은 require 룰(예: 안전자산·변동성 동반 급등)이 걸린 날에만 붙는다. 한 달 흐름의 1차 구분은 위의 공포·탐욕 밴드다">
+          <span className="sh-sub-k">보조 · 판정 라벨</span>
+          {labelEntries.map(([k, v]) => (
+            <span key={k} className="sh-leg">
+              <i style={{ background: colorOf(k as StateLabel) }} />
+              {LABEL_KO[k] ?? k} <span className="num">{v}</span>
+            </span>
+          ))}
+          <span className="sh-sub-now">
+            · 지금 <b style={{ color: colorOf(last.label) }}>{LABEL_KO[last.label] ?? last.label}</b> {history.current_streak}일째
+            {history.previous_label ? ` · 직전 ${LABEL_KO[history.previous_label] ?? history.previous_label}` : ""} · 전환 {history.changes}회 · 확신 {last.confidence.toFixed(0)}%
+          </span>
         </span>
       </div>
       <div className="sh-note">{history.note}</div>

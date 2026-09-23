@@ -206,6 +206,7 @@
 - Investment Intelligence: 드라이버 6(WTI·브렌트·천연가스·CSI300·USD/KRW·항셍), 이상 거동 대한항공(+3.5σ, 거래량 +2.7σ, NEWS_DRIVEN_MOVE), 괴리 4건, 반도체 peer·국내 모두 상승 합의. 설탕·면화·커피 저장 봉 수정 경고가 처음 실제로 떴다.
 - 히스토리: 9/17 Risk-On → 9/18 Liquidity Stress → 9/21 Risk-On → 9/22 판정 없음. 종합 온도 나흘 연속 양수(이 달 처음). 뉴스 온도는 병합 이벤트로 9/8~9/22.
 - 수기 해설 `data/commentary/2026-09-23.json`: 시장 1 · 종목 5 · 대체 3.
+- 히스토리 1차 분류를 판정 라벨에서 **공포·탐욕(온도계 밴드)** 로 바꿈: `StateHistoryPoint.band/band_label`, `BandSegment`, `days_by_band` · `band_labels` · `band_changes` · `current_band_streak` · `previous_band`, 요약문도 밴드 기준. 판정 라벨은 보조 줄. 색은 `--band-*` 토큰(청 → 회 → 적). 라이브: 중립 10 · 온기 6 · 냉각 6, 밴드 전환 12회, 현재 온기 2일째.
 
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).

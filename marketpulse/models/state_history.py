@@ -32,10 +32,24 @@ class StateHistoryPoint(Base):
     thermo_confidence: float = Field(default=0.0, ge=0.0, le=100.0, description="온도계 신뢰도")
     #: 온도계 재료 스트립과 같은 항목 (위험선호·변동성·성장·신용·한국 수급·뉴스 감성). None 은 결측
     components: dict[str, float | None] = Field(default_factory=dict)
+    #: 온도계 밴드 — 공포·탐욕 분류. frozen(결빙=극단적 공포) cool(냉각=공포) neutral warm(온기=탐욕) overheated(과열=극단적 탐욕) unknown
+    band: str = "unknown"
+    band_label: str = "측정 불가"
     coverage: float = Field(ge=0.0, le=1.0, description="그날 확보 instrument 비율")
     factors: dict[str, float] = Field(default_factory=dict, description="factor → z 단위 점수")
     hypotheses: dict[str, float] = Field(default_factory=dict, description="라벨 → 가설 점수 (0 초과만)")
     drivers: list[str] = Field(default_factory=list, description="그날 주도 변수 상위 3 — '라벨 +1.2σ'")
+
+
+class BandSegment(Base):
+    """같은 온도 밴드(공포·탐욕)가 이어진 구간."""
+
+    band: str
+    band_label: str
+    start: date
+    end: date
+    days: int
+    mean_composite: float | None = None
 
 
 class StateSegment(Base):
@@ -55,6 +69,14 @@ class MarketStateHistory(Base):
     segments: list[StateSegment] = Field(default_factory=list)
     changes: int = Field(default=0, description="라벨이 바뀐 횟수")
     days_by_label: dict[str, int] = Field(default_factory=dict)
+    #: 공포·탐욕(온도 밴드) 기준의 같은 통계. 화면의 1차 분류는 이쪽이다 — 판정 라벨은 require 룰이
+    #: 걸린 날에만 붙어 한 달 흐름을 나누기엔 성기다.
+    band_segments: list[BandSegment] = Field(default_factory=list)
+    days_by_band: dict[str, int] = Field(default_factory=dict, description="밴드 id → 일수")
+    band_labels: dict[str, str] = Field(default_factory=dict, description="밴드 id → 화면 라벨 (온도계 설정 순서)")
+    band_changes: int = 0
+    current_band_streak: int = 0
+    previous_band: str | None = None
     current_streak: int = Field(default=0, description="현재 라벨이 이어진 거래일 수")
     previous_label: StateLabel | None = Field(default=None, description="현재 구간 직전의 라벨")
     #: 확신·가격 온도의 전반 vs 후반 평균. 흐름이 굳어지는지 풀리는지 한 줄로.
