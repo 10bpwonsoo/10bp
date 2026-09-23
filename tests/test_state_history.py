@@ -97,7 +97,8 @@ class TestReplay:
         for seg in h.band_segments:
             vals = [p.composite for p in h.points if seg.start <= p.date <= seg.end and p.composite is not None]
             assert seg.mean_composite == (pytest.approx(sum(vals) / len(vals), abs=0.06) if vals else None)
-        assert h.summary.startswith("최근") and "공포·탐욕" in h.summary and "판정 라벨로는" in h.summary
+        assert h.summary.startswith("최근") and "상태 전환" in h.summary and "공포·탐욕" not in h.summary
+        assert h.band_summary.startswith("최근") and "공포·탐욕" in h.band_summary and "밴드 전환" in h.band_summary
         assert h.summary.startswith("최근 22거래일") and "현재" in h.summary
         assert "뉴스 온도" in h.note
         for a, b in zip(h.segments, h.segments[1:]):

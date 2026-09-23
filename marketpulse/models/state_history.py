@@ -69,8 +69,8 @@ class MarketStateHistory(Base):
     segments: list[StateSegment] = Field(default_factory=list)
     changes: int = Field(default=0, description="라벨이 바뀐 횟수")
     days_by_label: dict[str, int] = Field(default_factory=dict)
-    #: 공포·탐욕(온도 밴드) 기준의 같은 통계. 화면의 1차 분류는 이쪽이다 — 판정 라벨은 require 룰이
-    #: 걸린 날에만 붙어 한 달 흐름을 나누기엔 성기다.
+    #: 공포·탐욕(온도 밴드) 기준의 같은 통계. 어느 쪽을 1차로 보일지는 화면이 뷰별로 고른다
+    #: (실데이터·물가 충격 등은 판정 라벨, AI 센티멘트는 공포·탐욕).
     band_segments: list[BandSegment] = Field(default_factory=list)
     days_by_band: dict[str, int] = Field(default_factory=dict, description="밴드 id → 일수")
     band_labels: dict[str, str] = Field(default_factory=dict, description="밴드 id → 화면 라벨 (온도계 설정 순서)")
@@ -87,4 +87,5 @@ class MarketStateHistory(Base):
     component_labels: dict[str, str] = Field(default_factory=dict, description="components 의 키 → 화면 라벨 (온도계 순서). 기간 내내 결측인 재료는 뺀다")
     excluded_components: dict[str, str] = Field(default_factory=dict, description="기간 내내 결측이라 표에서 뺀 재료 (키 → 라벨). 숨긴 것이 아니라 여기 적는다")
     summary: str = ""
+    band_summary: str = Field(default="", description="같은 요약을 공포·탐욕(온도 밴드) 기준으로")
     note: str = Field(default="", description="계산 방식·한계")

@@ -504,5 +504,7 @@ export interface MarketStateHistory {
   /** 기간 내내 결측이라 표에서 뺀 재료 (키 → 라벨) */
   excluded_components: Record<string, string>;
   summary: string;
+  /** 같은 요약을 공포·탐욕(온도 밴드) 기준으로 */
+  band_summary: string;
   note: string;
 }

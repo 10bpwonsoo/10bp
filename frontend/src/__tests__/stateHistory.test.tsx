@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import hist from "../__fixtures__/state_history.json";
 import type { MarketStateHistory } from "../api/types";
-import { LABEL_KO, StateHistoryStrip, bandName } from "../components/StateHistoryStrip";
+import { LABEL_KO, StateHistoryStrip, bandName, historyPrimaryFor } from "../components/StateHistoryStrip";
 
 const data = hist as unknown as MarketStateHistory;
 
@@ -57,47 +57,55 @@ describe("StateHistoryStrip", () => {
     expect(container.querySelector(".sh-excluded")?.textContent).toContain("신용 · 한국 수급");
   });
 
-  it("1차 분류는 공포·탐욕 밴드 — 지금 밴드·며칠째·직전 밴드·밴드 전환·세 온도를 쓴다", () => {
-    render(<StateHistoryStrip history={data} />);
+  it("기본(실데이터·물가 충격)은 판정 라벨이 1차 — 지금 라벨·며칠째·직전·전환·세 온도, 띠는 라벨 색", () => {
+    const { container } = render(<StateHistoryStrip history={data} />);
     const last = data.points[data.points.length - 1]!;
-    const now = screen.getByText(/지금/, { selector: ".sh-now" }).closest(".sh-now") as HTMLElement;
+    const now = container.querySelector(".sh-now") as HTMLElement;
+    expect(within(now).getByText(LABEL_KO[last.label]!)).toBeInTheDocument();
+    expect(now.textContent).toContain(`${data.current_streak}일째`);
+    expect(now.textContent).toContain(`전환 ${data.changes}회`);
+    expect(now.textContent).toContain("종합");
+    if (data.previous_label) expect(now.textContent).toContain(`직전 ${LABEL_KO[data.previous_label]}`);
+    expect(screen.getByTestId("primary-legend").getAttribute("data-primary")).toBe("label");
+    const total = Object.values(data.days_by_label).reduce((a, b) => a + b, 0);
+    expect(total).toBe(data.points.length);
+    const band0 = container.querySelector(".sh-conf .sh-conf-band") as HTMLElement;
+    expect(band0.style.background).toContain("--lbl-");
+    // 보조 줄은 공포·탐욕
+    const sub = screen.getByTestId("secondary");
+    expect(sub.getAttribute("data-kind")).toBe("band");
+    expect(sub.textContent).toContain("보조 · 공포·탐욕");
+    expect(sub.textContent).toContain(`${data.current_band_streak}일째`);
+    expect(historyPrimaryFor("inflation_shock")).toBe("label");
+    expect(historyPrimaryFor(null)).toBe("label");
+  });
+
+  it("AI 센티멘트 뷰만 공포·탐욕 밴드가 1차 — 띠·범례·지금·구간이 밴드, 판정 라벨은 보조 줄", () => {
+    expect(historyPrimaryFor("ai_sentiment")).toBe("band");
+    const { container } = render(<StateHistoryStrip history={data} primary="band" />);
+    const last = data.points[data.points.length - 1]!;
+    const now = container.querySelector(".sh-now") as HTMLElement;
     expect(within(now).getByText(bandName(last.band, data.band_labels))).toBeInTheDocument();
     expect(now.textContent).toContain(`${data.current_band_streak}일째`);
     expect(now.textContent).toContain(`밴드 전환 ${data.band_changes}회`);
-    expect(now.textContent).toContain("종합");
     if (data.previous_band) expect(now.textContent).toContain(`직전 ${bandName(data.previous_band, data.band_labels)}`);
-  });
-
-  it("띠와 범례는 밴드 색이고, 범례 일수 합은 점 수와 같다", () => {
-    const { container } = render(<StateHistoryStrip history={data} />);
     const cells = container.querySelectorAll(".sh-conf");
-    expect(cells.length).toBe(data.points.length);
     data.points.forEach((p, i) => {
       expect(cells[i]!.getAttribute("data-band")).toBe(p.band);
       expect((cells[i]!.querySelector(".sh-conf-band") as HTMLElement).style.background).toContain(`--band-${p.band}`);
     });
-    const legend = screen.getByTestId("band-legend");
+    const legend = screen.getByTestId("primary-legend");
+    expect(legend.getAttribute("data-primary")).toBe("band");
     const total = Object.values(data.days_by_band).reduce((a, b) => a + b, 0);
     expect(total).toBe(data.points.length);
-    for (const [k, v] of Object.entries(data.days_by_band)) {
-      expect(legend.textContent).toContain(`${bandName(k, data.band_labels)} ${v}`);
-    }
-    // 냉각(공포)·온기(탐욕) 처럼 공포·탐욕 읽기를 함께 적는다
+    for (const [k, v] of Object.entries(data.days_by_band)) expect(legend.textContent).toContain(`${bandName(k, data.band_labels)} ${v}`);
     expect(bandName("cool", { cool: "냉각" })).toBe("냉각(공포)");
     expect(bandName("overheated", { overheated: "과열" })).toBe("과열(극단적 탐욕)");
     expect(bandName("neutral", { neutral: "중립" })).toBe("중립");
-  });
-
-  it("판정 라벨은 보조 줄로 내려가 일수·지금·전환을 그대로 적는다", () => {
-    render(<StateHistoryStrip history={data} />);
-    const last = data.points[data.points.length - 1]!;
-    const sub = screen.getByTestId("label-secondary");
-    expect(sub.textContent).toContain("보조 · 판정 라벨");
+    const sub = screen.getByTestId("secondary");
+    expect(sub.getAttribute("data-kind")).toBe("label");
     expect(within(sub).getByText(LABEL_KO[last.label]!, { selector: "b" })).toBeInTheDocument();
-    expect(sub.textContent).toContain(`${data.current_streak}일째`);
     expect(sub.textContent).toContain(`전환 ${data.changes}회`);
-    const total = Object.values(data.days_by_label).reduce((a, b) => a + b, 0);
-    expect(total).toBe(data.points.length);
   });
 
   it("히스토리가 없으면 아무것도 그리지 않고, 점이 없으면 그렇게 말한다", () => {
