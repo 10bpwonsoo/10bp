@@ -11,7 +11,7 @@ from marketpulse.models.common import utcnow
 OUT = Path("marketpulse/data/captures/2026-09-23-manual")
 settings = Settings(data_mode="DELAYED", llm_enabled=False)
 from datetime import datetime, timezone
-as_of = datetime(2026, 9, 22, 23, 59, tzinfo=timezone.utc)  # 9/22 종가까지의 완결 봉만
+as_of = utcnow()  # 오늘(9/23) 장중 기준 — 아시아 봉은 장중값이다
 instruments = get_instruments().instruments
 t = time.perf_counter()
 adapter = build_market_adapter(settings)

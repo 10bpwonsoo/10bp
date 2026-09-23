@@ -13,7 +13,7 @@ PREV = Path("/home/user/10bp/marketpulse/data/captures/2026-09-18-manual/investm
 base = IntelligenceSnapshot.model_validate_json((CAP / "live.json").read_text(encoding="utf-8"))
 settings = Settings(data_mode="DELAYED", llm_enabled=False)
 from datetime import datetime
-as_of = datetime(2026, 9, 22, 23, 59, tzinfo=timezone.utc)  # 9/22 종가까지의 완결 봉만
+as_of = utcnow()  # 오늘(9/23) 장중 기준 — 아시아 봉은 장중값
 from marketpulse.models.intelligence import InvestmentIntelligence
 previous = InvestmentIntelligence.model_validate_json(PREV.read_text(encoding="utf-8"))
 t = time.perf_counter()
