@@ -16,7 +16,8 @@ describe("StateHistoryStrip", () => {
     expect(cells[0]).toHaveAttribute("data-label", first.label);
     expect(cells[0]).toHaveAttribute("data-date", first.date);
     const bar = cells[0]!.querySelector(".sh-bar") as HTMLElement;
-    expect(bar.style.height).toBe(`${Math.max(12, first.confidence)}%`);
+    expect(bar.style.height).toBe(`${Math.max(3, first.confidence)}%`);
+    expect(within(cells[0]!).getByText(first.confidence.toFixed(0))).toBeInTheDocument();
   });
 
   it("지금이 무엇이고 며칠째인지, 직전 라벨과 전환 횟수를 쓴다", () => {
@@ -44,6 +45,13 @@ describe("StateHistoryStrip", () => {
     const { container } = render(<StateHistoryStrip history={{ ...data, points: pts }} />);
     const lines = container.querySelectorAll("polyline");
     expect(lines.length).toBe(2);
+    const na = container.querySelector('.sh-pt[data-date="' + pts[5]!.date + '"]');
+    expect(na?.querySelector(".sh-dot")).toBeNull();
+    expect(na?.textContent).toBe("–");
+    // 값이 있는 날은 점과 숫자가 있다
+    const p0 = container.querySelector('.sh-pt[data-date="' + pts[0]!.date + '"]');
+    expect(p0?.querySelector(".sh-dot")).not.toBeNull();
+    expect(p0?.textContent).toMatch(/^[+-]\d+$/);
     expect(container.querySelector(".sh-note")?.textContent).toContain("뉴스 온도");
   });
 

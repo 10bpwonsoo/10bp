@@ -52,27 +52,28 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
   if (pts.length === 0) {
     return <div className="sh"><div className="sh-summary" style={{ color: "var(--faint)" }}>히스토리를 재생할 봉이 없습니다.</div></div>;
   }
-  const W = 100; // 퍼센트 좌표. 셀 폭은 CSS grid 가 정한다.
-  const H = 36;
-  const temps = pts.map((p) => p.price_temperature);
-  const xs = pts.map((_, i) => (pts.length === 1 ? 50 : (i / (pts.length - 1)) * W));
-  const yOf = (t: number) => H / 2 - (t / 100) * (H / 2 - 3);
-  // 값이 있는 구간만 잇는다 — 없는 날을 0 으로 잇지 않는다
+  const n = pts.length;
+  const cols = `repeat(${n}, minmax(0, 1fr))`;
+  // 선은 퍼센트 좌표의 SVG 한 장(글자 없음), 점과 숫자는 같은 그리드의 칸 안에 HTML 로 —
+  // 그래야 늘려도 글자가 찌부되지 않고 x 가 위 막대와 정확히 맞는다.
+  const xOf = (i: number) => (n === 1 ? 50 : ((i + 0.5) / n) * 100);
+  const yOf = (t: number) => 50 - t / 2; // -100..+100 → 100..0 (%)
   const segs: string[] = [];
   let cur: string[] = [];
-  temps.forEach((t, i) => {
+  pts.forEach((p, i) => {
+    const t = p.price_temperature;
     if (t === null) { if (cur.length > 1) segs.push(cur.join(" ")); cur = []; return; }
-    cur.push(`${xs[i]!.toFixed(2)},${yOf(t).toFixed(2)}`);
+    cur.push(`${xOf(i).toFixed(2)},${yOf(t).toFixed(2)}`);
   });
   if (cur.length > 1) segs.push(cur.join(" "));
-  const last = pts[pts.length - 1]!;
-  const lastTemp = last.price_temperature;
-  const ticks = pts.map((p, i) => ({ i, p })).filter(({ i, p }) => i === 0 || i === pts.length - 1 || (new Date(p.date).getDay() === 1 && i > 1 && i < pts.length - 2));
+  const last = pts[n - 1]!;
+  const few = pts.map((p, i) => ({ i, p })).filter(({ i, p }) => i === 0 || i === n - 1 || (new Date(p.date).getDay() === 1 && i > 1 && i < n - 2));
+  const sgn = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(0)}`;
 
   return (
     <div className="sh" data-testid="state-history">
       <div className="sh-head">
-        <span className="sh-k">최근 {pts.length}거래일</span>
+        <span className="sh-k">최근 {n}거래일</span>
         <span className="sh-legend">
           {Object.entries(history.days_by_label)
             .sort((a, b) => b[1] - a[1])
@@ -84,29 +85,75 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
             ))}
         </span>
       </div>
-      {/* 라벨 띠 — 셀 하나가 하루. 높이는 확신. */}
-      <div className="sh-cells" style={{ gridTemplateColumns: `repeat(${pts.length}, minmax(0, 1fr))` }} role="list" aria-label="일별 Market State">
-        {pts.map((p) => (
-          <div key={p.date} className="sh-cell" role="listitem" title={cellTitle(p)} data-label={p.label} data-date={p.date}>
-            <div className="sh-bar" style={{ height: `${Math.max(12, p.confidence)}%`, background: colorOf(p.label) }} />
+
+      {/* ① 판정 띠 — 칸 하나가 하루. 색 = 라벨, 높이·숫자 = 그날 판정의 확신(%). */}
+      <div className="sh-cap mono">① 판정 — 색 = 라벨 · 막대 높이와 숫자 = 그날 판정의 확신(%)</div>
+      <div className="sh-row">
+        <div className="sh-y mono" aria-hidden="true">
+          <span style={{ top: 0 }}>100</span>
+          <span style={{ top: "50%" }}>50</span>
+          <span style={{ bottom: 0 }}>0</span>
+        </div>
+        <div className="sh-cells" style={{ gridTemplateColumns: cols }} role="list" aria-label="일별 Market State (색 = 판정, 높이 = 확신 %)">
+          <div className="sh-grid50" aria-hidden="true" />
+          {pts.map((p) => (
+            <div key={p.date} className="sh-cell" role="listitem" title={cellTitle(p)} data-label={p.label} data-date={p.date}>
+              <span className="sh-cell-val mono">{p.confidence.toFixed(0)}</span>
+              <div className="sh-bar" style={{ height: `${Math.max(3, p.confidence)}%`, background: colorOf(p.label) }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ② 가격 온도 — 온도계의 △가격과 같은 식, −100(결빙)~+100(과열). 점마다 값을 적는다. */}
+      <div className="sh-cap mono">② 가격 온도 — 온도계의 △가격과 같은 식 · −100 결빙 ~ +100 과열 · 적 = 0 위, 청 = 0 아래</div>
+      <div className="sh-row">
+        <div className="sh-y mono" aria-hidden="true">
+          <span style={{ top: 0 }}>+100</span>
+          <span style={{ top: "50%" }}>0</span>
+          <span style={{ bottom: 0 }}>−100</span>
+        </div>
+        <div className="sh-plot" style={{ gridTemplateColumns: cols }} aria-label="가격 온도 추이">
+          <div className="sh-gl sh-gl-0" aria-hidden="true" />
+          <div className="sh-gl sh-gl-p" aria-hidden="true" />
+          <div className="sh-gl sh-gl-m" aria-hidden="true" />
+          <svg className="sh-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {segs.map((d, i) => (
+              <polyline key={i} points={d} fill="none" stroke="var(--ink-2)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+            ))}
+          </svg>
+          {pts.map((p) => {
+            const t = p.price_temperature;
+            const title = `${p.date} · 가격 온도 ${t === null ? "–" : sgn(t)}`;
+            return (
+              <div key={p.date} className="sh-pt" title={title} data-date={p.date} data-temp={t === null ? "" : t.toFixed(0)}>
+                {t === null ? (
+                  <span className="sh-pt-na mono">–</span>
+                ) : (
+                  <>
+                    <i className="sh-dot" style={{ top: `${yOf(t)}%`, background: t >= 0 ? "var(--up)" : "var(--down)" }} />
+                    <span className={`sh-pt-val mono ${t >= 0 ? "up" : "down"}`} style={t >= 0 ? { bottom: `${100 - yOf(t) + 4}%` } : { top: `${yOf(t) + 4}%` }}>{sgn(t)}</span>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 날짜 눈금 — 넓은 화면은 매일, 좁은 화면은 월요일·양끝만 */}
+      <div className="sh-row">
+        <div />
+        <div>
+          <div className="sh-axis-all mono" style={{ gridTemplateColumns: cols }}>
+            {pts.map((p) => <span key={p.date}>{md(p.date)}</span>)}
           </div>
-        ))}
+          <div className="sh-axis-few mono">
+            {few.map(({ i, p }) => <span key={p.date} style={{ left: `${xOf(i).toFixed(2)}%` }}>{md(p.date)}</span>)}
+          </div>
+        </div>
       </div>
-      {/* 가격 온도 — 같은 x 눈금. 0 선 위/아래로 읽는다. */}
-      <svg className="sh-temp" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-label="가격 온도 추이">
-        <line x1={0} x2={W} y1={H / 2} y2={H / 2} stroke="var(--rule)" strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
-        {segs.map((d, i) => (
-          <polyline key={i} points={d} fill="none" stroke="var(--ink-2)" strokeWidth={1.4} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        ))}
-        {lastTemp !== null && (
-          <circle cx={xs[pts.length - 1]} cy={yOf(lastTemp)} r={1.2} fill="var(--ink)" vectorEffect="non-scaling-stroke" />
-        )}
-      </svg>
-      <div className="sh-axis mono">
-        {ticks.map(({ i, p }) => (
-          <span key={p.date} style={{ left: `${xs[i]!.toFixed(2)}%` }}>{md(p.date)}</span>
-        ))}
-      </div>
+
       <div className="sh-summary">
         <span className="sh-now">
           지금 <b style={{ color: colorOf(last.label) }}>{LABEL_KO[last.label] ?? last.label}</b> {history.current_streak}일째
@@ -114,7 +161,7 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
           <span style={{ color: "var(--muted)" }}> · 전환 {history.changes}회</span>
           {history.temperature_first_half !== null && history.temperature_second_half !== null ? (
             <span className="num" style={{ color: "var(--muted)" }}>
-              {" "}· 가격 온도 {history.temperature_first_half >= 0 ? "+" : ""}{history.temperature_first_half.toFixed(0)} → {history.temperature_second_half >= 0 ? "+" : ""}{history.temperature_second_half.toFixed(0)}
+              {" "}· 가격 온도 전반 {sgn(history.temperature_first_half)} → 후반 {sgn(history.temperature_second_half)}
             </span>
           ) : null}
         </span>
@@ -126,7 +173,7 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
           ))}
         </span>
       </div>
-      <div className="sh-note">{history.note}</div>
+      <div className="sh-note">막대 = 그날 판정의 확신(%) · 색 = 판정 라벨 · 선 = 가격 온도(온도계의 △가격, −100 결빙 ~ +100 과열). {history.note}</div>
     </div>
   );
 }

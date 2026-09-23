@@ -920,25 +920,48 @@
 }
 
 /* ── Market State 한 달 히스토리 띠 (2026-09-23) ───────────── */
-.sh { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); }
+.sh { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); }
 .sh-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
 .sh-k { font-family: var(--font-mono); text-transform: uppercase; }
 .sh-legend { display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0; color: var(--muted); }
 .sh-leg i, .sh-seg i { display: inline-block; width: 8px; height: 8px; border-radius: 1px; margin-right: 4px; vertical-align: -1px; }
-.sh-cells { display: grid; gap: 2px; height: 34px; align-items: end; }
-.sh-cell { height: 100%; display: flex; align-items: flex-end; border-bottom: 1px solid var(--rule); cursor: default; }
+/* 두 줄(판정 띠·가격 온도)이 같은 x 눈금을 쓴다: 왼쪽 축 라벨 + 오른쪽 그리드 */
+.sh-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px; }
+.sh-y { position: relative; font-size: 9px; color: var(--faint); }
+.sh-y > span { position: absolute; right: 0; transform: translateY(-50%); }
+.sh-y > span[style*="bottom"] { transform: translateY(50%); }
+.sh-cap { font-size: 9.5px; color: var(--muted); letter-spacing: .04em; margin-top: 6px; }
+.sh-cells { position: relative; display: grid; gap: 2px; height: 56px; align-items: end; border-bottom: 1px solid var(--rule); }
+.sh-grid50 { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--rule-soft); pointer-events: none; }
+.sh-cell { position: relative; height: 100%; display: flex; align-items: flex-end; cursor: default; }
 .sh-bar { width: 100%; border-radius: 1px 1px 0 0; opacity: .85; }
 .sh-cell:hover .sh-bar { opacity: 1; }
-.sh-temp { display: block; width: 100%; height: 34px; margin-top: 4px; }
-.sh-axis { position: relative; height: 12px; font-size: 9px; color: var(--faint); }
-.sh-axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-.sh-axis span:first-child { transform: none; }
-.sh-axis span:last-child { transform: translateX(-100%); }
+.sh-cell-val { position: absolute; top: 0; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--muted); }
+.sh-plot { position: relative; display: grid; gap: 2px; height: 78px; margin-top: 4px; }
+.sh-gl { position: absolute; left: 0; right: 0; pointer-events: none; }
+.sh-gl-0 { top: 50%; border-top: 1px solid var(--rule); }
+.sh-gl-p { top: 25%; border-top: 1px dashed var(--rule-soft); }
+.sh-gl-m { top: 75%; border-top: 1px dashed var(--rule-soft); }
+.sh-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sh-pt { position: relative; height: 100%; }
+.sh-dot { position: absolute; left: 50%; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); border: 1.5px solid var(--surface-2); }
+.sh-pt-val { position: absolute; left: 0; right: 0; text-align: center; font-size: 9px; line-height: 1; }
+.sh-pt-na { position: absolute; left: 0; right: 0; top: 50%; text-align: center; transform: translateY(-50%); font-size: 9px; color: var(--faint); }
+.sh-axis-all { display: grid; gap: 2px; font-size: 8.5px; color: var(--faint); text-align: center; margin-top: 3px; }
+.sh-axis-few { display: none; position: relative; height: 12px; font-size: 9px; color: var(--faint); margin-top: 3px; }
+.sh-axis-few span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .sh-summary { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
 .sh-now b { font-weight: 600; }
 .sh-segs { display: flex; gap: 10px; flex-wrap: wrap; font-size: 10.5px; color: var(--muted); }
 .sh-note { font-size: 10.5px; color: var(--faint); line-height: 1.45; }
+@media (max-width: 1100px) {
+  .sh-cell-val, .sh-pt-val { display: none; }
+  .sh-axis-all { display: none; }
+  .sh-axis-few { display: block; }
+}
 @media (max-width: 760px) {
-  .sh-cells { height: 26px; }
+  .sh-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .sh-cells { height: 40px; }
+  .sh-plot { height: 60px; }
   .sh-segs { gap: 6px; }
 }
