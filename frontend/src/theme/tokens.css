@@ -45,6 +45,16 @@
   --ok: #7fb98c;
   --info: #6fa9e2;
 
+  /* Market State 라벨 — 라벨마다 다른 색상(hue). 방향색(적/청)은 Risk-On/Off 에만 쓴다. */
+  --lbl-risk-on: #e2756a;
+  --lbl-risk-off: #6fa9e2;
+  --lbl-inflation: #e8934a;
+  --lbl-growth: #b48ce6;
+  --lbl-liquidity: #4fc3c0;
+  --lbl-policy: #7fb98c;
+  --lbl-geopolitical: #c2b24a;
+  --lbl-neutral: #6b6e5f;
+
   --font-sans: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
   --font-mono: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SFMono-Regular",
@@ -83,6 +93,15 @@
     --warn: #8a5f16;
     --ok: #386643;
     --info: #1c5795;
+
+    --lbl-risk-on: #b8332a;
+    --lbl-risk-off: #1c5795;
+    --lbl-inflation: #c25e12;
+    --lbl-growth: #6f3fb8;
+    --lbl-liquidity: #1e8785;
+    --lbl-policy: #386643;
+    --lbl-geopolitical: #7d7014;
+    --lbl-neutral: #9a9c8e;
   }
 }
 

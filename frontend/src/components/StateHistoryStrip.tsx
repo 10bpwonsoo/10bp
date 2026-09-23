@@ -21,20 +21,20 @@ export const LABEL_KO: Record<string, string> = {
   NEUTRAL: "판정 없음",
 };
 
-/** 라벨 색. 방향(적=위험선호, 청=위험회피)은 기존 up/down 토큰, 나머지는 경고 계열. */
+/** 라벨 색. 라벨마다 다른 색상(hue) — tokens.css 의 --lbl-* (다크/라이트 각각). */
 export const LABEL_COLOR: Record<string, string> = {
-  RISK_ON: "var(--up)",
-  RISK_OFF: "var(--down)",
-  GROWTH_SHOCK: "var(--crit)",
-  INFLATION_SHOCK: "var(--warn)",
-  LIQUIDITY_STRESS: "var(--crit)",
-  POLICY_DRIVEN: "var(--info, var(--accent))",
-  GEOPOLITICAL_RISK: "var(--warn)",
-  NEUTRAL: "var(--faint)",
+  RISK_ON: "var(--lbl-risk-on)",
+  RISK_OFF: "var(--lbl-risk-off)",
+  GROWTH_SHOCK: "var(--lbl-growth)",
+  INFLATION_SHOCK: "var(--lbl-inflation)",
+  LIQUIDITY_STRESS: "var(--lbl-liquidity)",
+  POLICY_DRIVEN: "var(--lbl-policy)",
+  GEOPOLITICAL_RISK: "var(--lbl-geopolitical)",
+  NEUTRAL: "var(--lbl-neutral)",
 };
 
 function colorOf(label: StateLabel): string {
-  return LABEL_COLOR[label] ?? "var(--faint)";
+  return LABEL_COLOR[label] ?? "var(--lbl-neutral)";
 }
 function md(d: string): string {
   return d.slice(5).replace("-", "/");
