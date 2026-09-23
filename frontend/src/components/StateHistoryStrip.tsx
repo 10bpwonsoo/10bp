@@ -172,7 +172,14 @@ export function StateHistoryStrip({ history }: { history: MarketStateHistory | n
       {/* ② 재료 히트맵 — 온도계 스트립의 날짜별 값 */}
       {compKeys.length > 0 && (
         <>
-          <div className="sh-cap mono">② 재료 — 온도계 스트립의 날짜별 값 (−100~+100, 적 = +, 청 = −, 빈 칸 = 결측)</div>
+          <div className="sh-cap mono">
+            ② 재료 — 온도계 스트립의 날짜별 값 (−100~+100, 적 = +, 청 = −, 빗금 = 결측)
+            {Object.keys(history.excluded_components ?? {}).length > 0 && (
+              <span className="sh-excluded" title="공급자가 없어 기간 내내 결측인 재료. 숨긴 것이 아니라 뺐다고 적는다">
+                · 제외: {Object.values(history.excluded_components).join(" · ")} (기간 내내 결측)
+              </span>
+            )}
+          </div>
           <div className="sh-heat" role="table" aria-label="온도계 재료별 일별 값">
             {compKeys.map((k) => {
               const lastV = last.components[k] ?? null;

@@ -103,6 +103,14 @@ class TestReplay:
         assert all(p.coverage < 1.0 for p in h.points)
         assert all("SPX" not in p.drivers for p in h.points)
 
+    def test_always_missing_components_are_excluded_and_listed(self, mock_series):
+        ins, series, as_of = mock_series
+        partial = {k: v for k, v in series.items() if k != "US_HY_OAS"}
+        h = replay_market_state(ins, partial, as_of=as_of, days=5, mode=DataMode.MOCK)
+        assert "Credit" in h.excluded_components and "Credit" not in h.component_labels
+        assert all("Credit" not in p.components for p in h.points)
+        assert "RiskAppetite" in h.component_labels
+
     def test_pipeline_result_carries_series(self):
         r = run_pipeline_detailed(Settings(data_mode="MOCK", scenario="baseline", llm_enabled=False))
         assert r.series_by_id and "SPX" in r.series_by_id

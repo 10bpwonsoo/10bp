@@ -51,6 +51,12 @@ describe("StateHistoryStrip", () => {
     }
   });
 
+  it("기간 내내 결측인 재료는 표에서 빼고 뺐다고 적는다", () => {
+    const { container } = render(<StateHistoryStrip history={{ ...data, component_labels: { RiskAppetite: "위험선호" }, excluded_components: { Credit: "신용", KoreaFlow: "한국 수급" } }} />);
+    expect(container.querySelectorAll(".sh-heat-row").length).toBe(1);
+    expect(container.querySelector(".sh-excluded")?.textContent).toContain("신용 · 한국 수급");
+  });
+
   it("지금이 무엇이고 며칠째인지, 직전 라벨·전환 횟수·세 온도를 쓴다", () => {
     render(<StateHistoryStrip history={data} />);
     const last = data.points[data.points.length - 1]!;

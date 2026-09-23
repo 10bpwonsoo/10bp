@@ -62,6 +62,7 @@ class MarketStateHistory(Base):
     confidence_second_half: float | None = None
     temperature_first_half: float | None = None
     temperature_second_half: float | None = None
-    component_labels: dict[str, str] = Field(default_factory=dict, description="components 의 키 → 화면 라벨 (온도계 순서)")
+    component_labels: dict[str, str] = Field(default_factory=dict, description="components 의 키 → 화면 라벨 (온도계 순서). 기간 내내 결측인 재료는 뺀다")
+    excluded_components: dict[str, str] = Field(default_factory=dict, description="기간 내내 결측이라 표에서 뺀 재료 (키 → 라벨). 숨긴 것이 아니라 여기 적는다")
     summary: str = ""
     note: str = Field(default="", description="계산 방식·한계")

@@ -491,6 +491,8 @@ export interface MarketStateHistory {
   temperature_first_half: number | null;
   temperature_second_half: number | null;
   component_labels: Record<string, string>;
+  /** 기간 내내 결측이라 표에서 뺀 재료 (키 → 라벨) */
+  excluded_components: Record<string, string>;
   summary: string;
   note: string;
 }

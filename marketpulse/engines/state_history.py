@@ -125,6 +125,12 @@ def replay_market_state(
         prev_label = state.primary_label
         component_labels = {c.key: c.label for c in thermo.components}
 
+    # 기간 내내 결측인 재료(예: 신용·한국 수급 — 공급자가 없다)는 표에서 빼되, 뺐다는 사실을 남긴다.
+    excluded = {k: lbl for k, lbl in component_labels.items() if all(p.components.get(k) is None for p in points)}
+    component_labels = {k: lbl for k, lbl in component_labels.items() if k not in excluded}
+    if excluded:
+        points = [p.model_copy(update={"components": {k: v for k, v in p.components.items() if k not in excluded}}) for p in points]
+
     segments: list[StateSegment] = []
     for p in points:
         if segments and segments[-1].label == p.label:
@@ -162,7 +168,7 @@ def replay_market_state(
         days_by_label=days_by_label, current_streak=segments[-1].days if segments else 0,
         previous_label=segments[-2].label if len(segments) >= 2 else None,
         confidence_first_half=c1, confidence_second_half=c2, temperature_first_half=t1, temperature_second_half=t2,
-        component_labels=component_labels, summary=summary,
+        component_labels=component_labels, excluded_components=excluded, summary=summary,
         note=("같은 시계열을 날짜별로 잘라 같은 엔진(판정 → 온도계)으로 다시 계산한 값이다 — 오늘 화면과 같은 잣대. "
               "뉴스 온도는 그 시점까지 이번 캡처에 남아 있는 기사로만 재므로 앞쪽 날들은 결측이고, 상관·지배 축은 계산하지 않았다. "
               "그날 확보되지 않은 계열은 그날 판정에서도 빠진다. 확신의 지속성 항은 전날 재생값을 직전 판정으로 넣어 계산하므로 "

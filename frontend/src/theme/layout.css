@@ -960,6 +960,7 @@
 .sh-axis-few { display: none; position: relative; height: 12px; font-size: 9px; color: var(--faint); margin-top: 3px; }
 .sh-axis-few span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 /* 재료 히트맵 */
+.sh-excluded { color: var(--faint); }
 .sh-heat { display: flex; flex-direction: column; gap: 2px; }
 .sh-heat-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 34px; gap: 6px; align-items: center; }
 .sh-heat-label { font-size: 10px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
