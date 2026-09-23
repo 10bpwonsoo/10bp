@@ -1,8 +1,8 @@
 # Market Pulse AI — 세션 작업 정리 (2026-09-16)
 
 브랜치 `claude/market-pulse-ai-design-r7pmsm`, 커밋 34개 (전부 푸시됨), 백엔드 테스트 618건 + 프런트 렌더 테스트 23건 통과.
-배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 17, 2026-09-17 종가),
-화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 11).
+배포본: 대시보드 https://claude.ai/code/artifact/1211f267-bc03-4151-8278-0da629aca833 (Version 23, 2026-09-22 종가),
+화면 판독 가이드 https://claude.ai/code/artifact/fd6cd140-aae5-4b29-b7e7-53a088790c1e (Version 17).
 
 > 2026-09-16 후반에 **Investment Intelligence** 층이 기존 대시보드 아래에 추가됐다 — 5절.
 
@@ -199,6 +199,13 @@
 - `PipelineResult.series_by_id` 로 원시 시계열을 넘기고, `StateHistoryService` 가 as_of 별로 캐시. `GET /api/v1/market-state/history`. 스냅샷은 그대로.
 - 프런트 `StateHistoryStrip` (Market State 패널 안, 주도 변수 아래): 종합·가격·뉴스 온도 선 + 판정 확신 기둥(보조지표) + 라벨 띠, 온도계 재료 여섯 항목의 날짜별 히트맵, 요약·구간 목록. 정적 배포본은 뷰별 재생 JSON 을 shim 이 돌려준다.
 - 테스트 +9(백엔드) +5(프런트). 실데이터 9/17 종가 기준: 판정 없음 16일 · Risk-On 3일 · Policy Driven 1 · Risk-Off 1 · Liquidity Stress 1, 전환 9회, 현재 Risk-On 1일째.
+
+### 2026-09-23 갱신 (5차 수기 캡처, `data/captures/2026-09-23-manual/`)
+- 시장 봉은 9/22 종가까지, 기준 시각 9/23 00:53 UTC. 시장 35/50(코스피는 Yahoo 429 뒤 단독 재시도로 확보), RSS 80건 + 해외검색 9건 중 40건 수기 태깅.
+- 판정 없음 36%(유가 급락·칩 랠리·에너지 급락이 같은 날), 온도계 +23(가격 +28 / 뉴스 +16), 괴리 4건, 알림 5건.
+- Investment Intelligence: 드라이버 6(WTI·브렌트·천연가스·CSI300·USD/KRW·항셍), 이상 거동 대한항공(+3.5σ, 거래량 +2.7σ, NEWS_DRIVEN_MOVE), 괴리 4건, 반도체 peer·국내 모두 상승 합의. 설탕·면화·커피 저장 봉 수정 경고가 처음 실제로 떴다.
+- 히스토리: 9/17 Risk-On → 9/18 Liquidity Stress → 9/21 Risk-On → 9/22 판정 없음. 종합 온도 나흘 연속 양수(이 달 처음). 뉴스 온도는 병합 이벤트로 9/8~9/22.
+- 수기 해설 `data/commentary/2026-09-23.json`: 시장 1 · 종목 5 · 대체 3.
 
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).

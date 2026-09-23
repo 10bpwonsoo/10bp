@@ -19,7 +19,7 @@
 stocks:
   # ── 반도체 ──
   - {id: SAMSUNG,      name: 삼성전자,        symbol: 005930.KS, sector: semiconductor, industry: memory,        peers: [MU, TSM, ASML],       drivers: [SOX, DRAM_SPOT, NAND_SPOT, USDKRW, US10Y], themes: [semiconductor, ai], aliases: [삼전, Samsung Electronics, Samsung], mock_base: 253000, mock_vol: 0.020}
-  - {id: SKHYNIX,      name: SK하이닉스,      symbol: 000660.KS, sector: semiconductor, industry: memory,        peers: [MU, NVDA, TSM],       drivers: [SOX, DRAM_SPOT, NAND_SPOT, USDKRW],        themes: [semiconductor, ai], aliases: [하이닉스, SK Hynix, Hynix, 삼전닉스], mock_base: 1759000, mock_vol: 0.028}
+  - {id: SKHYNIX,      name: SK하이닉스,      symbol: 000660.KS, sector: semiconductor, industry: memory,        peers: [MU, NVDA, TSM],       drivers: [SOX, DRAM_SPOT, NAND_SPOT, USDKRW],        themes: [semiconductor, ai], aliases: [하이닉스, SK Hynix, Hynix, 삼전닉스, 하닉], mock_base: 1759000, mock_vol: 0.028}
   - {id: HANMI_SEMI,   name: 한미반도체,      symbol: 042700.KS, sector: semiconductor, industry: equipment,     peers: [AMAT, LRCX, TEL],     drivers: [SOX, SKHYNIX],                             themes: [semiconductor, ai], aliases: [Hanmi Semiconductor], mock_base: 225500, mock_vol: 0.035}
   - {id: SAMSUNG_EM,   name: 삼성전기,        symbol: 009150.KS, sector: semiconductor, industry: components,    peers: [TSM],                 drivers: [SOX, USDKRW],                              themes: [ai, semiconductor], aliases: [Samsung Electro-Mechanics], mock_base: 190000, mock_vol: 0.025}
   # ── 2차전지 · 화학 ──
