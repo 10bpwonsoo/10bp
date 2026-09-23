@@ -1,4 +1,5 @@
-import type { AxisLink, CalendarEvent, EventWindow, MarketState } from "../api/types";
+import type { AxisLink, CalendarEvent, EventWindow, MarketState, MarketStateHistory } from "../api/types";
+import { StateHistoryStrip } from "./StateHistoryStrip";
 import { Pending } from "./Panel";
 import { RuleTrace } from "./RuleTrace";
 import { ScoreTooltip } from "./ScoreTooltip";
@@ -87,9 +88,12 @@ function AxisLinks({ rows, sign }: { rows: AxisLink[]; sign: "+" | "−" }) {
 export function MarketStateHeader({
   state,
   calendar = null,
+  history = null,
 }: {
   state: MarketState;
   calendar?: EventWindow | null;
+  /** 최근 한 달 재생 히스토리. null 이면 아직 안 받았거나 서버가 없는 것 — 줄을 비운다. */
+  history?: MarketStateHistory | null;
 }) {
   const evaluated = Object.keys(state.factors).length > 0;
 
@@ -164,6 +168,9 @@ export function MarketStateHeader({
           ))}
         </div>
       )}
+
+      {/* 최근 한 달 흐름 — 같은 엔진을 날짜별로 재생한 값. 판정 아래, 지배 축 위. */}
+      <StateHistoryStrip history={history} />
 
       {/* 지배 축 (GOAL Kickstart Exhibit 4). 무엇이 흔들었고 무엇이 따라
           움직이는가. 상관이지 인과가 아니므로 문장도 그렇게 쓴다. */}

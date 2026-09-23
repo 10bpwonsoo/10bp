@@ -918,3 +918,27 @@
   .ii-link-row > :nth-child(2) { display: none; }
   .ii-hk { min-width: 0; display: block; }
 }
+
+/* ── Market State 한 달 히스토리 띠 (2026-09-23) ───────────── */
+.sh { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); }
+.sh-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+.sh-k { font-family: var(--font-mono); text-transform: uppercase; }
+.sh-legend { display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0; color: var(--muted); }
+.sh-leg i, .sh-seg i { display: inline-block; width: 8px; height: 8px; border-radius: 1px; margin-right: 4px; vertical-align: -1px; }
+.sh-cells { display: grid; gap: 2px; height: 34px; align-items: end; }
+.sh-cell { height: 100%; display: flex; align-items: flex-end; border-bottom: 1px solid var(--rule); cursor: default; }
+.sh-bar { width: 100%; border-radius: 1px 1px 0 0; opacity: .85; }
+.sh-cell:hover .sh-bar { opacity: 1; }
+.sh-temp { display: block; width: 100%; height: 34px; margin-top: 4px; }
+.sh-axis { position: relative; height: 12px; font-size: 9px; color: var(--faint); }
+.sh-axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.sh-axis span:first-child { transform: none; }
+.sh-axis span:last-child { transform: translateX(-100%); }
+.sh-summary { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+.sh-now b { font-weight: 600; }
+.sh-segs { display: flex; gap: 10px; flex-wrap: wrap; font-size: 10.5px; color: var(--muted); }
+.sh-note { font-size: 10.5px; color: var(--faint); line-height: 1.45; }
+@media (max-width: 760px) {
+  .sh-cells { height: 26px; }
+  .sh-segs { gap: 6px; }
+}

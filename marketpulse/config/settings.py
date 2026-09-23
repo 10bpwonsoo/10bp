@@ -51,6 +51,8 @@ class Settings(BaseSettings):
     http_timeout_sec: float = 8.0
     #: 실데이터에서 뉴스를 몇 건까지 받을지.
     news_limit: int = 60
+    #: Market State 히스토리(같은 엔진을 날짜별로 재생)를 몇 거래일 보여줄지. 한 달 ≈ 22.
+    state_history_days: int = 22
 
     #: Anthropic API 키. 보통은 SDK 가 ANTHROPIC_API_KEY 에서 직접 읽는다.
     #: 이 필드(MARKETPULSE_ANTHROPIC_API_KEY)는 실행 환경이 ANTHROPIC_API_KEY

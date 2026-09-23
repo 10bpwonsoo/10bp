@@ -16,7 +16,8 @@ from ...config.settings import Settings
 from ...models.snapshot import IntelligenceSnapshot, MovingItem
 from ...models.state import MarketState
 from ...models.theme import ThemeState
-from ..deps import load_snapshot, resolve_settings
+from ...models.state_history import MarketStateHistory
+from ..deps import get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -39,6 +40,15 @@ def get_snapshot(
 def get_market_state(settings: SettingsDep) -> MarketState:
     """시장 상태만. 전체 스냅샷과 같은 계산 결과의 일부다."""
     return load_snapshot(settings).market_state
+
+
+@router.get("/market-state/history", response_model=MarketStateHistory)
+def get_market_state_history(
+    settings: SettingsDep,
+    days: Annotated[int | None, Query(ge=5, le=120, description="재생할 거래일 수. 기본은 설정(22 ≈ 한 달)")] = None,
+) -> MarketStateHistory:
+    """최근 한 달의 Market State 흐름. 같은 시계열을 날짜별로 잘라 같은 엔진으로 다시 판정한 값."""
+    return get_state_history_service().get(settings, days=days)
 
 
 @router.get("/themes", response_model=list[ThemeState])

@@ -1,0 +1,60 @@
+"""
+Market State 히스토리 (2026-09-23 신설).
+
+"지난 한 달 흐름이 어땠고 지금이 어디인가" 에 답하는 모델. 저장된 스냅샷을
+꺼내 쓰는 것이 아니라 **같은 시계열을 하루씩 잘라 같은 엔진(compute_market_state)
+을 다시 돌린** 결과다. 그래서 오늘 판정과 같은 잣대이고, 저장소가 없는
+정적 배포본에서도 나온다. 뉴스는 과거 시점 것을 재현할 수 없으므로 온도는
+가격 온도만 싣는다 — 없는 것을 0 으로 채우지 않는다.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime
+
+from pydantic import Field
+
+from .common import Base
+from .state import StateLabel
+
+
+class StateHistoryPoint(Base):
+    date: date
+    as_of: datetime
+    label: StateLabel
+    secondary_label: StateLabel | None = None
+    confidence: float = Field(ge=0.0, le=100.0)
+    #: 가격 온도 (-100~+100). None 은 factor 가 하나도 없어 못 잰 날
+    price_temperature: float | None = None
+    coverage: float = Field(ge=0.0, le=1.0, description="그날 확보 instrument 비율")
+    factors: dict[str, float] = Field(default_factory=dict, description="factor → z 단위 점수")
+    hypotheses: dict[str, float] = Field(default_factory=dict, description="라벨 → 가설 점수 (0 초과만)")
+    drivers: list[str] = Field(default_factory=list, description="그날 주도 변수 상위 3 — '라벨 +1.2σ'")
+
+
+class StateSegment(Base):
+    """같은 라벨이 이어진 구간."""
+
+    label: StateLabel
+    start: date
+    end: date
+    days: int
+    mean_confidence: float
+
+
+class MarketStateHistory(Base):
+    as_of: datetime
+    days_requested: int
+    points: list[StateHistoryPoint] = Field(default_factory=list)
+    segments: list[StateSegment] = Field(default_factory=list)
+    changes: int = Field(default=0, description="라벨이 바뀐 횟수")
+    days_by_label: dict[str, int] = Field(default_factory=dict)
+    current_streak: int = Field(default=0, description="현재 라벨이 이어진 거래일 수")
+    previous_label: StateLabel | None = Field(default=None, description="현재 구간 직전의 라벨")
+    #: 확신·가격 온도의 전반 vs 후반 평균. 흐름이 굳어지는지 풀리는지 한 줄로.
+    confidence_first_half: float | None = None
+    confidence_second_half: float | None = None
+    temperature_first_half: float | None = None
+    temperature_second_half: float | None = None
+    summary: str = ""
+    note: str = Field(default="", description="계산 방식·한계. 뉴스 온도는 재현 불가")

@@ -1,4 +1,5 @@
-import type { ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo } from "./types";
+import type {
+  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -72,3 +73,12 @@ export const fetchScenarios = (signal?: AbortSignal) =>
 
 export const fetchNews = (scenario?: string, signal?: AbortSignal) =>
   get<RawNewsItem[]>(`/api/v1/news${qs(scenario)}`, signal);
+
+/** Market State 한 달 히스토리. 스냅샷과 별도 엔드포인트 — 재생 비용이 있어 서버가 as_of 별로 캐시한다. */
+export const fetchStateHistory = (scenario?: string, signal?: AbortSignal, days?: number) => {
+  const params = new URLSearchParams();
+  if (scenario) params.set("scenario", scenario);
+  if (days) params.set("days", String(days));
+  const q = params.toString();
+  return get<MarketStateHistory>(`/api/v1/market-state/history${q ? `?${q}` : ""}`, signal);
+};

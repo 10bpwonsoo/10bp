@@ -340,6 +340,22 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
+### Market State 한 달 히스토리 (2026-09-23)
+
+Market State 패널 안, 주도 변수 아래에 최근 22거래일 띠가 붙었다. 하루 한 칸
+(색 = 라벨, 높이 = 확신), 그 아래 가격 온도 선, 그리고 "지금 Risk-On 1일째 ·
+직전 판정 없음 3일 · 전환 9회" 한 줄과 구간 목록.
+
+저장된 스냅샷을 꺼내는 것이 아니다. `engines/state_history.py` 가 **같은
+시계열을 날짜별로 잘라 같은 엔진**(`build_snapshot` → `compute_market_state`
+→ `price_temperature`)을 다시 돌린다. 그래서 오늘 판정과 같은 잣대이고
+저장소 없는 정적 배포본에서도 나온다. 마지막 점은 언제나 화면과 같은
+절단(as_of)이다. 뉴스 온도는 과거 기사를 재현할 수 없어 싣지 않는다.
+
+엔드포인트는 `GET /api/v1/market-state/history?days=22` — 스냅샷에 넣지 않고
+따로 두었다(22일 재생은 몇 초라 as_of 별로 캐시한다). 기본 일수는
+`MARKETPULSE_STATE_HISTORY_DAYS`.
+
 ### Investment Intelligence (2026-09-16)
 
 기존 대시보드 **아래**에 붙은 두 번째 층이다. 기존 엔진·스냅샷·API·WebSocket·

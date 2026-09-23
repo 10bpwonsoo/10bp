@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Mapping, Sequence
 
@@ -36,6 +36,7 @@ from ..config.settings import Settings
 from ..models.common import DataMode, arrow_for, direction_for, utcnow
 from ..models.market import Instrument, MarketSnapshot
 from ..models.news import NewsEvent, RawNewsItem
+from ..models.market import MarketSeries
 from ..models.snapshot import DataHealth, IntelligenceSnapshot, MovingItem
 from ..models.alert import Alert
 from ..models.divergence import Divergence
@@ -560,6 +561,9 @@ class PipelineResult:
 
     snapshot: IntelligenceSnapshot
     pending: list[Divergence]
+    #: 이 틱에 쓴 원시 시계열. 스냅샷에는 싣지 않는다 — Market State 히스토리
+    #: 재생(state_history)이 같은 데이터를 다시 잘라 쓰기 위해 넘긴다.
+    series_by_id: dict[str, MarketSeries] = field(default_factory=dict)
 
 
 def run_pipeline(
@@ -656,4 +660,4 @@ def run_pipeline_detailed(
         llm_client=llm_client,
         week_ago=week_ago,
     )
-    return PipelineResult(snapshot=result, pending=pending)
+    return PipelineResult(snapshot=result, pending=pending, series_by_id=dict(series))

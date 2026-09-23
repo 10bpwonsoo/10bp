@@ -194,6 +194,12 @@
 - 데이터 주의: Yahoo 가 ^KS11·BZ=F·HG=F·KRW=X 의 9/17 일봉을 주지 않아 그 계열은 9/16 이 마지막이고 종목 상대 z 는 전부 결측.
 - 롤오버 후속: 다음 봉 판정은 날짜로 비교(저장소는 날짜만 남긴다). `persisted` 문구는 "실제 충격인지 월물 단차인지는 가리지 못한다" 로 — 단차도 되돌리지 않기 때문.
 
+### 2026-09-23 — Market State 한 달 히스토리
+- `models/state_history.py` `engines/state_history.py`: 같은 시계열을 날짜별로 잘라 같은 엔진으로 재생. 22거래일, 마지막 점은 as_of 절단(화면과 동일). 가격 온도만(뉴스 재현 불가).
+- `PipelineResult.series_by_id` 로 원시 시계열을 넘기고, `StateHistoryService` 가 as_of 별로 캐시. `GET /api/v1/market-state/history`. 스냅샷은 그대로.
+- 프런트 `StateHistoryStrip` (Market State 패널 안, 주도 변수 아래): 라벨 띠·가격 온도 선·요약·구간 목록. 정적 배포본은 뷰별 재생 JSON 을 shim 이 돌려준다.
+- 테스트 +9(백엔드) +5(프런트). 실데이터 9/17 종가 기준: 판정 없음 16일 · Risk-On 3일 · Policy Driven 1 · Risk-Off 1 · Liquidity Stress 1, 전환 9회, 현재 Risk-On 1일째.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

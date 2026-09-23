@@ -81,6 +81,8 @@ class SnapshotService:
         )
         #: 아직 지속 기간을 못 채운 divergence 후보. 다음 틱에서 이어붙인다.
         self._pending: dict[str, list[Divergence]] = defaultdict(list)
+        #: 마지막 틱의 원시 시계열 (히스토리 재생용). 스냅샷과 같은 데이터다.
+        self._series: dict[str, dict] = {}
 
     def ttl_for(self, mode: DataMode) -> float:
         """MOCK 은 짧게, 실데이터는 길게. 수집 시간보다 짧으면 안 된다."""
@@ -128,6 +130,7 @@ class SnapshotService:
             # 비워도 시계열이 끊기면 안 된다.
             self._history[key].append(result.snapshot)
             self._pending[key] = result.pending
+            self._series[key] = result.series_by_id
             self._cache[key] = _Entry(
                 snapshot=result.snapshot, created_at=time.monotonic()
             )
@@ -145,11 +148,18 @@ class SnapshotService:
         with self._lock:
             return list(self._history[key])
 
+    def series(self, settings: Settings) -> dict:
+        """마지막 틱의 원시 시계열. get() 뒤에만 채워져 있다."""
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            return dict(self._series.get(key, {}))
+
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
             self._history.clear()
             self._pending.clear()
+            self._series.clear()
 
 
 _service = SnapshotService()
@@ -255,3 +265,47 @@ def load_investment(settings: Settings, *, force: bool = False):
         return get_investment_service().get(settings, force=force)
     except AdapterError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+# ── Market State 히스토리 (2026-09-23) ─────────────────────────────
+class StateHistoryService:
+    """
+    같은 틱의 시계열로 Market State 를 날짜별로 재생한다. 스냅샷 as_of 가
+    같으면 다시 계산하지 않는다 — 22일 재생은 몇 초라 스냅샷 캐시보다 비싸다.
+    """
+
+    def __init__(self, base: SnapshotService) -> None:
+        self._base = base
+        self._cache: dict[tuple[str, int], tuple[datetime, object]] = {}
+        self._lock = threading.Lock()
+
+    def get(self, settings: Settings, *, days: int | None = None):
+        from ..config.registry import get_instruments
+        from ..engines.state_history import replay_market_state
+
+        snapshot = self._base.get(settings)
+        n = int(days or settings.state_history_days)
+        key = (f"{settings.data_mode.value}:{settings.scenario}", n)
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        series = self._base.series(settings)
+        result = replay_market_state(
+            get_instruments().instruments, series, as_of=snapshot.as_of, days=n,
+            mode=snapshot.mode, zscore_window=settings.zscore_window, config_dir=settings.config_dir,
+        )
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_state_history_service = StateHistoryService(_service)
+
+
+def get_state_history_service() -> StateHistoryService:
+    return _state_history_service

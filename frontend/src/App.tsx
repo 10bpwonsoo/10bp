@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchInfo, fetchScenarios, staticBundle } from "./api/client";
 import type { ApiInfo, DataMode, ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
+import { useStateHistory } from "./api/useStateHistory";
 import { DataModeBadge } from "./components/DataModeBadge";
 import { RefreshButton } from "./components/RefreshButton";
 import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
@@ -20,6 +21,8 @@ export default function App() {
     mode !== null,
   );
   const bundle = staticBundle();
+  // Market State 한 달 히스토리 — 스냅샷 as_of 가 바뀔 때만 다시 받는다.
+  const { history: stateHistory } = useStateHistory(scenario, snapshot?.as_of ?? null, mode !== null);
 
   useEffect(() => {
     const c = new AbortController();
@@ -85,7 +88,7 @@ export default function App() {
 
       {snapshot ? (
         <>
-          <DashboardGrid snapshot={snapshot} />
+          <DashboardGrid snapshot={snapshot} history={stateHistory} />
           {/* 기존 대시보드 아래의 신규 영역. 별도 엔드포인트·캐시라 기존 화면이 먼저 뜬다. */}
           <InvestmentSection scenario={scenario} enabled={mode !== null} />
         </>

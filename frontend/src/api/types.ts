@@ -455,3 +455,35 @@ export interface ApiInfo {
   llm_enabled: boolean;
   zscore_window: number;
 }
+
+// ── Market State 히스토리 (2026-09-23) ─────────────────────────────
+export interface StateHistoryPoint {
+  date: string;
+  as_of: string;
+  label: StateLabel;
+  secondary_label: StateLabel | null;
+  confidence: number;
+  /** 가격 온도. null 은 그날 factor 가 없어 못 잰 것 */
+  price_temperature: number | null;
+  coverage: number;
+  factors: Record<string, number>;
+  hypotheses: Record<string, number>;
+  drivers: string[];
+}
+export interface StateSegment { label: StateLabel; start: string; end: string; days: number; mean_confidence: number }
+export interface MarketStateHistory {
+  as_of: string;
+  days_requested: number;
+  points: StateHistoryPoint[];
+  segments: StateSegment[];
+  changes: number;
+  days_by_label: Record<string, number>;
+  current_streak: number;
+  previous_label: StateLabel | null;
+  confidence_first_half: number | null;
+  confidence_second_half: number | null;
+  temperature_first_half: number | null;
+  temperature_second_half: number | null;
+  summary: string;
+  note: string;
+}
