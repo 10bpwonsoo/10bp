@@ -293,7 +293,7 @@ class StateHistoryService:
         series = self._base.series(settings)
         result = replay_market_state(
             get_instruments().instruments, series, as_of=snapshot.as_of, days=n,
-            mode=snapshot.mode, zscore_window=settings.zscore_window, config_dir=settings.config_dir,
+            mode=snapshot.mode, events=snapshot.events, zscore_window=settings.zscore_window, config_dir=settings.config_dir,
         )
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)

@@ -24,8 +24,14 @@ class StateHistoryPoint(Base):
     label: StateLabel
     secondary_label: StateLabel | None = None
     confidence: float = Field(ge=0.0, le=100.0)
-    #: 가격 온도 (-100~+100). None 은 factor 가 하나도 없어 못 잰 날
+    #: 온도계와 같은 식의 세 온도 (-100~+100). None 은 못 잰 날 — 뉴스는 그 시점까지 캡처된 기사가 있어야 나온다
     price_temperature: float | None = None
+    news_temperature: float | None = None
+    composite: float | None = None
+    news_events: int = Field(default=0, description="그날 뉴스 온도에 쓴 기사 수")
+    thermo_confidence: float = Field(default=0.0, ge=0.0, le=100.0, description="온도계 신뢰도")
+    #: 온도계 재료 스트립과 같은 항목 (위험선호·변동성·성장·신용·한국 수급·뉴스 감성). None 은 결측
+    components: dict[str, float | None] = Field(default_factory=dict)
     coverage: float = Field(ge=0.0, le=1.0, description="그날 확보 instrument 비율")
     factors: dict[str, float] = Field(default_factory=dict, description="factor → z 단위 점수")
     hypotheses: dict[str, float] = Field(default_factory=dict, description="라벨 → 가설 점수 (0 초과만)")
@@ -56,5 +62,6 @@ class MarketStateHistory(Base):
     confidence_second_half: float | None = None
     temperature_first_half: float | None = None
     temperature_second_half: float | None = None
+    component_labels: dict[str, str] = Field(default_factory=dict, description="components 의 키 → 화면 라벨 (온도계 순서)")
     summary: str = ""
-    note: str = Field(default="", description="계산 방식·한계. 뉴스 온도는 재현 불가")
+    note: str = Field(default="", description="계산 방식·한계")

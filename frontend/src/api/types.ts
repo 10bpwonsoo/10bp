@@ -463,8 +463,14 @@ export interface StateHistoryPoint {
   label: StateLabel;
   secondary_label: StateLabel | null;
   confidence: number;
-  /** 가격 온도. null 은 그날 factor 가 없어 못 잰 것 */
+  /** 온도계와 같은 식의 세 온도. null 은 못 잰 것 — 뉴스는 그 시점까지 캡처된 기사가 있어야 나온다 */
   price_temperature: number | null;
+  news_temperature: number | null;
+  composite: number | null;
+  news_events: number;
+  thermo_confidence: number;
+  /** 온도계 재료 스트립과 같은 항목. null 은 결측 */
+  components: Record<string, number | null>;
   coverage: number;
   factors: Record<string, number>;
   hypotheses: Record<string, number>;
@@ -484,6 +490,7 @@ export interface MarketStateHistory {
   confidence_second_half: number | null;
   temperature_first_half: number | null;
   temperature_second_half: number | null;
+  component_labels: Record<string, string>;
   summary: string;
   note: string;
 }

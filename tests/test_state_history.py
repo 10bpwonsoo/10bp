@@ -60,6 +60,22 @@ class TestReplay:
         assert last.label == state.primary_label
         assert last.confidence == pytest.approx(state.confidence, abs=1e-6)
         assert last.factors == {k: round(v.score, 3) for k, v in state.factors.items()}
+        # 온도계도 같은 식 — 재료 키는 온도계 스트립과 같다
+        assert set(h.component_labels) == set(last.components)
+        assert last.price_temperature is not None and last.composite is not None
+        assert "RiskAppetite" in last.components and h.component_labels["RiskAppetite"] == "위험선호"
+
+    def test_news_temperature_only_where_events_exist(self, mock_series):
+        """뉴스 온도는 그 시점까지 넘겨준 기사로만 잰다 — 기사가 없으면 None 이지 0 이 아니다."""
+        from marketpulse.models.news import NewsEvent, ValidationReport
+        ins, series, as_of = mock_series
+        ev = NewsEvent(id="e", event="x", event_type="macro", themes=["rates"], sentiment=40, impact_score=60,
+                       timestamp=as_of - timedelta(hours=3), source="t", extractor="manual",
+                       validation=ValidationReport(schema_ok=True), confidence=0.6)
+        h = replay_market_state(ins, series, as_of=as_of, days=5, mode=DataMode.MOCK, events=[ev])
+        assert all(p.news_temperature is None and p.news_events == 0 for p in h.points[:-1])
+        assert h.points[-1].news_events == 1 and h.points[-1].news_temperature is not None
+        assert h.points[-1].components["news"] is not None and h.points[-2].components["news"] is None
 
     def test_segments_and_counts_are_consistent(self, mock_series):
         ins, series, as_of = mock_series
