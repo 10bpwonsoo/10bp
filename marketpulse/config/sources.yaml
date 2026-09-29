@@ -62,6 +62,10 @@ sources:
   US10Y:     [{provider: fred, symbol: "DGS10"}, {provider: yahoo, symbol: "^TNX"}]
   US30Y:     [{provider: fred, symbol: "DGS30"}, {provider: yahoo, symbol: "^TYX"}]
   BE10Y:     [{provider: fred, symbol: "T10YIE"}]
+  US5Y:      [{provider: fred, symbol: "DGS5"},  {provider: yahoo, symbol: "^FVX"}]
+  BE5Y:      [{provider: fred, symbol: "T5YIE"}]
+  TIPS10Y:   [{provider: fred, symbol: "DFII10"}]
+  TIPS5Y:    [{provider: fred, symbol: "DFII5"}]
   KR3Y:      [{provider: krx, dataset: bond_yield, symbol: "국고채 3년"}]
   KR10Y:     [{provider: krx, dataset: bond_yield, symbol: "국고채 10년"}]
   # CURVE_2S10S 는 derived_from 으로 계산된다. 여기 적지 않는다.

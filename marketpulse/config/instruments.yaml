@@ -46,12 +46,17 @@ instruments:
     derived_from: {op: ratio, a: XLY, b: XLU}
 
   # ── Rates (단위는 percent, 변화는 bp 로 표시한다) ────────
-  - {id: US2Y,  name: US 2Y Treasury,  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, front]}
-  - {id: US10Y, name: US 10Y Treasury, asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, benchmark]}
-  - {id: US30Y, name: US 30Y Treasury, asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, long]}
+  - {id: US2Y,  name: US 2Y Yield,     asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, front]}
+  - {id: US10Y, name: US 10Y Yield,    asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, benchmark]}
+  - {id: US30Y, name: US 30Y Yield,    asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, long]}
   - {id: KR3Y,  name: 국고 3년,         asset_class: rate, unit: percent, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX,  tags: [rates, korea]}
   - {id: KR10Y, name: 국고 10년,        asset_class: rate, unit: percent, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX,  tags: [rates, korea]}
+  - {id: US5Y,  name: US 5Y Yield,     asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, belly]}
   - {id: BE10Y, name: US 10Y Breakeven, asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, inflation_expectation]}
+  - {id: BE5Y,  name: US 5Y Breakeven,  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, inflation_expectation]}
+  # TIPS 실질금리 — 명목 = 실질 + 기대인플레이션 분해의 실측 쪽. FRED 일간(하루 지연)
+  - {id: TIPS10Y, name: US 10Y Real Yield (TIPS), asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, real_yield]}
+  - {id: TIPS5Y,  name: US 5Y Real Yield (TIPS),  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, real_yield]}
   - id: CURVE_2S10S
     name: US 2s10s Curve
     asset_class: rate
