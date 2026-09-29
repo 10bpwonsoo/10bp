@@ -24,9 +24,17 @@ export function SemiconductorIntelligence({ s }: { s: Semi }) {
         <div>
           <div className="ii-group mono">메모리 가격</div>
           {s.memory.map((p) => (
-            <div key={p.id} className="row ii-semi-row" title={p.why}>
-              <span className="row-label">{p.label}{p.quality === "MISSING" ? <span className="row-sub" style={{ color: "var(--faint)" }}> 데이터 없음</span> : null}</span>
-              <span className={`num ${p.change_1m !== null && p.change_1m >= 0 ? "up" : "down"}`}>{p.quality === "MISSING" ? "–" : `1M ${pct(p.change_1m, 1)}`}</span>
+            <div key={p.id} className="row ii-semi-row" title={p.note || p.why} data-testid="memory-row" data-id={p.id}>
+              <span className="row-label">{p.label}{p.quality === "MISSING" ? <span className="row-sub" style={{ color: "var(--faint)" }}> 데이터 없음</span> : null}{zGapTag(p) ? <span className="row-sub" style={{ color: "var(--info)" }}> {zGapTag(p)}</span> : null}</span>
+              {/* 값 · 변화. 봉이 짧거나 분기 추정치면 1개월 변화가 없다 — 그때는 직전 대비(1d) 를 쓴다. 값은 항상 적는다 */}
+              <span className={`num ${(p.change_1m ?? p.change_1d ?? 0) >= 0 ? "up" : "down"}`}>
+                {p.quality === "MISSING" ? "–" : (
+                  <>
+                    <span style={{ color: "var(--ink)" }}>{p.value === null ? "–" : p.value >= 1000 ? p.value.toLocaleString("en-US", { maximumFractionDigits: 0 }) : p.value.toFixed(p.value >= 100 ? 1 : 2)}</span>
+                    {" "}{p.change_1m !== null ? `1M ${pct(p.change_1m, 1)}` : p.change_1d !== null ? `${p.frequency && p.frequency !== "daily" ? "직전 발표 대비" : "1D"} ${pct(p.change_1d, 1)}` : ""}
+                  </>
+                )}
+              </span>
               <MiniBar v={p.z} />
             </div>
           ))}
