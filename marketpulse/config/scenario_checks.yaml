@@ -3,7 +3,7 @@
 # 실데이터가 그 시나리오와 얼마나 닮았는지를 보여준다. 숫자는 전부 여기 규칙으로 계산되고
 # 화면은 만들지 않는다.
 checks:
-  # focus: 그 탭이 앞세우는 판정 — rule(가정 라벨의 require 룰) · fear_greed(온도계 공포·탐욕) · semiconductor(반도체 합의) · calm(평시 여부)
+  # focus: 그 탭이 앞세우는 판정 — rule(가정 라벨의 require 룰) · oil_regime(유가 원인 판별) · fear_greed(온도계 공포·탐욕) · semiconductor(반도체 합의) · calm(평시 여부)
   # theme_conditions: 가격 z 로는 못 잡는 서명 — 테마 뉴스 톤·가격 점수(−100~+100) 조건.
   #   expected 가 0 이면 '조용해야 한다' 조건이고 tolerance(같은 단위) 안이면 일치.
   #   weight 는 z 서명(|기대 z|)과 같은 저울에 올리기 위한 값이다.
@@ -16,7 +16,7 @@ checks:
       - {theme: inflation, field: news_sentiment, expected: 30, weight: 1.5}
   oil_spike:
     label: GEOPOLITICAL_RISK
-    focus: rule
+    focus: oil_regime               # 유가 탭 — 시장 원인 판별 화면 (판정 룰은 Diagnostics 로)
     commodities: [BRENT, WTI]       # 룰 탭이 붙이는 원자재 → 산업 → 종목 경로
     themes: [oil, geopolitical_risk, energy]
     theme_conditions:

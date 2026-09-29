@@ -50,7 +50,7 @@ class ScenarioCheck(Base):
     #: 이 시나리오가 가정하는 판정 라벨 (없는 시나리오도 있다)
     label: StateLabel | None = None
     #: 탭이 앞세우는 판정. rule · fear_greed · semiconductor · calm — 설정(scenario_checks.yaml)에서 온다
-    focus: Literal["rule", "fear_greed", "semiconductor", "calm"] = "rule"
+    focus: Literal["rule", "oil_regime", "fear_greed", "semiconductor", "calm"] = "rule"
     #: focus=rule 일 때 펼쳐 보이는 팩터와 원자재 경로 (설정)
     factor: str | None = None
     commodities: list[str] = Field(default_factory=list)

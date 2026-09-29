@@ -536,7 +536,7 @@ export interface ScenarioCheck {
   as_of: string;
   label: StateLabel | null;
   /** 탭이 앞세우는 판정 — 설정(scenario_checks.yaml)에서 온다 */
-  focus: "rule" | "fear_greed" | "semiconductor" | "calm";
+  focus: "rule" | "oil_regime" | "fear_greed" | "semiconductor" | "calm";
   factor: string | null;
   commodities: string[];
   match_score: number;
@@ -558,4 +558,19 @@ export interface ScenarioCheck {
   themes: ScenarioThemeRef[];
   verdict: string;
   note: string;
+}
+
+/** 유가 시장 원인 판별 — 판정 룰이 아니라 증거 집계. 서버(oil_regime.yaml)가 만든다 */
+export type DriverStatus = "CONFIRMED" | "UNCONFIRMED" | "CONTRADICTED";
+export type ConfirmStatus = "confirms" | "contradicts" | "neutral" | "missing";
+export interface OilEvidenceItem { id: string; label: string; kind: "price" | "news"; layer: "market" | "alternative" | "theme"; value: number | null; window: number | null; sign: number; weight: number; contribution: number; available: boolean; note: string }
+export interface OilDriverScore { id: string; label: string; label_ko: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: OilEvidenceItem[]; implication: string }
+export interface OilMove { brent_z: number | null; wti_z: number | null; oil_z: number | null; direction: "up" | "down" | "flat" | "unknown"; suspect: boolean; note: string }
+export interface OilConfirmationRow { key: string; label: string; instruments: string[]; values: Record<string, number | null>; expected_sign: number | null; status: ConfirmStatus; note: string }
+export interface OilNarrativeRow { theme_id: string; name: string; news: number | null; price: number | null; sentence: string; divergence_severity: number | null }
+export interface OilWatchItem { text: string; metric: string; current: string; condition: string; effect: string }
+export interface OilRegime {
+  as_of: string; oil_move: OilMove; drivers: OilDriverScore[]; dominant: string; runner_up: string | null; margin: number;
+  signal_strength: number; signal_strength_label: string; regime_label: string; headline: string; implication: string;
+  confirmations: OilConfirmationRow[]; narrative: OilNarrativeRow[]; watch: OilWatchItem[]; note: string;
 }

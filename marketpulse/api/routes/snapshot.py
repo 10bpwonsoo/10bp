@@ -18,7 +18,8 @@ from ...models.state import MarketState
 from ...models.theme import ThemeState
 from ...models.state_history import MarketStateHistory
 from ...models.scenario_check import ScenarioCheck
-from ..deps import get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+from ...models.oil_regime import OilRegime
+from ..deps import get_oil_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -56,6 +57,12 @@ def get_market_state_history(
 def get_scenario_check(settings: SettingsDep) -> list[ScenarioCheck]:
     """모의 시나리오의 충격 서명을 지금 데이터에 대어 본 결과. 모의 탭을 실데이터로 바꾼 것 — 예측이 아니다."""
     return get_scenario_check_service().get(settings)
+
+
+@router.get("/oil-regime", response_model=OilRegime)
+def get_oil_regime(settings: SettingsDep) -> OilRegime:
+    """유가 시장 원인 판별 — 거시·유동성/수요/공급/지정학 driver 의 증거 점수와 확인 상태. 판정 룰이 아니라 증거 집계다."""
+    return get_oil_regime_service().get(settings)
 
 
 @router.get("/themes", response_model=list[ThemeState])

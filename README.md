@@ -340,6 +340,16 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
+### 유가 탭 — 시장 원인 판별 (2026-09-29)
+
+유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`
+가 `config/oil_regime.yaml` 의 증거표로 거시·유동성 / 수요 / 공급 / 지정학 프리미엄
+네 driver 의 점수(−100~+100, 부호 = 유가에 주는 방향)를 내고, 유가 관측(브렌트·WTI)에
+비춰 CONFIRMED / UNCONFIRMED / CONTRADICTED 를 붙인다. 두 유가가 갈리면 확인을
+보류한다. 화면은 REGIME → DRIVER → MARKET CONFIRMATION → NARRATIVE vs PRICE →
+WHAT TO WATCH NEXT(판단이 바뀌는 조건 3~5개) → Diagnostics(룰 판정·서명 대조,
+접이식) 순이다. 엔드포인트 `GET /api/v1/oil-regime`. 판정 룰 엔진은 그대로 돈다.
+
 ### 메모리 가격 — DRAM·NAND 현물과 HBM 계약가 추정 (2026-09-29)
 
 `python -m marketpulse.scripts.collect_memory_prices` 가 두 공개 출처를 읽어

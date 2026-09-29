@@ -1,5 +1,5 @@
 import type {
-  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck } from "./types";
+  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -86,4 +86,9 @@ export const fetchStateHistory = (scenario?: string, signal?: AbortSignal, days?
 export const fetchScenarioChecks = (scenario?: string, signal?: AbortSignal) => {
   const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
   return get<ScenarioCheck[]>(`/api/v1/scenario-check${q}`, signal);
+};
+
+export const fetchOilRegime = (scenario?: string, signal?: AbortSignal) => {
+  const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
+  return get<OilRegime>(`/api/v1/oil-regime${q}`, signal);
 };

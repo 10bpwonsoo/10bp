@@ -228,6 +228,8 @@
 
 - 메모리 가격: `adapters/alternative/memory_sources.py`(DRAMeXchange 홈 표·Silicon Analysts HBM 파서) + `scripts/collect_memory_prices.py`(CSV 수집기). DRAM·DDR5·NAND 현물·DXI 는 오늘부터 하루 한 줄, HBM3E·HBM4 계약가 추정은 분기 앵커. `Instrument.min_points`(봉 1개 허용)·`AltInstrument.frequency`(분기면 z 없음)·`AltDataPoint.frequency/observations`, 화면 '분기 추정'·'봉 n/20' 표식, 반도체 해석문에 '값은 있으나 봉 부족' 문장. 테스트 +8.
 
+- 유가 탭을 **시장 원인 판별** 화면으로: `config/oil_regime.yaml`(driver 4개의 증거표·부호·가중, 확인표, 내러티브 명사, 감시 임계), `models/oil_regime.py`, `engines/oil_regime.py`(가중 clip 평균, 유가 관측 대비 CONFIRMED/UNCONFIRMED/CONTRADICTED, 브렌트·WTI 불일치면 보류, 확인표, 테마별 한 문장, 감시 조건 ≤5), `GET /api/v1/oil-regime`. 프런트 `OilRegimeView`(REGIME → DRIVER → CONFIRMATION → NARRATIVE vs PRICE → WHAT TO WATCH NEXT → Diagnostics 접이식에 룰 판정·서명 대조). 9/29: Macro/Liquidity Risk-Off −80 STRONG UNCONFIRMED, 지정학 +20. 테스트 +5(백엔드) +3(프런트).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

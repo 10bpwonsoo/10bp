@@ -1,4 +1,5 @@
-import type { IntelligenceSnapshot, MarketStateHistory, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
+import type { IntelligenceSnapshot, MarketStateHistory, OilRegime, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
+import { OilRegimeView } from "./OilRegimeView";
 import type { InvestmentIntelligence } from "../api/investment";
 import { Panel } from "./Panel";
 import { RuleTrace } from "./RuleTrace";
@@ -88,9 +89,14 @@ function FactorBreakdown({ snapshot, factor }: { snapshot: IntelligenceSnapshot;
   );
 }
 
-export function ScenarioView({ check, snapshot, history, investment }: {
-  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null;
+export function ScenarioView({ check, snapshot, history, investment, oilRegime = null }: {
+  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null;
 }) {
+  // 유가 탭 — 시장 원인 판별 화면. 룰 판정·서명 대조는 그 화면의 Diagnostics 안으로 들어간다.
+  if (check.focus === "oil_regime") {
+    if (!oilRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>유가 원인 판별을 불러오는 중…</div></section></div>;
+    return <OilRegimeView regime={oilRegime} snapshot={snapshot} check={check} history={history} />;
+  }
   const themeIds = new Set(check.themes.map((t) => t.theme_id));
   const themes = snapshot.themes.filter((t) => themeIds.has(t.theme_id));
   const themeNames = Object.fromEntries(snapshot.themes.map((t) => [t.theme_id, t.name]));

@@ -348,6 +348,25 @@ class ScenarioCheckService:
             self._cache[key] = (snapshot.as_of, result)
         return result
 
+    def market_and_extra(self, settings: Settings):
+        """시장 z 스냅샷과 Investment 층의 대체·종목 z. 시나리오 점검과 유가 원인 판별이 같이 쓴다."""
+        from ..config.registry import get_instruments
+        from ..engines.normalize import build_snapshot
+        from ..engines.scenario_check import extra_z_from_investment
+
+        snapshot = self._base.get(settings)
+        series = self._base.series(settings)
+        instruments = get_instruments().instruments
+        market = build_snapshot(instruments, series, mode=snapshot.mode, as_of=snapshot.as_of,
+                                zscore_window=settings.zscore_window, correlations=False)
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._investment._lock:
+            inv_hit = self._investment._cache.get(key)
+        inv = inv_hit[0] if inv_hit else None
+        extra = extra_z_from_investment(inv) if inv else {}
+        names = {p.id: p.label for p in getattr(inv, "alternative", []) or []} if inv else {}
+        return snapshot, market, instruments, extra, names
+
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
@@ -358,3 +377,37 @@ _scenario_check_service = ScenarioCheckService(_service, get_investment_service(
 
 def get_scenario_check_service() -> ScenarioCheckService:
     return _scenario_check_service
+
+
+class OilRegimeService:
+    """유가 시장 원인 판별 — 스냅샷 as_of 별 캐시."""
+
+    def __init__(self, checks: ScenarioCheckService) -> None:
+        self._checks = checks
+        self._lock = threading.Lock()
+        self._cache: dict[str, tuple[object, object]] = {}
+
+    def get(self, settings: Settings):
+        from ..engines.oil_regime import build_oil_regime
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        snapshot, market, instruments, extra, names = self._checks.market_and_extra(settings)
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        result = build_oil_regime(market, snapshot.themes, snapshot.divergences, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_oil_regime_service = OilRegimeService(_scenario_check_service)
+
+
+def get_oil_regime_service() -> OilRegimeService:
+    return _oil_regime_service
