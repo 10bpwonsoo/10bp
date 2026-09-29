@@ -405,6 +405,78 @@ class LLMClient:
         self._circuit.record_success()
         return hits
 
+    def search_structured(
+        self,
+        *,
+        system: str,
+        user: str,
+        schema: dict,
+        max_uses: int = 3,
+        max_tokens: int = 4000,
+    ) -> tuple[dict, list[SearchHit]] | LLMFailure:
+        """
+        web_search 를 돌린 뒤 JSON 스키마 응답을 받는다. (응답 dict, 검색 결과 목록) 을 함께 돌려주므로
+        호출자가 응답의 URL 이 실제 검색 결과 안에 있는지 대조할 수 있다 — 애널리스트 코멘트처럼
+        attribution 이 붙는 정보는 그 대조를 통과해야만 쓴다.
+        """
+        if not self.enabled:
+            return LLMFailure("LLM 이 비활성화되어 있다", "disabled")
+        if self._circuit.is_open():
+            return LLMFailure(self._client_error or "연속 실패로 호출을 잠시 멈춘 상태다", "unavailable", permanent=self._circuit.permanently_open)
+        client = self._ensure_client()
+        if isinstance(client, LLMFailure):
+            return client
+        response = self._invoke(
+            lambda: client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": user}],
+                tools=[{"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}],
+                output_config={"effort": EXTRACT_EFFORT, "format": {"type": "json_schema", "schema": schema}},
+                timeout=self.search_timeout_sec,
+            )
+        )
+        if isinstance(response, LLMFailure):
+            return response
+        if getattr(response, "stop_reason", None) == "refusal":
+            self._circuit.record_success()
+            return LLMFailure("모델이 응답을 거절했다", "refusal")
+        hits: list[SearchHit] = []
+        current_query = ""
+        text = None
+        for block in getattr(response, "content", None) or []:
+            kind = getattr(block, "type", None)
+            if kind == "server_tool_use":
+                inp = getattr(block, "input", None) or {}
+                current_query = str(inp.get("query", "") if isinstance(inp, dict) else "")
+            elif kind == "web_search_tool_result":
+                content = getattr(block, "content", None)
+                if isinstance(content, list):
+                    for item in content:
+                        if getattr(item, "type", None) == "web_search_result":
+                            url = str(getattr(item, "url", "") or "").strip(); title = str(getattr(item, "title", "") or "").strip()
+                            if url and title:
+                                age = getattr(item, "page_age", None)
+                                hits.append(SearchHit(title=title, url=url, page_age=str(age) if age else None, query=current_query))
+            elif kind == "text":
+                text = getattr(block, "text", None)
+        if not text:
+            self._circuit.record_failure()
+            return LLMFailure("응답에 텍스트 블록이 없다", "parse")
+        import json
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            self._circuit.record_failure()
+            return LLMFailure(f"JSON 파싱 실패: {exc}", "parse")
+        if not isinstance(data, dict):
+            self._circuit.record_failure()
+            return LLMFailure("응답이 객체가 아니다", "parse")
+        self._circuit.record_success()
+        return data, hits
+
     def reset(self) -> None:
         self._circuit.reset()
         self._client = None

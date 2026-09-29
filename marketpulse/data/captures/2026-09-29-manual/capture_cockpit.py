@@ -28,3 +28,14 @@ print("RADAR", [(r.name, r.change_1d, r.tag, r.kind, r.score, r.signals, r.why[:
 for i in c.catalysts: print("CAT", i.level, i.time, i.tag, i.kind, i.cluster_size, i.headline[:50], "|", i.impact, "|", i.confidence, "|", i.price_confirmation[:20], i.related_stocks)
 print("EARN", c.earnings); print("NEXT", [(x.text, x.status, x.current) for x in c.what_matters_next], c.upcoming)
 print("WATCH", [(w.name, w.change_1d, w.watch, w.indicators) for w in c.watchlist]); print("DATA", c.data_status.line, c.data_status.warnings)
+# ANALYST VIEW — 수기 확인 파일을 같은 검증(validate_view)으로 걸러 radar 종목만 싣는다. provider 없음.
+from marketpulse.adapters.analyst_view import AnalystViewStore
+from marketpulse.models.analyst_view import AnalystViews
+_root = Path(__file__).resolve().parents[3]
+_store = AnalystViewStore(_root / "data/analyst_views/cache.json", _root / "data/analyst_views/manual")
+_ids = [r.id for r in c.radar]
+_best = _store.best(_ids, as_of=c.as_of, max_age_days=30)
+av = AnalystViews(as_of=c.as_of, views=[_best[i] for i in _ids if i in _best], requested=_ids, pending=[], missing=[i for i in _ids if i not in _best], provider="unavailable",
+                  note="웹에서 이름·증권사·날짜·URL·맥락이 모두 확인된 코멘트만(수기 확인). 없는 종목은 줄을 숨긴다. 시스템 판단과 섞지 않는다. 검색 provider 없음 — 저장된 코멘트만.")
+(CAP / "analyst_views.json").write_text(av.model_dump_json(), encoding="utf-8")
+print("ANALYST", [(v.stock_id, v.analyst, v.broker, str(v.published_date), v.freshness, v.stance) for v in av.views], "missing", av.missing)

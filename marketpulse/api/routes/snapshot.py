@@ -22,7 +22,8 @@ from ...models.oil_regime import OilRegime
 from ...models.rates_regime import RatesRegime
 from ...models.ai_regime import AiRegime
 from ...models.cockpit import Cockpit
-from ..deps import get_ai_regime_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+from ...models.analyst_view import AnalystViews
+from ..deps import get_ai_regime_service, get_analyst_view_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -84,6 +85,13 @@ def get_ai_regime(settings: SettingsDep) -> AiRegime:
 def get_cockpit(settings: SettingsDep) -> Cockpit:
     """실시간 메인 탭 — REGIME → DRIVERS → CONFIRMATION → LEADERSHIP → TRANSMISSION → CATALYSTS → NEXT. 기존 층의 값을 우선순위대로 고른 것."""
     return get_cockpit_service().get(settings)
+
+@router.get("/analyst-views", response_model=AnalystViews)
+def get_analyst_views(settings: SettingsDep, ids: str | None = Query(default=None, description="쉼표 구분 종목 id — 없으면 cockpit radar 종목")) -> AnalystViews:
+    """STOCK RADAR 의 외부 ANALYST VIEW. 저장된 것은 바로, 새 검색은 백그라운드 — 화면은 기다리지 않는다."""
+    wanted = [x.strip() for x in ids.split(",") if x.strip()] if ids else None
+    return get_analyst_view_service().get(settings, wanted)
+
 
 
 @router.get("/themes", response_model=list[ThemeState])

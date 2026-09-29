@@ -93,3 +93,62 @@ describe("CockpitView — MARKET REGIME HISTORY · 1M (실시간 2 전용)", () 
     expect(tr.querySelectorAll("li").length).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe("CockpitView — STOCK RADAR analyst view · WHAT MATTERS NEXT transmission path", () => {
+  it("radar 에는 확인된 종목만 ANALYST VIEW 한 줄(이름·증권사·날짜·freshness)이 붙고, 누르면 상세(Key view·Key variable·Source·System vs Analyst)가 열린다; 없는 종목은 줄 자체가 없다", async () => {
+    const av = (await import("../__fixtures__/analyst_views.json")).default as unknown as import("../api/types").AnalystViews;
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={av} />);
+    const lines = screen.getAllByTestId("ck-analyst-view");
+    expect(lines.length).toBe(av.views.length);
+    expect(lines.length).toBeLessThan(cockpit.radar.length); // 확인 안 된 종목은 숨긴다
+    for (const l of lines) expect(l.textContent).toMatch(/Analyst view · \d+D/);
+    const first = av.views[0]!;
+    const line = lines.find((l) => l.textContent?.includes(first.analyst))!;
+    expect(line.textContent).toContain(first.broker);
+    expect(line.textContent).toContain(first.summary);
+    expect(screen.queryByTestId("ck-analyst-detail")).toBeNull();
+    fireEvent.click(line);
+    const d = screen.getByTestId("ck-analyst-detail");
+    expect(d.textContent).toMatch(/Key view/); expect(d.textContent).toMatch(/Key variable/);
+    expect(d.querySelector("a")!.getAttribute("href")).toBe(first.source_url);
+    expect(screen.getByTestId("ck-system-vs-analyst").textContent).toMatch(/System vs Analyst/);
+    expect(screen.getByTestId("ck-system-vs-analyst").textContent).toMatch(/결론이 아니다/);
+    // 시스템 축과 애널리스트 줄은 섞이지 않는다
+    const card = screen.getByTestId("ck-radar");
+    expect(card.textContent).toMatch(/System/);
+  });
+
+  it("WHAT MATTERS NEXT 항목은 한 줄이고, 누르면 Trigger → First-order → Asset → Theme → Stock tier 와 EXPECTED / OBSERVED · What would confirm n/m 이 펼쳐진다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    expect(screen.queryByTestId("ck-path")).toBeNull();
+    const items = screen.getAllByTestId("ck-next-item");
+    const withPath = cockpit.what_matters_next.findIndex((n) => n.path);
+    fireEvent.click(items[withPath]!);
+    const path = screen.getByTestId("ck-path");
+    const stages = within(path).getAllByTestId("ck-path-stage").map((e) => e.getAttribute("data-key"));
+    expect(stages).toEqual(["trigger", "first_order", "assets", "themes"]);
+    expect(path.textContent).toMatch(/Expected/); expect(path.textContent).toMatch(/Observed/);
+    expect(path.textContent).toMatch(/CONFIRMED|PARTIAL|UNCONFIRMED|CONTRADICTED|DATA MISSING/);
+    expect(screen.getByTestId("ck-path-confirm").textContent).toMatch(/\d+ \/ \d+/);
+    const p = cockpit.what_matters_next[withPath]!.path!;
+    const shown = within(screen.getByTestId("ck-path-tiers")).getAllByTestId("ck-path-stock").length;
+    expect(shown).toBeLessThanOrEqual(p.tiers.length * p.tier_max);
+    expect(screen.getByTestId("ck-path-conclusion").textContent).not.toMatch(/확률/);
+    // 다시 누르면 닫힌다
+    fireEvent.click(items[withPath]!);
+    expect(screen.queryByTestId("ck-path")).toBeNull();
+  });
+
+  it("radar 의 Related market issues 를 누르면 그 이슈가 열리고, 경로의 RADAR ● 종목은 radar 에도 있는 종목이다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const r = cockpit.radar.find((x) => x.related_issues.length)!;
+    const box = screen.getAllByTestId("ck-radar-issues")[0]!;
+    fireEvent.click(within(box).getAllByRole("button")[0]!);
+    const path = screen.getByTestId("ck-path");
+    const radarIds = new Set(cockpit.radar.map((x) => x.id));
+    const marked = within(path).getAllByTestId("ck-path-stock").filter((e) => e.textContent?.includes("RADAR ●"));
+    expect(marked.length).toBeGreaterThan(0);
+    for (const m of marked) expect(cockpit.radar.some((x) => m.textContent?.includes(x.name) && radarIds.has(x.id))).toBe(true);
+    void r;
+  });
+});

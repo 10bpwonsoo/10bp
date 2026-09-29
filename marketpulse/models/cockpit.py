@@ -155,6 +155,13 @@ class TransmissionChain(Base):
     source: Literal["driver", "commodity"] = "driver"
 
 
+class SystemAxis(Base):
+    key: str
+    label: str
+    arrow: Arrow
+    detail: str = ""
+
+
 class RadarStock(Base):
     id: str
     name: str
@@ -164,6 +171,10 @@ class RadarStock(Base):
     kind: Literal["why", "watch"] = "why"
     score: float
     signals: list[str] = Field(default_factory=list)
+    #: 시스템 판단(THEME / FUNDAMENTAL / MARKET / MACRO 등) — 외부 ANALYST VIEW 와 나란히 두되 섞지 않는다
+    system_axes: list[SystemAxis] = Field(default_factory=list)
+    #: 이 종목이 등장하는 WHAT MATTERS NEXT 이슈 id — MARKET ISSUE ↔ STOCK 양방향
+    related_issues: list[str] = Field(default_factory=list)
 
 
 class CatalystItem(Base):
@@ -191,12 +202,70 @@ class EarningsPulse(Base):
     note: str = ""
 
 
+PathStatus = Literal["CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING"]
+
+
+class PathCheck(Base):
+    label: str
+    id: str = ""
+    kind: Literal["instrument", "segment", "theme"] = "instrument"
+    expect: int = Field(description="기대 부호 +1 / −1")
+    observed: float | None = None
+    observed_text: str = ""
+    status: PathStatus = "DATA MISSING"
+
+
+class PathStage(Base):
+    key: str
+    label: str
+    text: list[str] = Field(default_factory=list)
+    checks: list[PathCheck] = Field(default_factory=list)
+    status: PathStatus = "DATA MISSING"
+
+
+class PathStock(Base):
+    id: str
+    name: str
+    expect: int
+    arrow: Literal["↑", "↓"] = "↓"
+    z: float | None = None
+    change_1d: float | None = None
+    status: PathStatus = "DATA MISSING"
+    segment: str = ""
+    in_radar: bool = False
+    note: str = ""
+
+
+class PathTier(Base):
+    tier: Literal["DIRECT", "SECONDARY", "TERTIARY"]
+    stocks: list[PathStock] = Field(default_factory=list)
+
+
+class IssuePath(Base):
+    """예상 전파(EXPECTED) 와 지금 관측(OBSERVED) 을 단계별로 나란히 둔다. 교과서 매핑을 확정하지 않는다."""
+
+    trigger: PathStage
+    first_order: PathStage
+    assets: PathStage
+    themes: PathStage
+    tiers: list[PathTier] = Field(default_factory=list)
+    tier_max: int = 5
+    expected: str = ""
+    observed: str = ""
+    conclusion: str = ""
+    confirm: list[PathCheck] = Field(default_factory=list, description="WHAT WOULD CONFIRM? 체크리스트")
+    confirm_count: int = 0
+    source: Literal["config", "ai_value_chain"] = "config"
+
+
 class NextItem(Base):
+    id: str = ""
     text: str
     status: Literal["CONFIRMING", "WATCH", "REVERSING"]
     metric: str
     current: str
     driver_key: str
+    path: IssuePath | None = None
 
 
 class UpcomingEvent(Base):

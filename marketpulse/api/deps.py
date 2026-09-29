@@ -580,5 +580,99 @@ def get_cockpit_service() -> CockpitService:
     return _cockpit_service
 
 
+class AnalystViewService:
+    """
+    STOCK RADAR 의 ANALYST VIEW. radar 종목만(최대 max_stocks) 조회한다. 저장된(수기·캐시) 코멘트는 바로 돌려주고,
+    TTL 이 지난 종목은 provider(LLM 웹검색)가 있을 때만 백그라운드 스레드로 다시 찾는다 — 화면은 기다리지 않는다.
+    provider 가 없거나 실패하면 이 층만 비고 radar 는 그대로다. 키 값은 어디에도 남기지 않는다.
+    """
+
+    def __init__(self, cockpit: CockpitService) -> None:
+        from pathlib import Path as _P
+
+        from ..adapters.analyst_view import AnalystViewStore
+        from ..engines.cockpit import load_cockpit_config
+
+        cfg = load_cockpit_config().get("analyst_view", {})
+        root = _P(__file__).resolve().parents[1]
+        self._cfg = cfg
+        self._store = AnalystViewStore(root / str(cfg.get("cache_path", "data/analyst_views/cache.json")), root / str(cfg.get("manual_dir", "data/analyst_views/manual")))
+        self._cockpit = cockpit
+        self._inflight: set[str] = set()
+        self._lock = threading.Lock()
+        self._provider = None
+
+    def provider(self, settings: Settings):
+        if self._provider is None:
+            from ..adapters.analyst_view import LlmAnalystSearch
+            from ..ai.client import build_client
+            try:
+                self._provider = LlmAnalystSearch(build_client(settings), max_uses=int(self._cfg.get("search_max_uses", 3)))
+            except Exception:
+                logger.exception("analyst search provider 생성 실패 — 저장된 코멘트만 쓴다")
+                self._provider = LlmAnalystSearch(None)
+        return self._provider
+
+    def get(self, settings: Settings, stock_ids: list[str] | None = None):
+        from ..models.analyst_view import AnalystViews
+        from ..adapters.analyst_view import ttl_expired
+
+        cockpit = self._cockpit.get(settings)
+        ids = [str(i) for i in (stock_ids or [r.id for r in cockpit.radar])][: int(self._cfg.get("max_stocks", 8))]
+        names = {r.id: r.name for r in cockpit.radar}
+        as_of = cockpit.as_of
+        max_age = int(self._cfg.get("max_age_days", 30))
+        views = self._store.best(ids, as_of=as_of, max_age_days=max_age)
+        prov = self.provider(settings)
+        pending: list[str] = []
+        if prov.available:
+            now = utcnow()
+            stale = [i for i in ids if ttl_expired(self._store.retrieved_at(i), ttl_hours=float(self._cfg.get("cache_ttl_hours", 12)), now=now)
+                     and (i not in views or views[i].age_days > int(self._cfg.get("fresh_days", 7)))]
+            with self._lock:
+                todo = [i for i in stale if i not in self._inflight]
+                self._inflight.update(todo)
+            if todo:
+                threading.Thread(target=self._refresh, args=(settings, todo, names, as_of, max_age), daemon=True).start()
+            pending = sorted(self._inflight)
+        provider = "llm_web" if prov.available else ("disabled" if not settings.llm_enabled else "unavailable")
+        return AnalystViews(as_of=as_of, views=[views[i] for i in ids if i in views], requested=ids, pending=pending, missing=[i for i in ids if i not in views and i not in pending],
+                            provider=provider, note=("웹에서 이름·증권사·날짜·URL·맥락이 모두 확인된 코멘트만. 없는 종목은 줄을 숨긴다. 요약은 paraphrase 이고 시스템 판단과 섞지 않는다. "
+                                                     + ("검색 provider 없음 — 저장된 코멘트만." if not prov.available else f"TTL {self._cfg.get('cache_ttl_hours', 12)}h 캐시.")))
+
+    def _refresh(self, settings: Settings, ids: list[str], names: dict[str, str], as_of, max_age: int) -> None:
+        from ..config.registry import get_instruments  # noqa: F401  (aliases 는 AI 설정에서)
+        try:
+            from ..engines.ai_regime import load_ai_regime_config as load_ai_config
+            aliases = {str(m["id"]): [str(a) for a in m.get("aliases", [])] for m in (load_ai_config(settings.config_dir).get("instruments") or []) if isinstance(m, dict)}
+        except Exception:
+            aliases = {}
+        prov = self.provider(settings)
+        for sid in ids:
+            try:
+                v = prov.search(sid, names.get(sid, sid), aliases.get(sid, []), as_of=as_of, max_age_days=max_age)
+                if v is not None:
+                    self._store.put([v.model_dump(mode="json")])
+                else:
+                    # 못 찾은 것도 retrieved_at 만 기록해 TTL 동안 재검색하지 않는다 (코멘트는 만들지 않는다)
+                    self._store.put([{"stock_id": sid, "retrieved_at": utcnow().isoformat(), "retrieved_by": "llm_web"}])
+            except Exception:
+                logger.exception("analyst view 검색 실패 %s", sid)
+            finally:
+                with self._lock:
+                    self._inflight.discard(sid)
+
+    def clear(self) -> None:
+        with self._lock:
+            self._inflight.clear()
+
+
+_analyst_view_service = AnalystViewService(_cockpit_service)
+
+
+def get_analyst_view_service() -> AnalystViewService:
+    return _analyst_view_service
+
+
 def get_rates_regime_service() -> RatesRegimeService:
     return _rates_regime_service

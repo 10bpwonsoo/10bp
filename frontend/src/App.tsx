@@ -132,7 +132,7 @@ export default function App() {
             <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} ratesRegime={ratesRegime} aiRegime={aiRegime} />
           ) : (
             liveView === "cockpit" && cockpit ? (
-              <CockpitView cockpit={cockpit} snapshot={snapshot} history={stateHistory} details={
+              <CockpitView cockpit={cockpit} snapshot={snapshot} history={stateHistory} scenario={scenario} details={
                 <>
                   <DashboardGrid snapshot={snapshot} history={stateHistory} />
                   <InvestmentSection scenario={scenario} enabled={mode !== null} />

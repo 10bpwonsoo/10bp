@@ -1,5 +1,5 @@
 import type {
-  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime, RatesRegime, AiRegime, Cockpit } from "./types";
+  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime, RatesRegime, AiRegime, Cockpit, AnalystViews } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -106,4 +106,12 @@ export const fetchAiRegime = (scenario?: string, signal?: AbortSignal) => {
 export const fetchCockpit = (scenario?: string, signal?: AbortSignal) => {
   const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
   return get<Cockpit>(`/api/v1/cockpit${q}`, signal);
+};
+
+/** STOCK RADAR 의 외부 ANALYST VIEW — radar 종목만. 실패해도 radar 는 그대로다. */
+export const fetchAnalystViews = (scenario: string | undefined, ids: string[], signal?: AbortSignal): Promise<AnalystViews> => {
+  const q = new URLSearchParams();
+  if (scenario) q.set("scenario", scenario);
+  if (ids.length) q.set("ids", ids.join(","));
+  return get<AnalystViews>(`/api/v1/analyst-views?${q.toString()}`, signal);
 };

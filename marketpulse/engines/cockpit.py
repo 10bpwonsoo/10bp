@@ -24,10 +24,11 @@ from ..config.registry import get_themes
 from ..config.settings import CONFIG_DIR
 from ..models.cockpit import (
     CatalystItem, Cockpit, CrossAsset, CrossAssetRow, DataStatus, Driver, EarningsPulse, EvidenceRow, KeyDivergence, KeyVariable,
-    LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
+    LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, SystemAxis, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
 )
 from ..models.market import Instrument, MarketSnapshot
 from .regime_history import StateObservation, build_regime_history
+from .issue_path import Observer, build_issue_path
 from ..models.snapshot import IntelligenceSnapshot
 
 KST = timezone(timedelta(hours=9))
@@ -443,6 +444,43 @@ def build_cockpit(
         else: st = "WATCH"
         nxt.append(NextItem(text=text, status=st, metric=Z.name(lead_id) if lead_id else d.label, current="–" if z1 is None else f"하루 z {z1:+.1f}σ", driver_key=d.key))  # type: ignore[arg-type]
         if len(nxt) >= int(cfg.get("what_matters_next", {}).get("max", 5)): break
+    # ── 9b. MARKET TRANSMISSION PATH — 이슈가 더 진행되면 어디로 번지는가 (예상 vs 관측) ──
+    wm = cfg.get("what_matters_next", {}); paths_cfg = wm.get("paths") or {}
+    segments = {str(sg.key): sg for sg in (getattr(getattr(ai_regime, "value_chain", None), "segments", None) or [])}
+    def _stock_obs(sid: str):
+        if sid in inv_stocks:
+            st = inv_stocks[sid]; return (st.row.name, st.row.z, st.row.change_1d, str(getattr(st.meta, "industry", "") or ""))
+        if sid in ai_stocks:
+            st = ai_stocks[sid]; mk = next((a.value for a in st.axes if a.key == "market"), None)
+            return (st.name, mk, ai_members[sid].ret_1d if sid in ai_members else None, str(st.segments[0]) if st.segments else "")
+        return None
+    theme_scale = float(wm.get("theme_confirm", 20)) / max(1e-6, float(wm.get("confirm_z", 0.5)))
+    observer = Observer(z_of=lambda k: Z.zmax(k)[0], name_of=Z.name, segments=segments, themes=theme_by_id, theme_scale=theme_scale, stock_of=_stock_obs)
+    radar_ids = {r.id for r in radar}
+    with_paths: list[NextItem] = []
+    for it in nxt:
+        d = next((x for x in drivers if x.key == it.driver_key), None)
+        spec = ((paths_cfg.get(it.driver_key) or {}).get(d.direction) if d is not None else None) or None
+        path = build_issue_path(spec, wm, observer, radar_ids=radar_ids, ai_regime=ai_regime, driver_label=d.label if d else it.metric) if spec else None
+        with_paths.append(it.model_copy(update={"id": f"{it.driver_key}:{d.direction if d else 'na'}", "path": path}))
+    nxt = with_paths
+    # STOCK RADAR ↔ ISSUE 양방향: radar 종목의 시스템 축과 관련 이슈
+    issue_of_stock: dict[str, list[str]] = {}
+    for it in nxt:
+        if it.path is None: continue
+        for t in it.path.tiers:
+            for ps in t.stocks:
+                issue_of_stock.setdefault(ps.id, []).append(it.id)
+    def _axes(sid: str) -> list[SystemAxis]:
+        if sid in ai_stocks:
+            return [SystemAxis(key=a.key, label=a.key.upper(), arrow=a.arrow, detail=a.detail) for a in ai_stocks[sid].axes]  # type: ignore[arg-type]
+        if sid in inv_stocks:
+            r = inv_stocks[sid].row; out = []
+            if r.z is not None: out.append(SystemAxis(key="market", label="MARKET", arrow=_arrow(r.z, hi, lo), detail=f"하루 z {r.z:+.1f}σ"))  # type: ignore[arg-type]
+            if r.relative_z is not None: out.append(SystemAxis(key="relative", label="RELATIVE", arrow=_arrow(r.relative_z, hi, lo), detail=f"시장 대비 {r.relative_z:+.1f}σ"))  # type: ignore[arg-type]
+            return out
+        return []
+    radar = [r.model_copy(update={"system_axes": _axes(r.id), "related_issues": issue_of_stock.get(r.id, [])}) for r in radar]
     upcoming = []
     cal = snapshot.calendar
     if cal is not None:

@@ -395,6 +395,33 @@ primary driver = 도착 regime 과 결이 맞는 factor 중 변화 최대, confi
 → Liquidity Stress 9/14 하루(확신 84) → Neutral 3일 → Policy Driven 9/18~22 → Liquidity Stress
 9/23~29 4일째, 전환 4회, 현재 regime 비중 23%, composite −39(5D −74).
 
+#### 실시간 2 · STOCK RADAR의 ANALYST VIEW와 WHAT MATTERS NEXT의 전파 경로 (2026-09-29)
+
+두 카드만 확장했고 나머지 구조는 그대로다. **ANALYST VIEW**: radar 종목(최대 8)에 대해서만 외부
+애널리스트 코멘트를 한 줄 붙인다 — `이름 · 증권사 · 날짜(freshness nD)` 와 "왜 그렇게 보는가" 한
+문장 paraphrase. 누르면 Analyst / Broker / Date / Rating / Target / Key view / Key variable / Source
+링크와 **SYSTEM vs ANALYST**(시스템 축 THEME·FUNDAMENTAL·MARKET·MACRO 와 애널리스트 톤을 나란히,
+갈리면 FUNDAMENTAL / PRICE GAP 같은 라벨만 — 어느 쪽이 맞다는 결론 없음)가 열린다.
+재료는 `data/analyst_views/manual/*.json`(웹에서 이름·증권사·날짜·URL·맥락이 모두 확인된 것만 수기로)과
+`data/analyst_views/cache.json`(LLM 웹검색, TTL 12h)이고, `adapters/analyst_view.py` 의 `validate_view`
+가 필드가 하나라도 비거나 30일을 넘으면 버린다 — 그 종목은 줄 자체가 없다. 검색 provider 는
+`LLMClient.search_structured`(web_search + JSON 스키마)로 돌고 응답의 URL 이 실제 검색 결과에 없으면
+버린다. `GET /api/v1/analyst-views` 는 저장된 것을 바로 주고 새 검색은 백그라운드라 radar 가 먼저 뜬다.
+키가 없으면 provider 는 꺼지고 저장된 코멘트만 쓴다. 9/29 수기 확인 5/8: SK하이닉스(이수림·DS투자증권
+9/29) · Micron(Tristan Gerra·Baird 9/28) · Quanta(Chad Dillard·Bernstein 9/24) · Applied
+Materials(Shane Brett·Morgan Stanley 9/28) · 삼성전자(정우성·LS증권 8/31, 29D). Super Micro·Tokyo
+Electron 은 실명 노트가 30일을 넘고 Datadog 의 Daiwa 노트는 이름이 확인되지 않아 싣지 않았다.
+
+**WHAT MATTERS NEXT → Issue Monitor**: 항목은 한 줄 그대로이고 누르면 아래에 MARKET TRANSMISSION PATH 가
+열린다 — Trigger → First-order → Asset impact → Theme / Industry → Stocks(DIRECT / SECONDARY / TERTIARY,
+tier 당 5개 + View all). `config/cockpit.yaml what_matters_next.paths` 가 driver × 방향별 예상 경로이고
+`engines/issue_path.py` 가 단계마다 지금 z · AI 세그먼트 상대 z · 테마 가격 모멘텀 · 종목 z 로 CONFIRMED /
+PARTIAL / UNCONFIRMED / CONTRADICTED / DATA MISSING 을 붙인다. EXPECTED 와 OBSERVED 를 따로 적고 결론은
+관측이 갈리면 그렇게 쓴다("부담은 존재하지만 압력은 A 에 집중, B 는 견조"). WHAT WOULD CONFIRM? 체크리스트
+n/m. AI 이슈는 ai_regime 의 value_chain / stocks 를 그대로 재사용한다. 기존 MARKET → STOCK TRANSMISSION
+카드("지금 일어나는 전파")는 그대로다. MARKET ISSUE ↔ STOCK 양방향: 경로의 radar 종목엔 RADAR ● 이 붙고
+누르면 radar 로, radar 의 Related market issues 를 누르면 그 이슈가 열린다.
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

@@ -203,6 +203,236 @@ catalysts:
 
 what_matters_next:
   max: 5
+  #: MARKET TRANSMISSION PATH — 이슈를 누르면 Trigger → First-order → Asset → Theme/Industry → Stocks 의 예상 전파와 지금 관측을 나란히 본다.
+  #: 정적 매핑을 그대로 확정하지 않는다: 단계마다 현재 z / 상대 z / 테마 점수로 CONFIRMED · PARTIAL · UNCONFIRMED · CONTRADICTED · DATA MISSING 을 붙인다.
+  #: 기존 MARKET → STOCK TRANSMISSION 카드는 '지금 일어나는 전파', 여기는 '더 진행되면 번지는 곳'.
+  confirm_z: 0.5          # 방향 일치 & |z| ≥ → CONFIRMED
+  partial_z: 0.25         # 방향 일치 & |z| ≥ → PARTIAL
+  theme_confirm: 20       # 테마 가격 점수(−100~100) 기준
+  theme_partial: 8
+  tier_max: 5             # 메인에 보이는 tier 당 종목 수 — 나머지는 View all
+  #: check = {id: 계열, sign: 기대 부호} · row = {label, kind: instrument|segment|theme, key, sign}
+  #: stocks tier = [ids] (부호 = expect) 또는 {sign, ids}. 종목은 시스템에 있는 것만(Investment · AI universe) — 없으면 NO DATA 로 남지 않고 빠진다.
+  paths:
+    long_end_rates:
+      up:
+        trigger: {label: "US 10Y ↑", checks: [{id: US10Y, sign: 1, label: "US 10Y Yield ↑"}, {id: TIPS10Y, sign: 1, label: "Real Yield ↑ 여부"}]}
+        first_order: {label: "REAL YIELD / DISCOUNT RATE", text: ["Duration pressure", "Equity discount rate ↑"], checks: [{id: TIPS10Y, sign: 1}, {id: MOVE, sign: 1}]}
+        assets: [{label: "Growth / Software", kind: segment, key: software, sign: -1}, {label: "REIT / DC infra", kind: segment, key: dc_infra, sign: -1}, {label: "Gold", kind: instrument, key: GOLD, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes: [{label: "AI Software", kind: segment, key: software, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}, {label: "Data Center REIT / Infra", kind: segment, key: dc_infra, sign: -1}, {label: "Hyperscalers", kind: segment, key: hyperscalers, sign: -1}]
+        expect: -1
+        stocks: {direct: [NOW, DDOG, PLTR, SNOW, CRM, NET], secondary: [EQIX, DLR, APP], tertiary: [MSFT, GOOGL, AMZN]}
+        expected: "Long-duration Growth ↓ · REIT ↓"
+        confirm: [{label: "10Y new high", id: US10Y, sign: 1}, {label: "Real Yield ↑", id: TIPS10Y, sign: 1}, {label: "Software relative ↓", kind: segment, key: software, sign: -1}, {label: "VIX ↑", id: VIX, sign: 1}]
+      down:
+        trigger: {label: "US 10Y ↓", checks: [{id: US10Y, sign: -1, label: "US 10Y Yield ↓"}, {id: TIPS10Y, sign: -1, label: "Real Yield ↓ 여부"}]}
+        first_order: {label: "DISCOUNT RATE RELIEF", text: ["Duration relief", "Equity discount rate ↓"], checks: [{id: TIPS10Y, sign: -1}]}
+        assets: [{label: "Growth / Software", kind: segment, key: software, sign: 1}, {label: "REIT / DC infra", kind: segment, key: dc_infra, sign: 1}, {label: "Gold", kind: instrument, key: GOLD, sign: 1}, {label: "USD", kind: instrument, key: DXY, sign: -1}]
+        themes: [{label: "AI Software", kind: segment, key: software, sign: 1}, {label: "Data Center REIT / Infra", kind: segment, key: dc_infra, sign: 1}, {label: "Hyperscalers", kind: segment, key: hyperscalers, sign: 1}]
+        expect: 1
+        stocks: {direct: [NOW, DDOG, PLTR, SNOW, CRM], secondary: [EQIX, DLR], tertiary: [MSFT, GOOGL]}
+        expected: "Long-duration Growth ↑ · REIT ↑"
+        confirm: [{label: "10Y ↓ 지속", id: US10Y, sign: -1}, {label: "Real Yield ↓", id: TIPS10Y, sign: -1}, {label: "Software relative ↑", kind: segment, key: software, sign: 1}]
+    credit_stress:
+      up:
+        trigger: {label: "HY OAS ↑", checks: [{id: US_HY_OAS, sign: 1, label: "HY OAS 확대"}]}
+        first_order: {label: "FINANCIAL CONDITIONS TIGHTEN", text: ["Risk appetite ↓", "Funding cost ↑"], checks: [{id: VIX, sign: 1}, {id: SPX, sign: -1}]}
+        assets: [{label: "High beta / Small cap", kind: instrument, key: RUT, sign: -1}, {label: "S&P 500", kind: instrument, key: SPX, sign: -1}, {label: "Financials", kind: instrument, key: XLF, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes: [{label: "Cyclicals / Discretionary", kind: instrument, key: XLY, sign: -1}, {label: "Semiconductors (high beta)", kind: instrument, key: SOXX, sign: -1}, {label: "AI Software", kind: segment, key: software, sign: -1}, {label: "Korea (foreign flow)", kind: instrument, key: KOSPI, sign: -1}]
+        expect: -1
+        stocks: {direct: [APP, SMCI, SNDK, HANMI_SEMI, KOREAN_AIR], secondary: [KB, SHINHAN, HMM, PAN_OCEAN], tertiary: [HYUNDAI_MOTOR, KIA, POSCO]}
+        expected: "High Beta / Small Cap ↓ · Leveraged · Cyclicals ↓"
+        confirm: [{label: "HY OAS 추가 확대", id: US_HY_OAS, sign: 1}, {label: "VIX ↑", id: VIX, sign: 1}, {label: "S&P 500 ↓", id: SPX, sign: -1}, {label: "Russell ↓", id: RUT, sign: -1}]
+      down:
+        trigger: {label: "HY OAS ↓", checks: [{id: US_HY_OAS, sign: -1, label: "HY OAS 축소"}]}
+        first_order: {label: "FINANCIAL CONDITIONS EASE", text: ["Risk appetite ↑"], checks: [{id: VIX, sign: -1}, {id: SPX, sign: 1}]}
+        assets: [{label: "High beta / Small cap", kind: instrument, key: RUT, sign: 1}, {label: "Financials", kind: instrument, key: XLF, sign: 1}]
+        themes: [{label: "Cyclicals / Discretionary", kind: instrument, key: XLY, sign: 1}, {label: "Semiconductors", kind: instrument, key: SOXX, sign: 1}]
+        expect: 1
+        stocks: {direct: [APP, SMCI, HANMI_SEMI], secondary: [KB, SHINHAN, HMM], tertiary: [HYUNDAI_MOTOR, KIA]}
+        expected: "High Beta ↑ · Cyclicals ↑"
+        confirm: [{label: "HY OAS 축소 지속", id: US_HY_OAS, sign: -1}, {label: "VIX ↓", id: VIX, sign: -1}, {label: "Russell ↑", id: RUT, sign: 1}]
+    volatility_regime:
+      up:
+        trigger: {label: "VIX / MOVE ↑", checks: [{id: VIX, sign: 1, label: "VIX ↑"}, {id: MOVE, sign: 1, label: "MOVE ↑"}]}
+        first_order: {label: "DE-RISKING", text: ["Position cut across assets", "Vol-target funds sell"], checks: [{id: SPX, sign: -1}, {id: US_HY_OAS, sign: 1}]}
+        assets: [{label: "S&P 500", kind: instrument, key: SPX, sign: -1}, {label: "Nasdaq 100", kind: instrument, key: NDX, sign: -1}, {label: "Gold (deleveraging)", kind: instrument, key: GOLD, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes: [{label: "Semiconductors (high beta)", kind: instrument, key: SOXX, sign: -1}, {label: "AI Software", kind: segment, key: software, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}]
+        expect: -1
+        stocks: {direct: [SMCI, APP, PLTR, NVDA, AMD], secondary: [HANMI_SEMI, SNDK, MU], tertiary: [SKHYNIX, SAMSUNG]}
+        expected: "High beta ↓ · Leveraged positions unwind"
+        confirm: [{label: "VIX ↑ 지속", id: VIX, sign: 1}, {label: "MOVE ↑ 지속", id: MOVE, sign: 1}, {label: "VIX > 실현변동성", id: VIX_RV_SPX, sign: 1}, {label: "S&P 500 ↓", id: SPX, sign: -1}]
+      down:
+        trigger: {label: "VIX / MOVE ↓", checks: [{id: VIX, sign: -1, label: "VIX ↓"}, {id: MOVE, sign: -1, label: "MOVE ↓"}]}
+        first_order: {label: "RE-RISKING", text: ["Vol-target funds add"], checks: [{id: SPX, sign: 1}]}
+        assets: [{label: "S&P 500", kind: instrument, key: SPX, sign: 1}, {label: "Nasdaq 100", kind: instrument, key: NDX, sign: 1}]
+        themes: [{label: "Semiconductors", kind: instrument, key: SOXX, sign: 1}, {label: "AI Compute", kind: segment, key: compute, sign: 1}]
+        expect: 1
+        stocks: {direct: [NVDA, AMD, SMCI, APP], secondary: [MU, SKHYNIX], tertiary: [SAMSUNG]}
+        expected: "High beta ↑"
+        confirm: [{label: "VIX ↓ 지속", id: VIX, sign: -1}, {label: "MOVE ↓", id: MOVE, sign: -1}, {label: "S&P 500 ↑", id: SPX, sign: 1}]
+    equity_beta:
+      up:
+        trigger: {label: "지수 ↑", checks: [{id: SPX, sign: 1, label: "S&P 500 ↑"}, {id: KOSPI, sign: 1, label: "KOSPI ↑"}]}
+        first_order: {label: "BREADTH", text: ["상승이 확산되는가"], checks: [{id: SPX_ADV_RATIO, sign: 1}, {id: KOSPI_ADV_RATIO, sign: 1}, {id: RUT, sign: 1}]}
+        assets: [{label: "Russell 2000", kind: instrument, key: RUT, sign: 1}, {label: "Semiconductors", kind: instrument, key: SOXX, sign: 1}, {label: "Financials", kind: instrument, key: XLF, sign: 1}]
+        themes: [{label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: 1}, {label: "AI (theme)", kind: theme, key: ai, sign: 1}, {label: "Korea", kind: instrument, key: KOSPI, sign: 1}]
+        expect: 1
+        stocks: {direct: [SAMSUNG, SKHYNIX, NVDA, MSFT], secondary: [KB, SHINHAN, HYUNDAI_MOTOR], tertiary: [NAVER, KAKAO]}
+        expected: "대형주 ↑ 가 중소형·섹터로 확산"
+        confirm: [{label: "S&P 상승종목 비율 ↑", id: SPX_ADV_RATIO, sign: 1}, {label: "KOSPI 상승종목 비율 ↑", id: KOSPI_ADV_RATIO, sign: 1}, {label: "Russell ↑", id: RUT, sign: 1}]
+      down:
+        trigger: {label: "지수 ↓", checks: [{id: SPX, sign: -1, label: "S&P 500 ↓"}, {id: KOSPI, sign: -1, label: "KOSPI ↓"}]}
+        first_order: {label: "BREADTH", text: ["하락이 확산되는가", "베타 vs 개별 요인"], checks: [{id: SPX_ADV_RATIO, sign: -1}, {id: KOSPI_ADV_RATIO, sign: -1}, {id: RUT, sign: -1}]}
+        assets: [{label: "Russell 2000", kind: instrument, key: RUT, sign: -1}, {label: "Semiconductors", kind: instrument, key: SOXX, sign: -1}, {label: "Financials", kind: instrument, key: XLF, sign: -1}, {label: "VIX", kind: instrument, key: VIX, sign: 1}]
+        themes: [{label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: -1}, {label: "AI (theme)", kind: theme, key: ai, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}, {label: "Korea", kind: instrument, key: KOSPI, sign: -1}]
+        expect: -1
+        stocks: {direct: [SAMSUNG, SKHYNIX, NVDA, MSFT], secondary: [KB, SHINHAN, HYUNDAI_MOTOR], tertiary: [NAVER, KAKAO]}
+        expected: "대형주 ↓ 가 중소형·섹터로 확산"
+        confirm: [{label: "S&P 상승종목 비율 ↓", id: SPX_ADV_RATIO, sign: -1}, {label: "KOSPI 상승종목 비율 ↓", id: KOSPI_ADV_RATIO, sign: -1}, {label: "Russell ↓", id: RUT, sign: -1}, {label: "VIX ↑", id: VIX, sign: 1}]
+    fed_path:
+      up:
+        trigger: {label: "US 2Y ↑", checks: [{id: US2Y, sign: 1, label: "2년물 ↑ (인하 기대 후퇴)"}]}
+        first_order: {label: "FRONT-END REPRICING", text: ["Fed cut expectations ↓", "Curve flattening"], checks: [{id: CURVE_2S10S, sign: -1}, {id: DXY, sign: 1}]}
+        assets: [{label: "USD", kind: instrument, key: DXY, sign: 1}, {label: "Gold", kind: instrument, key: GOLD, sign: -1}, {label: "Small cap", kind: instrument, key: RUT, sign: -1}, {label: "Financials (curve)", kind: instrument, key: XLF, sign: -1}]
+        themes: [{label: "Rates (theme)", kind: theme, key: rates, sign: 1}, {label: "USD (theme)", kind: theme, key: usd, sign: 1}, {label: "Korea (원화)", kind: instrument, key: USDKRW, sign: 1}]
+        expect: -1
+        stocks: {direct: [KB, SHINHAN], secondary: [SAMSUNG, SKHYNIX, HYUNDAI_MOTOR], tertiary: [NAVER, KAKAO]}
+        expected: "달러 ↑ · 금 ↓ · 커브 플래트닝 · 원화 자산 역풍"
+        confirm: [{label: "2Y ↑ 지속", id: US2Y, sign: 1}, {label: "2s10s 플래트닝", id: CURVE_2S10S, sign: -1}, {label: "DXY ↑", id: DXY, sign: 1}]
+      down:
+        trigger: {label: "US 2Y ↓", checks: [{id: US2Y, sign: -1, label: "2년물 ↓ (완화 기대)"}]}
+        first_order: {label: "EASING PRICED", text: ["Fed cut expectations ↑", "Curve steepening"], checks: [{id: CURVE_2S10S, sign: 1}, {id: DXY, sign: -1}]}
+        assets: [{label: "USD", kind: instrument, key: DXY, sign: -1}, {label: "Gold", kind: instrument, key: GOLD, sign: 1}, {label: "Small cap", kind: instrument, key: RUT, sign: 1}]
+        themes: [{label: "Rates (theme)", kind: theme, key: rates, sign: -1}, {label: "Korea (원화)", kind: instrument, key: USDKRW, sign: -1}, {label: "AI Software", kind: segment, key: software, sign: 1}]
+        expect: 1
+        stocks: {direct: [KB, SHINHAN, NOW, DDOG], secondary: [SAMSUNG, SKHYNIX], tertiary: [NAVER, KAKAO]}
+        expected: "달러 ↓ · 금 ↑ · 스티프닝 · 원화 자산 순풍"
+        confirm: [{label: "2Y ↓ 지속", id: US2Y, sign: -1}, {label: "2s10s 스티프닝", id: CURVE_2S10S, sign: 1}, {label: "DXY ↓", id: DXY, sign: -1}]
+    usd:
+      up:
+        trigger: {label: "달러 ↑", checks: [{id: DXY, sign: 1, label: "DXY ↑"}, {id: USDKRW, sign: 1, label: "원달러 ↑"}]}
+        first_order: {label: "EM / KOREA HEADWIND", text: ["외국인 자금 이탈 압력", "원화 자산 할인"], checks: [{id: USDKRW, sign: 1}, {id: KR_FOREIGN_NET, sign: -1}]}
+        assets: [{label: "KOSPI", kind: instrument, key: KOSPI, sign: -1}, {label: "Gold", kind: instrument, key: GOLD, sign: -1}, {label: "Copper", kind: instrument, key: COPPER, sign: -1}, {label: "Hang Seng China", kind: instrument, key: HSCEI, sign: -1}]
+        themes: [{label: "USD (theme)", kind: theme, key: usd, sign: 1}, {label: "Korea (theme)", kind: theme, key: korea_governance, sign: -1}, {label: "China (theme)", kind: theme, key: china, sign: -1}]
+        expect: -1
+        stocks: {direct: {sign: 1, ids: [HYUNDAI_MOTOR, KIA, HD_HHI, HANWHA_OCEAN]}, secondary: {sign: -1, ids: [KOREAN_AIR, POSCO, LGCHEM]}, tertiary: {sign: -1, ids: [KB, SHINHAN]}}
+        expected: "수출주(원화 환산 이익) + · 항공·원자재 수입 − · 외국인 순매도"
+        confirm: [{label: "DXY ↑ 지속", id: DXY, sign: 1}, {label: "원달러 ↑", id: USDKRW, sign: 1}, {label: "외국인 순매도", id: KR_FOREIGN_NET, sign: -1}]
+      down:
+        trigger: {label: "달러 ↓", checks: [{id: DXY, sign: -1, label: "DXY ↓"}, {id: USDKRW, sign: -1, label: "원달러 ↓"}]}
+        first_order: {label: "EM / KOREA TAILWIND", text: ["외국인 자금 유입", "원화 자산 재평가"], checks: [{id: USDKRW, sign: -1}, {id: KR_FOREIGN_NET, sign: 1}]}
+        assets: [{label: "KOSPI", kind: instrument, key: KOSPI, sign: 1}, {label: "Gold", kind: instrument, key: GOLD, sign: 1}, {label: "Copper", kind: instrument, key: COPPER, sign: 1}, {label: "Hang Seng China", kind: instrument, key: HSCEI, sign: 1}]
+        themes: [{label: "Korea (theme)", kind: theme, key: korea_governance, sign: 1}, {label: "China (theme)", kind: theme, key: china, sign: 1}, {label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: 1}]
+        expect: 1
+        stocks: {direct: [KB, SHINHAN, NAVER, KAKAO], secondary: [SAMSUNG, SKHYNIX, KOREAN_AIR], tertiary: {sign: -1, ids: [HYUNDAI_MOTOR, KIA]}}
+        expected: "내수·금융 + · 외국인 순매수 · 수출주 환산 이익 −"
+        confirm: [{label: "DXY ↓ 지속", id: DXY, sign: -1}, {label: "원달러 ↓", id: USDKRW, sign: -1}, {label: "외국인 순매수", id: KR_FOREIGN_NET, sign: 1}]
+    oil:
+      up:
+        trigger: {label: "Brent ↑", checks: [{id: BRENT, sign: 1, label: "브렌트 ↑"}, {id: WTI, sign: 1, label: "WTI ↑"}]}
+        first_order: {label: "ENERGY INPUT COST ↑", text: ["Inflation expectation ↑ ?", "Nominal rates ↑ ?"], checks: [{id: BE10Y, sign: 1}, {id: US10Y, sign: 1}]}
+        assets: [{label: "US 10Y Breakeven", kind: instrument, key: BE10Y, sign: 1}, {label: "US 10Y", kind: instrument, key: US10Y, sign: 1}, {label: "Energy sector", kind: instrument, key: XLE, sign: 1}, {label: "Airlines", kind: instrument, key: JETS, sign: -1}]
+        themes: [{label: "Oil (theme)", kind: theme, key: oil, sign: 1}, {label: "Energy (theme)", kind: theme, key: energy, sign: 1}, {label: "Inflation (theme)", kind: theme, key: inflation, sign: 1}]
+        expect: 1
+        stocks: {direct: [SOIL, SK_INNOVATION], secondary: {sign: -1, ids: [KOREAN_AIR, HMM, LGCHEM, LOTTE_CHEM]}, tertiary: {sign: -1, ids: [KEPCO, CJ_CJ]}}
+        expected: "E&P·정유 + · 항공·운송·화학 − · 기대인플레 ↑"
+        confirm: [{label: "브렌트 ↑ 지속", id: BRENT, sign: 1}, {label: "기대인플레이션 ↑", id: BE10Y, sign: 1}, {label: "명목금리 ↑", id: US10Y, sign: 1}]
+      down:
+        trigger: {label: "Brent ↓", checks: [{id: BRENT, sign: -1, label: "브렌트 ↓"}, {id: WTI, sign: -1, label: "WTI ↓"}]}
+        first_order: {label: "ENERGY INPUT COST ↓", text: ["Inflation expectation ↓ ?", "Nominal / Real rates"], checks: [{id: BE10Y, sign: -1}, {id: US10Y, sign: -1}]}
+        assets: [{label: "US 10Y Breakeven", kind: instrument, key: BE10Y, sign: -1}, {label: "US 10Y", kind: instrument, key: US10Y, sign: -1}, {label: "Energy sector", kind: instrument, key: XLE, sign: -1}, {label: "Airlines", kind: instrument, key: JETS, sign: 1}]
+        themes: [{label: "Oil (theme)", kind: theme, key: oil, sign: -1}, {label: "Energy (theme)", kind: theme, key: energy, sign: -1}, {label: "Inflation (theme)", kind: theme, key: inflation, sign: -1}]
+        expect: -1
+        stocks: {direct: {sign: -1, ids: [SOIL, SK_INNOVATION]}, secondary: {sign: 1, ids: [KOREAN_AIR, HMM, LGCHEM, LOTTE_CHEM]}, tertiary: {sign: 1, ids: [KEPCO, CJ_CJ]}}
+        expected: "E&P·정유 − · 항공·운송·에너지 다소비 + · 기대인플레 ↓"
+        confirm: [{label: "브렌트 ↓ 지속", id: BRENT, sign: -1}, {label: "기대인플레이션 ↓", id: BE10Y, sign: -1}, {label: "명목금리 ↓", id: US10Y, sign: -1}]
+    gold_real:
+      up:
+        trigger: {label: "금 ↓ · 실질금리 ↑", checks: [{id: GOLD, sign: -1, label: "금 ↓"}, {id: TIPS10Y, sign: 1, label: "실질금리 ↑"}]}
+        first_order: {label: "DELEVERAGING", text: ["안전자산까지 팔리는 포지션 축소"], checks: [{id: VIX, sign: 1}, {id: DXY, sign: 1}]}
+        assets: [{label: "USD", kind: instrument, key: DXY, sign: 1}, {label: "S&P 500", kind: instrument, key: SPX, sign: -1}, {label: "Copper", kind: instrument, key: COPPER, sign: -1}]
+        themes: [{label: "Semiconductors (high beta)", kind: instrument, key: SOXX, sign: -1}, {label: "Korea", kind: instrument, key: KOSPI, sign: -1}]
+        expect: -1
+        stocks: {direct: [KOREA_ZINC], secondary: [SMCI, APP], tertiary: [SAMSUNG, SKHYNIX]}
+        expected: "귀금속·고베타 동반 매도"
+        confirm: [{label: "금 ↓ 지속", id: GOLD, sign: -1}, {label: "실질금리 ↑", id: TIPS10Y, sign: 1}, {label: "VIX ↑", id: VIX, sign: 1}]
+      down:
+        trigger: {label: "금 ↑ · 실질금리 ↓", checks: [{id: GOLD, sign: 1, label: "금 ↑"}, {id: TIPS10Y, sign: -1, label: "실질금리 ↓"}]}
+        first_order: {label: "SAFE-HAVEN BID", text: ["실질금리 하락 · 안전자산 수요"], checks: [{id: DXY, sign: -1}]}
+        assets: [{label: "USD", kind: instrument, key: DXY, sign: -1}, {label: "US 10Y Real Yield", kind: instrument, key: TIPS10Y, sign: -1}]
+        themes: [{label: "Geopolitical (theme)", kind: theme, key: geopolitical_risk, sign: 1}]
+        expect: 1
+        stocks: {direct: [KOREA_ZINC], secondary: [], tertiary: []}
+        expected: "귀금속 · 실질금리 민감 자산 +"
+        confirm: [{label: "금 ↑ 지속", id: GOLD, sign: 1}, {label: "실질금리 ↓", id: TIPS10Y, sign: -1}]
+    ai_semi_relative:
+      up:
+        trigger: {label: "AI / Semi 상대강도 유지", checks: [{id: AI_REL_NDX, sign: 1, label: "AI 바스켓 / Nasdaq 상대 ↑"}, {id: SOXX, sign: 1, label: "반도체 ↑"}]}
+        first_order: {label: "AI CAPEX CYCLE INTACT", text: ["Hyperscaler capex ↑ → GPU / Compute"], checks: [{id: AI_REL_NDX, sign: 1}]}
+        reuse_ai_value_chain: true
+        expect: 1
+        expected: "Compute → Networking → HBM / Memory → Equipment → Power / Cooling → Software 순 전이"
+        confirm: [{label: "AI 상대강도 ↑", id: AI_REL_NDX, sign: 1}, {label: "반도체 ↑", id: SOXX, sign: 1}, {label: "장비 상대 ↑", id: AI_EQUIPMENT_REL, sign: 1}]
+      down:
+        trigger: {label: "AI 상대 약세 심화", checks: [{id: AI_REL_NDX, sign: -1, label: "AI 바스켓 / Nasdaq 상대 ↓"}, {id: SOXX, sign: -1, label: "반도체 ↓"}]}
+        first_order: {label: "AI-SPECIFIC DE-RISKING", text: ["베타가 아닌 AI 고유 요인 → 밸류체인 전반"], checks: [{id: AI_REL_NDX, sign: -1}]}
+        reuse_ai_value_chain: true
+        expect: -1
+        expected: "Compute → Networking → HBM / Memory → Equipment → Power / Cooling → Software 순 압력"
+        confirm: [{label: "AI 상대 −1σ 아래", id: AI_REL_NDX, sign: -1}, {label: "반도체 ↓", id: SOXX, sign: -1}, {label: "장비 상대 ↓", id: AI_EQUIPMENT_REL, sign: -1}]
+    korea:
+      up:
+        trigger: {label: "외국인 매수 전환", checks: [{id: KR_FOREIGN_NET, sign: 1, label: "외국인 순매수"}, {id: KOSPI, sign: 1, label: "KOSPI ↑"}]}
+        first_order: {label: "KOREA RE-RATING", text: ["원화 강세 · 대형주 유입"], checks: [{id: USDKRW, sign: -1}, {id: KOSPI_ADV_RATIO, sign: 1}]}
+        assets: [{label: "KOSPI", kind: instrument, key: KOSPI, sign: 1}, {label: "USD/KRW", kind: instrument, key: USDKRW, sign: -1}, {label: "KRX 반도체", kind: instrument, key: KRX_SEMI, sign: 1}]
+        themes: [{label: "Korea (theme)", kind: theme, key: korea_governance, sign: 1}, {label: "Shareholder return", kind: theme, key: shareholder_return, sign: 1}, {label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: 1}]
+        expect: 1
+        stocks: {direct: [SAMSUNG, SKHYNIX, KB, SHINHAN], secondary: [HYUNDAI_MOTOR, NAVER, HD_HHI], tertiary: [CELLTRION, SAMSUNG_BIO]}
+        expected: "대형 반도체·금융 → 자동차·인터넷·조선 순 확산"
+        confirm: [{label: "외국인 순매수 지속", id: KR_FOREIGN_NET, sign: 1}, {label: "원달러 ↓", id: USDKRW, sign: -1}, {label: "상승종목 비율 ↑", id: KOSPI_ADV_RATIO, sign: 1}]
+      down:
+        trigger: {label: "외국인 매도 지속", checks: [{id: KR_FOREIGN_NET, sign: -1, label: "외국인 순매도"}, {id: KOSPI, sign: -1, label: "KOSPI ↓"}]}
+        first_order: {label: "CAPITAL OUTFLOW", text: ["원화 약세 · 대형주 매도"], checks: [{id: USDKRW, sign: 1}, {id: KOSPI_ADV_RATIO, sign: -1}]}
+        assets: [{label: "KOSPI", kind: instrument, key: KOSPI, sign: -1}, {label: "USD/KRW", kind: instrument, key: USDKRW, sign: 1}, {label: "KRX 반도체", kind: instrument, key: KRX_SEMI, sign: -1}]
+        themes: [{label: "Korea (theme)", kind: theme, key: korea_governance, sign: -1}, {label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: -1}]
+        expect: -1
+        stocks: {direct: [SAMSUNG, SKHYNIX, KB, SHINHAN], secondary: [HYUNDAI_MOTOR, NAVER, HD_HHI], tertiary: [CELLTRION, SAMSUNG_BIO]}
+        expected: "대형 반도체·금융 → 자동차·인터넷 순 매도 확산"
+        confirm: [{label: "외국인 순매도 지속", id: KR_FOREIGN_NET, sign: -1}, {label: "원달러 ↑", id: USDKRW, sign: 1}, {label: "상승종목 비율 ↓", id: KOSPI_ADV_RATIO, sign: -1}]
+    china:
+      up:
+        trigger: {label: "중국 수요 기대", checks: [{id: HSCEI, sign: 1, label: "항셍 중국 ↑"}, {id: COPPER, sign: 1, label: "구리 ↑"}]}
+        first_order: {label: "COMMODITY DEMAND", text: ["구리·철강·화학 수요 기대"], checks: [{id: COPPER, sign: 1}, {id: USDCNH, sign: -1}]}
+        assets: [{label: "Copper", kind: instrument, key: COPPER, sign: 1}, {label: "USD/CNH", kind: instrument, key: USDCNH, sign: -1}, {label: "KOSPI", kind: instrument, key: KOSPI, sign: 1}]
+        themes: [{label: "China (theme)", kind: theme, key: china, sign: 1}, {label: "Consumer (theme)", kind: theme, key: consumer, sign: 1}]
+        expect: 1
+        stocks: {direct: [POSCO, HYUNDAI_STEEL, KOREA_ZINC], secondary: [LGCHEM, LOTTE_CHEM, PAN_OCEAN], tertiary: [HYUNDAI_MOTOR, KIA]}
+        expected: "철강·비철 → 화학·벌크 해운 → 소비재 순"
+        confirm: [{label: "구리 ↑ 지속", id: COPPER, sign: 1}, {label: "항셍 중국 ↑", id: HSCEI, sign: 1}, {label: "위안 강세", id: USDCNH, sign: -1}]
+      down:
+        trigger: {label: "중국 약세 확산", checks: [{id: HSCEI, sign: -1, label: "항셍 중국 ↓"}, {id: COPPER, sign: -1, label: "구리 ↓"}]}
+        first_order: {label: "COMMODITY DEMAND ↓", text: ["구리·철강·화학 수요 우려"], checks: [{id: COPPER, sign: -1}, {id: USDCNH, sign: 1}]}
+        assets: [{label: "Copper", kind: instrument, key: COPPER, sign: -1}, {label: "USD/CNH", kind: instrument, key: USDCNH, sign: 1}, {label: "KOSPI", kind: instrument, key: KOSPI, sign: -1}]
+        themes: [{label: "China (theme)", kind: theme, key: china, sign: -1}, {label: "Consumer (theme)", kind: theme, key: consumer, sign: -1}]
+        expect: -1
+        stocks: {direct: [POSCO, HYUNDAI_STEEL, KOREA_ZINC], secondary: [LGCHEM, LOTTE_CHEM, PAN_OCEAN], tertiary: [HYUNDAI_MOTOR, KIA]}
+        expected: "철강·비철 → 화학·벌크 해운 → 소비재 순 압력"
+        confirm: [{label: "구리 ↓ 지속", id: COPPER, sign: -1}, {label: "항셍 중국 ↓", id: HSCEI, sign: -1}, {label: "위안 약세", id: USDCNH, sign: 1}]
+  #: AI value chain 재사용 — ai_regime.value_chain 세그먼트를 그대로 단계로, 종목은 ai_regime.stocks 의 세그먼트별로 tier 를 나눈다. 새 AI 로직은 없다.
+  ai_chain_order: [compute, networking, memory_hbm, foundry, equipment, packaging, power, dc_infra, software]
+  ai_chain_tiers: {direct: [compute, hyperscalers], secondary: [networking, memory_hbm, foundry, equipment, packaging], tertiary: [power, dc_infra, software]}
+
+#: STOCK RADAR · ANALYST VIEW — 외부 애널리스트 코멘트. 시스템 판단과 섞지 않는다. 웹에서 이름·증권사·날짜·URL·맥락이 모두 확인된 것만 싣고
+#: 하나라도 없으면 그 종목의 줄은 숨긴다. 생성·추정 금지. 7일 이내 우선, 30일 넘으면 싣지 않는다.
+analyst_view:
+  max_stocks: 8
+  fresh_days: 7
+  max_age_days: 30
+  cache_ttl_hours: 12
+  cache_path: data/analyst_views/cache.json
+  manual_dir: data/analyst_views/manual
+  search_max_uses: 3
 watchlist_max: 5
 data_status:
   important: [SPX, NDX, US10Y, US_HY_OAS, VIX, KOSPI, BRENT, DXY]

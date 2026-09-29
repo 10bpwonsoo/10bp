@@ -143,3 +143,86 @@ class TestRegimeHistory:
     def test_cockpit_carries_history_only_when_replay_exists(self):
         snap, market, by_id = _run("baseline")
         assert build_cockpit(snap, market, by_id).history is None
+
+
+class TestIssuePathAndAnalystView:
+    """WHAT MATTERS NEXT 의 전파 경로는 예상(config)과 관측(지금 z)을 나눠 적고, ANALYST VIEW 는 확인된 것만 싣는다."""
+
+    def test_status_and_aggregate(self):
+        from marketpulse.engines.issue_path import aggregate, status_of
+        assert status_of(None, 1, confirm=0.5, partial=0.25) == "DATA MISSING"
+        assert status_of(1.0, 1, confirm=0.5, partial=0.25) == "CONFIRMED" and status_of(-1.0, -1, confirm=0.5, partial=0.25) == "CONFIRMED"
+        assert status_of(0.3, 1, confirm=0.5, partial=0.25) == "PARTIAL" and status_of(0.1, 1, confirm=0.5, partial=0.25) == "UNCONFIRMED"
+        assert status_of(-0.8, 1, confirm=0.5, partial=0.25) == "CONTRADICTED"
+        assert aggregate(["CONFIRMED", "CONFIRMED"]) == "CONFIRMED" and aggregate(["CONFIRMED", "CONTRADICTED"]) == "PARTIAL"
+        assert aggregate(["DATA MISSING", "DATA MISSING"]) == "DATA MISSING" and aggregate(["CONTRADICTED", "UNCONFIRMED", "UNCONFIRMED"]) == "UNCONFIRMED"
+
+    def test_next_items_carry_paths_with_expected_vs_observed(self):
+        snap, market, by_id = _run("inflation_shock")
+        c = build_cockpit(snap, market, by_id)
+        assert c.what_matters_next and all(n.id for n in c.what_matters_next)
+        withp = [n for n in c.what_matters_next if n.path is not None]
+        assert withp, "config 에 경로가 있는 driver 는 path 를 가진다"
+        for n in withp:
+            p = n.path
+            for st in (p.trigger, p.first_order, p.assets, p.themes):
+                assert st.status in ("CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING")
+                for ck in st.checks:
+                    assert ck.expect in (1, -1) and (ck.observed is None) == (ck.status == "DATA MISSING")
+            assert p.expected and p.observed and p.conclusion and "확률" not in p.conclusion
+            assert 0 <= p.confirm_count <= len(p.confirm)
+            for t in p.tiers:
+                assert t.tier in ("DIRECT", "SECONDARY", "TERTIARY") and t.stocks
+                for s in t.stocks:
+                    assert s.status != "DATA MISSING" or s.z is None
+            # 정적 매핑을 확정하지 않는다: 관측이 갈리면 결론에 두 쪽이 다 적힌다
+            weak = [k for k in p.themes.checks if k.status in ("CONFIRMED", "PARTIAL")]; res = [k for k in p.themes.checks if k.status == "CONTRADICTED"]
+            if weak and res:
+                assert "견조" in p.conclusion or "반대" in p.conclusion
+
+    def test_radar_links_issues_and_system_axes_without_investment(self):
+        snap, market, by_id = _run("inflation_shock")
+        c = build_cockpit(snap, market, by_id)
+        for r in c.radar:
+            assert isinstance(r.related_issues, list) and all(any(i == n.id for n in c.what_matters_next) for i in r.related_issues)
+
+    def test_analyst_view_validation_rejects_incomplete_or_stale(self):
+        from datetime import datetime, timezone
+        from marketpulse.adapters.analyst_view import validate_view
+        as_of = datetime(2026, 9, 29, tzinfo=timezone.utc)
+        ok = {"stock_id": "MU", "analyst": "A", "broker": "B", "published_date": "2026-09-28", "source_url": "https://x.example/a", "summary": "s"}
+        v = validate_view(ok, as_of=as_of, max_age_days=30)
+        assert v is not None and v.age_days == 1 and v.freshness == "1D"
+        assert validate_view({**ok, "analyst": ""}, as_of=as_of, max_age_days=30) is None
+        assert validate_view({**ok, "broker": " "}, as_of=as_of, max_age_days=30) is None
+        assert validate_view({**ok, "source_url": "not a url"}, as_of=as_of, max_age_days=30) is None
+        assert validate_view({**ok, "published_date": "2026-08-01"}, as_of=as_of, max_age_days=30) is None
+        assert validate_view({**ok, "published_date": "2026-10-05"}, as_of=as_of, max_age_days=30) is None
+        # 검색 결과에 없는 URL 은 버린다 (모델이 쓴 URL 방지)
+        assert validate_view(ok, as_of=as_of, max_age_days=30, allowed_urls=["https://other"]) is None
+        assert validate_view(ok, as_of=as_of, max_age_days=30, allowed_urls=["https://x.example/a"]) is not None
+
+    def test_manual_store_only_returns_verified_rows(self, tmp_path):
+        import json
+        from datetime import datetime, timezone
+        from marketpulse.adapters.analyst_view import AnalystViewStore
+        man = tmp_path / "manual"; man.mkdir()
+        (man / "a.json").write_text(json.dumps({"views": [
+            {"stock_id": "MU", "analyst": "A", "broker": "B", "published_date": "2026-09-28", "source_url": "https://x/a", "summary": "s"},
+            {"stock_id": "MU", "analyst": "C", "broker": "D", "published_date": "2026-09-20", "source_url": "https://x/b", "summary": "older"},
+            {"stock_id": "SMCI", "analyst": "", "broker": "B", "published_date": "2026-09-28", "source_url": "https://x/c", "summary": "no name"},
+        ]}), encoding="utf-8")
+        st = AnalystViewStore(tmp_path / "cache.json", man)
+        best = st.best(["MU", "SMCI", "TEL"], as_of=datetime(2026, 9, 29, tzinfo=timezone.utc), max_age_days=30)
+        assert set(best) == {"MU"} and best["MU"].analyst == "A"
+        st.put([{"stock_id": "TEL", "retrieved_at": "2026-09-29T00:00:00+00:00", "retrieved_by": "llm_web"}])
+        assert st.retrieved_at("TEL") is not None and "TEL" not in st.best(["TEL"], as_of=datetime(2026, 9, 29, tzinfo=timezone.utc), max_age_days=30)
+
+    def test_analyst_views_route_without_provider(self, client):
+        a = client.get("/api/v1/analyst-views?scenario=inflation_shock")
+        assert a.status_code == 200
+        body = a.json()
+        assert body["provider"] in ("disabled", "unavailable") and body["pending"] == []
+        assert set(body["requested"]) == set(v["stock_id"] for v in body["views"]) | set(body["missing"])
+        for v in body["views"]:
+            assert v["analyst"] and v["broker"] and v["source_url"].startswith("http") and v["freshness"].endswith("D")
