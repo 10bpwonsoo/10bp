@@ -123,14 +123,18 @@ alternative:
   - {id: SCFI,         name: 상하이 컨테이너 운임 (SCFI), group: shipping, asset_class: commodity, unit: index, sources: [{provider: csv, symbol: SCFI}], source_type: UNKNOWN,
      why: "컨테이너선사 매출. 무료 API 가 없어 CSV 로만 받는다.", affected: [HMM], mock_base: 1800, mock_vol: 0.03}
   # 반도체 산업 지표
-  - {id: DRAM_SPOT,    name: DRAM 현물 (DDR4 8Gb), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DRAM_SPOT}], source_type: RESEARCH,
+  - {id: DRAM_SPOT,    name: DRAM 현물 (DDR4 8Gb), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DRAM_SPOT}], source_type: RESEARCH, min_points: 1,
      why: "메모리 ASP 의 선행 지표. 현물이 고정가보다 먼저 움직인다. 삼성전자·하이닉스 이익의 방향.", affected: [SAMSUNG, SKHYNIX], mock_base: 2.1, mock_vol: 0.02}
-  - {id: DDR5_SPOT,    name: DDR5 현물 (16Gb),  group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DDR5_SPOT}], source_type: RESEARCH,
+  - {id: DDR5_SPOT,    name: DDR5 현물 (16Gb),  group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DDR5_SPOT}], source_type: RESEARCH, min_points: 1,
      why: "서버·AI 향 신제품 메모리 가격.", affected: [SAMSUNG, SKHYNIX], mock_base: 5.5, mock_vol: 0.02}
-  - {id: NAND_SPOT,    name: NAND 현물 (512Gb TLC), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: NAND_SPOT}], source_type: RESEARCH,
+  - {id: NAND_SPOT,    name: NAND 현물 (512Gb TLC), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: NAND_SPOT}], source_type: RESEARCH, min_points: 1,
      why: "낸드 ASP 방향. 삼성전자·하이닉스(솔리다임) 낸드 부문 이익.", affected: [SAMSUNG, SKHYNIX], mock_base: 3.2, mock_vol: 0.02}
-  - {id: DXI,          name: DXI 메모리 지수,   group: semiconductor, asset_class: commodity, unit: index, sources: [{provider: csv, symbol: DXI}], source_type: RESEARCH,
+  - {id: DXI,          name: DXI 메모리 지수,   group: semiconductor, asset_class: commodity, unit: index, sources: [{provider: csv, symbol: DXI}], source_type: RESEARCH, min_points: 1,
      why: "DRAMeXchange 메모리 종합 지수.", affected: [SAMSUNG, SKHYNIX], mock_base: 60000, mock_vol: 0.02}
+  - {id: HBM3E_CONTRACT, name: HBM3E 계약가 추정 ($/GB), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: HBM3E_CONTRACT}], source_type: RESEARCH, min_points: 1, frequency: quarterly,
+     why: "HBM 은 현물 시장이 없다 — 연간·분기 계약가의 공개 추정치(Silicon Analysts ← TrendForce·언론)를 앵커로만 적는다. 하이닉스·삼성 HBM 매출의 방향.", affected: [SKHYNIX, SAMSUNG], mock_base: 15.0, mock_vol: 0.01}
+  - {id: HBM4_CONTRACT,  name: HBM4 계약가 추정 ($/GB),  group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: HBM4_CONTRACT}], source_type: RESEARCH, min_points: 1, frequency: quarterly,
+     why: "2027 주력이 될 HBM4 의 계약 협상가(공개 보도 기반 추정). 확정가가 아니다.", affected: [SKHYNIX, SAMSUNG], mock_base: 15.5, mock_vol: 0.01}
   - {id: SOX,          name: 필라델피아 반도체 (SOX), group: semiconductor, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "^SOX"}], source_type: EXCHANGE,
      why: "글로벌 반도체 주가의 기준. 국내 반도체와 하루 시차로 연동.", affected: [SAMSUNG, SKHYNIX, HANMI_SEMI], mock_base: 11175, mock_vol: 0.022}
   - {id: SMH,          name: 반도체 ETF (SMH),  group: semiconductor, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: SMH}], source_type: MARKET_DATA,

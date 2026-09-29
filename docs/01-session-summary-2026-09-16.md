@@ -226,6 +226,8 @@
 
 - 모의 탭을 **실데이터 시나리오 점검**으로 바꿈: `config/scenario_checks.yaml`(시나리오 → 판정 라벨·테마, 임계·창·가중 규칙), `models/scenario_check.py`, `engines/scenario_check.py`(충격 서명 vs 하루·5일 z, |기대 z| 가중 일치도, 결측은 분모 제외, require 룰 상태·가설 점수, 템플릿 판정문), `GET /api/v1/scenario-check`(as_of 별 캐시, Investment 캐시의 대체·종목 z 보탬). 프런트 헤더에 점검 탭(실데이터 + 시나리오별 일치도). 시나리오 탭은 실데이터 화면을 복제하지 않고 `ScenarioView` 가 설정의 `focus` 대로 그 탭에 어울리는 판정만 앞세운다 — rule(물가 충격·유가 급등: require/support 룰 + 팩터 재료·22일 팩터 흐름 + 원자재 경로) · fear_greed(AI 센티: 온도계 밴드 + 한 달 밴드 띠) · semiconductor(메모리: 네 신호 합의) · calm(평시: 룰 걸림 여부 + 판정 없음 일수), 그 아래 관련 테마·괴리·서명 대조. 정적 배포본은 실데이터 한 뷰 + `scenario_check.json`. 모의 데이터 자체는 백엔드 MOCK 모드·테스트에 그대로 남는다. 테스트 +5(백엔드) +2(프런트). 테마 조건(뉴스 톤·가격 점수, `theme_conditions`)으로 가격 z 로 못 잡는 서명(AI 센티 = 뉴스 뜨겁고 가격 제자리)을 따로 잰다. 9/29 실데이터: 평시 63% · AI 센티 52% · 물가 충격 43% · 메모리 업사이클 17% · 유가 급등 10% — 어느 것도 지금 판정(Liquidity Stress)과 같지 않다.
 
+- 메모리 가격: `adapters/alternative/memory_sources.py`(DRAMeXchange 홈 표·Silicon Analysts HBM 파서) + `scripts/collect_memory_prices.py`(CSV 수집기). DRAM·DDR5·NAND 현물·DXI 는 오늘부터 하루 한 줄, HBM3E·HBM4 계약가 추정은 분기 앵커. `Instrument.min_points`(봉 1개 허용)·`AltInstrument.frequency`(분기면 z 없음)·`AltDataPoint.frequency/observations`, 화면 '분기 추정'·'봉 n/20' 표식, 반도체 해석문에 '값은 있으나 봉 부족' 문장. 테스트 +8.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

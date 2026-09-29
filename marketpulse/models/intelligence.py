@@ -57,6 +57,11 @@ class StockMeta(Base):
     aliases: list[str] = Field(default_factory=list, description="기사 본문에서 이 종목을 가리키는 다른 표기 (영문명·약칭)")
     mock_base: float = 100.0
     mock_vol: float = 0.02
+    #: 이 계열을 받아들이는 최소 봉 수. None 이면 공통 기준(MIN_POINTS=20). 공개 이력이 없어 오늘부터 쌓는
+    #: 현물(DRAMeXchange)이나 분기 추정치(HBM)는 1 로 두어 값·변화는 보이되 z 는 봉이 찰 때까지 None 이다.
+    min_points: int | None = Field(default=None, ge=1)
+    #: daily 가 아니면 z·백분위를 계산하지 않는다 — 분기 추정치에 60봉 z 는 의미가 없다.
+    frequency: Literal["daily", "weekly", "monthly", "quarterly"] = "daily"
 
     def as_instrument(self) -> Instrument:
         return Instrument(
@@ -81,6 +86,11 @@ class AltInstrument(Base):
     affected: list[str] = Field(default_factory=list, description="영향받는 종목 id")
     mock_base: float = 100.0
     mock_vol: float = 0.02
+    #: 이 계열을 받아들이는 최소 봉 수. None 이면 공통 기준(MIN_POINTS=20). 공개 이력이 없어 오늘부터 쌓는
+    #: 현물(DRAMeXchange)이나 분기 추정치(HBM)는 1 로 두어 값·변화는 보이되 z 는 봉이 찰 때까지 None 이다.
+    min_points: int | None = Field(default=None, ge=1)
+    #: daily 가 아니면 z·백분위를 계산하지 않는다 — 분기 추정치에 60봉 z 는 의미가 없다.
+    frequency: Literal["daily", "weekly", "monthly", "quarterly"] = "daily"
 
     def as_instrument(self) -> Instrument:
         return Instrument(
@@ -88,6 +98,7 @@ class AltInstrument(Base):
             series_kind=self.series_kind, region="GLOBAL", higher_is_risk_on=None,
             calendar="24H" if self.asset_class is AssetClass.COMMODITY else "NYSE",
             tags=["alternative", self.group] + (["futures"] if self.futures else []),
+            min_points=self.min_points,
         )
 
 
@@ -219,6 +230,10 @@ class AltDataPoint(Base):
         default=None, description="직전 실행에서 롤오버 의심이던 계열의 다음 봉 판정. 되돌리면 reverted, 이어지면 persisted")
     source: str | None = None
     source_type: SourceType = "UNKNOWN"
+    #: daily 가 아니면 화면이 '분기 추정' 같은 표식을 붙이고 z 를 기대하지 않는다
+    frequency: Literal["daily", "weekly", "monthly", "quarterly"] = "daily"
+    #: 봉 수. 공통 기준(20) 미만이면 z 가 없는 이유가 이것이다
+    observations: int = 0
     proxy_for: str | None = None
     why: str = ""
     affected: list[str] = Field(default_factory=list)

@@ -44,3 +44,12 @@ export function Tag({ children, color, title }: { children: React.ReactNode; col
 export function Empty({ children }: { children: React.ReactNode }) {
   return <p className="ii-empty">{children}</p>;
 }
+
+const FREQ_KO: Record<string, string> = { weekly: "주간", monthly: "월간", quarterly: "분기" };
+/** z 가 없는 이유를 한 단어로 — 분기 추정치인지, 봉이 아직 안 찼는지. 화면이 '부분' 만 보여주면 왜인지 모른다. */
+export function zGapTag(p: { z: number | null; quality: string; frequency?: string; observations?: number }): string | null {
+  if (p.quality === "MISSING") return null;
+  if (p.frequency && p.frequency !== "daily") return `${FREQ_KO[p.frequency] ?? p.frequency} 추정`;
+  if (p.z === null && p.observations !== undefined && p.observations < 20) return `봉 ${p.observations}/20`;
+  return null;
+}

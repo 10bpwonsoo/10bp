@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Mapping, Sequence
 
 from ..config.registry import get_intelligence_config
+from .alternative_data import FREQ_KO
 from ..models.intelligence import AltDataPoint, AnalystSnapshot, SemiconductorIntelligence, StockRow
 
 ENGINE_VERSION = "0.1.0"
@@ -53,8 +54,10 @@ def build_semiconductor(
     eps_dir = _direction([e / 2.0 if e is not None else None for e in eps], 0.5)  # 1% 리비전 = 0.5 로 환산
 
     missing = [p.label for p in memory if p.quality == "MISSING"]
+    # 값은 있지만 z 가 없는 것(봉 부족·분기 추정)은 '없음' 이 아니라 '방향 판단 보류' 다
+    pending = [p for p in memory if p.quality != "MISSING" and p.z is None]
     parts = [f"글로벌 peer {_word(peer_dir)}", f"국내 반도체 {_word(kr_dir)}"]
-    parts.append(f"메모리 현물 {_word(mem_dir)}" if mem_dir is not None else "메모리 현물 데이터 없음")
+    parts.append(f"메모리 현물 {_word(mem_dir)}" if mem_dir is not None else ("메모리 현물 방향 미정(봉 부족)" if pending else "메모리 현물 데이터 없음"))
     parts.append(f"EPS 리비전 {_word(eps_dir)}" if eps_dir is not None else "컨센서스 데이터 없음")
     agree = [d for d in (peer_dir, kr_dir, mem_dir, eps_dir) if d is not None]
     if len(agree) >= 2 and all(d >= 0.5 for d in agree):
@@ -68,6 +71,14 @@ def build_semiconductor(
     interpretation = " · ".join(parts) + ". " + verdict
     if missing:
         interpretation += f" 메모리 가격({', '.join(missing)})은 공개 API 가 없어 CSV 를 넣기 전까지 비어 있다."
+    if pending:
+        short = [p for p in pending if p.frequency == "daily"]
+        lowf = [p for p in pending if p.frequency != "daily"]
+        if short:
+            n = min(p.observations for p in short)
+            interpretation += f" {'·'.join(p.label.split(' (')[0] for p in short)}은 값은 있으나 봉이 {n}/20 이라 z 가 없다 — 방향 계산은 봉이 차면 들어간다."
+        if lowf:
+            interpretation += f" {'·'.join(p.label.split(' (')[0] for p in lowf)}은 {FREQ_KO.get(lowf[0].frequency, lowf[0].frequency)} 추정치라 방향 계산에 넣지 않는다."
     return SemiconductorIntelligence(
         memory=memory, peers=peers, korea=korea, peer_direction=peer_dir, korea_direction=kr_dir,
         memory_direction=mem_dir, eps_direction=eps_dir, interpretation=interpretation, missing=missing,

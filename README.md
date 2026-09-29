@@ -340,6 +340,17 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
+### 메모리 가격 — DRAM·NAND 현물과 HBM 계약가 추정 (2026-09-29)
+
+`python -m marketpulse.scripts.collect_memory_prices` 가 두 공개 출처를 읽어
+`data/replay/alternative/*.csv` 에 쓴다. DRAMeXchange 홈페이지의 DRAM·NAND 현물
+세션 평균과 DXI 는 공개 이력이 없어 **하루 한 줄씩 쌓고**, HBM3E·HBM4 계약가는
+Silicon Analysts 무료 API 의 앵커(분기·비정기, 출처·신뢰도 포함)를 그대로 적는다.
+HBM 은 현물 시장이 없으므로 추정치이며 화면에 '분기 추정' 표식이 붙고 z·방향
+계산에서 빠진다. 현물 네 항목은 `min_points: 1` 로 값·변화부터 보이고 z 는
+20봉이 차면 나온다("봉 n/20" 표식). 키·비밀 없음. 클라우드 환경에서 돌리려면
+`dramexchange.com`(www 없이)과 `siliconanalysts.com` 이 허용 목록에 있어야 한다.
+
 ### 시나리오 점검 — 모의 탭을 실데이터로 (2026-09-29)
 
 화면의 물가 충격·AI 센티·평시·유가 급등·메모리 업사이클 탭은 더는 모의 데이터를

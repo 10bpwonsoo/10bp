@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { AltDataPoint } from "../api/investment";
-import { Empty, QUALITY, pct, sig } from "../investment/fmt";
+import { Empty, QUALITY, pct, sig, zGapTag } from "../investment/fmt";
 
 const GROUP_LABEL: Record<string, string> = {
   semiconductor: "반도체", energy: "에너지", metals: "금속", chemicals: "화학", agriculture: "농산물",
@@ -53,6 +53,7 @@ export function AlternativeDataPulse({ points }: { points: AltDataPoint[] }) {
                     {p.proxy_for ? <span className="row-sub" title={p.proxy_for}> 대리</span> : null}
                     {p.quality !== "OK" ? <span className="row-sub" style={{ color: QUALITY[p.quality].color }}> {QUALITY[p.quality].label}</span> : null}
                     {p.rollover_suspect ? <span className="row-sub" style={{ color: "var(--warn)" }} title={p.note}> 롤오버?</span> : null}
+                    {zGapTag(p) ? <span className="row-sub" style={{ color: "var(--info)" }} title={p.note} data-testid="zgap"> {zGapTag(p)}</span> : null}
                   </span>
                   <span className="num" style={{ textAlign: "right" }}>{p.value === null ? "–" : p.value >= 1000 ? p.value.toLocaleString("ko-KR", { maximumFractionDigits: 0 }) : p.value.toFixed(2)}</span>
                   <span className={`num ${p.change_1d !== null && p.change_1d >= 0 ? "up" : "down"}`} style={{ textAlign: "right" }}>{pct(p.change_1d)}</span>

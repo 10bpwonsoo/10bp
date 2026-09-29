@@ -32,6 +32,10 @@ export interface AltDataPoint {
   id: string; label: string; group: string; value: number | null; unit: string; change_1d: number | null; change_1w: number | null;
   change_1m: number | null; change_3m: number | null; z: number | null; percentile: number | null; percentile_observations: number;
   quality: Quality; stale: boolean; rollover_suspect: boolean; rollover_followup?: "reverted" | "persisted" | null; source: string | null; source_type: SourceType; proxy_for: string | null;
+  /** daily 가 아니면 분기·월간 추정치 — z 를 기대하지 않는다. 옛 응답에는 없다 */
+  frequency?: "daily" | "weekly" | "monthly" | "quarterly";
+  /** 봉 수. 20 미만이면 z 가 없는 이유 */
+  observations?: number;
   why: string; affected: string[]; affected_names: string[]; as_of: string | null; note: string;
 }
 export interface Evidence { key: string; label: string; value: number | null; display: string; source: string }

@@ -83,6 +83,9 @@ class Instrument(Base):
         default=None, description="파생 지표면 계산 규칙. 아니면 None."
     )
     tags: list[str] = Field(default_factory=list)
+    #: 이 계열을 받아들이는 최소 봉 수. None 이면 공통 기준(MIN_POINTS). 공개 이력이 없어 오늘부터 쌓는
+    #: 계열(현물 표·분기 추정치)은 1 — 값은 보이되 z 는 봉이 찰 때까지 None 이다.
+    min_points: int | None = Field(default=None, ge=1)
 
 
 class InstrumentRegistry(Base):

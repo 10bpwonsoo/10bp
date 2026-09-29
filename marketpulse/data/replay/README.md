@@ -224,3 +224,18 @@ KR_FOREIGN_NET
 
 11개 가격 + 수급 1개. 여기에 `BE10Y` 와 `US_HY_OAS` 를 더하면 Inflation·
 Credit factor 까지 살아난다.
+
+---
+
+## 메모리 가격 — 수집기가 채우는 파일 (2026-09-29)
+
+`python -m marketpulse.scripts.collect_memory_prices` 가 여기에 여섯 파일을 쓴다.
+
+| 파일 | 출처 | 주기 | 비고 |
+|---|---|---|---|
+| `DRAM_SPOT.csv` `DDR5_SPOT.csv` `NAND_SPOT.csv` `DXI.csv` | dramexchange.com 홈 표(세션 평균)·DXI | 하루 한 줄 | 공개 이력이 없어 **수집을 시작한 날부터** 쌓인다. z 는 20봉이 차면 나온다 |
+| `HBM3E_CONTRACT.csv` `HBM4_CONTRACT.csv` | Silicon Analysts 무료 API(← TrendForce·언론 보도) | 분기·비정기 앵커 | 현물이 아니라 **계약가 추정치**. 출처·신뢰도·유형 열을 같이 남긴다. z 는 계산하지 않는다 |
+
+여섯 항목은 `universe.yaml` 에 `min_points: 1` 이라 봉 하나여도 값·변화는 화면에 보인다.
+HBM 둘은 `frequency: quarterly` 라 화면에 '분기 추정' 표식이 붙고 방향 계산에 들어가지 않는다.
+DRAMeXchange 표는 개인 참고 용도로 읽는 것이라 이 CSV 를 다른 곳에 재배포하지 않는다.

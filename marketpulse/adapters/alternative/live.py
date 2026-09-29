@@ -77,11 +77,11 @@ class AltLiveAdapter:
         return plan
 
     # ── 저장소 ────────────────────────────────────────────
-    def _from_store(self, iid: str, bars: int) -> tuple[list[tuple[datetime, float]], list[tuple[datetime, float]], str] | None:
+    def _from_store(self, iid: str, bars: int, min_points: int = MIN_POINTS) -> tuple[list[tuple[datetime, float]], list[tuple[datetime, float]], str] | None:
         if self.store is None:
             return None
         rows = self.store.load_daily(iid, limit=bars)
-        if len(rows) < MIN_POINTS:
+        if len(rows) < min_points:
             return None
         pts = [(datetime.fromisoformat(d).replace(tzinfo=timezone.utc), v) for d, v, _, _ in rows]
         vols = [(datetime.fromisoformat(d).replace(tzinfo=timezone.utc), vol) for d, _, vol, _ in rows if vol is not None]
@@ -131,7 +131,7 @@ class AltLiveAdapter:
 
             # 1. 오늘 이미 받았으면 저장소에서
             if self._cached_today(ins.id, today):
-                cached = self._from_store(ins.id, bars)
+                cached = self._from_store(ins.id, bars, getattr(ins, "min_points", None) or MIN_POINTS)
                 if cached:
                     pts, vols, src = cached
                     outcome.provider, outcome.symbol = "store", src
@@ -163,8 +163,9 @@ class AltLiveAdapter:
                         logger.exception("%s: %s 공급자 오류", ins.id, name)
                         outcome.attempts.append((name, f"예상 못 한 오류: {exc}"))
                         continue
-                    if len(pts) < MIN_POINTS:
-                        outcome.attempts.append((name, f"{len(pts)}개뿐 — 최소 {MIN_POINTS}개 필요"))
+                    need = getattr(ins, "min_points", None) or MIN_POINTS
+                    if len(pts) < need:
+                        outcome.attempts.append((name, f"{len(pts)}개뿐 — 최소 {need}개 필요"))
                         pts = []
                         continue
                     src = f"{name}:{spec.get('symbol', ins.id)}"
@@ -174,7 +175,7 @@ class AltLiveAdapter:
 
             # 3. 전부 실패 — 저장소의 마지막 값을 STALE 로
             if not pts:
-                cached = self._from_store(ins.id, bars)
+                cached = self._from_store(ins.id, bars, getattr(ins, "min_points", None) or MIN_POINTS)
                 if cached:
                     pts, vols, src = cached
                     quality = DataQuality.STALE

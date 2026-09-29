@@ -1,5 +1,5 @@
 import type { SemiconductorIntelligence as Semi } from "../api/investment";
-import { Empty, MiniBar, QUALITY, pct, sig } from "../investment/fmt";
+import { Empty, MiniBar, QUALITY, pct, sig, zGapTag } from "../investment/fmt";
 
 function dirWord(d: number | null) {
   if (d === null) return { t: "판단 불가", c: "var(--faint)" };
@@ -36,7 +36,7 @@ export function SemiconductorIntelligence({ s }: { s: Semi }) {
           <div className="ii-group mono">글로벌 peer (직전 세션)</div>
           {s.peers.map((p) => (
             <div key={p.id} className="row ii-semi-row" title={p.why}>
-              <span className="row-label">{p.label}{p.quality !== "OK" ? <span className="row-sub" style={{ color: QUALITY[p.quality].color }}> {QUALITY[p.quality].label}</span> : null}</span>
+              <span className="row-label">{p.label}{p.quality !== "OK" ? <span className="row-sub" style={{ color: QUALITY[p.quality].color }}> {QUALITY[p.quality].label}</span> : null}{zGapTag(p) ? <span className="row-sub" style={{ color: "var(--info)" }} title={p.note}> {zGapTag(p)}</span> : null}</span>
               <span className={`num ${p.change_1d !== null && p.change_1d >= 0 ? "up" : "down"}`}>{pct(p.change_1d)} <span style={{ color: "var(--faint)" }}>{sig(p.z)}</span></span>
               <MiniBar v={p.z} />
             </div>
