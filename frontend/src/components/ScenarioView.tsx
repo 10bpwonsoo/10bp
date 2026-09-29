@@ -1,6 +1,7 @@
-import type { IntelligenceSnapshot, MarketStateHistory, OilRegime, RatesRegime, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
+import type { AiRegime, IntelligenceSnapshot, MarketStateHistory, OilRegime, RatesRegime, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
 import { OilRegimeView } from "./OilRegimeView";
 import { RatesRegimeView } from "./RatesRegimeView";
+import { AiRegimeView } from "./AiRegimeView";
 import type { InvestmentIntelligence } from "../api/investment";
 import { Panel } from "./Panel";
 import { RuleTrace } from "./RuleTrace";
@@ -90,9 +91,14 @@ export function FactorBreakdown({ snapshot, factor }: { snapshot: IntelligenceSn
   );
 }
 
-export function ScenarioView({ check, snapshot, history, investment, oilRegime = null, ratesRegime = null }: {
-  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null; ratesRegime?: RatesRegime | null;
+export function ScenarioView({ check, snapshot, history, investment, oilRegime = null, ratesRegime = null, aiRegime = null }: {
+  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null; ratesRegime?: RatesRegime | null; aiRegime?: AiRegime | null;
 }) {
+  // AI 탭 — AI Trade Intelligence. 시장 온도·공포/탐욕은 Diagnostics 의 맥락으로 내려간다.
+  if (check.focus === "ai_regime") {
+    if (!aiRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>AI 트레이드 판별을 불러오는 중… (바스켓 32종목 계열 수집)</div></section></div>;
+    return <AiRegimeView regime={aiRegime} snapshot={snapshot} check={check} history={history} />;
+  }
   // 물가 탭 — Inflation & Rates Intelligence. Regime → Rate Driver → Inflation Components → Curve → Yield Decomposition → Confirmation → Divergence → Implication → Triggers → Diagnostics.
   if (check.focus === "rates_regime") {
     if (!ratesRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>금리·물가 원인 판별을 불러오는 중…</div></section></div>;

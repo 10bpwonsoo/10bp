@@ -443,5 +443,71 @@ class RatesRegimeService:
 _rates_regime_service = RatesRegimeService(_scenario_check_service)
 
 
+class AiRegimeService:
+    """AI Trade Intelligence — 바스켓 계열은 알트 어댑터(Yahoo·저장소, MOCK 은 시나리오)로 받고 스냅샷 as_of 별로 캐시한다."""
+
+    def __init__(self, checks: ScenarioCheckService, base: SnapshotService) -> None:
+        self._checks = checks
+        self._base = base
+        self._lock = threading.Lock()
+        self._cache: dict[str, tuple[object, object]] = {}
+        self._basket: dict[str, tuple[object, dict]] = {}
+
+    def basket_series(self, settings: Settings, as_of) -> dict:
+        from ..adapters.registry import build_alt_adapter
+        from ..engines.ai_regime import basket_instruments
+        from ..models.intelligence import AltInstrument, SourceSpec
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            hit = self._basket.get(key)
+            if hit and hit[0] == as_of:
+                return dict(hit[1])
+        specs = [AltInstrument(id=str(m["id"]), name=str(m.get("name", m["id"])), group="ai", asset_class="equity", unit="price",  # type: ignore[arg-type]
+                               sources=[SourceSpec(provider="yahoo", symbol=str(m["symbol"]))], source_type="EXCHANGE")
+                 for m in basket_instruments(settings.config_dir)]
+        adapter = build_alt_adapter(settings, store_path=None)
+        bars = max(settings.history_bars, 120)
+        if settings.data_mode is DataMode.MOCK:
+            series = adapter.fetch_series([], specs, [], bars=bars, as_of=as_of)
+        else:
+            series = adapter.fetch_series([a.as_instrument() for a in specs], {a.id: a.sources for a in specs}, bars=bars, as_of=as_of)
+        with self._lock:
+            self._basket[key] = (as_of, dict(series))
+        return dict(series)
+
+    def get(self, settings: Settings):
+        from ..engines.ai_regime import build_ai_regime
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        snapshot, market, instruments, extra, names = self._checks.market_and_extra(settings)
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        basket = self.basket_series(settings, snapshot.as_of)
+        series = self._base.series(settings)
+        t = snapshot.thermometer
+        result = build_ai_regime(market, series, basket, snapshot.themes, snapshot.events, {i.id: i for i in instruments},
+                                 market_label=snapshot.market_state.primary_label.value, market_confidence=snapshot.market_state.confidence,
+                                 thermometer=None if t is None else t.composite, band=None if t is None else t.band,
+                                 extra_z=extra, extra_names=names, as_of=snapshot.as_of, config_dir=settings.config_dir)
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+            self._basket.clear()
+
+
+_ai_regime_service = AiRegimeService(_scenario_check_service, _service)
+
+
+def get_ai_regime_service() -> AiRegimeService:
+    return _ai_regime_service
+
+
 def get_rates_regime_service() -> RatesRegimeService:
     return _rates_regime_service

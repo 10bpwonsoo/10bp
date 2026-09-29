@@ -1,0 +1,236 @@
+# AI Trade Intelligence — AI 탭의 판정 규칙. 모든 임계·가중·바스켓은 여기 있다. 엔진(engines/ai_regime.py)은 숫자를 갖지 않는다.
+#
+# 핵심 질문: AI 트레이드 자체가 약해지는가, 아니면 broad-market risk-off 에 같이 눌리는가.
+# 그래서 절대 수익이 아니라 Nasdaq 100 / S&P 500 대비 상대 수익과 상대 z 가 판정의 축이다.
+# 점수는 확률이 아니라 증거 크기다. 결측은 0 이 아니라 분모에서 뺀다.
+
+z_ref: 2.0          # 가격 증거: |z| 가 이 값이면 기여 1.0 (clip)
+news_ref: 40        # 뉴스 증거: 톤 ±40 이면 기여 1.0
+window: max         # 하루·5일 z 중 |z| 큰 쪽
+strength_bands:
+  - {min: 60, label: STRONG}
+  - {min: 30, label: MODERATE}
+  - {min: 0,  label: WEAK}
+status: {min_score: 25}   # |driver 점수| 가 이 아래면 UNCONFIRMED
+
+benchmarks: {primary: NDX, secondary: SPX}
+windows: {d1: 1, w1: 5, m1: 21}
+history_bars: 120          # 바스켓 지수·상대 지수의 z(60일 창) 를 내려면 넉넉해야 한다
+
+#: AI 바스켓 — 그룹별 동일가중, 바스켓은 basket_groups 의 구성원 동일가중. 한국 종목은 자기 달력(장중값)이라 그룹 note 에 적는다.
+basket_groups: [semis_compute, memory, hyperscalers, networking_infra, power_datacenter, software_app]
+groups:
+  - key: semis_compute
+    label: "Semiconductors / Compute"
+    label_ko: "반도체·컴퓨트"
+    benchmark: NDX
+    members:
+      - {id: NVDA, symbol: NVDA, name: Nvidia}
+      - {id: AMD,  symbol: AMD,  name: AMD}
+      - {id: AVGO, symbol: AVGO, name: Broadcom}
+      - {id: TSM,  symbol: TSM,  name: TSMC}
+      - {id: MRVL, symbol: MRVL, name: Marvell}
+      - {id: ARM,  symbol: ARM,  name: Arm}
+  - key: memory
+    label: "Memory"
+    label_ko: "메모리"
+    benchmark: NDX
+    note: "SK하이닉스·삼성전자는 한국 달력(장중값)이라 미국 종목보다 하루 앞선 봉이다"
+    members:
+      - {id: MU,      symbol: MU,        name: Micron}
+      - {id: SNDK,    symbol: SNDK,      name: Sandisk}
+      - {id: SKHYNIX, symbol: 000660.KS, name: SK하이닉스}
+      - {id: SAMSUNG, symbol: 005930.KS, name: 삼성전자}
+  - key: hyperscalers
+    label: "Hyperscalers"
+    label_ko: "하이퍼스케일러"
+    benchmark: NDX
+    members:
+      - {id: MSFT,  symbol: MSFT,  name: Microsoft}
+      - {id: GOOGL, symbol: GOOGL, name: Alphabet}
+      - {id: AMZN,  symbol: AMZN,  name: Amazon}
+      - {id: META,  symbol: META,  name: Meta}
+      - {id: ORCL,  symbol: ORCL,  name: Oracle}
+  - key: networking_infra
+    label: "Networking / Infrastructure"
+    label_ko: "네트워킹·인프라"
+    benchmark: NDX
+    members:
+      - {id: ANET, symbol: ANET, name: Arista}
+      - {id: VRT,  symbol: VRT,  name: Vertiv}
+      - {id: DELL, symbol: DELL, name: Dell}
+      - {id: SMCI, symbol: SMCI, name: Super Micro}
+      - {id: CIEN, symbol: CIEN, name: Ciena}
+      - {id: CRDO, symbol: CRDO, name: Credo}
+  - key: power_datacenter
+    label: "Power / Data Center"
+    label_ko: "전력·데이터센터"
+    benchmark: NDX
+    members:
+      - {id: VST, symbol: VST, name: Vistra}
+      - {id: CEG, symbol: CEG, name: Constellation}
+      - {id: GEV, symbol: GEV, name: GE Vernova}
+      - {id: ETN, symbol: ETN, name: Eaton}
+      - {id: NRG, symbol: NRG, name: NRG Energy}
+  - key: software_app
+    label: "Software / Application"
+    label_ko: "소프트웨어·애플리케이션"
+    benchmark: NDX
+    members:
+      - {id: PLTR, symbol: PLTR, name: Palantir}
+      - {id: NOW,  symbol: NOW,  name: ServiceNow}
+      - {id: CRM,  symbol: CRM,  name: Salesforce}
+      - {id: SNOW, symbol: SNOW, name: Snowflake}
+      - {id: DDOG, symbol: DDOG, name: Datadog}
+      - {id: APP,  symbol: APP,  name: AppLovin}
+  - key: korea_ai
+    label: "Korea AI Supply Chain"
+    label_ko: "국내 AI 밸류체인"
+    benchmark: KOSPI
+    note: "바스켓에는 넣지 않는다(달력·통화가 다르다). 리더십 비교용이며 KOSPI 대비다"
+    members:
+      - {id: SKHYNIX,       symbol: 000660.KS, name: SK하이닉스}
+      - {id: SAMSUNG,       symbol: 005930.KS, name: 삼성전자}
+      - {id: HANMI_SEMI,    symbol: 042700.KS, name: 한미반도체}
+      - {id: SAMSUNG_EM,    symbol: 009150.KS, name: 삼성전기}
+      - {id: HD_ELECTRIC,   symbol: 267260.KS, name: HD현대일렉트릭}
+      - {id: HYOSUNG_HEAVY, symbol: 298040.KS, name: 효성중공업}
+      - {id: LS_ELECTRIC,   symbol: 010120.KS, name: LS ELECTRIC}
+      - {id: NAVER,         symbol: 035420.KS, name: NAVER}
+
+#: 상대·절대 판정 임계 (z)
+relative:
+  flat_abs: 0.5            # |z| 가 이 아래면 '보합'
+  specific_z: -1.0         # AI 가 Nasdaq 대비 이 아래로 밀리면 AI-specific
+  macro_band: -0.5         # 절대 약세여도 상대 z 가 이 이상이면 '시장과 같이 눌림'
+  outperform_z: 0.5
+
+#: breadth
+breadth:
+  ma_short: 5
+  ma_long: 20
+  low_pct: 50              # 20일선 상회 비율이 이 아래면 좁다
+  narrowing_drop_pts: 10   # 1주 전 대비 이만큼 빠지면 '좁아진다'
+  widening_rise_pts: 10
+
+#: 리더십 — 1주 상대 수익(벤치마크 대비 %p) 순위. 회전은 1개월 리더와 1주 리더가 다를 때
+leadership:
+  leader_min_rel_pct: 0.5      # 1주 상대 %p 가 이 이상이어야 '리더'
+  laggard_max_rel_pct: -0.5
+
+#: driver — 부호 = AI 바스켓 가격에 주는 방향. AI_* 는 엔진이 바스켓에서 만드는 파생 z (layer: basket)
+drivers:
+  macro_rates:
+    label: "Macro / Rates"
+    label_ko: "매크로·금리"
+    headline: "MACRO / RATES"
+    implication: "실질금리·달러가 AI 밸류에이션(장기 현금흐름)을 누르는 경로. AI 고유 요인이 아니다."
+    evidence:
+      - {id: US10Y,   sign: -1, weight: 1.0}
+      - {id: TIPS10Y, sign: -1, weight: 1.2}
+      - {id: DXY,     sign: -1, weight: 0.6}
+      - {id: MOVE,    sign: -1, weight: 0.6}
+  broad_risk_off:
+    label: "Broad Risk-Off"
+    label_ko: "시장 전반 위험회피"
+    headline: "BROAD RISK-OFF"
+    implication: "지수·신용·변동성이 같이 움직이는 국면. AI 는 베타로 눌린다 — 상대 수익이 답이다."
+    evidence:
+      - {id: SPX,       sign: 1,  weight: 1.0}
+      - {id: RUT,       sign: 1,  weight: 0.6}
+      - {id: VIX,       sign: -1, weight: 1.0}
+      - {id: US_HY_OAS, sign: -1, weight: 1.2}
+      - {id: XLK,       sign: 1,  weight: 0.6}
+  semi_cycle:
+    label: "Semiconductor Cycle"
+    label_ko: "반도체 사이클"
+    headline: "SEMICONDUCTOR CYCLE"
+    implication: "메모리 가격·반도체 지수·장비가 이끄는 국면. AI 의 하드웨어 다리다."
+    evidence:
+      - {id: SOXX,       sign: 1, weight: 1.0}
+      - {id: AI_SEMIS_REL, sign: 1, weight: 1.0, note: "반도체·컴퓨트 그룹의 Nasdaq 대비 상대 z"}
+      - {id: AI_MEMORY_REL, sign: 1, weight: 0.8, note: "메모리 그룹의 Nasdaq 대비 상대 z"}
+      - {id: DRAM_SPOT,  sign: 1, weight: 0.6}
+      - {id: DXI,        sign: 1, weight: 0.6}
+      - {theme: semiconductor, field: news_sentiment, sign: 1, weight: 0.6, label: "반도체 뉴스 톤"}
+  ai_narrative:
+    label: "AI Narrative"
+    label_ko: "AI 내러티브"
+    headline: "AI NARRATIVE"
+    implication: "뉴스 톤이 가격을 이끄는 국면. 가격이 따라오지 않으면 분배(distribution) 위험이다."
+    evidence:
+      - {theme: ai, field: news_sentiment, sign: 1, weight: 1.2, label: "AI 뉴스 톤"}
+      - {theme: ai, field: news_momentum,  sign: 1, weight: 0.6, label: "AI 뉴스 모멘텀(최근 − 이전)"}
+      - {narrative: capex,          sign: 1, weight: 0.8}
+      - {narrative: gpu_demand,     sign: 1, weight: 0.8}
+      - {narrative: hyperscaler_spending, sign: 1, weight: 0.8}
+  ai_fundamental_stress:
+    label: "AI-specific Fundamental Stress"
+    label_ko: "AI 고유 펀더멘털 스트레스"
+    headline: "AI-SPECIFIC FUNDAMENTAL STRESS"
+    implication: "AI 가 시장보다 더 빠진다 — 수익화·밸류에이션·경쟁 우려가 가격에 찍히는 국면. 베타가 아니라 알파의 훼손이다."
+    evidence:
+      - {id: AI_REL_NDX,   sign: 1, weight: 1.5, note: "AI 바스켓의 Nasdaq 대비 상대 z"}
+      - {id: AI_HYPER_REL, sign: 1, weight: 1.0, note: "하이퍼스케일러 그룹의 상대 z"}
+      - {id: AI_SOFT_REL,  sign: 1, weight: 0.8, note: "소프트웨어 그룹의 상대 z"}
+      - {narrative: monetization, sign: 1, weight: 0.8}
+      - {narrative: valuation,    sign: 1, weight: 0.6}
+      - {narrative: competition,  sign: 1, weight: 0.6}
+      - {narrative: regulation,   sign: 1, weight: 0.4}
+
+#: 내러티브 driver — AI 태그 기사를 제목 키워드로 분류한다(룰 기반, LLM 아님). 한 기사가 여러 driver 에 들어갈 수 있다.
+narrative_drivers:
+  - {key: capex,                label: "AI Capex",              label_ko: "AI 설비투자",   keywords: [capex, 설비투자, 투자하, invest, infrastructure, 인프라, buildout, 데이터센터 건설, data center]}
+  - {key: gpu_demand,           label: "GPU Demand",            label_ko: "GPU 수요",      keywords: [GPU, 가속기, accelerator, Nvidia, 엔비디아, HBM, chip demand, 반도체 수요, CPU 호황, 수요가]}
+  - {key: hyperscaler_spending, label: "Hyperscaler Spending",  label_ko: "하이퍼스케일러 지출", keywords: [Microsoft, 마이크로소프트, Google, 구글, Amazon, 아마존, Meta, 메타, Oracle, 오라클, cloud, 클라우드, hyperscaler, 하이퍼스케일러]}
+  - {key: monetization,         label: "Monetization",          label_ko: "수익화",        keywords: [monetiz, 수익화, revenue, 매출, subscription, 구독, agent, 에이전트, adoption, 도입, ROI]}
+  - {key: competition,          label: "Competition",           label_ko: "경쟁",          keywords: [competition, 경쟁, DeepSeek, 딥시크, open-source, 오픈소스, rival, 중국 AI, China AI, price war, 가격 인하]}
+  - {key: regulation,           label: "Regulation / Safety",   label_ko: "규제·안전",     keywords: [regulat, 규제, safety, 안전, antitrust, 반독점, export control, 수출 규제, 수출통제, ban, existential, 위험, lawsuit, 소송]}
+  - {key: valuation,            label: "Valuation / Funding",   label_ko: "밸류에이션·자금", keywords: [valuation, 밸류에이션, bubble, 거품, IPO, 상장, 자사주, buyback, 시총, market cap, 고평가, 조달, funding, 파이낸싱, financing, PF]}
+
+#: NARRATIVE × PRICE 2×2 — 뉴스 톤과 바스켓 절대 z 의 부호
+narrative_price:
+  news_on: 10        # |톤| 이 이 이상이면 방향 있음
+  price_on: 0.5      # |z| 가 이 이상이면 방향 있음
+
+#: MACRO CONFIRMATION — 기대 부호 = 그 요인이 오를 때 AI 가격에 주는 방향
+macro_confirmation:
+  min_explains: 2          # 이만큼 설명하면 'macro-driven'
+  rows:
+    - {key: rates,      label: "Rates (US 10Y)",        id: US10Y,     sign: -1}
+    - {key: real_yield, label: "Real Yield (TIPS 10Y)", id: TIPS10Y,   sign: -1}
+    - {key: usd,        label: "USD (DXY)",             id: DXY,       sign: -1}
+    - {key: vix,        label: "VIX",                   id: VIX,       sign: -1}
+    - {key: hy,         label: "HY OAS",                id: US_HY_OAS, sign: -1}
+    - {key: spx,        label: "S&P 500",               id: SPX,       sign: 1}
+
+#: AI-SPECIFIC STRESS — 항목별 점수(0/1/2) 합
+stress:
+  levels: [{min: 5, label: HIGH}, {min: 3, label: MODERATE}, {min: 0, label: LOW}]
+  components:
+    - {key: rel_ndx,     label: "AI vs Nasdaq 상대 모멘텀(5일 z)", metric: AI_REL_NDX_Z5,  thresholds: [-1.0, -0.5], direction: below}
+    - {key: semi_rel,    label: "반도체 상대 강도(5일 z)",          metric: AI_SEMIS_REL_Z5, thresholds: [-1.0, -0.5], direction: below}
+    - {key: hyper_breadth, label: "하이퍼스케일러 20일선 상회 비율", metric: HYPER_ABOVE_MA20, thresholds: [40, 60], direction: below}
+    - {key: news,        label: "AI 뉴스 톤",                      metric: AI_NEWS_TONE,   thresholds: [-20, -5], direction: below}
+
+#: 판정 규칙 — 엔진이 이 순서로 검사한다: ai_specific_derisking → narrative_ahead → macro_dragged → leadership_narrowing → confirmed_risk_on → confirmed_risk_off → price_resilience → mixed. 임계는 relative/breadth/narrative_price
+regimes:
+  ai_specific_derisking: {label: "AI-SPECIFIC DE-RISKING",     label_ko: "AI 고유 디레버리징",   implication: "AI 가 시장보다 더 빠진다 — 베타가 아니라 알파의 훼손. 하이퍼스케일러·반도체 상대 약세가 같이 나오면 포지션 축소 국면이다."}
+  macro_dragged:         {label: "MACRO-DRAGGED AI WEAKNESS",  label_ko: "매크로에 눌린 AI 약세", implication: "AI 절대 가격은 빠지지만 Nasdaq 과 같이 빠진다 — 금리·달러·신용이 원인이고 AI 고유 요인이 아니다. 매크로가 풀리면 되돌아온다."}
+  leadership_narrowing:  {label: "LEADERSHIP NARROWING",       label_ko: "리더십 축소",           implication: "지수는 버티는데 참여 종목이 줄어든다 — 소수 종목이 끌고 가는 랠리. 랠리 후반부 신호이며 breadth 회복 없이는 취약하다."}
+  narrative_ahead:       {label: "NARRATIVE AHEAD OF PRICE",   label_ko: "내러티브가 가격을 앞선다", implication: "뉴스는 뜨거운데 가격이 따라오지 않는다 — 분배(distribution) 위험. 가격이 확인하기 전까지 뉴스를 근거로 삼지 않는다."}
+  confirmed_risk_on:     {label: "CONFIRMED AI RISK-ON",       label_ko: "AI 위험선호 확인",       implication: "절대·상대 모두 오르고 breadth 가 넓다 — 트레이드가 건강하다. 뉴스와 가격이 서로 확인한다."}
+  confirmed_risk_off:    {label: "CONFIRMED AI RISK-OFF",      label_ko: "AI 위험회피 확인",       implication: "뉴스와 가격이 같이 식는다 — AI 고유 요인과 매크로가 겹친 하락. 상대 z 가 회복해야 바뀐다."}
+  price_resilience:      {label: "PRICE RESILIENCE",           label_ko: "가격 회복력",            implication: "뉴스는 나쁜데 가격이 버틴다 — 악재가 이미 가격에 있다는 뜻이거나, 매수 수요가 뉴스보다 강하다."}
+  mixed:                 {label: "AI TRADE MIXED",             label_ko: "AI 혼조",                implication: "절대·상대·breadth·뉴스 중 어느 것도 뚜렷하지 않다. 판정을 미루고 전환 조건을 본다."}
+
+#: WHAT CHANGES THE VIEW — AI-specific risk-off 로 판단을 바꿀 조건
+triggers:
+  to_ai_specific_risk_off:
+    - {metric: AI_REL_NDX_Z5,    op: "<=", value: -1.0, text: "AI 바스켓이 Nasdaq 100 대비 −1σ 이상 underperform (5일 상대 z)"}
+    - {metric: SEMI_ABOVE_MA20,  op: "<=", value: 30,   text: "반도체·컴퓨트 breadth(20일선 상회) 30% 이하"}
+    - {metric: AI_SEMIS_REL_Z5,  op: "<=", value: -1.0, text: "반도체 / Nasdaq 상대 모멘텀 붕괴 (5일 상대 z ≤ −1)"}
+    - {metric: HYPER_DOWN_1W,    op: ">=", value: 4,    text: "하이퍼스케일러 5개 중 4개 이상 1주 하락(동반 약세)"}
+    - {metric: AI_NEWS_TONE,     op: "<=", value: -20,  text: "AI 내러티브 급락 (뉴스 톤 −20 이하)"}
+  release:
+    - {metric: AI_REL_NDX_Z5, op: ">=", value: 0.5, text: "AI 바스켓이 Nasdaq 대비 +0.5σ 이상 회복하면 AI 고유 약세 판단을 거둔다"}

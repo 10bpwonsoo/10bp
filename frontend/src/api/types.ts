@@ -536,7 +536,7 @@ export interface ScenarioCheck {
   as_of: string;
   label: StateLabel | null;
   /** 탭이 앞세우는 판정 — 설정(scenario_checks.yaml)에서 온다 */
-  focus: "rule" | "oil_regime" | "rates_regime" | "fear_greed" | "semiconductor" | "calm";
+  focus: "rule" | "oil_regime" | "rates_regime" | "ai_regime" | "fear_greed" | "semiconductor" | "calm";
   factor: string | null;
   commodities: string[];
   match_score: number;
@@ -594,4 +594,34 @@ export interface RatesRegime {
   signal_strength: number; signal_strength_label: string; inflation_status: DriverStatus; regime_label: string; headline: string; implication: string;
   inflation_components: InflationComponent[]; curve: CurveView; decomposition: YieldDecomposition[]; confirmations: RatesConfirmationRow[];
   divergences: KeyDivergence[]; market_implication: MarketImplication; triggers: TriggerItem[]; release: TriggerItem[]; note: string;
+}
+
+/** AI Trade Intelligence — AI 트레이드 자체의 상태. 시장 온도가 아니다. 서버(ai_regime.yaml)가 만든다 */
+export type AiRegimeKey = "ai_specific_derisking" | "macro_dragged" | "leadership_narrowing" | "narrative_ahead" | "confirmed_risk_on" | "confirmed_risk_off" | "price_resilience" | "mixed" | "unknown";
+export interface AiEvidenceItem { id: string; label: string; kind: "price" | "news"; layer: "market" | "alternative" | "theme" | "basket" | "narrative"; value: number | null; window: number | null; sign: number; weight: number; contribution: number; available: boolean; note: string }
+export interface AiDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: AiEvidenceItem[]; implication: string }
+export interface AiMemberRow { id: string; name: string; group: string; available: boolean; last_date: string | null; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_5d: number | null; above_ma5: boolean | null; above_ma20: boolean | null; advancing: boolean | null; note: string }
+export interface AiGroupMomentum { key: string; label: string; label_ko: string; benchmark: string; in_basket: boolean; members: number; available: number; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_1d: number | null; rel_5d: number | null; rel_21d: number | null; rel_z_1d: number | null; rel_z_5d: number | null; above_ma20_pct: number | null; down_1w: number; rank_1w: number | null; role: "leader" | "strong" | "neutral" | "lagging" | "laggard" | "unknown"; note: string }
+export interface AiLeadership { groups: AiGroupMomentum[]; leader_1d: string | null; leader_1w: string | null; leader_1m: string | null; laggard_1w: string | null; rotation: "none" | "rotating" | "early" | "unknown"; sentence: string }
+export interface AiVsMarket {
+  members_used: number; members_total: number; last_date: string | null;
+  basket_ret_1d: number | null; basket_ret_5d: number | null; basket_ret_21d: number | null; basket_z_1d: number | null; basket_z_5d: number | null; basket_z: number | null; basket_window: number | null;
+  ndx_ret_1d: number | null; ndx_ret_5d: number | null; ndx_ret_21d: number | null; spx_ret_5d: number | null; spx_ret_21d: number | null;
+  rel_ndx_1d: number | null; rel_ndx_5d: number | null; rel_ndx_21d: number | null; rel_ndx_z_1d: number | null; rel_ndx_z_5d: number | null; rel_ndx_z: number | null; rel_spx_5d: number | null; rel_spx_z_5d: number | null;
+  abs_direction: "up" | "down" | "flat" | "unknown"; rel_verdict: "outperform" | "inline" | "underperform" | "unknown"; sentence: string;
+}
+export interface AiBreadth { members: number; above_ma5_pct: number | null; above_ma20_pct: number | null; advancing_pct: number | null; above_ma20_pct_1w_ago: number | null; change_1w_pts: number | null; trend: "widening" | "narrowing" | "stable" | "unknown"; narrowing_with_index_up: boolean; by_group: Record<string, number | null>; sentence: string }
+export interface AiNarrativeDriver { key: string; label: string; label_ko: string; tone: number | null; count: number; samples: string[] }
+export interface AiNarrativePrice { news_tone: number | null; news_count: number; news_momentum: number | null; price_z: number | null; price_window: number | null; quadrant: "confirmed" | "narrative_ahead" | "price_resilience" | "confirmed_risk_off" | "unclear"; label: string; sentence: string; drivers: AiNarrativeDriver[]; method: string }
+export interface AiMacroRow { key: string; label: string; instrument: string; z: number | null; window: number | null; expected_sign: number; status: "EXPLAINS" | "DOES_NOT_EXPLAIN" | "NEUTRAL" | "MISSING"; note: string }
+export interface AiMacroConfirmation { rows: AiMacroRow[]; explains: number; evaluated: number; verdict: "macro_driven" | "ai_specific" | "mixed" | "not_weak" | "unknown"; sentence: string }
+export interface AiStressComponent { key: string; label: string; value: number | null; display: string; points: number; max_points: number; note: string }
+export interface AiStress { level: "LOW" | "MODERATE" | "HIGH" | "UNKNOWN"; score: number; max_score: number; components: AiStressComponent[]; sentence: string }
+export interface AiRegimeCheck { key: AiRegimeKey; label: string; passed: boolean; detail: string }
+export interface AiGlobalContext { market_label: string; market_confidence: number; thermometer: number | null; band: string | null; note: string }
+export interface AiRegime {
+  as_of: string; regime: AiRegimeKey; regime_label: string; regime_label_ko: string; headline: string; implication: string; checks: AiRegimeCheck[];
+  ai_vs_market: AiVsMarket; drivers: AiDriverScore[]; dominant: string | null; runner_up: string | null; margin: number; signal_strength: number; signal_strength_label: string;
+  leadership: AiLeadership; breadth: AiBreadth; narrative: AiNarrativePrice; macro: AiMacroConfirmation; stress: AiStress; triggers: TriggerItem[]; release: TriggerItem[];
+  context: AiGlobalContext; members: AiMemberRow[]; missing: string[]; note: string;
 }

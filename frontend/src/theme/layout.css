@@ -1160,3 +1160,94 @@
 .rr-diag-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 .rr-diag-ev { font-size: 10px; color: var(--muted); line-height: 1.5; margin-bottom: 4px; }
 @media (max-width: 900px) { .rr-diag-grid, .rr-watch-cols { grid-template-columns: 1fr; } .rr-imp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rr-side { min-width: 0; } }
+
+/* ── AI 탭: AI Trade Intelligence ───────────────────────────────── */
+.ai { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1100px) { .ai { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ai .span-3, .ai .span-2 { grid-column: span 2; } }
+@media (max-width: 760px) { .ai { grid-template-columns: 1fr; } .ai .span-3, .ai .span-2 { grid-column: span 1; } }
+.ai-k { font-size: 9.5px; letter-spacing: .08em; color: var(--faint); text-transform: uppercase; }
+.ai-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.ai-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ai-label { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+.ai-sub { font-size: 12px; color: var(--muted); }
+.ai-side { display: flex; flex-direction: column; gap: 6px; min-width: 320px; }
+.ai-kv { display: flex; flex-direction: column; gap: 1px; font-size: 11px; }
+.ai-headline { margin: 10px 0 4px; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.ai-impl { margin: 0 0 6px; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.ai-impl .ai-k { margin-right: 6px; }
+.ai-ctx { margin: 0; font-size: 10.5px; color: var(--faint); line-height: 1.45; }
+.ai-sent { font-size: 12px; line-height: 1.5; color: var(--ink-2); margin: 8px 0 0; }
+.ai-ev { font-size: 10px; color: var(--muted); line-height: 1.45; }
+.ai-bar { position: relative; height: 14px; background: color-mix(in oklab, var(--ink) 6%, transparent); border-radius: 2px; }
+.ai-zero { position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px solid var(--rule); }
+.ai-fill { position: absolute; top: 2px; bottom: 2px; }
+.ai-bar b { position: absolute; right: 6px; top: 0; font-size: 10.5px; line-height: 14px; }
+.ai-tbl { display: flex; flex-direction: column; gap: 2px; }
+.ai-tr { display: grid; grid-template-columns: minmax(0, 1.3fr) 70px 70px 70px minmax(0, 1.4fr); gap: 8px; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--rule-soft); }
+.ai-tr > span:not(.ai-td-l) { text-align: right; }
+.ai-th { font-size: 9.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; }
+.ai-rel .ai-td-l { color: var(--accent); }
+.ai-drivers { display: flex; flex-direction: column; gap: 8px; }
+.ai-drv { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); }
+.ai-drv.on { border-color: var(--accent); background: color-mix(in oklab, var(--accent-wash) 60%, transparent); }
+.ai-row-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.ai-name small, .ai-grp-name small, .ai-nd-l small { color: var(--muted); font-size: 10.5px; margin-left: 4px; }
+.ai-st { font-size: 10.5px; }
+.ai-grps { display: flex; flex-direction: column; gap: 2px; }
+.ai-grp { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) 62px 52px 64px; gap: 8px; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--rule-soft); }
+.ai-grp.on .ai-grp-name { color: var(--accent); }
+.ai-grp.ctx { opacity: .75; border-top: 1px dashed var(--rule); margin-top: 4px; padding-top: 6px; }
+.ai-grp-name { display: flex; flex-direction: column; min-width: 0; }
+.ai-grp-n { font-size: 9.5px; color: var(--faint); }
+.ai-grp-z, .ai-grp-b { text-align: right; font-size: 11px; }
+.ai-grp-role { font-size: 10.5px; text-align: right; }
+.ai-bigs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ai-big { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); }
+.ai-big b { font-size: 24px; line-height: 1.1; }
+.ai-big small { font-size: 10px; color: var(--muted); }
+.ai-bg { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; }
+.ai-bg-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 11px; }
+.ai-bg-l { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ai-bg-bar { display: block; height: 8px; background: color-mix(in oklab, var(--ink) 6%, transparent); border-radius: 2px; overflow: hidden; }
+.ai-bg-bar i { display: block; height: 100%; }
+.ai-bg-row .num { text-align: right; }
+.ai-nar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; }
+.ai-quads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; align-content: start; }
+.ai-quad { display: flex; flex-direction: column; gap: 3px; padding: 12px 10px; border: 1px solid var(--rule-soft); border-radius: var(--radius); color: var(--muted); min-height: 76px; }
+.ai-quad b { font-family: var(--font-mono); font-size: 12px; }
+.ai-quad small { font-size: 10.5px; }
+.ai-quad.on { border-color: var(--accent); background: var(--accent-wash); color: var(--ink); }
+.ai-nar-label { font-size: 16px; font-weight: 600; letter-spacing: .02em; }
+.ai-nd { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.ai-nd-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 11.5px; }
+.ai-nd-row.none { color: var(--faint); }
+.ai-nd-n { text-align: right; color: var(--muted); }
+.ai-macs { display: flex; flex-direction: column; gap: 2px; }
+.ai-mac { display: grid; grid-template-columns: 14px minmax(0, 1.3fr) 90px 80px 110px; gap: 6px; align-items: center; font-size: 11px; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); }
+.ai-mac.MISSING { color: var(--faint); }
+.ai-mac .num, .ai-mac-st { text-align: right; }
+.ai-mac-st { font-size: 10px; }
+.ai-stress-head { display: flex; align-items: center; gap: 10px; }
+.ai-stress-level { font-size: 22px; font-weight: 600; }
+.ai-stress-bar { flex: 1; display: block; height: 8px; background: color-mix(in oklab, var(--ink) 8%, transparent); border-radius: 2px; overflow: hidden; }
+.ai-stress-bar i { display: block; height: 100%; }
+.ai-sc { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.ai-sc-row { display: grid; grid-template-columns: minmax(0, 1fr) 60px 36px; gap: 6px; font-size: 11px; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); }
+.ai-sc-row .num, .ai-sc-p { text-align: right; }
+.ai-watch-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; }
+.ai-watch-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.5; }
+.ai-watch-list li.met::marker { color: var(--crit); }
+.ai-release-list { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
+.ai-watch-text { display: block; color: var(--ink); }
+.ai-watch-meta { display: block; font-size: 10.5px; color: var(--muted); }
+.ai-diag summary { cursor: pointer; list-style: none; }
+.ai-diag summary::-webkit-details-marker { display: none; }
+.ai-diag summary .panel-title::before { content: "▸ "; color: var(--faint); }
+.ai-diag[open] summary .panel-title::before { content: "▾ "; }
+.ai-diag-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.ai-chk { font-size: 10.5px; line-height: 1.5; }
+.ai-mem { display: flex; flex-direction: column; gap: 1px; max-height: 320px; overflow: auto; }
+.ai-mem-row { display: grid; grid-template-columns: minmax(0, 1.2fr) 110px 56px 56px 56px 30px 30px; gap: 6px; font-size: 10.5px; padding: 2px 0; border-bottom: 1px solid var(--rule-soft); }
+.ai-mem-row.missing { color: var(--faint); }
+.ai-mem-row .num { text-align: right; }
+@media (max-width: 900px) { .ai-diag-grid, .ai-watch-cols, .ai-nar { grid-template-columns: 1fr; } .ai-side { min-width: 0; } .ai-grp { grid-template-columns: minmax(0, 1.4fr) minmax(50px, 1fr) minmax(50px, 1fr) 52px; } .ai-grp > :nth-child(2), .ai-grp > :nth-child(5), .ai-grp > :nth-child(6) { display: none; } }

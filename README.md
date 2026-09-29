@@ -350,6 +350,32 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 WHAT TO WATCH NEXT(판단이 바뀌는 조건 3~5개) → Diagnostics(룰 판정·서명 대조,
 접이식) 순이다. 엔드포인트 `GET /api/v1/oil-regime`. 판정 룰 엔진은 그대로 돈다.
 
+### AI 탭 — AI Trade Intelligence (2026-09-29)
+
+AI 탭은 시장 온도(공포·탐욕)를 보여주지 않는다. 위험선호·변동성·신용 같은 broad-market
+값으로는 'AI 트레이드 자체가 약해지는가, 시장 risk-off 에 같이 눌리는가' 를 구분할 수 없기
+때문이다. `engines/ai_regime.py` 가 `config/ai_regime.yaml` 의 바스켓(6개 그룹 32종목 —
+Semiconductors/Compute · Memory · Hyperscalers · Networking/Infrastructure · Power/Data Center ·
+Software/Application, 여기에 비교용 국내 AI 밸류체인 8종목)을 Yahoo 에서 받아 Nasdaq 100 달력
+위의 동일가중 지수를 만들고, **Nasdaq 100 / S&P 500 대비 상대 수익과 상대 z** 를 판정의 축으로
+쓴다. AI 절대 가격이 빠져도 Nasdaq 보다 약하지 않으면 AI-specific selloff 로 부르지 않는다.
+
+화면은 AI TRADE REGIME(Confirmed AI Risk-On · Macro-Dragged AI Weakness · Leadership Narrowing ·
+Narrative Ahead of Price · AI-Specific De-risking · Confirmed AI Risk-Off · Price Resilience ·
+Mixed) → AI vs MARKET(1D/1W/1M 절대·상대·상대 z) → WHAT IS DRIVING AI?(Macro/Rates · Broad
+Risk-Off · Semiconductor Cycle · AI Narrative · AI-specific Fundamental Stress 의 증거 점수) →
+AI LEADERSHIP(그룹별 1D/1W/1M 상대 모멘텀·순위·회전 자동 판정) → AI BREADTH(5DMA/20DMA 상회,
+상승 비율, 1주 변화 — 지수가 올라도 breadth 가 빠지면 Leadership Narrowing) → NARRATIVE × PRICE
+(2×2: Confirmed / Narrative Ahead·Distribution Risk / Price Resilience / Confirmed Risk-Off, AI 기사를
+Capex·GPU Demand·Hyperscaler Spending·Monetization·Competition·Regulation·Valuation driver 로
+룰 분류) → MACRO CONFIRMATION(금리·실질금리·달러·VIX·HY OAS·S&P 가 AI 방향을 설명하는지 —
+Macro-driven vs AI-specific weakness) → AI-SPECIFIC STRESS(LOW/MODERATE/HIGH) → WHAT CHANGES THE
+VIEW(AI-specific Risk-Off 전환 조건 5개 + 해제 조건) → Diagnostics(판정 규칙 검사, Global market
+regime 맥락, 구성원 표, 서명 대조, 접이식) 순이다. 엔드포인트 `GET /api/v1/ai-regime`. 판정
+규칙 순서는 ai_specific_derisking → narrative_ahead → macro_dragged → leadership_narrowing →
+confirmed_risk_on → confirmed_risk_off → price_resilience → mixed 이고 임계는 전부 설정에 있다.
+확률 표현은 쓰지 않는다. 시장 판정·온도계는 맥락 한 줄로만 붙는다.
+
 ### 물가 탭 — Inflation & Rates Intelligence (2026-09-29)
 
 물가 탭은 룰 판정("Inflation Shock 아님")을 앞세우지 않는다. `engines/rates_regime.py`
