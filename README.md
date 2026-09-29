@@ -340,9 +340,11 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
-### 실시간 메인 탭 — decision cockpit (2026-09-29)
+### 실시간 2 탭 — decision cockpit (2026-09-29)
 
-`실시간` 탭은 22일 히스토리·히트맵·What's Moving·해설·알림 타임라인을 앞에 늘어놓지
+실시간 탭은 둘이다. `실시간` 은 기존 화면(Market State → 히트맵 → What's Moving →
+… → Investment Intelligence) 그대로이고, `실시간 2` 가 아래의 decision cockpit 이다.
+`실시간 2` 는 22일 히스토리·히트맵·What's Moving·해설·알림 타임라인을 앞에 늘어놓지
 않는다. `engines/cockpit.py` 가 `config/cockpit.yaml` 로 스냅샷·Investment·히스토리·
 AI/금리/유가 판별 결과를 한 화면으로 고른다. 순서는 MARKET NOW(판정·확신 HIGH/MEDIUM/LOW·
 지속 일수·이전 판정·핵심 변수 ≤4·한 문장·작은 스파크라인·커버리지) → TODAY'S MARKET

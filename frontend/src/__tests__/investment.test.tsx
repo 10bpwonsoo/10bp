@@ -25,6 +25,7 @@ import { WatchlistIntelligence } from "../components/WatchlistIntelligence";
 import { ClaudeCommentary } from "../components/ClaudeCommentary";
 import { InvestmentSection } from "../investment/InvestmentSection";
 import App from "../App";
+import ckFx from "../__fixtures__/cockpit.json";
 
 const data = inv as unknown as InvestmentIntelligence;
 
@@ -41,6 +42,7 @@ function mockApi(overrides: Record<string, unknown> = {}) {
     if (url.includes("/api/v1/news")) return jsonResponse(overrides.news ?? news);
     if (url.includes("/api/v1/investment")) return "investment" in overrides ? (overrides.investment as Promise<Response>) : jsonResponse(data);
     if (url.includes("/api/v1/snapshot")) return jsonResponse(overrides.snapshot ?? snapshot);
+    if (url.includes("/api/v1/cockpit")) return "cockpit" in overrides ? jsonResponse(overrides.cockpit) : jsonResponse({}, 404);
     return jsonResponse({}, 404);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -192,6 +194,25 @@ describe("InvestmentSection", () => {
     const f = mockApi();
     render(<InvestmentSection enabled={false} />);
     expect(f.mock.calls.filter(([u]) => String(u).includes("/investment")).length).toBe(0);
+  });
+});
+
+describe("App — 실시간 탭 둘: '실시간' 은 기존 화면, '실시간 2' 는 cockpit", () => {
+  it("첫 탭은 기존 그리드고 cockpit 을 요청하지 않는다; 둘째 탭을 누르면 cockpit 을 받아 MARKET NOW 가 맨 위에 온다", async () => {
+    const fetchMock = mockApi({ cockpit: ckFx });
+    render(<App />);
+    await waitFor(() => expect(screen.getByText(/1 · Today's Market Drivers/)).toBeInTheDocument(), { timeout: 5000 });
+    const tabs = screen.getByTestId("scenario-tabs");
+    expect(within(tabs).getByRole("button", { name: "판정만" }).getAttribute("aria-pressed")).toBe("true");
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes("/api/v1/cockpit"))).toBe(false);
+    expect(screen.queryByTestId("ck-now")).toBeNull();
+    fireEvent.click(within(tabs).getByRole("button", { name: "판정만 2" }));
+    await waitFor(() => expect(screen.getByTestId("ck-now")).toBeInTheDocument(), { timeout: 5000 });
+    const titles = Array.from(document.querySelectorAll(".panel-title")).map((e) => e.textContent);
+    expect(titles[0]).toBe("Market Now");
+    fireEvent.click(within(tabs).getByRole("button", { name: "판정만" }));
+    await waitFor(() => expect(screen.queryByTestId("ck-now")).toBeNull());
+    expect(screen.getByText(/1 · Today's Market Drivers/)).toBeInTheDocument();
   });
 });
 
