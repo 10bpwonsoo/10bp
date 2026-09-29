@@ -535,6 +535,10 @@ export interface ScenarioCheck {
   description: string;
   as_of: string;
   label: StateLabel | null;
+  /** 탭이 앞세우는 판정 — 설정(scenario_checks.yaml)에서 온다 */
+  focus: "rule" | "fear_greed" | "semiconductor" | "calm";
+  factor: string | null;
+  commodities: string[];
   match_score: number;
   match_label: string;
   evaluated: number;

@@ -49,6 +49,11 @@ class ScenarioCheck(Base):
     as_of: datetime
     #: 이 시나리오가 가정하는 판정 라벨 (없는 시나리오도 있다)
     label: StateLabel | None = None
+    #: 탭이 앞세우는 판정. rule · fear_greed · semiconductor · calm — 설정(scenario_checks.yaml)에서 온다
+    focus: Literal["rule", "fear_greed", "semiconductor", "calm"] = "rule"
+    #: focus=rule 일 때 펼쳐 보이는 팩터와 원자재 경로 (설정)
+    factor: str | None = None
+    commodities: list[str] = Field(default_factory=list)
     match_score: float = Field(ge=0.0, le=100.0, description="가중 일치도 0~100")
     match_label: str
     evaluated: int

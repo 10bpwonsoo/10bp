@@ -6,7 +6,7 @@ import { ScenarioCheckPanel, scoreColor } from "../components/ScenarioCheckPanel
 
 const check: ScenarioCheck = {
   name: "inflation_shock", title: "물가 충격 — 유가 급등이 금리를 밀어올림", description: "d", as_of: "2026-09-29T00:45:00Z",
-  label: "INFLATION_SHOCK", match_score: 43, match_label: "거의 다름", evaluated: 3, agree: 1, weak: 0, oppose: 1, quiet_ok: 0, quiet_broken: 0,
+  label: "INFLATION_SHOCK", focus: "rule", factor: "Inflation", commodities: [], match_score: 43, match_label: "거의 다름", evaluated: 3, agree: 1, weak: 0, oppose: 1, quiet_ok: 0, quiet_broken: 0,
   missing: ["KR10Y"],
   rows: [
     { instrument_id: "US10Y", label: "US 10Y Treasury", expected_z: 1.6, actual_z_1d: -0.5, actual_z_5d: 1.4, used_z: 1.4, used_window: 5, ratio: 0.875, weight: 1.6, status: "agree", layer: "market" },

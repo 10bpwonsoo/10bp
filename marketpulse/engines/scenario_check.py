@@ -215,7 +215,8 @@ def check_scenario(
             "판정은 여전히 state_rules 의 require 룰이 정한다 — 일치도가 높아도 require 가 안 걸리면 판정은 바뀌지 않는다.")
     return ScenarioCheck(
         name=scenario.name, title=scenario.title or scenario.name, description=scenario.description, as_of=market.as_of,
-        label=label, match_score=score, match_label=match_label, evaluated=evaluated,
+        label=label, focus=str(spec.get("focus", "rule")), factor=spec.get("factor"), commodities=[str(c) for c in (spec.get("commodities") or [])],  # type: ignore[arg-type]
+        match_score=score, match_label=match_label, evaluated=evaluated,
         agree=counts["agree"], weak=counts["weak"], oppose=counts["oppose"], quiet_ok=counts["quiet_ok"], quiet_broken=counts["quiet_broken"],
         missing=missing, rows=rows, hypothesis_score=hyp_score, require_expression=req_expr, require_passed=req_passed,
         require_observed=req_obs, current_label=state.primary_label, current_confidence=state.confidence,
