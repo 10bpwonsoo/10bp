@@ -22,5 +22,14 @@
    "yahoo 1개뿐 — 최소 20개 필요"
   ]
  ],
- "fred_key_present": true
+ "fred_key_present": true,
+ "extra_rates": {
+  "got": [
+   "BE5Y",
+   "TIPS10Y",
+   "TIPS5Y",
+   "US5Y"
+  ],
+  "failed": []
+ }
 }
