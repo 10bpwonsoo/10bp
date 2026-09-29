@@ -17,86 +17,165 @@ benchmarks: {primary: NDX, secondary: SPX}
 windows: {d1: 1, w1: 5, m1: 21}
 history_bars: 120          # 바스켓 지수·상대 지수의 z(60일 창) 를 내려면 넉넉해야 한다
 
+#: 종목 universe — 바스켓·밸류체인·종목 영향도가 전부 이 목록을 참조한다. symbol 은 Yahoo 심볼. region KR 은 자기 달력(장중값).
+#: 존재하지 않는 계열은 만들지 않는다 — 수집이 실패하면 그 종목은 '계열 없음' 으로 남는다.
+instruments:
+  - {id: NVDA,  symbol: NVDA,  name: Nvidia,            aliases: [엔비디아, Nvidia, NVIDIA]}
+  - {id: AMD,   symbol: AMD,   name: AMD,               aliases: [AMD]}
+  - {id: AVGO,  symbol: AVGO,  name: Broadcom,          aliases: [브로드컴, Broadcom]}
+  - {id: TSM,   symbol: TSM,   name: TSMC,              aliases: [TSMC, 대만 TSMC]}
+  - {id: MRVL,  symbol: MRVL,  name: Marvell,           aliases: [마벨, Marvell]}
+  - {id: ARM,   symbol: ARM,   name: Arm,               aliases: [Arm Holdings, 암 홀딩스]}
+  - {id: MU,    symbol: MU,    name: Micron,            aliases: [마이크론, Micron]}
+  - {id: SNDK,  symbol: SNDK,  name: Sandisk,           aliases: [샌디스크, Sandisk]}
+  - {id: SKHYNIX, symbol: 000660.KS, name: SK하이닉스,   region: KR, aliases: [하이닉스, SK Hynix, Hynix, 삼전닉스]}
+  - {id: SAMSUNG, symbol: 005930.KS, name: 삼성전자,     region: KR, aliases: [삼전, Samsung Electronics, Samsung, 삼전닉스]}
+  - {id: GFS,   symbol: GFS,   name: GlobalFoundries,   aliases: [글로벌파운드리, GlobalFoundries]}
+  - {id: UMC,   symbol: UMC,   name: UMC,               aliases: [UMC]}
+  - {id: ASML,  symbol: ASML,  name: ASML,              aliases: [ASML]}
+  - {id: AMAT,  symbol: AMAT,  name: Applied Materials, aliases: [어플라이드, Applied Materials]}
+  - {id: LRCX,  symbol: LRCX,  name: Lam Research,      aliases: [램리서치, Lam Research]}
+  - {id: KLAC,  symbol: KLAC,  name: KLA,               aliases: [KLA]}
+  - {id: TEL,   symbol: 8035.T, name: Tokyo Electron,   region: JP, aliases: [도쿄일렉트론, Tokyo Electron]}
+  - {id: HANMI_SEMI, symbol: 042700.KS, name: 한미반도체, region: KR, aliases: [한미반도체, Hanmi]}
+  - {id: AMKR,  symbol: AMKR,  name: Amkor,             aliases: [앰코, Amkor]}
+  - {id: BESI,  symbol: BESI.AS, name: BE Semiconductor, region: EU, aliases: [BESI, BE Semi]}
+  - {id: ANET,  symbol: ANET,  name: Arista,            aliases: [아리스타, Arista]}
+  - {id: CIEN,  symbol: CIEN,  name: Ciena,             aliases: [시에나, Ciena]}
+  - {id: CRDO,  symbol: CRDO,  name: Credo,             aliases: [Credo]}
+  - {id: MSFT,  symbol: MSFT,  name: Microsoft,         aliases: [마이크로소프트, Microsoft, MS]}
+  - {id: GOOGL, symbol: GOOGL, name: Alphabet,          aliases: [구글, Google, Alphabet, 알파벳]}
+  - {id: AMZN,  symbol: AMZN,  name: Amazon,            aliases: [아마존, Amazon, AWS]}
+  - {id: META,  symbol: META,  name: Meta,              aliases: [메타, Meta]}
+  - {id: ORCL,  symbol: ORCL,  name: Oracle,            aliases: [오라클, Oracle]}
+  - {id: VRT,   symbol: VRT,   name: Vertiv,            aliases: [버티브, Vertiv]}
+  - {id: ETN,   symbol: ETN,   name: Eaton,             aliases: [이튼, Eaton]}
+  - {id: PWR,   symbol: PWR,   name: Quanta Services,   aliases: [퀀타, Quanta]}
+  - {id: EQIX,  symbol: EQIX,  name: Equinix,           aliases: [에퀴닉스, Equinix]}
+  - {id: DLR,   symbol: DLR,   name: Digital Realty,    aliases: [디지털 리얼티, Digital Realty]}
+  - {id: DELL,  symbol: DELL,  name: Dell,              aliases: [델, Dell]}
+  - {id: SMCI,  symbol: SMCI,  name: Super Micro,       aliases: [슈퍼마이크로, Super Micro, Supermicro]}
+  - {id: VST,   symbol: VST,   name: Vistra,            aliases: [비스트라, Vistra]}
+  - {id: CEG,   symbol: CEG,   name: Constellation,     aliases: [콘스텔레이션, Constellation]}
+  - {id: GEV,   symbol: GEV,   name: GE Vernova,        aliases: [GE 버노바, GE Vernova]}
+  - {id: NRG,   symbol: NRG,   name: NRG Energy,        aliases: [NRG]}
+  - {id: HD_ELECTRIC,   symbol: 267260.KS, name: HD현대일렉트릭, region: KR, aliases: [현대일렉트릭, HD현대일렉트릭]}
+  - {id: HYOSUNG_HEAVY, symbol: 298040.KS, name: 효성중공업,     region: KR, aliases: [효성중공업]}
+  - {id: LS_ELECTRIC,   symbol: 010120.KS, name: LS ELECTRIC,    region: KR, aliases: [LS일렉트릭, LS ELECTRIC]}
+  - {id: DOOSAN_ENER,   symbol: 034020.KS, name: 두산에너빌리티, region: KR, aliases: [두산에너빌리티, 두산에너]}
+  - {id: NAVER,  symbol: 035420.KS, name: NAVER,        region: KR, aliases: [네이버, NAVER]}
+  - {id: SAMSUNG_EM, symbol: 009150.KS, name: 삼성전기, region: KR, aliases: [삼성전기]}
+  - {id: PLTR,  symbol: PLTR,  name: Palantir,          aliases: [팔란티어, Palantir]}
+  - {id: NOW,   symbol: NOW,   name: ServiceNow,        aliases: [서비스나우, ServiceNow]}
+  - {id: CRM,   symbol: CRM,   name: Salesforce,        aliases: [세일즈포스, Salesforce]}
+  - {id: SNOW,  symbol: SNOW,  name: Snowflake,         aliases: [스노우플레이크, Snowflake]}
+  - {id: DDOG,  symbol: DDOG,  name: Datadog,           aliases: [데이터독, Datadog]}
+  - {id: NET,   symbol: NET,   name: Cloudflare,        aliases: [클라우드플레어, Cloudflare]}
+  - {id: APP,   symbol: APP,   name: AppLovin,          aliases: [앱러빈, AppLovin]}
+
 #: AI 바스켓 — 그룹별 동일가중, 바스켓은 basket_groups 의 구성원 동일가중. 한국 종목은 자기 달력(장중값)이라 그룹 note 에 적는다.
 basket_groups: [semis_compute, memory, hyperscalers, networking_infra, power_datacenter, software_app]
 groups:
-  - key: semis_compute
-    label: "Semiconductors / Compute"
-    label_ko: "반도체·컴퓨트"
-    benchmark: NDX
-    members:
-      - {id: NVDA, symbol: NVDA, name: Nvidia}
-      - {id: AMD,  symbol: AMD,  name: AMD}
-      - {id: AVGO, symbol: AVGO, name: Broadcom}
-      - {id: TSM,  symbol: TSM,  name: TSMC}
-      - {id: MRVL, symbol: MRVL, name: Marvell}
-      - {id: ARM,  symbol: ARM,  name: Arm}
-  - key: memory
-    label: "Memory"
-    label_ko: "메모리"
-    benchmark: NDX
-    note: "SK하이닉스·삼성전자는 한국 달력(장중값)이라 미국 종목보다 하루 앞선 봉이다"
-    members:
-      - {id: MU,      symbol: MU,        name: Micron}
-      - {id: SNDK,    symbol: SNDK,      name: Sandisk}
-      - {id: SKHYNIX, symbol: 000660.KS, name: SK하이닉스}
-      - {id: SAMSUNG, symbol: 005930.KS, name: 삼성전자}
-  - key: hyperscalers
-    label: "Hyperscalers"
-    label_ko: "하이퍼스케일러"
-    benchmark: NDX
-    members:
-      - {id: MSFT,  symbol: MSFT,  name: Microsoft}
-      - {id: GOOGL, symbol: GOOGL, name: Alphabet}
-      - {id: AMZN,  symbol: AMZN,  name: Amazon}
-      - {id: META,  symbol: META,  name: Meta}
-      - {id: ORCL,  symbol: ORCL,  name: Oracle}
-  - key: networking_infra
-    label: "Networking / Infrastructure"
-    label_ko: "네트워킹·인프라"
-    benchmark: NDX
-    members:
-      - {id: ANET, symbol: ANET, name: Arista}
-      - {id: VRT,  symbol: VRT,  name: Vertiv}
-      - {id: DELL, symbol: DELL, name: Dell}
-      - {id: SMCI, symbol: SMCI, name: Super Micro}
-      - {id: CIEN, symbol: CIEN, name: Ciena}
-      - {id: CRDO, symbol: CRDO, name: Credo}
-  - key: power_datacenter
-    label: "Power / Data Center"
-    label_ko: "전력·데이터센터"
-    benchmark: NDX
-    members:
-      - {id: VST, symbol: VST, name: Vistra}
-      - {id: CEG, symbol: CEG, name: Constellation}
-      - {id: GEV, symbol: GEV, name: GE Vernova}
-      - {id: ETN, symbol: ETN, name: Eaton}
-      - {id: NRG, symbol: NRG, name: NRG Energy}
-  - key: software_app
-    label: "Software / Application"
-    label_ko: "소프트웨어·애플리케이션"
-    benchmark: NDX
-    members:
-      - {id: PLTR, symbol: PLTR, name: Palantir}
-      - {id: NOW,  symbol: NOW,  name: ServiceNow}
-      - {id: CRM,  symbol: CRM,  name: Salesforce}
-      - {id: SNOW, symbol: SNOW, name: Snowflake}
-      - {id: DDOG, symbol: DDOG, name: Datadog}
-      - {id: APP,  symbol: APP,  name: AppLovin}
-  - key: korea_ai
-    label: "Korea AI Supply Chain"
-    label_ko: "국내 AI 밸류체인"
-    benchmark: KOSPI
-    note: "바스켓에는 넣지 않는다(달력·통화가 다르다). 리더십 비교용이며 KOSPI 대비다"
-    members:
-      - {id: SKHYNIX,       symbol: 000660.KS, name: SK하이닉스}
-      - {id: SAMSUNG,       symbol: 005930.KS, name: 삼성전자}
-      - {id: HANMI_SEMI,    symbol: 042700.KS, name: 한미반도체}
-      - {id: SAMSUNG_EM,    symbol: 009150.KS, name: 삼성전기}
-      - {id: HD_ELECTRIC,   symbol: 267260.KS, name: HD현대일렉트릭}
-      - {id: HYOSUNG_HEAVY, symbol: 298040.KS, name: 효성중공업}
-      - {id: LS_ELECTRIC,   symbol: 010120.KS, name: LS ELECTRIC}
-      - {id: NAVER,         symbol: 035420.KS, name: NAVER}
+  - {key: semis_compute,    label: "Semiconductors / Compute",    label_ko: "반도체·컴퓨트",      benchmark: NDX, members: [NVDA, AMD, AVGO, TSM, MRVL, ARM]}
+  - {key: memory,           label: "Memory",                      label_ko: "메모리",             benchmark: NDX, members: [MU, SNDK, SKHYNIX, SAMSUNG], note: "SK하이닉스·삼성전자는 한국 달력(장중값)이라 미국 종목보다 하루 앞선 봉이다"}
+  - {key: hyperscalers,     label: "Hyperscalers",                label_ko: "하이퍼스케일러",     benchmark: NDX, members: [MSFT, GOOGL, AMZN, META, ORCL]}
+  - {key: networking_infra, label: "Networking / Infrastructure", label_ko: "네트워킹·인프라",    benchmark: NDX, members: [ANET, VRT, DELL, SMCI, CIEN, CRDO]}
+  - {key: power_datacenter, label: "Power / Data Center",         label_ko: "전력·데이터센터",    benchmark: NDX, members: [VST, CEG, GEV, ETN, NRG]}
+  - {key: software_app,     label: "Software / Application",      label_ko: "소프트웨어·애플리케이션", benchmark: NDX, members: [PLTR, NOW, CRM, SNOW, DDOG, APP]}
+  - {key: korea_ai,         label: "Korea AI Supply Chain",       label_ko: "국내 AI 밸류체인",   benchmark: KOSPI, members: [SKHYNIX, SAMSUNG, HANMI_SEMI, SAMSUNG_EM, HD_ELECTRIC, HYOSUNG_HEAVY, LS_ELECTRIC, NAVER], note: "바스켓에는 넣지 않는다(달력·통화가 다르다). 리더십 비교용이며 KOSPI 대비다"}
+
+#: AI / SEMI / INFRA / SOFTWARE 밸류체인 — 10개 세그먼트. 종목은 여러 세그먼트에 속할 수 있다. exposure = AI 테마 노출 수준.
+#: macro 민감도: 부호는 그 요인이 오를 때 세그먼트 가격에 주는 방향(−1 역풍). duration 이 큰 소프트웨어는 금리 −2.
+value_chain:
+  benchmark: NDX
+  segments:
+    - {key: compute,     label: "Compute / GPU",              label_ko: "컴퓨트·GPU",        members: [NVDA, AMD, AVGO, ARM],                          exposure: VERY_HIGH, macro: {rates: -1, real_yield: -1, risk: -1.5, usd: -0.5}, drivers: [gpu_demand, capex, hyperscaler_spending]}
+    - {key: memory_hbm,  label: "Memory / HBM",               label_ko: "메모리·HBM",        members: [MU, SNDK, SKHYNIX, SAMSUNG],                    exposure: VERY_HIGH, macro: {rates: -0.5, real_yield: -0.5, risk: -1.5, usd: -0.5}, drivers: [gpu_demand, capex], fundamentals: [HBM3E_CONTRACT, HBM4_CONTRACT, DRAM_SPOT, DDR5_SPOT, NAND_SPOT, DXI]}
+    - {key: foundry,     label: "Foundry",                    label_ko: "파운드리",          members: [TSM, GFS, UMC],                                 exposure: HIGH,      macro: {rates: -0.5, real_yield: -0.5, risk: -1, usd: -0.5}, drivers: [gpu_demand, capex]}
+    - {key: equipment,   label: "Semiconductor Equipment",    label_ko: "반도체 장비",       members: [ASML, AMAT, LRCX, KLAC, TEL, HANMI_SEMI],       exposure: HIGH,      macro: {rates: -0.5, real_yield: -0.5, risk: -1.5, usd: -0.5}, drivers: [capex, gpu_demand]}
+    - {key: packaging,   label: "Advanced Packaging",         label_ko: "첨단 패키징",       members: [AMKR, BESI, HANMI_SEMI, TSM],                   exposure: HIGH,      macro: {rates: -0.5, real_yield: -0.5, risk: -1.5, usd: -0.5}, drivers: [gpu_demand, capex]}
+    - {key: networking,  label: "Networking",                 label_ko: "네트워킹",          members: [ANET, MRVL, AVGO, CIEN, CRDO],                  exposure: HIGH,      macro: {rates: -1, real_yield: -1, risk: -1.5, usd: -0.5}, drivers: [capex, hyperscaler_spending]}
+    - {key: hyperscalers, label: "Hyperscalers / Cloud",      label_ko: "하이퍼스케일러·클라우드", members: [MSFT, AMZN, GOOGL, META, ORCL],           exposure: HIGH,      macro: {rates: -1, real_yield: -1, risk: -1, usd: -0.5}, drivers: [hyperscaler_spending, monetization, capex]}
+    - {key: dc_infra,    label: "Data Center Infrastructure", label_ko: "데이터센터 인프라", members: [VRT, ETN, PWR, EQIX, DLR, DELL, SMCI],          exposure: HIGH,      macro: {rates: -1.5, real_yield: -1.5, risk: -1, usd: -0.5}, drivers: [capex, hyperscaler_spending]}
+    - {key: power,       label: "Power / Cooling",            label_ko: "전력·냉각",         members: [VST, CEG, GEV, NRG, HD_ELECTRIC, HYOSUNG_HEAVY, LS_ELECTRIC, DOOSAN_ENER], exposure: MEDIUM, macro: {rates: -1, real_yield: -1, risk: -0.5, usd: -0.5}, drivers: [capex]}
+    - {key: software,    label: "AI Software / Applications", label_ko: "AI 소프트웨어·앱",  members: [PLTR, NOW, CRM, SNOW, DDOG, NET, APP],          exposure: HIGH,      macro: {rates: -2, real_yield: -2, risk: -1.5, usd: -0.5}, drivers: [monetization, competition, valuation]}
+  #: 밸류체인 리더십 — 1주 상대 %p 로 순위. 상위 4 = CURRENT LEADERSHIP, 하위 = LAGGING(상대 %p 가 lag 이하)
+  leadership_top: 4
+  lag_max_rel_pct: -1.0
+  lagging_bottom: 3          # LAGGING 은 상대 %p 하위 3개(리더십 제외)
+  #: 화살표 문턱 (1주 상대 %p): ↑↑ ≥ 3, ↑ ≥ 1, → , ↓ ≤ −1, ↓↓ ≤ −3
+  arrow_pct: [3.0, 1.0]
+
+#: 종목 영향도 — 네 축(THEME / FUNDAMENTAL / MARKET / MACRO)을 −2…+2 로 매기고 따로 보여준다. 단일 점수로 순위화하지 않는다.
+stock_impact:
+  theme: {news_ref: 40, mention_bonus: 0.5}            # 세그먼트 driver 톤 평균/news_ref → −2…+2, 기사에 직접 언급되면 |톤| 방향으로 0.5 가산
+  market: {rel_pct_ref: 4.0, ret21_ref: 10.0}          # 1주 상대 %p, 1개월 수익 → 축
+  macro: {z_ref: 2.0}                                   # Σ 민감도 × z / z_ref → −2…+2
+  axis_bands: [1.5, 0.5]                                # |v| ≥ 1.5 → ↑↑/↓↓, ≥ 0.5 → ↑/↓, 그 아래 →
+  macro_inputs: {rates: US10Y, real_yield: TIPS10Y, risk: US_HY_OAS, usd: DXY, vix: VIX}
+  radar_max_per_bucket: 4
+
+#: 기대 vs 펀더멘털 — 세그먼트별 0~100. market_pricing 은 가격·상대·breadth, fundamental 은 driver 톤·메모리 데이터·EPS. 근거가 없으면 None.
+expectation_gap:
+  market: {rel_z_w: 25, ret21_w: 15, breadth_w: 10, ret21_ref: 10}
+  fundamental: {tone_w: 30, data_w: 20, eps_w: 20}
+  gap_note: 15   # |gap| 이 이 이상이면 문장에 적는다
+
+#: 전파 체인 — 각 단계의 상태 어휘: ACCELERATING / POSITIVE / STRONG / IMPROVING / STABLE / MIXED / DETERIORATING / UNCONFIRMED
+transmission:
+  bands: {strong: 40, positive: 15, stable: -15, deteriorating: -40}   # 증거 점수(−100…100) 문턱
+  stages:
+    - {key: narrative,   label: "AI Narrative",             source: news_tone}
+    - {key: capex,       label: "Hyperscaler Capex",        source: drivers, drivers: [capex, hyperscaler_spending], segment: hyperscalers, accelerating_label: true}
+    - {key: compute,     label: "GPU / Compute",            source: segment, segment: compute}
+    - {key: hbm,         label: "HBM",                      source: fundamentals, ids: [HBM3E_CONTRACT, HBM4_CONTRACT], drivers: [gpu_demand]}
+    - {key: commodity_memory, label: "Commodity Memory",    source: fundamentals, ids: [DRAM_SPOT, DDR5_SPOT, NAND_SPOT, DXI]}
+    - {key: foundry,     label: "Foundry / Packaging",      source: segment, segment: foundry, segment2: packaging}
+    - {key: equipment,   label: "Semiconductor Equipment",  source: segment, segment: equipment}
+    - {key: dc_infra,    label: "Data Center Infrastructure", source: segment, segment: dc_infra, segment2: power}
+    - {key: eps,         label: "EPS Revision",             source: eps}
+
+#: 반도체 펀더멘털 확인 — 영역별 (가격 모멘텀 · 상대 강도 · breadth · 뉴스/펀더멘털 · EPS). 어휘: STRONG / LEADING / IMPROVING / MIXED / NEUTRAL / WEAK / UNCONFIRMED
+semi_confirmation:
+  areas:
+    - {key: compute,    label: "Compute / Accelerator", segment: compute}
+    - {key: hbm,        label: "Memory / HBM",          segment: memory_hbm, fundamentals: [HBM3E_CONTRACT, HBM4_CONTRACT]}
+    - {key: commodity,  label: "Commodity Memory",      segment: memory_hbm, fundamentals: [DRAM_SPOT, DDR5_SPOT, NAND_SPOT, DXI], fundamentals_only: true}
+    - {key: foundry,    label: "Foundry",               segment: foundry}
+    - {key: packaging,  label: "Advanced Packaging",    segment: packaging}
+    - {key: equipment,  label: "Equipment",             segment: equipment}
+  memory_rows:
+    - {id: HBM3E_CONTRACT, label: "HBM3E 계약가", structural: true}
+    - {id: HBM4_CONTRACT,  label: "HBM4 계약가",  structural: true}
+    - {id: DRAM_SPOT,      label: "DRAM Spot"}
+    - {id: DDR5_SPOT,      label: "DDR5 Spot"}
+    - {id: NAND_SPOT,      label: "NAND Spot"}
+    - {id: DXI,            label: "DXI"}
+  improving_pct: 1.0      # 1주 또는 1개월 변화율이 이 이상이면 IMPROVING, 이하면 DETERIORATING
+
+#: 뉴스 → 산업 driver → 밸류체인 → 종목. driver 별로 1차/2차/인프라 노출 세그먼트.
+news_impact:
+  top_n: 5
+  chains:
+    capex:                {primary: [compute, networking], secondary: [foundry, equipment, memory_hbm], infrastructure: [dc_infra, power]}
+    hyperscaler_spending: {primary: [hyperscalers, compute], secondary: [networking, equipment], infrastructure: [dc_infra, power]}
+    gpu_demand:           {primary: [compute, memory_hbm], secondary: [packaging, foundry, equipment], infrastructure: [networking]}
+    monetization:         {primary: [software, hyperscalers], secondary: [compute], infrastructure: []}
+    competition:          {primary: [software, compute], secondary: [hyperscalers], infrastructure: []}
+    regulation:           {primary: [compute, hyperscalers], secondary: [equipment, foundry], infrastructure: []}
+    valuation:            {primary: [software, compute], secondary: [hyperscalers], infrastructure: []}
+
+#: WHAT MATTERS NOW — 후보 질문. 계열이 있는 것부터 최대 5개. status: CONFIRMING / WATCH / DETERIORATING
+what_matters:
+  max: 5
+  questions:
+    - {key: capex,     text: "Hyperscaler Capex 증가율이 유지되는가",                 metric: TRANS_capex,    confirming: 15, deteriorating: -15}
+    - {key: memory_spread, text: "GPU/HBM 강세가 범용 memory 로 확산되는가",           metric: TRANS_commodity_memory, confirming: 15, deteriorating: -15}
+    - {key: eps_breadth, text: "Semiconductor EPS revision breadth 가 확대되는가",     metric: TRANS_eps,      confirming: 15, deteriorating: -15}
+    - {key: broaden,   text: "AI rally 가 Software / Infra 까지 broaden 되는가",       metric: BROADEN,        confirming: 1.0, deteriorating: -1.0}
+    - {key: rel_hold,  text: "장기금리 상승에도 AI relative strength 가 유지되는가",   metric: AI_REL_NDX_Z5,  confirming: 0.0, deteriorating: -1.0}
+    - {key: breadth,   text: "AI breadth(20일선 상회)가 회복되는가",                  metric: BREADTH_CHANGE, confirming: 5, deteriorating: -10}
+    - {key: hyper,     text: "하이퍼스케일러가 동반 약세에서 벗어나는가",              metric: HYPER_DOWN_1W_NEG, confirming: -2, deteriorating: -4}
 
 #: 상대·절대 판정 임계 (z)
 relative:
@@ -184,7 +263,7 @@ narrative_drivers:
   - {key: gpu_demand,           label: "GPU Demand",            label_ko: "GPU 수요",      keywords: [GPU, 가속기, accelerator, Nvidia, 엔비디아, HBM, chip demand, 반도체 수요, CPU 호황, 수요가]}
   - {key: hyperscaler_spending, label: "Hyperscaler Spending",  label_ko: "하이퍼스케일러 지출", keywords: [Microsoft, 마이크로소프트, Google, 구글, Amazon, 아마존, Meta, 메타, Oracle, 오라클, cloud, 클라우드, hyperscaler, 하이퍼스케일러]}
   - {key: monetization,         label: "Monetization",          label_ko: "수익화",        keywords: [monetiz, 수익화, revenue, 매출, subscription, 구독, agent, 에이전트, adoption, 도입, ROI]}
-  - {key: competition,          label: "Competition",           label_ko: "경쟁",          keywords: [competition, 경쟁, DeepSeek, 딥시크, open-source, 오픈소스, rival, 중국 AI, China AI, price war, 가격 인하]}
+  - {key: competition,          label: "Competition",           label_ko: "경쟁",          keywords: [competition, 경쟁, DeepSeek, 딥시크, open-source, 오픈소스, rival, 중국 AI, China AI, price war, 가격 인하, acqui, 인수, to buy, M&A]}
   - {key: regulation,           label: "Regulation / Safety",   label_ko: "규제·안전",     keywords: [regulat, 규제, safety, 안전, antitrust, 반독점, export control, 수출 규제, 수출통제, ban, existential, 위험, lawsuit, 소송]}
   - {key: valuation,            label: "Valuation / Funding",   label_ko: "밸류에이션·자금", keywords: [valuation, 밸류에이션, bubble, 거품, IPO, 상장, 자사주, buyback, 시총, market cap, 고평가, 조달, funding, 파이낸싱, financing, PF]}
 

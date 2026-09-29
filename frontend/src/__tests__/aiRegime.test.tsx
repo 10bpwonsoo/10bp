@@ -31,7 +31,7 @@ describe("AiRegimeView", () => {
   it("섹션 순서가 지정된 대로이고 driver 5 · 그룹 7(바스켓 6 + 국내) · breadth 3 지표 · 2×2 · 내러티브 driver 7 · 매크로 행 · 전환 조건 3~5", () => {
     const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
-    expect(titles).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Leadership", "AI Breadth", "Narrative × Price", "Macro Confirmation", "AI-specific Stress", "What Changes The View?", "Diagnostics"]);
+    expect(titles).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Fundamental Transmission", "AI / Semi / Infra / Software Leadership", "Semiconductor Fundamental Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
     expect(screen.getAllByTestId("ai-driver").length).toBe(5);
     const groups = screen.getAllByTestId("ai-group");
     expect(groups.length).toBe(7);
@@ -61,6 +61,32 @@ describe("AiRegimeView", () => {
     expect(within(diag).getAllByText(/require|서명/i).length).toBeGreaterThan(0);
     const mainText = Array.from(container.querySelectorAll(".panel:not(details)")).map((e) => e.textContent).join(" ");
     expect(mainText).not.toMatch(/require/);
+  });
+
+  it("확장 층: 상태 띠에 FUNDAMENTAL CONFIRMATION 이 있고, 전파 체인 9단계, 밸류체인 10세그먼트, 반도체 영역 6 + 메모리 6행(변화율 없는 행은 N/A), 종목 4축, 레이더 5버킷(이유 포함), 뉴스→종목, 기대 vs 펀더멘털 10행, What Matters ≤5", () => {
+    const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+    expect(screen.getByTestId("ai-fundamental-confirmation").textContent).toContain(regime.fundamental_confirmation.level);
+    expect(screen.getByTestId("ai-regime-subtitle").textContent).toContain("FUNDAMENTALS");
+    expect(screen.getByTestId("ai-summary").textContent?.length).toBeGreaterThan(20);
+    expect(screen.getAllByTestId("ai-stage").length).toBe(9);
+    expect(screen.getAllByTestId("ai-segment").length).toBe(10);
+    expect(within(screen.getByTestId("ai-leadership-list")).getAllByRole("listitem").length).toBe(regime.value_chain.leadership.length);
+    expect(screen.getAllByTestId("ai-semi-area").length).toBe(6);
+    const mem = screen.getAllByTestId("ai-memory-row");
+    expect(mem.length).toBe(6);
+    expect(mem.filter((m) => m.getAttribute("data-status") === "N/A").length).toBe(regime.semi_confirmation.memory.filter((m) => m.status === "N/A").length);
+    const stocks = screen.getAllByTestId("ai-stock");
+    expect(stocks.length).toBe(regime.stocks.filter((r) => r.available).length);
+    expect(stocks[0]!.querySelectorAll(".ai-sim-ax").length).toBe(4);
+    expect(screen.getAllByTestId("ai-radar-bucket").length).toBe(5);
+    for (const it of screen.getAllByTestId("ai-radar-item")) expect(it.querySelector(".ai-radar-r")?.textContent?.length).toBeGreaterThan(3);
+    expect(screen.getAllByTestId("ai-news-row").length).toBe(regime.news_impact.length);
+    expect(screen.getAllByTestId("ai-gap-row").length).toBe(10);
+    expect(screen.getAllByTestId("ai-matters-item").length).toBeLessThanOrEqual(5);
+    // 업사이클 판정·신호 n/4·서명 일치도는 핵심 화면에 없다
+    const mainText = Array.from(container.querySelectorAll(".panel:not(details)")).map((e) => e.textContent).join(" ");
+    expect(mainText).not.toMatch(/업사이클 \d+%|신호 \d\/4|일치도|require/);
+    expect(within(screen.getByTestId("ai-diagnostics")).getByTestId("ai-data-quality")).toBeInTheDocument();
   });
 
   it("ScenarioView 는 AI 탭(focus=ai_regime)에서 이 화면을 그리고, 아직 못 받았으면 로딩 문구를 낸다", () => {

@@ -221,6 +221,176 @@ class GlobalContext(Base):
     note: str = "Global market regime 은 맥락 입력이다 — AI 판정에는 상대 z 로만 들어간다"
 
 
+Arrow = Literal["↑↑", "↑", "→", "↓", "↓↓", "?"]
+StageStatus = Literal["ACCELERATING", "POSITIVE", "STRONG", "IMPROVING", "STABLE", "MIXED", "DETERIORATING", "UNCONFIRMED"]
+AreaStatus = Literal["STRONG", "LEADING", "IMPROVING", "MIXED", "NEUTRAL", "WEAK", "UNCONFIRMED"]
+
+
+class StatusItem(Base):
+    key: str
+    label: str
+    value: str
+    tone: Literal["good", "warn", "bad", "muted"] = "muted"
+    detail: str = ""
+
+
+class FundamentalConfirmation(Base):
+    level: Literal["STRONG", "PARTIAL", "WEAK", "UNCONFIRMED"] = "UNCONFIRMED"
+    confirming: list[str] = Field(default_factory=list)
+    lagging: list[str] = Field(default_factory=list)
+    sentence: str = ""
+
+
+class TransmissionStage(Base):
+    key: str
+    label: str
+    status: StageStatus
+    score: float | None = Field(default=None, description="−100…+100 증거 점수. 없으면 None")
+    evidence: str = ""
+
+
+class Transmission(Base):
+    stages: list[TransmissionStage] = Field(default_factory=list)
+    sentence: str = ""
+
+
+class SegmentRow(Base):
+    key: str
+    label: str
+    label_ko: str
+    exposure: str
+    members: int
+    available: int
+    ret_1d: float | None = None
+    ret_5d: float | None = None
+    ret_21d: float | None = None
+    rel_1d: float | None = None
+    rel_5d: float | None = None
+    rel_21d: float | None = None
+    rel_z_5d: float | None = None
+    above_ma20_pct: float | None = None
+    eps: float | None = Field(default=None, description="구성원 EPS revision 평균(%). 컨센서스 없으면 None")
+    eps_note: str = ""
+    arrow_1w: Arrow = "?"
+    arrow_rel: Arrow = "?"
+    arrow_eps: Arrow = "?"
+    rank_1w: int | None = None
+    role: Literal["leading", "neutral", "lagging", "unknown"] = "unknown"
+    macro_score: float | None = None
+
+
+class ValueChain(Base):
+    segments: list[SegmentRow] = Field(default_factory=list)
+    leadership: list[str] = Field(default_factory=list)
+    lagging: list[str] = Field(default_factory=list)
+    sentence: str = ""
+
+
+class SemiArea(Base):
+    key: str
+    label: str
+    status: AreaStatus
+    price_momentum: Arrow = "?"
+    relative_strength: Arrow = "?"
+    breadth: Arrow = "?"
+    news_evidence: Arrow = "?"
+    eps: Arrow = "?"
+    detail: str = ""
+
+
+class MemoryRow(Base):
+    id: str
+    label: str
+    structural: bool = False
+    value: float | None = None
+    unit: str = "price"
+    change_1d: float | None = None
+    change_1w: float | None = None
+    change_1m: float | None = None
+    z: float | None = None
+    observations: int = 0
+    frequency: str = "daily"
+    freshness_days: int | None = None
+    quality: str = "MISSING"
+    status: Literal["STRONG", "IMPROVING", "NEUTRAL", "DETERIORATING", "N/A"] = "N/A"
+    note: str = ""
+
+
+class SemiConfirmation(Base):
+    areas: list[SemiArea] = Field(default_factory=list)
+    memory: list[MemoryRow] = Field(default_factory=list)
+    sentence: str = ""
+
+
+class StockAxis(Base):
+    key: Literal["theme", "fundamental", "market", "macro"]
+    value: float | None = None
+    arrow: Arrow = "?"
+    detail: str = ""
+
+
+class StockImpactRow(Base):
+    id: str
+    name: str
+    segments: list[str] = Field(default_factory=list)
+    region: str = "US"
+    available: bool = True
+    theme_exposure: str = "MEDIUM"
+    axes: list[StockAxis] = Field(default_factory=list)
+    ai_demand: str = "–"
+    semiconductor: str = "–"
+    relative_strength: str = "–"
+    news_flow: str = "–"
+    eps_revision: str = "N/A"
+    rates_sensitivity: str = "–"
+    overall: Literal["STRONG", "CONFIRMED", "MIXED", "UNCONFIRMED", "NEGATIVE PRESSURE", "NO DATA"] = "NO DATA"
+    confirmation: Literal["CONFIRMED", "NEWS POSITIVE / MARKET UNCONFIRMED", "FUNDAMENTALS / PRICE LEADING NARRATIVE", "MIXED", "NEGATIVE", "NO DATA"] = "NO DATA"
+    ret_5d: float | None = None
+    rel_5d: float | None = None
+    ret_21d: float | None = None
+    mentions: int = 0
+    interpretation: str = ""
+
+
+class RadarBucket(Base):
+    key: Literal["strongest", "improving", "narrative_ahead", "fundamentals_ahead", "macro_pressure"]
+    label: str
+    items: list[dict[str, str]] = Field(default_factory=list, description="[{id, name, reason}]")
+
+
+class NewsImpact(Base):
+    event: str
+    source: str
+    url: str | None = None
+    tone: float
+    drivers: list[str] = Field(default_factory=list)
+    primary: list[str] = Field(default_factory=list)
+    secondary: list[str] = Field(default_factory=list)
+    infrastructure: list[str] = Field(default_factory=list)
+    primary_stocks: list[str] = Field(default_factory=list)
+    secondary_stocks: list[str] = Field(default_factory=list)
+    infrastructure_stocks: list[str] = Field(default_factory=list)
+    confirmation: str = ""
+
+
+class GapRow(Base):
+    key: str
+    label: str
+    market_pricing: float | None = None
+    fundamental: float | None = None
+    gap: float | None = None
+    note: str = ""
+
+
+class MattersItem(Base):
+    key: str
+    text: str
+    status: Literal["CONFIRMING", "WATCH", "DETERIORATING", "N/A"]
+    metric: str
+    current: str
+    detail: str = ""
+
+
 class AiRegime(Base):
     as_of: datetime
     regime: RegimeKey
@@ -247,3 +417,16 @@ class AiRegime(Base):
     members: list[MemberRow] = Field(default_factory=list)
     missing: list[str] = Field(default_factory=list)
     note: str
+    # ── 확장 층 (2026-09-29 (6)): 펀더멘털 확인 · 전파 체인 · 밸류체인 · 종목 영향도 ──
+    regime_subtitle: str = ""
+    status_strip: list[StatusItem] = Field(default_factory=list)
+    fundamental_confirmation: FundamentalConfirmation = Field(default_factory=FundamentalConfirmation)
+    summary: str = ""
+    transmission: Transmission = Field(default_factory=Transmission)
+    value_chain: ValueChain = Field(default_factory=ValueChain)
+    semi_confirmation: SemiConfirmation = Field(default_factory=SemiConfirmation)
+    stocks: list[StockImpactRow] = Field(default_factory=list)
+    radar: list[RadarBucket] = Field(default_factory=list)
+    news_impact: list[NewsImpact] = Field(default_factory=list)
+    expectation_gap: list[GapRow] = Field(default_factory=list)
+    what_matters: list[MattersItem] = Field(default_factory=list)

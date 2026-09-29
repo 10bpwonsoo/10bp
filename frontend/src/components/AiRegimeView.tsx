@@ -2,11 +2,14 @@ import type { AiRegime, AiDriverScore, AiGroupMomentum, AiMacroRow, AiEvidenceIt
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
+import { DataQualityBlock, GapSection, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
 
 /**
  * AI 탭 — AI TRADE INTELLIGENCE.
- * 순서: AI REGIME → AI vs MARKET → WHAT IS DRIVING AI? → LEADERSHIP → BREADTH → NARRATIVE × PRICE → MACRO CONFIRMATION
- *       → AI-SPECIFIC STRESS → WHAT CHANGES THE VIEW → Diagnostics(접이식).
+ * 순서: AI REGIME → AI vs MARKET → WHAT IS DRIVING AI? → AI FUNDAMENTAL TRANSMISSION → AI/SEMI/INFRA/SOFTWARE LEADERSHIP → SEMICONDUCTOR FUNDAMENTAL CONFIRMATION
+ *       → BREADTH → NARRATIVE × PRICE → STOCK IMPACT MAP → STOCK RADAR → NEWS → VALUE CHAIN → STOCK → EXPECTATIONS vs FUNDAMENTALS → MACRO CONFIRMATION
+ *       → AI-SPECIFIC STRESS → WHAT MATTERS NOW → WHAT CHANGES THE VIEW → DETAILS / DATA QUALITY(접이식).
+ * (2026-09-29 (6)) 반도체·메모리·HBM 데이터는 업사이클 판정이 아니라 Fundamental Confirmation Layer 로 들어온다.
  * 시장 온도·위험선호·변동성·신용 같은 broad-market 값은 핵심 화면에 없다 — Global Market Regime 은 맥락 한 줄, 나머지는 Diagnostics.
  * 숫자는 서버가 만들고 화면은 그리기만 한다. 확률이 아니라 증거 크기. 추천이 아니다.
  */
@@ -117,7 +120,7 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
             <div className="ai-title">
               <span className="ai-k mono">AI TRADE REGIME</span>
               <span className="ai-label" style={{ color: rc }} data-testid="ai-regime-label">{regime.regime_label}</span>
-              <span className="ai-sub mono">{regime.regime_label_ko}</span>
+              <span className="ai-sub mono" data-testid="ai-regime-subtitle">{regime.regime_subtitle || regime.regime_label_ko}{regime.regime_subtitle ? ` · ${regime.regime_label_ko}` : ""}</span>
             </div>
             <div className="ai-side">
               <div className="ai-kv mono" data-testid="ai-rel-summary">
@@ -136,6 +139,7 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
           </div>
           <p className="ai-headline">{regime.headline}</p>
           <p className="ai-impl"><span className="ai-k mono">IMPLICATION</span> {regime.implication}</p>
+          <StatusStrip regime={regime} />
           <p className="ai-ctx mono" data-testid="ai-context">Global market regime(맥락 입력): {regime.context.market_label} {regime.context.market_confidence.toFixed(0)}%{regime.context.thermometer !== null ? ` · 온도계 ${sg(regime.context.thermometer, 0)}` : ""} — {regime.context.note}</p>
         </div>
       </section>
@@ -173,9 +177,18 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
         </div>
       </section>
 
-      {/* 4. AI LEADERSHIP */}
+      {/* 4. AI FUNDAMENTAL TRANSMISSION */}
+      <TransmissionSection regime={regime} />
+
+      {/* 5. AI / SEMI / INFRA / SOFTWARE LEADERSHIP */}
+      <ValueChainSection regime={regime} />
+
+      {/* 6. SEMICONDUCTOR FUNDAMENTAL CONFIRMATION */}
+      <SemiConfirmationSection regime={regime} />
+
+      {/* 6b. AI LEADERSHIP — 바스켓 6그룹 */}
       <section className="panel span-2" data-testid="ai-leadership">
-        <header className="panel-head"><h2 className="panel-title">AI Leadership</h2><div className="panel-note mono">그룹별 상대 모멘텀(벤치마크 대비 %p) 1D / 1W / 1M · 5일 상대 z · 20일선 상회 · 1주 순위</div></header>
+        <header className="panel-head"><h2 className="panel-title">AI Basket Groups</h2><div className="panel-note mono">그룹별 상대 모멘텀(벤치마크 대비 %p) 1D / 1W / 1M · 5일 상대 z · 20일선 상회 · 1주 순위</div></header>
         <div className="panel-body">
           <div className="ai-grps" role="table" aria-label="AI 그룹 리더십">
             <div className="ai-grp ai-th mono"><span>segment</span><span>1D</span><span>1W</span><span>1M</span><span>rel z 5D</span><span>&gt;MA20</span><span>rank</span></div>
@@ -231,7 +244,17 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
         </div>
       </section>
 
-      {/* 7. MACRO CONFIRMATION */}
+      {/* 9. STOCK IMPACT MAP */}
+      <StockImpactSection regime={regime} />
+
+      {/* 10. STOCK RADAR · 11. NEWS → VALUE CHAIN → STOCK */}
+      <RadarSection regime={regime} />
+      <NewsImpactSection regime={regime} />
+
+      {/* 12. EXPECTATIONS vs FUNDAMENTALS */}
+      <GapSection regime={regime} />
+
+      {/* 13. MACRO CONFIRMATION */}
       <section className="panel span-2" data-testid="ai-macro">
         <header className="panel-head"><h2 className="panel-title">Macro Confirmation</h2><div className="panel-note mono">설명 {m.explains}/{m.evaluated} · <span style={{ color: m.verdict === "ai_specific" ? "var(--crit)" : m.verdict === "macro_driven" ? "var(--info)" : "var(--muted)" }}>{VERDICT_KO[m.verdict]}</span></div></header>
         <div className="panel-body">
@@ -254,7 +277,10 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
         </div>
       </section>
 
-      {/* 9. WHAT CHANGES THE VIEW */}
+      {/* 15. WHAT MATTERS NOW */}
+      <WhatMattersSection regime={regime} />
+
+      {/* 16. WHAT CHANGES THE VIEW */}
       <section className="panel span-3 ai-watch" data-testid="ai-what-changes">
         <header className="panel-head"><h2 className="panel-title">What Changes The View?</h2><div className="panel-note mono">AI-specific Risk-Off 로 판단을 바꿀 조건 · 그리고 해제 조건</div></header>
         <div className="panel-body ai-watch-cols">
@@ -276,9 +302,10 @@ export function AiRegimeView({ regime, snapshot, check, history }: { regime: AiR
 
       {/* 10. Diagnostics */}
       <details className="panel span-3 ai-diag" data-testid="ai-diagnostics">
-        <summary className="panel-head"><h2 className="panel-title">Diagnostics</h2><div className="panel-note mono">판정 규칙 검사 · Global market regime(시장 온도·공포/탐욕 띠) · 구성원 표 · 시나리오 서명 대조 · driver 증거 전체 — 접어 둔 내부 진단</div></summary>
+        <summary className="panel-head"><h2 className="panel-title">Details / Data Quality</h2><div className="panel-note mono">데이터 품질 · 판정 규칙 검사 · Global market regime(시장 온도·공포/탐욕 띠) · 구성원 표 · 시나리오 서명 대조 · driver 증거 전체 — 접어 둔 내부 진단</div></summary>
         <div className="panel-body">
-          <div className="ai-diag-grid">
+          <DataQualityBlock regime={regime} />
+          <div className="ai-diag-grid" style={{ marginTop: 10 }}>
             <div>
               <div className="ai-k mono">판정 규칙 — 위에서부터 먼저 걸리는 것</div>
               {regime.checks.map((c) => (

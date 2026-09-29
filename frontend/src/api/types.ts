@@ -619,9 +619,28 @@ export interface AiStressComponent { key: string; label: string; value: number |
 export interface AiStress { level: "LOW" | "MODERATE" | "HIGH" | "UNKNOWN"; score: number; max_score: number; components: AiStressComponent[]; sentence: string }
 export interface AiRegimeCheck { key: AiRegimeKey; label: string; passed: boolean; detail: string }
 export interface AiGlobalContext { market_label: string; market_confidence: number; thermometer: number | null; band: string | null; note: string }
+export type AiArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
+export interface AiStatusItem { key: string; label: string; value: string; tone: "good" | "warn" | "bad" | "muted"; detail: string }
+export interface AiFundamentalConfirmation { level: "STRONG" | "PARTIAL" | "WEAK" | "UNCONFIRMED"; confirming: string[]; lagging: string[]; sentence: string }
+export interface AiTransmissionStage { key: string; label: string; status: "ACCELERATING" | "POSITIVE" | "STRONG" | "IMPROVING" | "STABLE" | "MIXED" | "DETERIORATING" | "UNCONFIRMED"; score: number | null; evidence: string }
+export interface AiTransmission { stages: AiTransmissionStage[]; sentence: string }
+export interface AiSegmentRow { key: string; label: string; label_ko: string; exposure: string; members: number; available: number; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_1d: number | null; rel_5d: number | null; rel_21d: number | null; rel_z_5d: number | null; above_ma20_pct: number | null; eps: number | null; eps_note: string; arrow_1w: AiArrow; arrow_rel: AiArrow; arrow_eps: AiArrow; rank_1w: number | null; role: "leading" | "neutral" | "lagging" | "unknown"; macro_score: number | null }
+export interface AiValueChain { segments: AiSegmentRow[]; leadership: string[]; lagging: string[]; sentence: string }
+export interface AiSemiArea { key: string; label: string; status: "STRONG" | "LEADING" | "IMPROVING" | "MIXED" | "NEUTRAL" | "WEAK" | "UNCONFIRMED"; price_momentum: AiArrow; relative_strength: AiArrow; breadth: AiArrow; news_evidence: AiArrow; eps: AiArrow; detail: string }
+export interface AiMemoryRow { id: string; label: string; structural: boolean; value: number | null; unit: string; change_1d: number | null; change_1w: number | null; change_1m: number | null; z: number | null; observations: number; frequency: string; freshness_days: number | null; quality: string; status: "STRONG" | "IMPROVING" | "NEUTRAL" | "DETERIORATING" | "N/A"; note: string }
+export interface AiSemiConfirmation { areas: AiSemiArea[]; memory: AiMemoryRow[]; sentence: string }
+export interface AiStockAxis { key: "theme" | "fundamental" | "market" | "macro"; value: number | null; arrow: AiArrow; detail: string }
+export interface AiStockImpactRow { id: string; name: string; segments: string[]; region: string; available: boolean; theme_exposure: string; axes: AiStockAxis[]; ai_demand: string; semiconductor: string; relative_strength: string; news_flow: string; eps_revision: string; rates_sensitivity: string; overall: "STRONG" | "CONFIRMED" | "MIXED" | "UNCONFIRMED" | "NEGATIVE PRESSURE" | "NO DATA"; confirmation: string; ret_5d: number | null; rel_5d: number | null; ret_21d: number | null; mentions: number; interpretation: string }
+export interface AiRadarBucket { key: "strongest" | "improving" | "narrative_ahead" | "fundamentals_ahead" | "macro_pressure"; label: string; items: { id: string; name: string; reason: string }[] }
+export interface AiNewsImpact { event: string; source: string; url: string | null; tone: number; drivers: string[]; primary: string[]; secondary: string[]; infrastructure: string[]; primary_stocks: string[]; secondary_stocks: string[]; infrastructure_stocks: string[]; confirmation: string }
+export interface AiGapRow { key: string; label: string; market_pricing: number | null; fundamental: number | null; gap: number | null; note: string }
+export interface AiMattersItem { key: string; text: string; status: "CONFIRMING" | "WATCH" | "DETERIORATING" | "N/A"; metric: string; current: string; detail: string }
 export interface AiRegime {
   as_of: string; regime: AiRegimeKey; regime_label: string; regime_label_ko: string; headline: string; implication: string; checks: AiRegimeCheck[];
   ai_vs_market: AiVsMarket; drivers: AiDriverScore[]; dominant: string | null; runner_up: string | null; margin: number; signal_strength: number; signal_strength_label: string;
   leadership: AiLeadership; breadth: AiBreadth; narrative: AiNarrativePrice; macro: AiMacroConfirmation; stress: AiStress; triggers: TriggerItem[]; release: TriggerItem[];
   context: AiGlobalContext; members: AiMemberRow[]; missing: string[]; note: string;
+  regime_subtitle: string; status_strip: AiStatusItem[]; fundamental_confirmation: AiFundamentalConfirmation; summary: string;
+  transmission: AiTransmission; value_chain: AiValueChain; semi_confirmation: AiSemiConfirmation; stocks: AiStockImpactRow[]; radar: AiRadarBucket[];
+  news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
 }

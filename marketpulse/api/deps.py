@@ -488,10 +488,13 @@ class AiRegimeService:
         basket = self.basket_series(settings, snapshot.as_of)
         series = self._base.series(settings)
         t = snapshot.thermometer
+        with self._checks._investment._lock:
+            inv_hit = self._checks._investment._cache.get(key)
+        inv = inv_hit[0] if inv_hit else None  # Investment 층(메모리·HBM 대체데이터, 컨센서스)이 아직 없으면 그 부분은 결측으로 남는다
         result = build_ai_regime(market, series, basket, snapshot.themes, snapshot.events, {i.id: i for i in instruments},
                                  market_label=snapshot.market_state.primary_label.value, market_confidence=snapshot.market_state.confidence,
                                  thermometer=None if t is None else t.composite, band=None if t is None else t.band,
-                                 extra_z=extra, extra_names=names, as_of=snapshot.as_of, config_dir=settings.config_dir)
+                                 extra_z=extra, extra_names=names, investment=inv, as_of=snapshot.as_of, config_dir=settings.config_dir)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result

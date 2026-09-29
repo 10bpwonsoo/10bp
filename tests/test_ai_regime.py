@@ -63,7 +63,7 @@ class TestEngine:
         assert r.ai_vs_market.abs_direction == "down" and r.ai_vs_market.rel_verdict != "underperform"
         assert r.narrative.quadrant == "narrative_ahead"
         assert r.regime == "narrative_ahead" and "NARRATIVE AHEAD" in r.regime_label
-        assert r.ai_vs_market.members_used == len({m["id"] for g in load_ai_regime_config()["groups"] if g["key"] in load_ai_regime_config()["basket_groups"] for m in g["members"]})
+        assert r.ai_vs_market.members_used == len({str(m) for g in load_ai_regime_config()["groups"] if g["key"] in load_ai_regime_config()["basket_groups"] for m in g["members"]})
         for w in ("확률", "probab", "시장 온도"):
             assert w not in r.headline
 
@@ -164,3 +164,39 @@ class TestApi:
     def test_ai_tab_focus_is_ai_regime(self, client):
         checks = client.get("/api/v1/scenario-check?scenario=ai_sentiment").json()
         assert next(c for c in checks if c["name"] == "ai_sentiment")["focus"] == "ai_regime"
+
+
+class TestValueChain:
+    """확장 층 — 반도체는 Fundamental Confirmation Layer. 값이 없으면 N/A, 단일 점수 없음."""
+
+    def test_extension_blocks_exist_and_are_consistent(self):
+        r = _build("baseline")
+        assert len(r.transmission.stages) == 9 and r.transmission.sentence
+        assert {s.status for s in r.transmission.stages} <= {"ACCELERATING", "POSITIVE", "STRONG", "IMPROVING", "STABLE", "MIXED", "DETERIORATING", "UNCONFIRMED"}
+        assert next(s for s in r.transmission.stages if s.key == "eps").status == "UNCONFIRMED"  # 컨센서스 없음 — 임의 값 없음
+        assert len(r.value_chain.segments) == 10 and len(r.value_chain.leadership) <= 4 and len(r.value_chain.lagging) <= 3
+        assert not set(r.value_chain.leadership) & set(r.value_chain.lagging)
+        assert all(s.eps is None and "컨센서스 없음" in s.eps_note for s in r.value_chain.segments)
+        assert len(r.semi_confirmation.areas) == 6 and len(r.semi_confirmation.memory) == 6
+        assert r.fundamental_confirmation.level in ("STRONG", "PARTIAL", "WEAK", "UNCONFIRMED")
+        assert "FUNDAMENTALS" in r.regime_subtitle and r.regime_label in r.regime_subtitle
+        assert [x.key for x in r.status_strip][-1] == "fundamental" and r.summary
+        assert len(r.expectation_gap) == 10 and all(g.note for g in r.expectation_gap)
+        assert 1 <= len(r.what_matters) <= 5 and all(m.status in ("CONFIRMING", "WATCH", "DETERIORATING") for m in r.what_matters)
+
+    def test_stock_axes_are_separate_and_reasoned(self):
+        r = _build("ai_sentiment", shock=-0.012)
+        assert r.stocks and all(len(s.axes) == 4 and [a.key for a in s.axes] == ["theme", "fundamental", "market", "macro"] for s in r.stocks)
+        assert all(s.interpretation and s.eps_revision == "N/A" for s in r.stocks)  # EPS 컨센서스 없음 → N/A
+        assert all(s.overall in ("STRONG", "CONFIRMED", "MIXED", "UNCONFIRMED", "NEGATIVE PRESSURE", "NO DATA") for s in r.stocks)
+        for w in ("매수", "매도", "목표"):
+            assert all(w not in s.interpretation for s in r.stocks)
+        buckets = {b.key: b for b in r.radar}
+        assert set(buckets) == {"strongest", "improving", "narrative_ahead", "fundamentals_ahead", "macro_pressure"}
+        assert all(i["reason"] for b in r.radar for i in b.items)
+        assert all(n.confirmation for n in r.news_impact)
+
+    def test_missing_memory_data_is_na_not_zero(self):
+        r = _build("baseline")  # investment 없음 → 메모리 행 전부 계열 없음
+        assert all(m.status == "N/A" and m.value is None for m in r.semi_confirmation.memory)
+        assert next(a for a in r.semi_confirmation.areas if a.key == "commodity").status == "UNCONFIRMED"

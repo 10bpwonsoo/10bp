@@ -52,12 +52,23 @@ def load_ai_regime_config(config_dir: Path | None = None) -> dict:
 
 
 def basket_instruments(config_dir: Path | None = None) -> list[dict]:
-    """설정의 모든 그룹 구성원(중복 제거). 서비스가 이 목록으로 계열을 받는다."""
-    seen: dict[str, dict] = {}
-    for g in load_ai_regime_config(config_dir).get("groups", []):
+    """설정의 종목 universe(instruments). 바스켓·밸류체인·종목 영향도가 전부 이 목록을 참조하고, 서비스가 이 목록으로 계열을 받는다."""
+    cfg = load_ai_regime_config(config_dir)
+    seen: dict[str, dict] = {str(m["id"]): dict(m) for m in cfg.get("instruments", [])}
+    for g in cfg.get("groups", []):  # 예전 형식(members 가 dict) 호환
         for m in g.get("members", []):
-            seen.setdefault(str(m["id"]), dict(m))
+            if isinstance(m, dict):
+                seen.setdefault(str(m["id"]), dict(m))
     return list(seen.values())
+
+
+def _members(g: dict, names: Mapping[str, str]) -> list[dict]:
+    """그룹 구성원을 {id, name} 로 정규화 — 설정의 members 는 id 문자열이거나 dict 다."""
+    out = []
+    for m in g.get("members", []):
+        mid = str(m["id"]) if isinstance(m, dict) else str(m)
+        out.append({"id": mid, "name": (m.get("name") if isinstance(m, dict) else None) or names.get(mid, mid)})
+    return out
 
 
 # ── 작은 도구 ────────────────────────────────────────────
@@ -243,6 +254,7 @@ def build_ai_regime(
     band: str | None = None,
     extra_z: ExtraZ | None = None,
     extra_names: Mapping[str, str] | None = None,
+    investment: object | None = None,
     as_of: datetime | None = None,
     config_dir: Path | None = None,
 ) -> AiRegime:
@@ -266,7 +278,8 @@ def build_ai_regime(
     for b in (primary, secondary):
         if b not in bench_closes:
             missing.append(f"{b} 계열 없음 — 상대 판정 불가")
-    groups_cfg = list(cfg.get("groups", [])); basket_keys = set(cfg.get("basket_groups", []))
+    inst_names = {str(m["id"]): str(m.get("name", m["id"])) for m in basket_instruments(config_dir)}
+    groups_cfg = [{**g, "members": _members(g, inst_names)} for g in cfg.get("groups", [])]; basket_keys = set(cfg.get("basket_groups", []))
     basket_ids: list[str] = []
     for g in groups_cfg:
         if g["key"] in basket_keys:
@@ -591,7 +604,13 @@ def build_ai_regime(
     note = ("AI 바스켓은 설정(ai_regime.yaml)의 6개 그룹 구성원 동일가중 일수익 누적 지수(Nasdaq 100 달력)이고, 상대 지수는 바스켓/벤치마크 비율이다. "
             "z 는 시장 계열과 같은 60일 창. driver 점수는 증거표의 가중 clip 평균이며 확률이 아니다. 내러티브 driver 는 제목 키워드 룰 분류다. "
             "시장 판정·온도계는 맥락 입력으로만 붙인다 — AI 판정은 절대 z·상대 z·breadth·뉴스 톤·매크로 설명 여부로만 정한다.")
-    return AiRegime(as_of=as_of, regime=regime, regime_label=regime_label, regime_label_ko=regime_ko, headline=headline, implication=implication, checks=checks,  # type: ignore[arg-type]
-                    ai_vs_market=avm, drivers=drivers, dominant=dom.id if dom else None, runner_up=run.id if run else None, margin=margin,
-                    signal_strength=round(min(100.0, strength), 1), signal_strength_label=_strength(strength, bands), leadership=lead, breadth=br, narrative=nar,
-                    macro=mac, stress=stress, triggers=triggers, release=release, context=ctx, members=member_rows, missing=missing, note=note)
+    result = AiRegime(as_of=as_of, regime=regime, regime_label=regime_label, regime_label_ko=regime_ko, headline=headline, implication=implication, checks=checks,  # type: ignore[arg-type]
+                      ai_vs_market=avm, drivers=drivers, dominant=dom.id if dom else None, runner_up=run.id if run else None, margin=margin,
+                      signal_strength=round(min(100.0, strength), 1), signal_strength_label=_strength(strength, bands), leadership=lead, breadth=br, narrative=nar,
+                      macro=mac, stress=stress, triggers=triggers, release=release, context=ctx, members=member_rows, missing=missing, note=note)
+    # ── 밸류체인 · 펀더멘털 확인 · 종목 영향도 (같은 입력 위의 확장 층) ──
+    from .ai_value_chain import extend_with_value_chain
+
+    extend_with_value_chain(result, cfg, market=market, extra=extra, names=names, closes=closes, stats=stats, bench_closes=bench_closes, ai_events=ai_events,
+                            narr=narr, themes=theme_by_id, investment=investment, inst_names=inst_names, instruments_by_id=instruments_by_id, as_of=as_of, zwin=zwin, config_dir=config_dir)
+    return result

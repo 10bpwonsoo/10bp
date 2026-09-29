@@ -30,7 +30,7 @@ else:
     bs_path.write_text(json.dumps({k: v.model_dump(mode="json") for k, v in basket.items()}, ensure_ascii=False), encoding="utf-8")
 r = build_ai_regime(market, series, basket, live.themes, live.events, {i.id: i for i in ins}, market_label=live.market_state.primary_label.value, market_confidence=live.market_state.confidence,
                     thermometer=live.thermometer.composite if live.thermometer else None, band=live.thermometer.band if live.thermometer else None,
-                    extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative}, as_of=live.as_of)
+                    extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative}, investment=inv, as_of=live.as_of)
 (CAP / "ai_regime.json").write_text(r.model_dump_json(), encoding="utf-8")
 print(r.regime_label, "|", r.regime_label_ko); print(r.headline); print("missing", r.missing)
 a = r.ai_vs_market; print("AVM", a.members_used, a.last_date, "abs", a.basket_ret_1d, a.basket_ret_5d, a.basket_ret_21d, "z", a.basket_z_1d, a.basket_z_5d, "| ndx", a.ndx_ret_5d, "rel", a.rel_ndx_1d, a.rel_ndx_5d, a.rel_ndx_21d, "relz", a.rel_ndx_z_1d, a.rel_ndx_z_5d, "| spx rel", a.rel_spx_5d, a.rel_spx_z_5d, a.abs_direction, a.rel_verdict)
@@ -45,3 +45,13 @@ print("stress", r.stress.level, r.stress.score, r.stress.max_score, [(c.key, c.d
 print("checks", [(c.key, c.passed) for c in r.checks])
 print("triggers", [(t.metric, t.current, t.condition, t.met) for t in r.triggers]); print("release", [(t.current, t.met) for t in r.release])
 print("ctx", r.context)
+
+print("== EXT ==", r.regime_subtitle); print("strip", [(x.key, x.value) for x in r.status_strip]); print("FC", r.fundamental_confirmation.level, r.fundamental_confirmation.sentence); print("SUMMARY", r.summary)
+print("TRANS", [(s.key, s.status, s.score) for s in r.transmission.stages]); print(r.transmission.sentence)
+print("VC", [(s.key, s.available, s.rel_5d, s.rel_z_5d, s.above_ma20_pct, s.eps, s.arrow_1w, s.arrow_rel, s.rank_1w, s.role, s.macro_score) for s in r.value_chain.segments]); print(r.value_chain.leadership, r.value_chain.lagging, r.value_chain.sentence)
+print("SEMI", [(a.key, a.status, a.detail) for a in r.semi_confirmation.areas]); print([(m.id, m.status, m.change_1d, m.change_1w, m.observations, m.freshness_days) for m in r.semi_confirmation.memory]); print(r.semi_confirmation.sentence)
+print("STOCKS", len(r.stocks)); [print("  ", x.id, x.theme_exposure, [(a.key, a.arrow) for a in x.axes], x.overall, "|", x.confirmation, "|", x.interpretation[:80]) for x in r.stocks[:14]]
+print("RADAR", [(b.key, [(i["name"], i["reason"][:50]) for i in b.items]) for b in r.radar])
+print("NEWS", [(n.event[:40], n.drivers, n.primary, n.primary_stocks, n.confirmation) for n in r.news_impact])
+print("GAP", [(g.key, g.market_pricing, g.fundamental, g.gap) for g in r.expectation_gap])
+print("MATTERS", [(m.key, m.status, m.current) for m in r.what_matters])

@@ -376,6 +376,26 @@ regime 맥락, 구성원 표, 서명 대조, 접이식) 순이다. 엔드포인�
 confirmed_risk_on → confirmed_risk_off → price_resilience → mixed 이고 임계는 전부 설정에 있다.
 확률 표현은 쓰지 않는다. 시장 판정·온도계는 맥락 한 줄로만 붙는다.
 
+#### AI 탭 확장 — Fundamental Confirmation Layer · 밸류체인 · 종목 영향도 (2026-09-29)
+
+기존 AI TRADE REGIME 구조는 그대로 두고, 반도체·메모리·HBM 데이터를 **업사이클 판정이 아니라 AI 투자
+사이클을 검증하는 확인 데이터**로 흡수했다(업사이클 %, 신호 n/4, 서명 일치도, require/support 는 쓰지
+않는다). `engines/ai_value_chain.py` 가 같은 입력 위에 다음을 더한다 — REGIME 카드의 상태 띠(Narrative ·
+AI Relative Strength · Price · Semiconductor Confirm. · AI Infra · Software · Breadth · Macro · Fundamental
+Confirmation)와 부제(`… / FUNDAMENTALS RESILIENT`)·SUMMARY → AI FUNDAMENTAL TRANSMISSION(AI Narrative →
+Hyperscaler Capex → GPU → HBM → Commodity Memory → Foundry/Packaging → Equipment → DC Infra → EPS, 단계마다
+ACCELERATING/POSITIVE/STRONG/IMPROVING/STABLE/MIXED/DETERIORATING/UNCONFIRMED) → AI/SEMI/INFRA/SOFTWARE
+LEADERSHIP(밸류체인 10 세그먼트의 1D/1W/1M·Nasdaq 대비·breadth·EPS, CURRENT LEADERSHIP / LAGGING) →
+SEMICONDUCTOR FUNDAMENTAL CONFIRMATION(Compute/Accelerator · Memory/HBM · Commodity Memory · Foundry ·
+Advanced Packaging · Equipment 의 가격·상대·breadth·뉴스·EPS 화살표와 status, MEMORY/HBM FUNDAMENTALS 표 —
+현재·1W·1M·z·신선도, 이력이 없으면 N/A, HBM 계약가는 구조적 증거) → AI STOCK IMPACT MAP(52종목 universe,
+THEME/FUNDAMENTAL/MARKET/MACRO 네 축 화살표 + overall + 해석 문장, 단일 점수·추천 없음) → STOCK RADAR
+(Strongest confirmation · Improving · Narrative > Fundamentals · Fundamentals > Price · Macro pressure, 이유
+포함) → NEWS → VALUE CHAIN → STOCK(기사 → driver → 1차/2차/인프라 세그먼트 → 종목, NEWS POSITIVE / MARKET
+UNCONFIRMED 식 확인 라벨) → EXPECTATIONS vs FUNDAMENTALS(세그먼트별 Market Pricing vs Fundamental 0~100, gap)
+→ WHAT MATTERS NOW(최대 5, CONFIRMING/WATCH/DETERIORATING) → DETAILS / DATA QUALITY. 종목·세그먼트·민감도·
+키워드·임계는 전부 `config/ai_regime.yaml`. EPS revision 은 컨센서스 CSV 가 없어 N/A 로 남는다.
+
 ### 물가 탭 — Inflation & Rates Intelligence (2026-09-29)
 
 물가 탭은 룰 판정("Inflation Shock 아님")을 앞세우지 않는다. `engines/rates_regime.py`
