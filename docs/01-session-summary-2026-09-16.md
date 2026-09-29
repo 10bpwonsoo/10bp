@@ -222,6 +222,8 @@
 - 재생 이력이 신용·기대인플레이션 포함으로 다시 계산됐다: 판정 없음 9 · Liquidity Stress 6 · Risk-On 3 · Policy Driven 2 · Inflation Shock 1(9/1) · Growth Shock 1(9/10), 전환 13회, 현재 Liquidity Stress 4일째(9/23~). FOMC 날(9/15~16)은 기대인플레이션이 들어와도 Inflation 0.71 / −0.98 로 물가 충격이 아니다.
 - Investment: 드라이버 6(금 −3.1σ·브렌트·건화물·USD/JPY·VIX·S&P), Impact 1(브렌트→SK이노베이션, 봉 의심), 롤오버 의심 5(휘발유·은·설탕·면화·대두 — 분기말 월물 교체), 반도체 peer·국내 모두 '상승 합의' 는 국내가 장중 봉이라 신뢰 낮음. 수기 해설 `data/commentary/2026-09-29.json`: 시장 1 · 종목 3 · 대체 4(HY OAS·BE10Y 첫 해설).
 
+- 배지 신선도를 거래일로: `trading_days_between`(평일만), `DataHealth.max_freshness_trading_days/oldest_instruments/freshness_note`, 배지 "2거래일 전"(툴팁에 초 기준·계열), Data Health 패널 "최대 지연 2거래일 (4.0일)". 휴장일 미반영이라 상한. 테스트 +6(백엔드) +2(프런트).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

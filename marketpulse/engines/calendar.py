@@ -13,7 +13,7 @@ persistence 가중과 알림 임계에 배율이 걸린다 (scoring.yaml calenda
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 
@@ -65,6 +65,26 @@ def dday(days_until: int | None) -> str:
 
 def _today(as_of: datetime) -> date:
     return as_of.astimezone(timezone.utc).date() if as_of.tzinfo else as_of.date()
+
+
+def trading_days_between(start: datetime, end: datetime) -> int:
+    """start 다음 날부터 end 까지의 평일(월~금) 수. 데이터 신선도를 '거래일' 로 세기 위한 것.
+
+    주말만 뺀다. 각 시장의 휴장일(추석·감사절 등)은 여기서 알 수 없어 반영하지 않는다 —
+    그래서 이 값은 실제 거래일 수의 **상한**이고, 화면에도 그렇게 적는다. end 가 start 보다
+    앞이면 0.
+    """
+    d0, d1 = _today(start), _today(end)
+    if d1 <= d0:
+        return 0
+    n = 0
+    step = timedelta(days=1)
+    d = d0 + step
+    while d <= d1:
+        if d.weekday() < 5:
+            n += 1
+        d += step
+    return n
 
 
 def event_window(as_of: datetime, *, config_dir: Path | None = None) -> EventWindow:

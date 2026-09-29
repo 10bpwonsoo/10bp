@@ -55,6 +55,12 @@ class DataHealth(Base):
     missing: list[str] = Field(default_factory=list)
     stale: list[str] = Field(default_factory=list)
     max_freshness_sec: int = 0
+    #: 가장 오래된 재료의 나이를 거래일(평일)로 센 값. 주말은 빼고 휴장일은 반영하지 않으므로 상한이다.
+    #: 금요일 봉을 월요일 아침에 보면 초로는 3일이지만 거래일로는 1일이다.
+    max_freshness_trading_days: int = 0
+    #: 그 나이를 만든 계열들 (같은 날짜에 멈춘 것 전부, 최대 8개). 배지 툴팁에 그대로 쓴다.
+    oldest_instruments: list[str] = Field(default_factory=list)
+    freshness_note: str = ""
     news_items: int = 0
     llm_status: Literal["disabled", "ok", "degraded", "failed"] = "disabled"
     #: 이 스냅샷의 뉴스를 **누가** 판단했는가. llm_status 는 API 경로의 상태일

@@ -29,7 +29,12 @@ export function DataHealthPanel({
       "커버리지",
       `${(health.coverage * 100).toFixed(0)}% (${health.available_instruments}/${health.expected_instruments})`,
     ],
-    ["최대 지연", humanAge(health.max_freshness_sec)],
+    [
+      "최대 지연",
+      health.max_freshness_trading_days !== undefined && health.max_freshness_trading_days >= 1
+        ? `${health.max_freshness_trading_days}거래일 (${humanAge(health.max_freshness_sec)})`
+        : humanAge(health.max_freshness_sec),
+    ],
     ["기사 수", String(health.news_items)],
     ["LLM", health.llm_status],
     ["파이프라인", `${totalMs.toFixed(0)}ms`],

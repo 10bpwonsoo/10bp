@@ -43,7 +43,7 @@ from ..models.divergence import Divergence
 from ..models.state import FactorScore, MarketState, StateLabel
 from ..models.theme import ThemeState
 from .alert import build_alerts, carry_forward
-from .calendar import ENGINE_VERSION as CALENDAR_VERSION, event_window
+from .calendar import ENGINE_VERSION as CALENDAR_VERSION, event_window, trading_days_between
 from .correlation import ENGINE_VERSION as CORRELATION_VERSION
 from .divergence import detect_divergences, pending_candidates
 from .market_state import compute_market_state
@@ -271,6 +271,17 @@ def build_data_health(
     max_fresh = max(
         (p.meta.freshness_sec for p in snapshot.points.values()), default=0
     )
+    # 거래일 기준 나이 — 주말은 빼고 센다. 배지의 "N일 전" 이 금요일 봉을 월요일에 3일이라 부르는
+    # 것을 막되, 휴장일은 모르므로 상한임을 note 에 적는다.
+    td_by_id = {
+        iid: trading_days_between(p.meta.as_of, snapshot.as_of) for iid, p in snapshot.points.items()
+    }
+    max_td = max(td_by_id.values(), default=0)
+    oldest = sorted(iid for iid, n in td_by_id.items() if n == max_td and max_td > 0)[:8]
+    note = (
+        f"가장 오래된 재료는 {max_td}거래일 전 봉이다 (주말 제외, 각 시장 휴장일은 반영하지 않아 실제 거래일 수의 상한). "
+        + (f"해당 계열: {', '.join(oldest)}." if oldest else "")
+    ) if max_td > 0 else "모든 재료가 오늘 거래일 안의 값이다 (초 단위 나이는 max_freshness_sec)."
     status = llm_status or ("disabled" if not llm_enabled else "ok")
     judgment, judgment_note = news_judgment(events, status)
     return DataHealth(
@@ -281,6 +292,9 @@ def build_data_health(
         missing=sorted(snapshot.missing),
         stale=sorted(stale),
         max_freshness_sec=max_fresh,
+        max_freshness_trading_days=max_td,
+        oldest_instruments=oldest,
+        freshness_note=note,
         news_items=len(news_items),
         llm_status=status,  # type: ignore[arg-type]
         news_judgment=judgment,  # type: ignore[arg-type]

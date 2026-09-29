@@ -16,11 +16,28 @@ const JUDGMENT: Record<DataHealth["news_judgment"], { label: string; color: stri
   api: { label: "뉴스 판단 API", color: "var(--ok)" },
 };
 
-function freshness(sec: number): string {
+function freshnessSec(sec: number): string {
   if (sec < 60) return `${sec}초 전`;
   if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
   const h = Math.floor(sec / 3600);
   return h < 48 ? `${h}시간 전` : `${Math.floor(h / 24)}일 전`;
+}
+
+/**
+ * 배지의 나이. 가장 오래된 재료가 하루 이상 전 봉이면 **거래일**로 센다 — 금요일 봉을 월요일 아침에
+ * "3일 전" 이라 부르지 않기 위해서다. 같은 거래일 안이면 초·분·시간. 옛 캡처(필드 없음)는 초 기준.
+ */
+export function freshness(health: Pick<DataHealth, "max_freshness_sec" | "max_freshness_trading_days">): string {
+  const td = health.max_freshness_trading_days;
+  if (td !== undefined && td >= 1) return `${td}거래일 전`;
+  return freshnessSec(health.max_freshness_sec);
+}
+
+export function freshnessTitle(health: DataHealth): string {
+  const parts = [`가장 오래된 재료 기준. 초로는 ${freshnessSec(health.max_freshness_sec)}.`];
+  if (health.freshness_note) parts.push(health.freshness_note);
+  else if (health.oldest_instruments?.length) parts.push(`해당 계열: ${health.oldest_instruments.join(", ")}`);
+  return parts.join("\n");
 }
 
 /**
@@ -51,8 +68,8 @@ export function DataModeBadge({
         {LABEL[health.mode]}
         {scenario ? ` · ${scenario}` : ""}
       </span>
-      <span className="num" style={{ fontSize: 11, color: "var(--muted)" }}>
-        {freshness(health.max_freshness_sec)}
+      <span className="num" style={{ fontSize: 11, color: "var(--muted)" }} title={freshnessTitle(health)} data-testid="freshness">
+        {freshness(health)}
       </span>
       <span className="num" style={{ fontSize: 11, color: "var(--faint)" }}>
         커버리지 {(health.coverage * 100).toFixed(0)}% ({health.available_instruments}/

@@ -304,6 +304,10 @@ export interface DataHealth {
   missing: string[];
   stale: string[];
   max_freshness_sec: number;
+  /** 가장 오래된 재료의 나이를 거래일(평일)로 센 값. 주말 제외, 휴장일 미반영이라 상한. 옛 캡처에는 없다 */
+  max_freshness_trading_days?: number;
+  oldest_instruments?: string[];
+  freshness_note?: string;
   news_items: number;
   llm_status: "disabled" | "ok" | "degraded" | "failed";
   /** 뉴스를 누가 판단했는가. none 룰 태깅만 / manual Claude 수기 / api 자동. */
