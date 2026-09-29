@@ -38,7 +38,7 @@ export default function App() {
   const { data: investmentForView } = useInvestment(scenario, mode !== null && activeCheck !== null);
   const { regime: oilRegime } = useOilRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "oil_regime");
   const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
-  const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "ai_regime");
+  const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
 
   useEffect(() => {
     const c = new AbortController();

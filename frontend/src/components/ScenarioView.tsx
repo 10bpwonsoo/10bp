@@ -95,9 +95,10 @@ export function ScenarioView({ check, snapshot, history, investment, oilRegime =
   check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null; ratesRegime?: RatesRegime | null; aiRegime?: AiRegime | null;
 }) {
   // AI 탭 — AI Trade Intelligence. 시장 온도·공포/탐욕은 Diagnostics 의 맥락으로 내려간다.
-  if (check.focus === "ai_regime") {
-    if (!aiRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>AI 트레이드 판별을 불러오는 중… (바스켓 32종목 계열 수집)</div></section></div>;
-    return <AiRegimeView regime={aiRegime} snapshot={snapshot} check={check} history={history} />;
+  // AI 센티 = 기본 화면(ai_regime), AI 센티2 = 펀더멘털 확인·밸류체인·종목 영향도까지 편 확장 화면(ai_regime_full). 데이터는 같은 응답이다.
+  if (check.focus === "ai_regime" || check.focus === "ai_regime_full") {
+    if (!aiRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>AI 트레이드 판별을 불러오는 중… (바스켓 계열 수집)</div></section></div>;
+    return <AiRegimeView regime={aiRegime} snapshot={snapshot} check={check} history={history} extended={check.focus === "ai_regime_full"} />;
   }
   // 물가 탭 — Inflation & Rates Intelligence. Regime → Rate Driver → Inflation Components → Curve → Yield Decomposition → Confirmation → Divergence → Implication → Triggers → Diagnostics.
   if (check.focus === "rates_regime") {

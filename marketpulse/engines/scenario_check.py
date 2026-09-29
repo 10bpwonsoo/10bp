@@ -84,7 +84,9 @@ def check_scenario(
     *,
     extra_z: ExtraZ | None = None,
     config_dir: Path | None = None,
+    check_name: str | None = None,
 ) -> ScenarioCheck:
+    """check_name 이 있으면 설정의 그 항목(같은 모의 시나리오를 다른 탭으로 다시 쓰는 경우 — 예: ai_sentiment2)을 쓴다."""
     cfg = load_scenario_checks(config_dir)
     th = cfg.get("thresholds", {})
     quiet_abs = float(th.get("quiet_abs", 0.3))
@@ -92,7 +94,8 @@ def check_scenario(
     quiet_w = float(th.get("quiet_weight", 0.3))
     agree_ratio = float(th.get("agree_ratio", 0.5))
     windows = [int(w) for w in th.get("windows", [1, 5])]
-    spec = (cfg.get("checks") or {}).get(scenario.name, {}) or {}
+    check_name = check_name or scenario.name
+    spec = (cfg.get("checks") or {}).get(check_name, {}) or {}
     label = StateLabel(spec["label"]) if spec.get("label") else None
     extra = extra_z or {}
 
@@ -214,7 +217,7 @@ def check_scenario(
             "일치도는 |기대 z| 를 가중치로 한 비율의 평균이며 결측은 분모에서 뺀다. 예측이 아니라 '지금 시장이 그 그림과 얼마나 닮았나' 다. "
             "판정은 여전히 state_rules 의 require 룰이 정한다 — 일치도가 높아도 require 가 안 걸리면 판정은 바뀌지 않는다.")
     return ScenarioCheck(
-        name=scenario.name, title=scenario.title or scenario.name, description=scenario.description, as_of=market.as_of,
+        name=check_name, title=str(spec.get("title") or scenario.title or scenario.name), description=scenario.description, as_of=market.as_of,
         label=label, focus=str(spec.get("focus", "rule")), factor=spec.get("factor"), commodities=[str(c) for c in (spec.get("commodities") or [])],  # type: ignore[arg-type]
         match_score=score, match_label=match_label, evaluated=evaluated,
         agree=counts["agree"], weak=counts["weak"], oppose=counts["oppose"], quiet_ok=counts["quiet_ok"], quiet_broken=counts["quiet_broken"],
@@ -233,11 +236,12 @@ def check_scenarios(
     by_name = {s.name: s for s in scenarios}
     out: list[ScenarioCheck] = []
     for name in order:
-        sc = by_name.get(name)
+        base = str(((cfg.get("checks") or {}).get(name) or {}).get("scenario") or name)  # 같은 시나리오를 다른 탭으로 다시 쓸 수 있다
+        sc = by_name.get(base)
         if sc is None:
-            logger.warning("scenario_checks.yaml 의 %s 시나리오 파일이 없다", name)
+            logger.warning("scenario_checks.yaml 의 %s 시나리오 파일이 없다", base)
             continue
-        out.append(check_scenario(sc, market, state, themes, instruments_by_id, extra_z=extra_z, config_dir=config_dir))
+        out.append(check_scenario(sc, market, state, themes, instruments_by_id, extra_z=extra_z, config_dir=config_dir, check_name=name))
     return out
 
 

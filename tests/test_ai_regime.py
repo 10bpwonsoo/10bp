@@ -164,6 +164,10 @@ class TestApi:
     def test_ai_tab_focus_is_ai_regime(self, client):
         checks = client.get("/api/v1/scenario-check?scenario=ai_sentiment").json()
         assert next(c for c in checks if c["name"] == "ai_sentiment")["focus"] == "ai_regime"
+        # AI 센티2 — 같은 시나리오를 확장 화면으로 한 번 더. 서명·일치도는 같고 탭 이름·focus 만 다르다
+        c2 = next(c for c in checks if c["name"] == "ai_sentiment2")
+        assert c2["focus"] == "ai_regime_full" and c2["title"].startswith("AI 센티2")
+        assert c2["match_score"] == next(c for c in checks if c["name"] == "ai_sentiment")["match_score"]
 
 
 class TestValueChain:

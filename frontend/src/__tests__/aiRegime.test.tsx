@@ -13,6 +13,7 @@ const snapshot = snap as unknown as IntelligenceSnapshot;
 const history = hist as unknown as MarketStateHistory;
 const regime = regimeFx as unknown as AiRegime;
 const check: ScenarioCheck = { ...(checksFx as unknown as ScenarioCheck[]).find((c) => c.name === "ai_sentiment")!, focus: "ai_regime" };
+const check2: ScenarioCheck = { ...check, name: "ai_sentiment2", title: "AI 센티2 — 확장", focus: "ai_regime_full" };
 
 describe("AiRegimeView", () => {
   it("최상단이 AI TRADE REGIME 이고 상대 z·지배 driver·스트레스를 말하며, 시장 온도/냉각(공포) 표현은 핵심 화면에 없다", () => {
@@ -29,9 +30,16 @@ describe("AiRegimeView", () => {
   });
 
   it("섹션 순서가 지정된 대로이고 driver 5 · 그룹 7(바스켓 6 + 국내) · breadth 3 지표 · 2×2 · 내러티브 driver 7 · 매크로 행 · 전환 조건 3~5", () => {
-    const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+    const { container, unmount } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Fundamental Transmission", "AI / Semi / Infra / Software Leadership", "Semiconductor Fundamental Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
+    unmount();
+    // AI 센티(기본) 는 확장 블록 없이 원래 순서
+    const basic = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+    expect(Array.from(basic.container.querySelectorAll(".panel-title")).map((e) => e.textContent)).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Leadership", "AI Breadth", "Narrative × Price", "Macro Confirmation", "AI-specific Stress", "What Changes The View?", "Diagnostics"]);
+    expect(basic.queryByTestId("ai-status-strip")).toBeNull();
+    basic.unmount();
+    render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     expect(screen.getAllByTestId("ai-driver").length).toBe(5);
     const groups = screen.getAllByTestId("ai-group");
     expect(groups.length).toBe(7);
@@ -43,7 +51,7 @@ describe("AiRegimeView", () => {
     expect(quads.length).toBe(4);
     expect(quads.filter((q) => q.getAttribute("data-on") === "1").length).toBe(regime.narrative.quadrant === "unclear" ? 0 : 1);
     expect(screen.getAllByTestId("ai-narrative-driver").length).toBe(7);
-    expect(container.querySelectorAll('.ai-mac[data-status="EXPLAINS"]').length).toBe(regime.macro.rows.filter((r) => r.status === "EXPLAINS").length);
+    expect(document.querySelectorAll('.ai-mac[data-status="EXPLAINS"]').length).toBe(regime.macro.rows.filter((r) => r.status === "EXPLAINS").length);
     expect(screen.getByTestId("ai-stress-level").textContent).toBe(regime.stress.level);
     const trig = screen.getAllByTestId("ai-trigger");
     expect(trig.length).toBeGreaterThanOrEqual(3);
@@ -63,8 +71,8 @@ describe("AiRegimeView", () => {
     expect(mainText).not.toMatch(/require/);
   });
 
-  it("확장 층: 상태 띠에 FUNDAMENTAL CONFIRMATION 이 있고, 전파 체인 9단계, 밸류체인 10세그먼트, 반도체 영역 6 + 메모리 6행(변화율 없는 행은 N/A), 종목 4축, 레이더 5버킷(이유 포함), 뉴스→종목, 기대 vs 펀더멘털 10행, What Matters ≤5", () => {
-    const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+  it("확장 층(AI 센티2): 상태 띠에 FUNDAMENTAL CONFIRMATION 이 있고, 전파 체인 9단계, 밸류체인 10세그먼트, 반도체 영역 6 + 메모리 6행(변화율 없는 행은 N/A), 종목 4축, 레이더 5버킷(이유 포함), 뉴스→종목, 기대 vs 펀더멘털 10행, What Matters ≤5", () => {
+    const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     expect(screen.getByTestId("ai-fundamental-confirmation").textContent).toContain(regime.fundamental_confirmation.level);
     expect(screen.getByTestId("ai-regime-subtitle").textContent).toContain("FUNDAMENTALS");
     expect(screen.getByTestId("ai-summary").textContent?.length).toBeGreaterThan(20);
@@ -92,7 +100,11 @@ describe("AiRegimeView", () => {
   it("ScenarioView 는 AI 탭(focus=ai_regime)에서 이 화면을 그리고, 아직 못 받았으면 로딩 문구를 낸다", () => {
     const { unmount } = render(<ScenarioView check={check} snapshot={snapshot} history={history} investment={null} aiRegime={regime} />);
     expect(screen.getByTestId("ai-regime")).toBeInTheDocument();
+    expect(screen.queryByTestId("ai-transmission")).toBeNull();
     unmount();
+    const r2 = render(<ScenarioView check={check2} snapshot={snapshot} history={history} investment={null} aiRegime={regime} />);
+    expect(r2.getByTestId("ai-transmission")).toBeInTheDocument();
+    r2.unmount();
     render(<ScenarioView check={check} snapshot={snapshot} history={history} investment={null} />);
     expect(screen.getByText(/불러오는 중/)).toBeInTheDocument();
   });

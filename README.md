@@ -376,9 +376,11 @@ regime 맥락, 구성원 표, 서명 대조, 접이식) 순이다. 엔드포인�
 confirmed_risk_on → confirmed_risk_off → price_resilience → mixed 이고 임계는 전부 설정에 있다.
 확률 표현은 쓰지 않는다. 시장 판정·온도계는 맥락 한 줄로만 붙는다.
 
-#### AI 탭 확장 — Fundamental Confirmation Layer · 밸류체인 · 종목 영향도 (2026-09-29)
+#### AI 센티2 탭 — Fundamental Confirmation Layer · 밸류체인 · 종목 영향도 (2026-09-29)
 
-기존 AI TRADE REGIME 구조는 그대로 두고, 반도체·메모리·HBM 데이터를 **업사이클 판정이 아니라 AI 투자
+`AI 센티` 탭은 위 AI Trade Intelligence 화면 그대로이고, `AI 센티2` 탭(`scenario_checks.yaml` 의
+`ai_sentiment2`, 기준 시나리오 `ai_sentiment`, focus `ai_regime_full`)이 같은 응답 위에 아래 블록을 더 편
+확장 화면이다. 기존 AI TRADE REGIME 구조는 그대로 두고, 반도체·메모리·HBM 데이터를 **업사이클 판정이 아니라 AI 투자
 사이클을 검증하는 확인 데이터**로 흡수했다(업사이클 %, 신호 n/4, 서명 일치도, require/support 는 쓰지
 않는다). `engines/ai_value_chain.py` 가 같은 입력 위에 다음을 더한다 — REGIME 카드의 상태 띠(Narrative ·
 AI Relative Strength · Price · Semiconductor Confirm. · AI Infra · Software · Breadth · Macro · Fundamental
