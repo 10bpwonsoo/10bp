@@ -512,3 +512,46 @@ export interface MarketStateHistory {
   band_summary: string;
   note: string;
 }
+
+/** 시나리오 점검 — 모의 시나리오의 충격 서명을 실데이터에 대어 본 결과 (모의 탭을 실데이터로 바꾼 것) */
+export type ScenarioRowStatus = "agree" | "weak" | "oppose" | "quiet_ok" | "quiet_broken" | "missing";
+export interface ScenarioCheckRow {
+  instrument_id: string;
+  label: string;
+  expected_z: number;
+  actual_z_1d: number | null;
+  actual_z_5d: number | null;
+  used_z: number | null;
+  used_window: number | null;
+  ratio: number;
+  weight: number;
+  status: ScenarioRowStatus;
+  layer: "market" | "alternative" | "stock" | "theme";
+}
+export interface ScenarioThemeRef { theme_id: string; name: string; theme_score: number; news_sentiment: number | null }
+export interface ScenarioCheck {
+  name: string;
+  title: string;
+  description: string;
+  as_of: string;
+  label: StateLabel | null;
+  match_score: number;
+  match_label: string;
+  evaluated: number;
+  agree: number;
+  weak: number;
+  oppose: number;
+  quiet_ok: number;
+  quiet_broken: number;
+  missing: string[];
+  rows: ScenarioCheckRow[];
+  hypothesis_score: number | null;
+  require_expression: string | null;
+  require_passed: boolean | null;
+  require_observed: number | null;
+  current_label: StateLabel;
+  current_confidence: number;
+  themes: ScenarioThemeRef[];
+  verdict: string;
+  note: string;
+}

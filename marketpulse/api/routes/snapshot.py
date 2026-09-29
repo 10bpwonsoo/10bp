@@ -17,7 +17,8 @@ from ...models.snapshot import IntelligenceSnapshot, MovingItem
 from ...models.state import MarketState
 from ...models.theme import ThemeState
 from ...models.state_history import MarketStateHistory
-from ..deps import get_state_history_service, load_snapshot, resolve_settings
+from ...models.scenario_check import ScenarioCheck
+from ..deps import get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -49,6 +50,12 @@ def get_market_state_history(
 ) -> MarketStateHistory:
     """최근 한 달의 Market State 흐름. 같은 시계열을 날짜별로 잘라 같은 엔진으로 다시 판정한 값."""
     return get_state_history_service().get(settings, days=days)
+
+
+@router.get("/scenario-check", response_model=list[ScenarioCheck])
+def get_scenario_check(settings: SettingsDep) -> list[ScenarioCheck]:
+    """모의 시나리오의 충격 서명을 지금 데이터에 대어 본 결과. 모의 탭을 실데이터로 바꾼 것 — 예측이 아니다."""
+    return get_scenario_check_service().get(settings)
 
 
 @router.get("/themes", response_model=list[ThemeState])

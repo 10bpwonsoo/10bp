@@ -1,0 +1,46 @@
+# 시나리오 점검 — 모의 시나리오의 '충격 서명(shocks)' 을 실데이터에 대어 본다.
+# 화면의 물가 충격·AI 센티·유가 급등·메모리 업사이클 탭은 이제 모의 데이터를 보여주지 않고,
+# 실데이터가 그 시나리오와 얼마나 닮았는지를 보여준다. 숫자는 전부 여기 규칙으로 계산되고
+# 화면은 만들지 않는다.
+checks:
+  # theme_conditions: 가격 z 로는 못 잡는 서명 — 테마 뉴스 톤·가격 점수(−100~+100) 조건.
+  #   expected 가 0 이면 '조용해야 한다' 조건이고 tolerance(같은 단위) 안이면 일치.
+  #   weight 는 z 서명(|기대 z|)과 같은 저울에 올리기 위한 값이다.
+  inflation_shock:
+    label: INFLATION_SHOCK          # 이 시나리오가 가정하는 판정 라벨. null 이면 라벨 없는 시나리오
+    themes: [inflation, oil, rates]
+    theme_conditions:
+      - {theme: inflation, field: news_sentiment, expected: 30, weight: 1.5}
+  oil_spike:
+    label: GEOPOLITICAL_RISK
+    themes: [oil, geopolitical_risk, energy]
+    theme_conditions:
+      - {theme: oil, field: news_sentiment, expected: 30, weight: 1.5}
+  ai_sentiment:
+    label: null
+    themes: [ai, semiconductor]
+    theme_conditions:
+      - {theme: ai, field: news_sentiment, expected: 35, weight: 2.0}   # 뉴스는 뜨겁고
+      - {theme: ai, field: theme_score, expected: 0, tolerance: 15, weight: 1.5}   # 가격은 제자리
+      - {theme: semiconductor, field: theme_score, expected: 0, tolerance: 15, weight: 1.0}
+  memory_upcycle:
+    label: null
+    themes: [semiconductor, ai]
+    theme_conditions:
+      - {theme: semiconductor, field: news_sentiment, expected: 30, weight: 1.5}
+      - {theme: semiconductor, field: theme_score, expected: 30, weight: 1.5}
+  baseline:
+    label: NEUTRAL
+    themes: []
+
+thresholds:
+  quiet_abs: 0.3     # |기대 z| 가 이보다 작으면 '조용해야 한다' 는 조건으로 본다
+  quiet_tolerance: 0.5  # 조용 조건: |실제 z| 가 이 안이면 완전 일치, 1.5 이상이면 0
+  quiet_weight: 0.3  # 조용 조건의 가중치 (충격 조건은 |기대 z| 가 가중치)
+  agree_ratio: 0.5   # 같은 방향이고 기대 크기의 이 비율 이상이면 '일치', 미만이면 '미달'
+  windows: [1, 5]    # 실데이터는 하루·5일 z 중 같은 방향으로 더 큰 쪽을 쓴다 — 실제 충격은 며칠에 걸친다
+  bands:             # 일치도(0~100) 읽기
+    - {min: 70, label: "강하게 닮음"}
+    - {min: 45, label: "부분적으로 닮음"}
+    - {min: 20, label: "거의 다름"}
+    - {min: 0,  label: "다름"}

@@ -309,3 +309,52 @@ _state_history_service = StateHistoryService(_service)
 
 def get_state_history_service() -> StateHistoryService:
     return _state_history_service
+
+
+class ScenarioCheckService:
+    """시나리오 점검 — 스냅샷 as_of 별로 캐시. 시장 z 는 캐시된 원시 시계열로 다시 만들고,
+    대체·종목 z 는 Investment 캐시가 있을 때만 보탠다(없으면 그 계열은 결측으로 남는다)."""
+
+    def __init__(self, base: SnapshotService, investment: InvestmentService) -> None:
+        self._base = base
+        self._investment = investment
+        self._lock = threading.Lock()
+        self._cache: dict[str, tuple[object, object]] = {}
+
+    def get(self, settings: Settings):
+        from ..adapters.market.scenario import load_scenario
+        from ..config.registry import get_instruments
+        from ..engines.normalize import build_snapshot
+        from ..engines.scenario_check import check_scenarios, extra_z_from_investment
+
+        snapshot = self._base.get(settings)
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        series = self._base.series(settings)
+        instruments = get_instruments().instruments
+        market = build_snapshot(instruments, series, mode=snapshot.mode, as_of=snapshot.as_of,
+                                zscore_window=settings.zscore_window, correlations=False)
+        inv_key = key
+        with self._investment._lock:
+            inv_hit = self._investment._cache.get(inv_key)
+        extra = extra_z_from_investment(inv_hit[0]) if inv_hit else {}
+        scenarios = [load_scenario(settings.mock_dir, n) for n in available_scenarios(settings.mock_dir)]
+        result = check_scenarios(scenarios, market, snapshot.market_state, snapshot.themes,
+                                 {i.id: i for i in instruments}, extra_z=extra)
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_scenario_check_service = ScenarioCheckService(_service, get_investment_service())
+
+
+def get_scenario_check_service() -> ScenarioCheckService:
+    return _scenario_check_service

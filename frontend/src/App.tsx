@@ -3,9 +3,12 @@ import { fetchInfo, fetchScenarios, staticBundle } from "./api/client";
 import type { ApiInfo, DataMode, ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
 import { useStateHistory } from "./api/useStateHistory";
+import { useScenarioChecks } from "./api/useScenarioChecks";
 import { DataModeBadge } from "./components/DataModeBadge";
 import { RefreshButton } from "./components/RefreshButton";
 import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
+import { ScenarioCheckPanel, scoreColor } from "./components/ScenarioCheckPanel";
+import { Panel } from "./components/Panel";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
@@ -23,6 +26,10 @@ export default function App() {
   const bundle = staticBundle();
   // Market State 한 달 히스토리 — 스냅샷 as_of 가 바뀔 때만 다시 받는다.
   const { history: stateHistory } = useStateHistory(scenario, snapshot?.as_of ?? null, mode !== null);
+  // 시나리오 점검 — 모의 탭을 실데이터로 바꾼 것. 데이터를 바꾸지 않고 '지금 시장이 그 시나리오와 얼마나 닮았나' 를 위에 붙인다.
+  const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
+  const [checkName, setCheckName] = useState<string | null>(null);
+  const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
 
   useEffect(() => {
     const c = new AbortController();
@@ -62,6 +69,19 @@ export default function App() {
             onSelect={setScenario}
           />
         ) : null}
+        {checks.length > 0 ? (
+          <div className="sc-tabs" role="group" aria-label="시나리오 점검" data-testid="scenario-tabs">
+            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)}>
+              {mode === "MOCK" ? "판정만" : "실데이터"}
+            </button>
+            {checks.map((c) => (
+              <button key={c.name} type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
+                {c.title.split(" — ")[0]}
+                <span className="num" style={{ color: scoreColor(c.match_score) }}>{c.match_score.toFixed(0)}%</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
         {snapshot ? (
           <DataModeBadge health={snapshot.data_health} scenario={snapshot.scenario} />
         ) : null}
@@ -88,6 +108,13 @@ export default function App() {
 
       {snapshot ? (
         <>
+          {activeCheck ? (
+            <div className="grid" style={{ marginBottom: 0 }}>
+              <Panel title={`시나리오 점검 · ${activeCheck.title.split(" — ")[0]}`} span={3} note={<span className="num" style={{ color: scoreColor(activeCheck.match_score) }}>실데이터 일치도 {activeCheck.match_score.toFixed(0)}% · {activeCheck.match_label}</span>}>
+                <ScenarioCheckPanel check={activeCheck} />
+              </Panel>
+            </div>
+          ) : null}
           <DashboardGrid snapshot={snapshot} history={stateHistory} />
           {/* 기존 대시보드 아래의 신규 영역. 별도 엔드포인트·캐시라 기존 화면이 먼저 뜬다. */}
           <InvestmentSection scenario={scenario} enabled={mode !== null} />

@@ -989,3 +989,31 @@
   .sh-heat-cell { height: 10px; }
   .sh-segs { gap: 6px; }
 }
+
+/* ── 시나리오 점검 (모의 탭 → 실데이터, 2026-09-29) ───────────── */
+.sc { display: flex; flex-direction: column; gap: 8px; }
+.sc-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.sc-score { font-size: 28px; font-weight: 600; line-height: 1; }
+.sc-title { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.sc-sub { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.sc-rule { font-size: 11px; margin-left: auto; color: var(--ink-2); }
+.sc-verdict { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.sc-themes { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--ink-2); }
+.sc-theme b { font-weight: 600; }
+.sc-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 3px 16px; }
+.sc-row { display: grid; grid-template-columns: minmax(0, 1.3fr) 64px minmax(40px, 1fr) 76px 34px; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; border-bottom: 1px solid var(--rule-soft); }
+.sc-row.missing { color: var(--faint); }
+.sc-r-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+.sc-layer { font-style: normal; font-size: 9px; color: var(--faint); margin-left: 4px; border: 1px solid var(--rule-soft); padding: 0 3px; border-radius: 2px; }
+.sc-r-exp { color: var(--muted); text-align: right; }
+.sc-r-bar { display: block; height: 6px; background: color-mix(in oklab, var(--ink) 8%, transparent); border-radius: 1px; overflow: hidden; }
+.sc-r-bar i { display: block; height: 100%; }
+.sc-r-act { text-align: right; }
+.sc-r-act small { color: var(--faint); font-size: 9px; }
+.sc-r-status { text-align: right; }
+.sc-note { font-size: 10.5px; color: var(--faint); line-height: 1.45; }
+.sc-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.sc-tab { font-size: 11px; padding: 3px 9px; border-radius: var(--radius); border: 1px solid var(--rule); background: transparent; color: var(--muted); cursor: pointer; }
+.sc-tab[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
+.sc-tab .num { margin-left: 5px; }
+@media (max-width: 760px) { .sc-rule { margin-left: 0; } .sc-rows { grid-template-columns: 1fr; } }
