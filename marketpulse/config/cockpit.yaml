@@ -13,9 +13,9 @@ clauses:
   US_HY_OAS: ["신용스프레드 확대", "신용스프레드 축소"]
   VIX: ["변동성 상승", "변동성 하락"]
   MOVE: ["채권 변동성 상승", "채권 변동성 진정"]
-  SPX: ["미국 주식 약세", "미국 주식 강세"]
-  NDX: ["나스닥 약세", "나스닥 강세"]
-  KOSPI: ["코스피 약세", "코스피 강세"]
+  SPX: ["미국 주식 강세", "미국 주식 약세"]
+  NDX: ["나스닥 강세", "나스닥 약세"]
+  KOSPI: ["코스피 강세", "코스피 약세"]
   US10Y: ["장기금리 상승", "장기금리 하락"]
   US2Y: ["단기금리 상승", "단기금리 하락"]
   DXY: ["달러 강세", "달러 약세"]
@@ -24,38 +24,41 @@ clauses:
   BRENT: ["유가 상승", "유가 하락"]
   WTI: ["유가 상승", "유가 하락"]
   COPPER: ["구리 상승", "구리 하락"]
+#: clauses 는 [양수 z 문장, 음수 z 문장]. 문장 = "A·B에 C까지 {tail}" / "A·B가 {tail}"
 regime_tail:
-  LIQUIDITY_STRESS: "이 겹친 유동성 경색 · broad risk-off 환경이다."
-  RISK_OFF: "이 겹친 위험회피 환경이다."
-  RISK_ON: "이 이어지는 위험선호 환경이다."
-  INFLATION_SHOCK: "이 겹친 물가 충격 환경이다."
-  GROWTH_SHOCK: "이 겹친 성장 충격 환경이다."
-  POLICY_DRIVEN: "이 겹친 정책 주도 환경이다."
-  GEOPOLITICAL_RISK: "이 겹친 지정학 위험 환경이다."
-  NEUTRAL: "이 있지만 어느 판정 룰도 걸리지 않은 혼조 환경이다."
-#: 절 부호 반전 — SPX 하락은 '약세'(index 1 이 음수 방향 문장이므로 clauses 는 [양수 z 문장, 음수 z 문장] 순서)
+  LIQUIDITY_STRESS: "겹친 유동성 경색 · broad risk-off 환경이다."
+  RISK_OFF: "겹친 위험회피 환경이다."
+  RISK_ON: "이어지는 위험선호 환경이다."
+  INFLATION_SHOCK: "겹친 물가 충격 환경이다."
+  GROWTH_SHOCK: "겹친 성장 충격 환경이다."
+  POLICY_DRIVEN: "겹친 정책 주도 환경이다."
+  GEOPOLITICAL_RISK: "겹친 지정학 위험 환경이다."
+  NEUTRAL: "있지만 어느 판정 룰도 걸리지 않은 혼조 환경이다."
 
 #: TODAY'S MARKET DRIVERS 후보 — 증거표(부호·가중)로 강도, 확인·지속·뉴스로 중요도를 매긴다. 상위 max 개.
 drivers:
   max: 5
   min_strength: 0.25
   min_coverage: 0.5
-  weights: {strength: 1.0, coverage: 0.4, confirmation: 0.15, persistence: 0.10, news: 0.15}
+  weights: {strength: 1.0, coverage: 0.4, confirmation: 0.15, persistence: 0.10, news: 0.15}   # 합 × impact(시장 영향도, 후보별)
   news_ref: 40
   candidates:
     credit_stress:
+      impact: 1.0
       label: "CREDIT STRESS"
       label_ko: "신용 스트레스"
       evidence: [{id: US_HY_OAS, sign: 1, weight: 1.5}, {id: VIX, sign: 1, weight: 1.0}, {id: SPX, sign: -1, weight: 1.0}]
       why: {up: "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.", down: "신용여건 완화가 위험자산을 지지한다."}
       next: {up: "HY OAS 가 추가 확대되는가", down: "HY OAS 축소가 이어지는가"}
     volatility_regime:
+      impact: 0.85
       label: "VOLATILITY"
       label_ko: "변동성"
       evidence: [{id: VIX, sign: 1, weight: 1.0}, {id: MOVE, sign: 1, weight: 1.0}, {id: VIX_RV_SPX, sign: 1, weight: 0.5}]
       why: {up: "주식·채권 변동성이 같이 오른다 — 포지션 축소 압력이 자산군을 넘어 번진다.", down: "변동성이 가라앉으며 위험 감수 여력이 회복된다."}
       next: {up: "VIX·MOVE 상승이 이어지는가", down: "변동성 진정이 유지되는가"}
     equity_beta:
+      impact: 0.9
       label: "EQUITY DIRECTION"
       label_ko: "주식 방향"
       evidence: [{id: SPX, sign: 1, weight: 1.0}, {id: NDX, sign: 1, weight: 0.8}, {id: RUT, sign: 1, weight: 0.6}, {id: KOSPI, sign: 1, weight: 0.8}]
@@ -63,6 +66,7 @@ drivers:
       why: {up: "지수가 넓게 오른다 — 위험선호가 주식으로 들어온다.", down: "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다."}
       next: {up: "지수 상승이 breadth 를 동반하는가", down: "지수 하락이 확산되는가"}
     long_end_rates:
+      impact: 1.0
       label: "LONG-END RATES"
       label_ko: "장기금리"
       evidence: [{id: US10Y, sign: 1, weight: 1.0}, {id: US30Y, sign: 1, weight: 1.0}, {id: TIPS10Y, sign: 1, weight: 0.8}]
@@ -72,6 +76,7 @@ drivers:
       why_be_up: {up: "기대인플레이션이 같이 올라 물가 리프라이싱 성격의 금리 상승이다."}
       next: {up: "US 10Y 가 고점을 갱신하는가", down: "장기금리 하락이 이어지는가"}
     fed_path:
+      impact: 0.7
       label: "FED PATH / FRONT END"
       label_ko: "연준 경로·단기금리"
       evidence: [{id: US2Y, sign: 1, weight: 1.0}, {id: CURVE_2S10S, sign: -1, weight: 0.8}]
@@ -79,6 +84,7 @@ drivers:
       why: {up: "단기금리가 오르며 인하 기대가 밀린다.", down: "단기금리 하락 — 시장이 완화 경로를 당겨 잡는다. 장기물과 갈리면 커브 스티프닝이다."}
       next: {up: "2년물 상승이 이어지는가", down: "2년물 하락(완화 기대)이 유지되는가"}
     usd:
+      impact: 0.8
       label: "US DOLLAR"
       label_ko: "달러"
       evidence: [{id: DXY, sign: 1, weight: 1.0}, {id: USDKRW, sign: 1, weight: 0.8}, {id: USDJPY, sign: 1, weight: 0.5}]
@@ -86,6 +92,7 @@ drivers:
       why: {up: "달러 강세 — 글로벌 위험자산과 원화 자산에 역풍.", down: "달러 약세 — 신흥국·원화 자산에 순풍."}
       next: {up: "달러 강세가 원달러로 전이되는가", down: "달러 약세가 이어지는가"}
     oil:
+      impact: 0.8
       label: "OIL"
       label_ko: "유가"
       evidence: [{id: BRENT, sign: 1, weight: 1.0}, {id: WTI, sign: 1, weight: 0.8}, {id: XLE, sign: 1, weight: 0.5}]
@@ -93,12 +100,14 @@ drivers:
       why: {up: "유가 상승이 물가 기대와 에너지 주식으로 번진다.", down: "유가 하락 — 항공·운송에 순풍, 에너지·정유에 역풍. 기대인플레이션 전이는 따로 본다."}
       next: {up: "유가 상승이 기대인플레이션으로 전달되는가", down: "유가 하락이 기대인플레이션으로 전달되는가"}
     gold_real:
+      impact: 0.6
       label: "GOLD / REAL RATES"
       label_ko: "금·실질금리"
       evidence: [{id: GOLD, sign: -1, weight: 1.0}, {id: TIPS10Y, sign: 1, weight: 1.0}]
       why: {up: "실질금리 상승이 금을 누른다 — 안전자산이 아니라 디레버리징 매도.", down: "실질금리 하락과 금 강세 — 안전자산 수요."}
       next: {up: "금 급락이 실질금리 상승과 함께 이어지는가", down: "금 강세가 유지되는가"}
     ai_semi_relative:
+      impact: 0.75
       label: "AI / SEMI RELATIVE"
       label_ko: "AI·반도체 상대강도"
       evidence: [{id: AI_REL_NDX, sign: 1, weight: 1.2}, {id: SOXX, sign: 1, weight: 0.8}, {id: AI_EQUIPMENT_REL, sign: 1, weight: 0.8}]
@@ -107,6 +116,7 @@ drivers:
       why: {up: "시장 Risk-Off 에도 AI infrastructure 일부(장비·패키징)는 상대강도를 유지한다.", down: "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다."}
       next: {up: "AI/Semi 상대강도가 유지되는가", down: "AI 상대 약세가 −1σ 아래로 깊어지는가"}
     korea:
+      impact: 0.75
       label: "KOREA"
       label_ko: "한국 시장"
       evidence: [{id: KOSPI, sign: 1, weight: 1.0}, {id: KOSDAQ, sign: 1, weight: 0.6}, {id: USDKRW, sign: -1, weight: 0.6}, {id: KR_FOREIGN_NET, sign: 1, weight: 0.8}]
@@ -114,6 +124,7 @@ drivers:
       why: {up: "국내 지수·원화가 같이 강하다.", down: "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다."}
       next: {up: "외국인 매수 전환이 이어지는가", down: "외국인 한국 주식 매도가 지속되는가"}
     china:
+      impact: 0.6
       label: "CHINA"
       label_ko: "중국"
       evidence: [{id: HSCEI, sign: 1, weight: 1.0}, {id: COPPER, sign: 1, weight: 0.7}, {id: USDCNH, sign: -1, weight: 0.5}]
@@ -147,10 +158,12 @@ key_divergences_max: 2
 leadership:
   benchmark: SPX
   sectors: [XLK, XLE, XLF, XLU, XLY, SOXX, ITA, JETS]
+  sector_dedupe: {SOXX: semiconductor, ITA: defense, XLE: energy}   # 같은 것을 재는 테마가 있으면 섹터 줄은 뺀다
+  equity_only: true                                                   # 가격 리더십은 주식 계열로만 잰다(금리·원자재 테마 제외)
   leaders_max: 4
   laggards_max: 3
   min_rel: 0.3
-  exclude_themes: [korea_governance, shareholder_return]     # 수급·지배구조는 가격 리더십이 아니다
+  exclude_themes: [korea_governance, shareholder_return, rates, inflation, usd]   # 수급·지배구조·금리·물가·환율 테마는 주식 리더십이 아니다
 theme_pulse:
   max: 6
   price_ref: 30     # price_momentum(−100~100) → ↑ ≥ 15, ↑↑ ≥ 45
@@ -182,8 +195,8 @@ stock_radar:
 #: LIVE CATALYSTS — 기사 군집(제목 토큰 겹침) + 중요 알림. 중요도 = impact × 확인 가중
 catalysts:
   max: 12
-  levels: {critical: 55, high: 35}        # impact_score 문턱
-  cluster_jaccard: 0.34
+  levels: {critical: 65, high: 45}        # impact_score 문턱
+  cluster_jaccard: 0.25
   alert_types: [REGIME_CHANGE, PRICE_ZSCORE_SPIKE, DATA_RELEASE]
   alert_min_severity: 45
   confidence_bands: [{min: 0.75, label: HIGH}, {min: 0.5, label: MEDIUM}, {min: 0, label: LOW}]

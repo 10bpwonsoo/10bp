@@ -340,6 +340,33 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 앞의 둘은 이 도구의 범위 밖이고, PCA 는 `factors.yaml` 머리말이 거부한 이유
 그대로다("PC1 이 0.7 이라 Risk-Off 입니다" 는 운용자에게 정보가 아니다).
 
+### 실시간 메인 탭 — decision cockpit (2026-09-29)
+
+`실시간` 탭은 22일 히스토리·히트맵·What's Moving·해설·알림 타임라인을 앞에 늘어놓지
+않는다. `engines/cockpit.py` 가 `config/cockpit.yaml` 로 스냅샷·Investment·히스토리·
+AI/금리/유가 판별 결과를 한 화면으로 고른다. 순서는 MARKET NOW(판정·확신 HIGH/MEDIUM/LOW·
+지속 일수·이전 판정·핵심 변수 ≤4·한 문장·작은 스파크라인·커버리지) → TODAY'S MARKET
+DRIVERS(≤5. |z| 순이 아니라 강도 × 커버리지 + 판정 확인 + 지속성 + 뉴스 톤에 driver 별
+시장 영향 가중을 곱한 importance 순. 각 driver 에 증거 z·why·출처) → CROSS-ASSET
+CONFIRMATION(EQUITY/RATES/CREDIT/VOLATILITY/USD/OIL/GOLD 를 판정별 기대 방향과 대조해
+CONFIRM / HEADWIND / DIVERGE / FLAT / MISSING, "n / m assets" 는 확률이 아니다) + KEY
+DIVERGENCE(≤2, 나머지는 View all) → MARKET LEADERSHIP(주식 테마만, 1D | vs market 1W |
+breadth, 리더 ≤4·후미 ≤3) + Compact THEME PULSE(≤6, PRICE/NEWS/REL 화살표) → MARKET →
+STOCK TRANSMISSION(driver → 산업 → 종목, 종목 z 로 CONFIRMED / UNCONFIRMED /
+CONTRADICTED / NO DATA) → STOCK RADAR(6~8, 이유 한 줄과 why/watch 구분) → LIVE
+CATALYSTS(고정 높이·내부 스크롤, 기사 ≤2줄, 클릭하면 WHY / RELATED / PRICE CONFIRMATION,
+CRITICAL/HIGH/MEDIUM 은 시장 영향 점수, 유사 기사는 Jaccard 로 묶고 중요 알림을 합침) →
+EARNINGS / FLOW PULSE(컨센서스가 있을 때만; 빈 "0/36" 은 그리지 않는다) → WHAT MATTERS
+NEXT(≤5, CONFIRMING / WATCH / REVERSING, 달력은 스냅샷에 있는 공식 이벤트만) → Compact
+Watchlist(≤5, NEWS/EPS/PRICE/MACRO/ALT 표식) → Data Status 한 줄. 데스크톱은 40|60 ·
+50|50 · 100 · 50|50 · 60|40 격자, 모바일은 MARKET NOW → TOP 3 DRIVERS → CROSS-ASSET →
+LEADERSHIP → RADAR → CATALYSTS → NEXT 한 열이고 나머지는 접힌다. 기존 Market State·
+히트맵·What's Moving·Why·Impact Map·Alert·Data Health·Investment Intelligence 는
+"Details / Diagnostics" 아래에 그대로 열린다 — 파이프라인은 하나도 지우지 않았다.
+엔드포인트 `GET /api/v1/cockpit`. 보조 계층(AI·금리·유가·히스토리)이 실패해도 cockpit
+은 그 부분만 비운 채 뜨고, cockpit 자체가 실패하면 예전 화면으로 돌아간다. 없는 데이터는
+빈 칸(MISSING / NO DATA)이고 확률 표현은 쓰지 않는다.
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

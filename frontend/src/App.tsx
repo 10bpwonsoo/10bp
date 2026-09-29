@@ -13,6 +13,8 @@ import { useInvestment } from "./api/useInvestment";
 import { useOilRegime } from "./api/useOilRegime";
 import { useRatesRegime } from "./api/useRatesRegime";
 import { useAiRegime } from "./api/useAiRegime";
+import { useCockpit } from "./api/useCockpit";
+import { CockpitView } from "./components/CockpitView";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
@@ -39,6 +41,8 @@ export default function App() {
   const { regime: oilRegime } = useOilRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "oil_regime");
   const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
   const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
+  // 실시간 메인 탭 — decision cockpit. 집계를 못 받으면 기존 대시보드 그리드로 떨어진다(기능 삭제 아님, 기존 화면은 Details 로 이동).
+  const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null);
 
   useEffect(() => {
     const c = new AbortController();
@@ -121,11 +125,20 @@ export default function App() {
             /* 시나리오 탭 — 실데이터 화면을 복제하지 않는다. 그 탭에 어울리는 판정만. */
             <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} ratesRegime={ratesRegime} aiRegime={aiRegime} />
           ) : (
-            <>
-              <DashboardGrid snapshot={snapshot} history={stateHistory} />
-              {/* 기존 대시보드 아래의 신규 영역. 별도 엔드포인트·캐시라 기존 화면이 먼저 뜬다. */}
-              <InvestmentSection scenario={scenario} enabled={mode !== null} />
-            </>
+            cockpit ? (
+              <CockpitView cockpit={cockpit} snapshot={snapshot} history={stateHistory} details={
+                <>
+                  <DashboardGrid snapshot={snapshot} history={stateHistory} />
+                  <InvestmentSection scenario={scenario} enabled={mode !== null} />
+                </>
+              } />
+            ) : (
+              <>
+                <DashboardGrid snapshot={snapshot} history={stateHistory} />
+                {/* 기존 대시보드 아래의 신규 영역. 별도 엔드포인트·캐시라 기존 화면이 먼저 뜬다. */}
+                <InvestmentSection scenario={scenario} enabled={mode !== null} />
+              </>
+            )
           )}
         </>
       ) : (

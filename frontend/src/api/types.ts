@@ -644,3 +644,29 @@ export interface AiRegime {
   transmission: AiTransmission; value_chain: AiValueChain; semi_confirmation: AiSemiConfirmation; stocks: AiStockImpactRow[]; radar: AiRadarBucket[];
   news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
 }
+
+/** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */
+export type CkArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
+export interface CkKeyVariable { id: string; label: string; z: number; arrow: CkArrow; change_display: string }
+export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string }
+export interface CkEvidence { id: string; label: string; z: number | null; display: string; context: boolean; available: boolean }
+export interface CkDriver { key: string; label: string; label_ko: string; direction: "up" | "down"; arrow: CkArrow; strength: number; importance: number; coverage: number; confirmed_by_regime: boolean; persistent: boolean; news_tone: number | null; evidence: CkEvidence[]; why: string; source: "market" | "alternative" }
+export interface CkCrossAssetRow { key: string; label: string; instrument: string; z: number | null; arrow: CkArrow; status: "CONFIRM" | "DIVERGE" | "HEADWIND" | "FLAT" | "NEUTRAL" | "MISSING"; note: string }
+export interface CkKeyDivergence { title: string; meaning: string; severity: number; source: string; assets: string[] }
+export interface CkCrossAsset { rows: CkCrossAssetRow[]; confirm: number; evaluated: number; sentence: string; divergences: CkKeyDivergence[]; total_divergences: number }
+export interface CkLeaderRow { key: string; label: string; kind: "theme" | "sector"; z_1d: number | null; rel_1w: number | null; breadth: number | null; arrow: CkArrow; instruments: number; available: number }
+export interface CkThemePulseRow { theme_id: string; name: string; price: CkArrow; news: CkArrow; rel: CkArrow; theme_score: number; news_sentiment: number | null; price_momentum: number | null; rel_1w: number | null; why: string }
+export interface CkLeadership { leaders: CkLeaderRow[]; laggards: CkLeaderRow[]; all_rows: CkLeaderRow[]; pulse: CkThemePulseRow[]; sentence: string }
+export interface CkTransmissionStock { id: string; name: string; status: "CONFIRMED" | "UNCONFIRMED" | "CONTRADICTED" | "NO DATA"; z: number | null; change_1d: number | null; note: string }
+export interface CkTransmissionChain { driver_key: string; driver_label: string; arrow: CkArrow; mechanism: string; industries: string[]; stocks: CkTransmissionStock[]; confirmed: number; source: "driver" | "commodity" }
+export interface CkRadarStock { id: string; name: string; change_1d: number | null; tag: string; why: string; kind: "why" | "watch"; score: number; signals: string[] }
+export interface CkCatalyst { id: string; time: string; tag: string; headline: string; level: "CRITICAL" | "HIGH" | "MEDIUM"; kind: "news" | "alert"; impact: string; confidence: string; cluster_size: number; cluster_titles: string[]; why: string; related_assets: string[]; related_stocks: string[]; price_confirmation: string; url: string | null; source: string; importance: number }
+export interface CkEarnings { rows: Record<string, string>[]; note: string }
+export interface CkNextItem { text: string; status: "CONFIRMING" | "WATCH" | "REVERSING"; metric: string; current: string; driver_key: string }
+export interface CkUpcoming { date: string; label: string; days_until: number | null; verified: boolean }
+export interface CkWatchRow { id: string; name: string; change_1d: number | null; watch: string; indicators: string[] }
+export interface CkDataStatus { line: string; warnings: string[]; coverage: number; available: number; expected: number; stale: number; max_lag_days: number; news_judgment: string }
+export interface Cockpit {
+  as_of: string; market_now: CkMarketNow; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
+  catalysts: CkCatalyst[]; earnings: CkEarnings | null; what_matters_next: CkNextItem[]; upcoming: CkUpcoming[]; watchlist: CkWatchRow[]; data_status: CkDataStatus; note: string;
+}

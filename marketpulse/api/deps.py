@@ -512,5 +512,51 @@ def get_ai_regime_service() -> AiRegimeService:
     return _ai_regime_service
 
 
+class CockpitService:
+    """실시간 메인 탭 — 기존 층을 모아 우선순위만 매긴다. 어느 층이 없어도(AI 바스켓 수집 실패 등) 나머지로 만든다."""
+
+    def __init__(self, checks: ScenarioCheckService, history: StateHistoryService, ai: AiRegimeService, rates: RatesRegimeService, oil: OilRegimeService) -> None:
+        self._checks, self._history, self._ai, self._rates, self._oil = checks, history, ai, rates, oil
+        self._lock = threading.Lock()
+        self._cache: dict[str, tuple[object, object]] = {}
+
+    def get(self, settings: Settings):
+        from ..engines.cockpit import build_cockpit
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        snapshot, market, instruments, extra, names = self._checks.market_and_extra(settings)
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        with self._checks._investment._lock:
+            inv_hit = self._checks._investment._cache.get(key)
+        inv = inv_hit[0] if inv_hit else None
+        def _try(fn):
+            try:
+                return fn()
+            except Exception:  # 한 층이 죽어도 메인 탭은 떠야 한다
+                logger.exception("cockpit 보조 층 실패")
+                return None
+        history = _try(lambda: self._history.get(settings))
+        ai = _try(lambda: self._ai.get(settings)); rates = _try(lambda: self._rates.get(settings)); oil = _try(lambda: self._oil.get(settings))
+        result = build_cockpit(snapshot, market, {i.id: i for i in instruments}, history=history, investment=inv, ai_regime=ai, rates_regime=rates, oil_regime=oil,
+                               extra_z=extra, extra_names=names, config_dir=settings.config_dir)
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_cockpit_service = CockpitService(_scenario_check_service, _state_history_service, _ai_regime_service, _rates_regime_service, _oil_regime_service)
+
+
+def get_cockpit_service() -> CockpitService:
+    return _cockpit_service
+
+
 def get_rates_regime_service() -> RatesRegimeService:
     return _rates_regime_service

@@ -21,7 +21,8 @@ from ...models.scenario_check import ScenarioCheck
 from ...models.oil_regime import OilRegime
 from ...models.rates_regime import RatesRegime
 from ...models.ai_regime import AiRegime
-from ..deps import get_ai_regime_service, get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+from ...models.cockpit import Cockpit
+from ..deps import get_ai_regime_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -77,6 +78,12 @@ def get_rates_regime(settings: SettingsDep) -> RatesRegime:
 def get_ai_regime(settings: SettingsDep) -> AiRegime:
     """AI Trade Intelligence — AI 바스켓의 Nasdaq/S&P 대비 상대 z, driver 증거 점수, 그룹 리더십, breadth, 내러티브×가격, 매크로 확인, AI 고유 스트레스, 전환 조건."""
     return get_ai_regime_service().get(settings)
+
+
+@router.get("/cockpit", response_model=Cockpit)
+def get_cockpit(settings: SettingsDep) -> Cockpit:
+    """실시간 메인 탭 — REGIME → DRIVERS → CONFIRMATION → LEADERSHIP → TRANSMISSION → CATALYSTS → NEXT. 기존 층의 값을 우선순위대로 고른 것."""
+    return get_cockpit_service().get(settings)
 
 
 @router.get("/themes", response_model=list[ThemeState])
