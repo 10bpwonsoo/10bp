@@ -350,6 +350,27 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 WHAT TO WATCH NEXT(판단이 바뀌는 조건 3~5개) → Diagnostics(룰 판정·서명 대조,
 접이식) 순이다. 엔드포인트 `GET /api/v1/oil-regime`. 판정 룰 엔진은 그대로 돈다.
 
+### 물가 탭 — Inflation & Rates Intelligence (2026-09-29)
+
+물가 탭은 룰 판정("Inflation Shock 아님")을 앞세우지 않는다. `engines/rates_regime.py`
+가 `config/rates_regime.yaml` 의 증거표로 물가 리프라이싱 / 연준 정책 경로 / 성장 /
+기간 프리미엄·공급 / 위험·유동성 다섯 driver 의 점수(−100~+100, 부호 = 장기 명목금리에
+주는 방향)를 내고, 10년 금리 관측에 비춰 CONFIRMED / UNCONFIRMED / CONTRADICTED 를
+붙인다. 지배 driver 는 금리 방향과 맞는 것 중 |점수| 최대다 — 금리와 반대로 가는
+driver 는 아무리 커도 '금리를 움직인 원인' 이 될 수 없다. 레짐 라벨은
+`<지배 driver 헤드라인> — Inflation Repricing Confirmed / Not Confirmed / Contradicted`
+(예: `LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed`).
+화면은 REGIME → WHAT IS DRIVING RATES? → INFLATION PRESSURE(실현 물가·시장 기대·
+에너지·임금/서비스·환율 전가, 계열 없는 것은 0 이 아니라 결측) → TREASURY CURVE
+(2Y/5Y/10Y/30Y, 스티프닝/플래트닝과 주도 구간 자동 판별) → NOMINAL YIELD DECOMPOSITION
+(명목 − 기대인플레 = 실질, TIPS 실측 대조) → MARKET CONFIRMATION(CONFIRMED / MIXED /
+NOT CONFIRMED / MISSING) → KEY DIVERGENCE(설정의 괴리 짝 자동 탐지 + 한 문장) →
+MARKET IMPLICATION(전이 방향, 추천 아님) → WHAT CHANGES THE VIEW(3~5 조건 + 지배
+driver 해제 조건) → Diagnostics(룰 판정·팩터 원점수·서명 대조, 접이식) 순이다.
+엔드포인트 `GET /api/v1/rates-regime`. 확률 표현은 쓰지 않는다 — 증거 크기다.
+계열은 US5Y·BE5Y·TIPS10Y·TIPS5Y(FRED DGS5·T5YIE·DFII10·DFII5)를 더했고 금리 이름은
+"US 10Y Yield" 처럼 명확하게 바꿨다. 실현 물가(CPI·PCE)와 임금·서비스 계열은 아직 없다.
+
 ### 메모리 가격 — DRAM·NAND 현물과 HBM 계약가 추정 (2026-09-29)
 
 `python -m marketpulse.scripts.collect_memory_prices` 가 두 공개 출처를 읽어

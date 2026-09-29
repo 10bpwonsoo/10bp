@@ -436,7 +436,7 @@ class TestEventThemeDirection:
     def test_pipeline_regression(self):
         """
         버그 재현 시나리오. 예전에는 이 지도에서 US 10Y Breakeven ·
-        US 10Y Treasury · Nasdaq 100 이 전부 '예상과 반대' 로 찍혔다.
+        US 10Y Yield · Nasdaq 100 이 전부 '예상과 반대' 로 찍혔다.
         셋 다 감성 부호를 방향으로 쓴 탓이었다.
         """
         snap = run_pipeline(Settings(scenario="inflation_shock"))
@@ -445,7 +445,7 @@ class TestEventThemeDirection:
         )
         flagged = {n.label for n in m.mismatches}
         assert "US 10Y Breakeven" not in flagged
-        assert "US 10Y Treasury" not in flagged
+        assert "US 10Y Yield" not in flagged
         assert "Nasdaq 100" not in flagged
         # 기사는 물가 상승을 말한다. 그 부호가 관계에 그대로 실려야 한다.
         link = next(

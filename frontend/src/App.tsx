@@ -11,6 +11,7 @@ import { scoreColor } from "./components/ScenarioCheckPanel";
 import { ScenarioView } from "./components/ScenarioView";
 import { useInvestment } from "./api/useInvestment";
 import { useOilRegime } from "./api/useOilRegime";
+import { useRatesRegime } from "./api/useRatesRegime";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
@@ -35,6 +36,7 @@ export default function App() {
   // 시나리오 탭의 반도체·원자재 패널용. 실데이터 탭의 Investment 영역은 자기 훅을 그대로 쓴다.
   const { data: investmentForView } = useInvestment(scenario, mode !== null && activeCheck !== null);
   const { regime: oilRegime } = useOilRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "oil_regime");
+  const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
 
   useEffect(() => {
     const c = new AbortController();
@@ -115,7 +117,7 @@ export default function App() {
         <>
           {activeCheck ? (
             /* 시나리오 탭 — 실데이터 화면을 복제하지 않는다. 그 탭에 어울리는 판정만. */
-            <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} />
+            <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} ratesRegime={ratesRegime} />
           ) : (
             <>
               <DashboardGrid snapshot={snapshot} history={stateHistory} />

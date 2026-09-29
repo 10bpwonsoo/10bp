@@ -411,3 +411,37 @@ _oil_regime_service = OilRegimeService(_scenario_check_service)
 
 def get_oil_regime_service() -> OilRegimeService:
     return _oil_regime_service
+
+
+class RatesRegimeService:
+    """금리·물가 원인 판별 — 스냅샷 as_of 별 캐시. 유가 판별과 같은 입력(시장 z + 대체 z + 테마)을 쓴다."""
+
+    def __init__(self, checks: ScenarioCheckService) -> None:
+        self._checks = checks
+        self._lock = threading.Lock()
+        self._cache: dict[str, tuple[object, object]] = {}
+
+    def get(self, settings: Settings):
+        from ..engines.rates_regime import build_rates_regime
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        snapshot, market, instruments, extra, names = self._checks.market_and_extra(settings)
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+        result = build_rates_regime(market, snapshot.themes, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
+        with self._lock:
+            self._cache[key] = (snapshot.as_of, result)
+        return result
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_rates_regime_service = RatesRegimeService(_scenario_check_service)
+
+
+def get_rates_regime_service() -> RatesRegimeService:
+    return _rates_regime_service

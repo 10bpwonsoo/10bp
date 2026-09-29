@@ -107,7 +107,7 @@ Yahoo·stooq·FRED 가 닿으면 자동으로 받는다. 막힌 환경에서만 
 필요하다. `python -m marketpulse.cli probe --mode DELAYED` 로 무엇이
 실패하는지 먼저 확인하고, 실패한 것만 채우면 된다.
 
-### 금리 · 크레딧 — FRED (6종목)
+### 금리 · 크레딧 — FRED (10종목)
 
 `fred.stlouisfed.org/series/<ID>` → Download → CSV. 받은 파일을 이름만
 바꿔 그대로 넣으면 된다.
@@ -115,9 +115,13 @@ Yahoo·stooq·FRED 가 닿으면 자동으로 받는다. 막힌 환경에서만 
 | id | FRED ID | 단위 | 예시값 | 주의 |
 |---|---|---|---|---|
 | `US2Y` | `DGS2` | 퍼센트 | `4.31` | |
+| `US5Y` | `DGS5` | 퍼센트 | `4.05` | Yahoo `^FVX` 도 됨 |
 | `US10Y` | `DGS10` | 퍼센트 | `4.21` | |
 | `US30Y` | `DGS30` | 퍼센트 | `4.48` | |
 | `BE10Y` | `T10YIE` | 퍼센트 | `2.34` | 대체 공급자 없음 |
+| `BE5Y` | `T5YIE` | 퍼센트 | `2.33` | 대체 공급자 없음 |
+| `TIPS10Y` | `DFII10` | 퍼센트 | `2.61` | 10년 실질금리(TIPS). 명목 분해의 실측 대조 |
+| `TIPS5Y` | `DFII5` | 퍼센트 | `2.30` | 5년 실질금리(TIPS) |
 | `US_HY_OAS` | `BAMLH0A0HYM2` | **bp** | `298` | **×100 필요** |
 | `VIX` | `VIXCLS` | 지수 | `16.4` | Yahoo `^VIX` 도 됨 |
 

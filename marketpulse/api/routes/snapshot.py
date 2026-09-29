@@ -19,7 +19,8 @@ from ...models.theme import ThemeState
 from ...models.state_history import MarketStateHistory
 from ...models.scenario_check import ScenarioCheck
 from ...models.oil_regime import OilRegime
-from ..deps import get_oil_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+from ...models.rates_regime import RatesRegime
+from ..deps import get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -63,6 +64,12 @@ def get_scenario_check(settings: SettingsDep) -> list[ScenarioCheck]:
 def get_oil_regime(settings: SettingsDep) -> OilRegime:
     """유가 시장 원인 판별 — 거시·유동성/수요/공급/지정학 driver 의 증거 점수와 확인 상태. 판정 룰이 아니라 증거 집계다."""
     return get_oil_regime_service().get(settings)
+
+
+@router.get("/rates-regime", response_model=RatesRegime)
+def get_rates_regime(settings: SettingsDep) -> RatesRegime:
+    """금리·물가 원인 판별 — 물가 리프라이싱/연준/성장/기간 프리미엄/위험·유동성 driver 의 증거 점수, 커브·명목 분해·크로스에셋 확인. 판정 룰이 아니라 증거 집계다."""
+    return get_rates_regime_service().get(settings)
 
 
 @router.get("/themes", response_model=list[ThemeState])

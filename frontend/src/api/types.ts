@@ -536,7 +536,7 @@ export interface ScenarioCheck {
   as_of: string;
   label: StateLabel | null;
   /** 탭이 앞세우는 판정 — 설정(scenario_checks.yaml)에서 온다 */
-  focus: "rule" | "oil_regime" | "fear_greed" | "semiconductor" | "calm";
+  focus: "rule" | "oil_regime" | "rates_regime" | "fear_greed" | "semiconductor" | "calm";
   factor: string | null;
   commodities: string[];
   match_score: number;
@@ -573,4 +573,25 @@ export interface OilRegime {
   as_of: string; oil_move: OilMove; drivers: OilDriverScore[]; dominant: string; runner_up: string | null; margin: number;
   signal_strength: number; signal_strength_label: string; regime_label: string; headline: string; implication: string;
   confirmations: OilConfirmationRow[]; narrative: OilNarrativeRow[]; watch: OilWatchItem[]; note: string;
+}
+
+/** 금리·물가 원인 판별(Inflation & Rates Intelligence) — 판정 룰이 아니라 증거 집계. 서버(rates_regime.yaml)가 만든다 */
+export type RatesConfirmStatus = "CONFIRMED" | "MIXED" | "NOT_CONFIRMED" | "MISSING";
+export interface RatesEvidenceItem { id: string; label: string; kind: "price" | "news"; layer: "market" | "alternative" | "theme"; value: number | null; window: number | null; sign: number; weight: number; contribution: number; available: boolean; note: string }
+export interface RatesDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: RatesEvidenceItem[]; implication: string }
+export interface RateMove { instrument: string; z: number | null; window: number | null; direction: "up" | "down" | "flat" | "unknown"; change_5d_bp: number | null; level: number | null }
+export interface InflationComponent { key: string; label: string; label_ko: string; score: number | null; status: "up" | "down" | "flat" | "missing"; coverage: number; evidence: RatesEvidenceItem[]; note: string }
+export interface TenorPoint { id: string; label: string; level: number | null; z_1d: number | null; z_5d: number | null; z: number | null; change_5d_bp: number | null }
+export interface CurveView { tenors: TenorPoint[]; spread_z: number | null; shape: "bear_steepening" | "bear_flattening" | "bull_steepening" | "bull_flattening" | "parallel_up" | "parallel_down" | "flat" | "unknown"; lead: "front" | "long" | "parallel" | "none"; sentence: string }
+export interface YieldDecomposition { tenor: string; window_days: number; nominal_bp: number | null; breakeven_bp: number | null; real_implied_bp: number | null; real_measured_bp: number | null; dominant: "real" | "breakeven" | "mixed" | "unknown"; sentence: string; missing: string[] }
+export interface RatesConfirmationRow { key: string; label: string; instruments: string[]; values: Record<string, number | null>; expected_sign: number | null; status: RatesConfirmStatus; note: string }
+export interface KeyDivergence { key: string; label: string; why: string; severity: number; values: Record<string, number | null> }
+export interface ImplicationRow { key: string; label: string; pressure: -1 | 0 | 1 | 2 }
+export interface MarketImplication { driver: string; why: string; rows: ImplicationRow[] }
+export interface TriggerItem { text: string; metric: string; current: string; condition: string; met: boolean; measurable: boolean }
+export interface RatesRegime {
+  as_of: string; rate_move: RateMove; drivers: RatesDriverScore[]; dominant: string; runner_up: string | null; margin: number;
+  signal_strength: number; signal_strength_label: string; inflation_status: DriverStatus; regime_label: string; headline: string; implication: string;
+  inflation_components: InflationComponent[]; curve: CurveView; decomposition: YieldDecomposition[]; confirmations: RatesConfirmationRow[];
+  divergences: KeyDivergence[]; market_implication: MarketImplication; triggers: TriggerItem[]; release: TriggerItem[]; note: string;
 }

@@ -9,7 +9,7 @@ const check: ScenarioCheck = {
   label: "INFLATION_SHOCK", focus: "rule", factor: "Inflation", commodities: [], match_score: 43, match_label: "거의 다름", evaluated: 3, agree: 1, weak: 0, oppose: 1, quiet_ok: 0, quiet_broken: 0,
   missing: ["KR10Y"],
   rows: [
-    { instrument_id: "US10Y", label: "US 10Y Treasury", expected_z: 1.6, actual_z_1d: -0.5, actual_z_5d: 1.4, used_z: 1.4, used_window: 5, ratio: 0.875, weight: 1.6, status: "agree", layer: "market" },
+    { instrument_id: "US10Y", label: "US 10Y Yield", expected_z: 1.6, actual_z_1d: -0.5, actual_z_5d: 1.4, used_z: 1.4, used_window: 5, ratio: 0.875, weight: 1.6, status: "agree", layer: "market" },
     { instrument_id: "BRENT", label: "브렌트 원유", expected_z: 2.1, actual_z_1d: -1.9, actual_z_5d: -0.6, used_z: -1.9, used_window: 1, ratio: 0, weight: 2.1, status: "oppose", layer: "market" },
     { instrument_id: "KR10Y", label: "국고 10년", expected_z: 1.2, actual_z_1d: null, actual_z_5d: null, used_z: null, used_window: null, ratio: 0, weight: 1.2, status: "missing", layer: "market" },
   ],

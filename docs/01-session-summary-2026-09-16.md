@@ -230,6 +230,8 @@
 
 - 유가 탭을 **시장 원인 판별** 화면으로: `config/oil_regime.yaml`(driver 4개의 증거표·부호·가중, 확인표, 내러티브 명사, 감시 임계), `models/oil_regime.py`, `engines/oil_regime.py`(가중 clip 평균, 유가 관측 대비 CONFIRMED/UNCONFIRMED/CONTRADICTED, 브렌트·WTI 불일치면 보류, 확인표, 테마별 한 문장, 감시 조건 ≤5), `GET /api/v1/oil-regime`. 프런트 `OilRegimeView`(REGIME → DRIVER → CONFIRMATION → NARRATIVE vs PRICE → WHAT TO WATCH NEXT → Diagnostics 접이식에 룰 판정·서명 대조). 9/29: Macro/Liquidity Risk-Off −80 STRONG UNCONFIRMED, 지정학 +20. 테스트 +5(백엔드) +3(프런트).
 
+- 물가 탭을 **Inflation & Rates Intelligence** 화면으로: `config/rates_regime.yaml`(driver 5개의 증거표, 물가 구성 5개, 커브 테너, 명목 분해, 확인표 12줄, 괴리 6짝, 전이표, 전환·해제 조건), `models/rates_regime.py`, `engines/rates_regime.py`(가중 clip 평균, 10년 금리 방향 대비 상태, 방향 맞는 driver 우선 지배, 커브 모양·주도 구간(트위스트 처리), 명목 − 기대인플레 = 실질 + TIPS 대조, CONFIRMED/MIXED/NOT_CONFIRMED/MISSING, 괴리 자동 탐지, 전이 방향, 전환 조건 ≤5 + 해제 조건), `GET /api/v1/rates-regime`. 계열 US5Y·BE5Y·TIPS10Y·TIPS5Y 추가(자식 세션이 FRED 키로 9/29 캡처에 병합), 금리 이름 "US 10Y Yield" 식으로 명확화. 프런트 `RatesRegimeView`(REGIME → DRIVER → INFLATION PRESSURE → CURVE → DECOMPOSITION → CONFIRMATION → DIVERGENCE → IMPLICATION → WHAT CHANGES THE VIEW → Diagnostics 접이식). 9/29: **LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed**, 기간 프리미엄 +84 STRONG CONFIRMED(30Y +1.6σ · 2s10s +1.9σ · MOVE +2.6σ · TIPS10Y +1.5σ), 물가 리프라이싱 −19; 베어 스티프닝 장기 주도; 10Y +16bp = 실질 +16bp + 기대인플레 0bp(TIPS 실측 +15bp); 확인 7 · 혼재 4 · 불확인 1(은행); 괴리 6건. 실현 물가·임금 계열 없음(결측 표시). 테스트 +9(백엔드) +4(프런트).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

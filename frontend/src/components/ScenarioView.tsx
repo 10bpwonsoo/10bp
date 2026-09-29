@@ -1,5 +1,6 @@
-import type { IntelligenceSnapshot, MarketStateHistory, OilRegime, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
+import type { IntelligenceSnapshot, MarketStateHistory, OilRegime, RatesRegime, ScenarioCheck, StateHypothesis, StateLabel } from "../api/types";
 import { OilRegimeView } from "./OilRegimeView";
+import { RatesRegimeView } from "./RatesRegimeView";
 import type { InvestmentIntelligence } from "../api/investment";
 import { Panel } from "./Panel";
 import { RuleTrace } from "./RuleTrace";
@@ -67,7 +68,7 @@ function FactorSpark({ history, factor }: { history: MarketStateHistory | null; 
   );
 }
 
-function FactorBreakdown({ snapshot, factor }: { snapshot: IntelligenceSnapshot; factor: string }) {
+export function FactorBreakdown({ snapshot, factor }: { snapshot: IntelligenceSnapshot; factor: string }) {
   const f = snapshot.market_state.factors[factor];
   if (!f) return <div className="sv-muted">{factor} 팩터가 이번 스냅샷에 없다.</div>;
   return (
@@ -89,9 +90,14 @@ function FactorBreakdown({ snapshot, factor }: { snapshot: IntelligenceSnapshot;
   );
 }
 
-export function ScenarioView({ check, snapshot, history, investment, oilRegime = null }: {
-  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null;
+export function ScenarioView({ check, snapshot, history, investment, oilRegime = null, ratesRegime = null }: {
+  check: ScenarioCheck; snapshot: IntelligenceSnapshot; history: MarketStateHistory | null; investment: InvestmentIntelligence | null; oilRegime?: OilRegime | null; ratesRegime?: RatesRegime | null;
 }) {
+  // 물가 탭 — Inflation & Rates Intelligence. Regime → Rate Driver → Inflation Components → Curve → Yield Decomposition → Confirmation → Divergence → Implication → Triggers → Diagnostics.
+  if (check.focus === "rates_regime") {
+    if (!ratesRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>금리·물가 원인 판별을 불러오는 중…</div></section></div>;
+    return <RatesRegimeView regime={ratesRegime} snapshot={snapshot} check={check} />;
+  }
   // 유가 탭 — 시장 원인 판별 화면. 룰 판정·서명 대조는 그 화면의 Diagnostics 안으로 들어간다.
   if (check.focus === "oil_regime") {
     if (!oilRegime) return <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }}>유가 원인 판별을 불러오는 중…</div></section></div>;
