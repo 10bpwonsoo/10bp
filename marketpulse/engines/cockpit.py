@@ -27,6 +27,7 @@ from ..models.cockpit import (
     LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
 )
 from ..models.market import Instrument, MarketSnapshot
+from .regime_history import StateObservation, build_regime_history
 from ..models.snapshot import IntelligenceSnapshot
 
 KST = timezone(timedelta(hours=9))
@@ -122,6 +123,8 @@ def build_cockpit(
     oil_regime: object | None = None,
     extra_z: Mapping[str, tuple[float | None, float | None, str]] | None = None,
     extra_names: Mapping[str, str] | None = None,
+    observations: Sequence[StateObservation] = (),
+    stored_days: int | None = None,
     config_dir: Path | None = None,
 ) -> Cockpit:
     cfg = load_cockpit_config(config_dir)
@@ -166,6 +169,9 @@ def build_cockpit(
                     persistence_days=streak, previous_label=prev_s, change_text=change_text, key_variables=keyvars, sentence=sentence,
                     interpretation=ms.narrative or "", spark=spark, last_update=snapshot.as_of, coverage=f"{dh.available_instruments}/{dh.expected_instruments}",
                     latency=f"최대 {dh.max_freshness_trading_days}거래일 지연" if dh.max_freshness_trading_days else "")
+
+    # ── 1b. MARKET REGIME HISTORY · 1M (실시간 2 전용) ────────
+    regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days) if history is not None else None
 
     # ── 2. TODAY'S MARKET DRIVERS ────────────────────────────
     dc = cfg.get("drivers", {}); w = dc.get("weights", {}); news_ref = float(dc.get("news_ref", 40))
@@ -464,5 +470,5 @@ def build_cockpit(
 
     note = ("메인 탭은 기존 층(판정·테마·괴리·뉴스·Investment·AI/금리/유가 판별)의 값을 config/cockpit.yaml 규칙으로 고른 것이다. driver 는 |z| 순이 아니라 "
             "증거 강도 × 확보 + 크로스에셋 확인 + 지속성 + 뉴스 촉매 점수로 뽑는다. 확인 n/m 은 확률이 아니다. 데이터가 없는 카드는 숨긴다. 전체 표·진단은 Details / Diagnostics 에 있다.")
-    return Cockpit(as_of=snapshot.as_of, market_now=now, drivers=drivers, cross_asset=ca, leadership=leadership, transmission=chains, radar=radar, catalysts=items,
+    return Cockpit(as_of=snapshot.as_of, market_now=now, history=regime_history, drivers=drivers, cross_asset=ca, leadership=leadership, transmission=chains, radar=radar, catalysts=items,
                    earnings=earnings, what_matters_next=nxt, upcoming=upcoming, watchlist=wl, data_status=status, note=note)

@@ -207,3 +207,51 @@ watchlist_max: 5
 data_status:
   important: [SPX, NDX, US10Y, US_HY_OAS, VIX, KOSPI, BRENT, DXY]
   stale_warn_days: 3
+
+#: MARKET REGIME HISTORY · 1M — 실시간 2 탭에만 붙는 히스토리 층. 판정 히스토리(같은 엔진 재생)를 다시 계산하지 않고
+#: 화면용 Display Regime 으로 안정화한다. Raw State 는 그대로 남긴다(같은 응답의 days[].raw_state / end_regime).
+history:
+  days: 22
+  #: 기간 선택. 1M 은 재생 히스토리로 나온다. 3M/6M 은 저장된 일별 스냅샷이 그만큼 쌓여야 켜진다 — 없으면 만들지 않는다.
+  ranges:
+    - {key: 1M, days: 22}
+    - {key: 3M, days: 63}
+    - {key: 6M, days: 126}
+  #: Raw StateLabel → 화면 taxonomy. RISK_OFF 는 Liquidity Stress / Risk-Off 로 합친다. 지정학은 따로 둔다(있는 날에만 나타난다).
+  taxonomy:
+    RISK_ON:          {key: risk_on,          label: "Risk-On"}
+    NEUTRAL:          {key: neutral,          label: "Neutral / Mixed"}
+    GROWTH_SHOCK:     {key: growth,           label: "Growth"}
+    INFLATION_SHOCK:  {key: inflation,        label: "Inflation"}
+    POLICY_DRIVEN:    {key: policy,           label: "Policy Driven"}
+    LIQUIDITY_STRESS: {key: liquidity_stress, label: "Liquidity Stress / Risk-Off"}
+    RISK_OFF:         {key: liquidity_stress, label: "Liquidity Stress / Risk-Off"}
+    GEOPOLITICAL_RISK: {key: geopolitical,    label: "Geopolitical"}
+  #: Display Regime 안정화. 새 regime 으로 바뀌려면 (a) 연속 min_dwell_days 거래일 같은 raw regime 이거나
+  #: (b) 하루라도 확신(evidence strength) ≥ strong_evidence 여야 한다. 그 외의 하루짜리 flip 은 직전 display regime 이 이어진다(bridged).
+  #: 장중 관측이 있는 날은 dominant regime(하루 중 가장 오래 유지) 을 raw 로 쓰고, dwell < min_dwell_share 면 확인으로 세지 않는다.
+  display:
+    min_dwell_days: 2
+    strong_evidence: 80
+    min_dwell_share: 0.5
+  #: DRIVER HEAT STRIP — 판정 엔진 factor 점수(z 단위) 다섯 개. heat_ref 에서 색이 포화한다. 화살표 문턱은 factor z 기준.
+  drivers:
+    - {key: RiskAppetite, label: "Risk Appetite"}
+    - {key: Liquidity,    label: "Liquidity"}
+    - {key: Rates,        label: "Rates"}
+    - {key: Inflation,    label: "Inflation"}
+    - {key: Credit,       label: "Credit"}
+  heat_ref: 2.0
+  heat_arrow: [1.5, 0.5]
+  #: 전환의 primary driver — 도착 regime 과 결이 맞는 factor 중 변화가 가장 큰 것. Neutral 로의 전환은 떠난 regime 의 factor 가 풀린 것.
+  regime_factors:
+    liquidity_stress: [Liquidity, Credit]
+    risk_on: [RiskAppetite, Credit]
+    policy: [Rates]
+    inflation: [Inflation, Rates]
+    growth: [RiskAppetite]
+    geopolitical: [RiskAppetite]
+  primary_min_change: 0.5
+  composite_slope_days: 5
+  transitions_max: 3
+  top_evidence: 2

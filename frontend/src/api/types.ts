@@ -666,7 +666,18 @@ export interface CkNextItem { text: string; status: "CONFIRMING" | "WATCH" | "RE
 export interface CkUpcoming { date: string; label: string; days_until: number | null; verified: boolean }
 export interface CkWatchRow { id: string; name: string; change_1d: number | null; watch: string; indicators: string[] }
 export interface CkDataStatus { line: string; warnings: string[]; coverage: number; available: number; expected: number; stale: number; max_lag_days: number; news_judgment: string }
+export interface CkRegimeDay { date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean }
+export interface CkRegimeBlock { regime: string; label: string; start: string; end: string; days: number; current: boolean }
+export interface CkRegimeTransition { date: string; from_regime: string; from_label: string; to_regime: string; to_label: string; primary_driver: string; confirmation: string; evidence: string[]; evidence_strength: number }
+export interface CkDriverHeat { key: string; label: string; values: (number | null)[]; current: number | null; arrow: CkArrow }
+export interface CkRegimeShare { regime: string; label: string; days: number; share: number }
+export interface CkHistoryRange { key: string; days: number; available: boolean; reason: string }
+export interface CkRegimeHistory {
+  range: string; ranges: CkHistoryRange[]; current_regime: string; current_label: string; duration_days: number; previous_regime: string | null; previous_label: string | null;
+  transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
+  composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;
+}
 export interface Cockpit {
-  as_of: string; market_now: CkMarketNow; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
+  as_of: string; market_now: CkMarketNow; history: CkRegimeHistory | null; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
   catalysts: CkCatalyst[]; earnings: CkEarnings | null; what_matters_next: CkNextItem[]; upcoming: CkUpcoming[]; watchlist: CkWatchRow[]; data_status: CkDataStatus; note: string;
 }

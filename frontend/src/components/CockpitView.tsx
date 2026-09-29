@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { Cockpit, CkArrow, CkDriver, CkCatalyst, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
 import { LABEL_KO } from "./StateHistoryStrip";
+import { RegimeHistoryCard } from "./RegimeHistoryCard";
 
 /**
  * 실시간 메인 탭 — decision cockpit.
- * MARKET NOW → TODAY'S MARKET DRIVERS → CROSS-ASSET CONFIRMATION(+KEY DIVERGENCES) → MARKET LEADERSHIP(+THEME PULSE)
+ * MARKET NOW → MARKET REGIME HISTORY · 1M(실시간 2 전용 히스토리 층) → TODAY'S MARKET DRIVERS → CROSS-ASSET CONFIRMATION(+KEY DIVERGENCES) → MARKET LEADERSHIP(+THEME PULSE)
  * → MARKET → STOCK TRANSMISSION → STOCK RADAR → LIVE CATALYSTS(고정 높이·내부 스크롤) → EARNINGS PULSE(있을 때만)
  * → WHAT MATTERS NEXT → WATCHLIST → DATA STATUS. 숫자는 서버가 고르고 화면은 그리기만 한다. 비어 있는 카드는 숨긴다.
  * 색은 Critical/Warning · Positive confirmation · Neutral · Missing 에만 쓴다 — 금리처럼 자산마다 뜻이 다른 값은 화살표·상태 글자가 먼저다.
@@ -241,8 +242,9 @@ export function CockpitView({ cockpit, snapshot, history, details }: { cockpit: 
   void snapshot; void history;
   const ds = cockpit.data_status;
   return (
-    <div className="ck" data-testid="cockpit">
+    <div className={`ck${cockpit.history ? " ck-hist" : ""}`} data-testid="cockpit">
       <MarketNow c={cockpit} />
+      {cockpit.history ? <RegimeHistoryCard h={cockpit.history} /> : null}
       <Drivers c={cockpit} mobileTop={3} />
       <CrossAssetCard c={cockpit} />
       <LeadershipCard c={cockpit} />

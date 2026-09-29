@@ -148,6 +148,26 @@ class SnapshotService:
         with self._lock:
             return list(self._history[key])
 
+    def state_observations(self, settings: Settings, *, limit: int = 600) -> list:
+        """
+        장중 판정 관측 (as_of, 판정, 확신) — 저장소의 최근 스냅샷과 메모리 히스토리를 합쳐 as_of 로 중복을 없앤다.
+        실시간 2 히스토리의 dominant/end regime·dwell 재료. 저장소가 없으면 메모리(최근 12틱)만이다.
+        """
+        from ..engines.regime_history import StateObservation
+
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        snaps: dict[datetime, IntelligenceSnapshot] = {}
+        if self._repo is not None:
+            try:
+                for s in self._repo.recent(key, limit=limit):
+                    snaps[s.as_of] = s
+            except Exception:
+                logger.exception("저장소 스냅샷 조회 실패 — 메모리 히스토리만 쓴다")
+        with self._lock:
+            for s in self._history[key]:
+                snaps[s.as_of] = s
+        return [StateObservation(as_of=t, label=s.market_state.primary_label.value, confidence=float(s.market_state.confidence)) for t, s in sorted(snaps.items())]
+
     def series(self, settings: Settings) -> dict:
         """마지막 틱의 원시 시계열. get() 뒤에만 채워져 있다."""
         key = f"{settings.data_mode.value}:{settings.scenario}"
@@ -540,8 +560,10 @@ class CockpitService:
                 return None
         history = _try(lambda: self._history.get(settings))
         ai = _try(lambda: self._ai.get(settings)); rates = _try(lambda: self._rates.get(settings)); oil = _try(lambda: self._oil.get(settings))
+        obs = _try(lambda: self._history._base.state_observations(settings)) or []
+        stored_days = len({o.as_of.date() for o in obs}) if obs else 0
         result = build_cockpit(snapshot, market, {i.id: i for i in instruments}, history=history, investment=inv, ai_regime=ai, rates_regime=rates, oil_regime=oil,
-                               extra_z=extra, extra_names=names, config_dir=settings.config_dir)
+                               extra_z=extra, extra_names=names, observations=obs, stored_days=stored_days, config_dir=settings.config_dir)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result

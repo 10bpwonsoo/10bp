@@ -369,6 +369,32 @@ LEADERSHIP → RADAR → CATALYSTS → NEXT 한 열이고 나머지는 접힌다
 은 그 부분만 비운 채 뜨고, cockpit 자체가 실패하면 예전 화면으로 돌아간다. 없는 데이터는
 빈 칸(MISSING / NO DATA)이고 확률 표현은 쓰지 않는다.
 
+#### 실시간 2 · MARKET REGIME HISTORY · 1M (2026-09-29)
+
+`실시간 2` 에만 붙는 히스토리 층이다(기존 `실시간`·물가·유가·AI 센티 탭은 그대로). MARKET NOW 와
+TODAY'S MARKET DRIVERS 사이에 놓여 "현재 regime 이 언제 시작됐고, 직전은 무엇이었고, 한 달
+동안 시장의 색이 어떻게 바뀌었고, 무엇이 그 전환을 만들었는가" 에 답한다. 재료는 판정 히스토리
+재생(`engines/state_history.py`, 같은 엔진)이고 `engines/regime_history.py` 가 그 위에 두 층을
+얹는다. (1) 거래일 스냅샷: 저장소·메모리의 장중 판정 관측이 있으면 그날 가장 오래 유지된
+dominant regime 과 마지막 end regime, dwell(유지 비중), 장중 전환 횟수를 남긴다 — 관측이 하루
+한 번이면 dwell 은 None 이다(0 이나 100 으로 채우지 않는다). (2) Display Regime: 하루짜리 flip 이
+띠의 뜻을 지우지 않게 `config/cockpit.yaml` `history.display` 규칙(연속 2거래일 같은 raw regime,
+또는 확신 ≥ 80 인 강한 하루, dwell < 0.5 인 날은 확인으로 세지 않음)으로 안정화한다. Raw State 는
+같은 응답의 `days[].raw_state` 에 그대로 있고 날짜를 누르면 보인다. Taxonomy 는 Risk-On ·
+Neutral / Mixed · Growth · Inflation · Policy Driven · Liquidity Stress / Risk-Off(RISK_OFF 합침) ·
+Geopolitical(있는 날만). 카드 구성은 A CURRENT REGIME CONTEXT(Current · Duration · Previous · 1M
+Transitions · 1M Share) → B REGIME BAND(거래일당 셀 하나, 같은 regime 은 블록, 전환일 ▲ 표식,
+hover 툴팁 = 날짜·dominant/end·evidence·driver·top evidence 2, 클릭 = raw 판정·dwell·factor 상세)
+→ C MARKET COMPOSITE SPARKLINE(선 1개 · 0 기준선 · 현재값 · 5D slope) → D DRIVER HEAT STRIP(Risk
+Appetite · Liquidity · Rates · Inflation · Credit factor z 의 농도, 오른쪽 현재 화살표) → E 1M REGIME
+SHARE(가로 막대, 일수 비중이지 확률이 아니다) → F RECENT TRANSITIONS(실제 전환일만 최근 3개,
+primary driver = 도착 regime 과 결이 맞는 factor 중 변화 최대, confirmation = 그날 주도 변수
+1~2, 클릭하면 evidence). 데스크톱은 띠·스파크라인·히트 | 컨텍스트·비중, 아래 전환; 모바일은
+컨텍스트·띠·스파크라인만 펴고 drivers / share / transitions 는 접는다. 기간은 1M 이고 3M/6M 은
+일별 스냅샷이 그만큼 쌓여야 켜진다 — 없는 기간을 만들지 않는다. 9/29: Neutral 8/27~9/11(11일)
+→ Liquidity Stress 9/14 하루(확신 84) → Neutral 3일 → Policy Driven 9/18~22 → Liquidity Stress
+9/23~29 4일째, 전환 4회, 현재 regime 비중 23%, composite −39(5D −74).
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

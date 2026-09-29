@@ -58,3 +58,38 @@ describe("CockpitView", () => {
     expect(screen.getByTestId("ck-data-status").textContent).toMatch(/DATA/);
   });
 });
+
+describe("CockpitView — MARKET REGIME HISTORY · 1M (실시간 2 전용)", () => {
+  it("MARKET NOW 바로 다음, DRIVERS 앞에 온다 — 띠는 display regime, 컨텍스트는 Current/Duration/Previous/Transitions/Share, 전환 ≤3, 3M/6M 은 꺼져 있다", () => {
+    const { container } = render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} />);
+    const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
+    expect(titles.indexOf("Market Regime History · 1M")).toBe(titles.indexOf("Market Now") + 1);
+    expect(titles.indexOf("Today's Market Drivers")).toBe(titles.indexOf("Market Regime History · 1M") + 1);
+    const h = cockpit.history!;
+    expect(screen.getByTestId("ck-h-current").textContent).toBe(h.current_label);
+    expect(screen.getByTestId("ck-h-ctx").textContent).toMatch(/Duration.*Previous.*1M Transitions.*1M Share/s);
+    expect(screen.getAllByTestId("ck-h-cell").length).toBe(h.days.length);
+    expect(screen.getAllByTestId("ck-h-transition").length).toBeLessThanOrEqual(3);
+    expect(screen.getAllByTestId("ck-h-heat-row").length).toBe(5);
+    const ranges = within(screen.getByTestId("ck-history")).getAllByRole("button", { name: /^(1M|3M|6M)$/ });
+    expect(ranges.map((b) => (b as HTMLButtonElement).disabled)).toEqual([false, true, true]);
+    // 기존 복잡한 플롯의 요소(세 개의 선·판정 라벨 카운트·require/support)는 없다
+    expect(screen.getByTestId("ck-history").textContent).not.toMatch(/require|support|확률/);
+    expect(screen.getByTestId("ck-history").querySelectorAll("polyline").length).toBe(1);
+  });
+
+  it("날짜 셀을 누르면 raw 판정·dominant/end·dwell 상세가, 전환을 누르면 evidence 가 펼쳐진다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} />);
+    const h = cockpit.history!;
+    const bridged = h.days.findIndex((d) => d.bridged);
+    const cells = screen.getAllByTestId("ck-h-cell");
+    fireEvent.click(cells[bridged >= 0 ? bridged : 0]!);
+    const detail = screen.getByTestId("ck-h-detail");
+    expect(detail.textContent).toContain(h.days[bridged >= 0 ? bridged : 0]!.raw_state);
+    expect(detail.textContent).toMatch(/Daily dwell/);
+    if (bridged >= 0) expect(detail.textContent).toMatch(/bridged/);
+    const tr = screen.getAllByTestId("ck-h-transition")[0]!;
+    fireEvent.click(tr);
+    expect(tr.querySelectorAll("li").length).toBeGreaterThanOrEqual(2);
+  });
+});

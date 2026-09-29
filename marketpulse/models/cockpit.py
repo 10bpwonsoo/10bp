@@ -225,9 +225,106 @@ class DataStatus(Base):
     news_judgment: str = ""
 
 
+# ── MARKET REGIME HISTORY · 1M (실시간 2 전용 히스토리 층) ─────────────────────
+class RegimeDay(Base):
+    """거래일별 regime 스냅샷. raw(순간 판정)와 display(안정화) 를 같은 줄에 둔다 — 시각화를 위해 데이터를 왜곡하지 않는다."""
+
+    date: str
+    raw_state: str = Field(description="재생 엔진의 그날 마지막 판정(StateLabel)")
+    raw_secondary: str | None = None
+    dominant_regime: str = Field(description="taxonomy key — 그날 가장 오래 유지된 regime(장중 관측이 없으면 raw 와 같다)")
+    end_regime: str = Field(description="taxonomy key — 그날 마지막 관측 regime")
+    display_regime: str = Field(description="taxonomy key — 안정화된 화면용 regime")
+    display_label: str
+    evidence_strength: float = Field(ge=0.0, le=100.0, description="그날 판정 확신")
+    dominant_driver: str = Field(default="", description="그날 주도 변수 1 — '라벨 +1.2σ'")
+    top_driver_1: str = ""
+    top_driver_2: str = ""
+    top_evidence: list[str] = Field(default_factory=list)
+    dominant_regime_dwell: float | None = Field(default=None, description="하루 중 dominant regime 이 유지된 비중 0~1. 장중 관측이 2회 미만이면 None")
+    observations: int = Field(default=1, description="그날 장중 관측 수(재생 1회 포함)")
+    transition_count: int = Field(default=0, description="그날 장중 raw 판정이 바뀐 횟수")
+    key_change: str = Field(default="", description="예: 'Late-session deterioration' — dominant ≠ end 일 때")
+    data_quality: str = ""
+    coverage: float = Field(default=0.0, ge=0.0, le=1.0)
+    composite: float | None = None
+    factors: dict[str, float | None] = Field(default_factory=dict, description="heat strip driver → factor z")
+    bridged: bool = Field(default=False, description="raw 가 display 와 달라 직전 display 가 이어진 날")
+    is_transition: bool = Field(default=False, description="display regime 이 이날 바뀌었다")
+
+
+class RegimeBlock(Base):
+    regime: str
+    label: str
+    start: str
+    end: str
+    days: int
+    current: bool = False
+
+
+class RegimeTransition(Base):
+    date: str
+    from_regime: str
+    from_label: str
+    to_regime: str
+    to_label: str
+    primary_driver: str = Field(default="", description="factor 변화가 가장 큰 driver — 'Credit ↑'")
+    confirmation: str = Field(default="", description="그날 주도 변수 1~2 — 'HY OAS ↑ / VIX ↑'")
+    evidence: list[str] = Field(default_factory=list, description="클릭 시 상세 — factor 변화·raw 판정·확신")
+    evidence_strength: float = 0.0
+
+
+class DriverHeat(Base):
+    key: str
+    label: str
+    values: list[float | None] = Field(default_factory=list, description="날짜순 factor z (결측 None)")
+    current: float | None = None
+    arrow: Arrow = "?"
+
+
+class RegimeShare(Base):
+    regime: str
+    label: str
+    days: int
+    share: float = Field(ge=0.0, le=100.0, description="기간 중 비중 % — 확률이 아니다")
+
+
+class HistoryRange(Base):
+    key: str
+    days: int
+    available: bool
+    reason: str = ""
+
+
+class RegimeHistory(Base):
+    range: str = "1M"
+    ranges: list[HistoryRange] = Field(default_factory=list)
+    current_regime: str
+    current_label: str
+    duration_days: int = 0
+    previous_regime: str | None = None
+    previous_label: str | None = None
+    transitions_1m: int = 0
+    share_pct: float = Field(default=0.0, description="현재 display regime 의 기간 내 비중 %")
+    raw_today: str | None = Field(default=None, description="오늘 raw 판정이 display 와 다를 때 그 라벨")
+    days: list[RegimeDay] = Field(default_factory=list)
+    blocks: list[RegimeBlock] = Field(default_factory=list)
+    composite: list[float | None] = Field(default_factory=list, description="날짜순 대표 composite(온도계 종합, 없으면 가격 온도)")
+    composite_current: float | None = None
+    composite_slope: float | None = Field(default=None, description="최근 slope_days 변화")
+    composite_slope_days: int = 5
+    drivers: list[DriverHeat] = Field(default_factory=list)
+    share: list[RegimeShare] = Field(default_factory=list)
+    transitions: list[RegimeTransition] = Field(default_factory=list, description="최근 것부터 max 개")
+    total_transitions: int = 0
+    palette: dict[str, str] = Field(default_factory=dict, description="taxonomy key → 라벨 (화면 순서)")
+    note: str = ""
+
+
 class Cockpit(Base):
     as_of: datetime
     market_now: MarketNow
+    history: RegimeHistory | None = Field(default=None, description="MARKET REGIME HISTORY · 1M — 히스토리 재생이 없으면 None(카드 숨김)")
     drivers: list[Driver] = Field(default_factory=list)
     cross_asset: CrossAsset
     leadership: Leadership
