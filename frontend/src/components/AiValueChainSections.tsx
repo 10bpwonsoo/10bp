@@ -71,13 +71,13 @@ export function ValueChainSection({ regime }: { regime: AiRegime }) {
           {rows.map((s) => (
             <div key={s.key} className={`ai-vc-row${s.role === "leading" ? " lead" : s.role === "lagging" ? " lag" : ""}`} role="row" data-testid="ai-segment" data-key={s.key} data-role={s.role} title={`${s.exposure} exposure · ${s.available}/${s.members} 종목 · ${s.eps_note} · 매크로 ${s.macro_score === null ? "–" : sg(s.macro_score)}`}>
               <span className="ai-vc-name">{s.label}<small> {s.label_ko}</small></span>
-              <span className="num" style={{ color: s.ret_1d === null ? "var(--faint)" : s.ret_1d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(s.ret_1d, 1, "%")}</span>
-              <span className="num"><Arrow a={s.arrow_1w} /> {sg(s.ret_5d, 1, "%")}</span>
-              <span className="num" style={{ color: s.ret_21d === null ? "var(--faint)" : s.ret_21d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(s.ret_21d, 1, "%")}</span>
-              <span className="num"><Arrow a={s.arrow_rel} /> {sg(s.rel_5d, 1, "%p")}</span>
-              <span className="num" style={{ color: s.above_ma20_pct !== null && s.above_ma20_pct < 50 ? "var(--down)" : "var(--ink-2)" }}>{pc(s.above_ma20_pct)}</span>
-              <span className="num"><Arrow a={s.arrow_eps} title={s.eps_note} /> {s.eps === null ? "N/A" : sg(s.eps, 1, "%")}</span>
-              <span className="mono ai-vc-rank" style={{ color: s.role === "leading" ? "var(--up)" : s.role === "lagging" ? "var(--down)" : "var(--muted)" }}>{s.rank_1w ? `#${s.rank_1w}` : "–"}</span>
+              <span className="num" data-l="1D" style={{ color: s.ret_1d === null ? "var(--faint)" : s.ret_1d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(s.ret_1d, 1, "%")}</span>
+              <span className="num" data-l="1W"><Arrow a={s.arrow_1w} /> {sg(s.ret_5d, 1, "%")}</span>
+              <span className="num" data-l="1M" style={{ color: s.ret_21d === null ? "var(--faint)" : s.ret_21d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(s.ret_21d, 1, "%")}</span>
+              <span className="num" data-l="REL 1W"><Arrow a={s.arrow_rel} /> {sg(s.rel_5d, 1, "%p")}</span>
+              <span className="num" data-l=">MA20" style={{ color: s.above_ma20_pct !== null && s.above_ma20_pct < 50 ? "var(--down)" : "var(--ink-2)" }}>{pc(s.above_ma20_pct)}</span>
+              <span className="num" data-l="EPS"><Arrow a={s.arrow_eps} title={s.eps_note} /> {s.eps === null ? "N/A" : sg(s.eps, 1, "%")}</span>
+              <span className="mono ai-vc-rank" data-l="rank" style={{ color: s.role === "leading" ? "var(--up)" : s.role === "lagging" ? "var(--down)" : "var(--muted)" }}>{s.rank_1w ? `#${s.rank_1w}` : "–"}</span>
             </div>
           ))}
         </div>
@@ -114,13 +114,13 @@ export function SemiConfirmationSection({ regime }: { regime: AiRegime }) {
           <div className="ai-mem-tr ai-th mono"><span>계열</span><span>현재</span><span>1W</span><span>1M</span><span>z</span><span>신선도</span><span>status</span></div>
           {s.memory.map((m) => (
             <div key={m.id} className={`ai-mem-tr${m.status === "N/A" ? " na" : ""}`} role="row" data-testid="ai-memory-row" data-status={m.status} title={m.note}>
-              <span>{m.label}{m.structural ? <small className="mono" style={{ color: "var(--faint)" }}> 분기</small> : null}</span>
-              <span className="num">{m.value === null ? "–" : m.value >= 1000 ? m.value.toLocaleString("en-US", { maximumFractionDigits: 0 }) : m.value.toFixed(m.value >= 100 ? 1 : 2)}</span>
-              <span className="num" style={{ color: m.change_1w === null ? "var(--faint)" : m.change_1w >= 0 ? "var(--up)" : "var(--down)" }}>{m.structural ? (m.change_1d === null ? "–" : `앵커 ${sg(m.change_1d, 1, "%")}`) : sg(m.change_1w, 1, "%")}</span>
-              <span className="num" style={{ color: m.change_1m === null ? "var(--faint)" : m.change_1m >= 0 ? "var(--up)" : "var(--down)" }}>{m.structural ? "" : sg(m.change_1m, 1, "%")}</span>
-              <span className="num mono" style={{ color: "var(--faint)" }}>{m.z === null ? "N/A" : sg(m.z)}</span>
-              <span className="mono" style={{ color: (m.freshness_days ?? 0) > 5 && !m.structural ? "var(--warn)" : "var(--faint)" }}>{m.freshness_days === null ? "–" : `${m.freshness_days}D`}{m.observations ? ` · 봉 ${m.observations}` : ""}</span>
-              <St s={m.status} />
+              <span className="ai-mem-l">{m.label}{m.structural ? <small className="mono" style={{ color: "var(--faint)" }}> 분기</small> : null}</span>
+              <span className="num" data-l="현재">{m.value === null ? "–" : m.value >= 1000 ? m.value.toLocaleString("en-US", { maximumFractionDigits: 0 }) : m.value.toFixed(m.value >= 100 ? 1 : 2)}</span>
+              <span className="num" data-l={m.structural ? "앵커 변화" : "1W"} style={{ color: m.change_1w === null ? "var(--faint)" : m.change_1w >= 0 ? "var(--up)" : "var(--down)" }}>{m.structural ? (m.change_1d === null ? "–" : `앵커 ${sg(m.change_1d, 1, "%")}`) : sg(m.change_1w, 1, "%")}</span>
+              <span className="num" data-l="1M" style={{ color: m.change_1m === null ? "var(--faint)" : m.change_1m >= 0 ? "var(--up)" : "var(--down)" }}>{m.structural ? "–" : sg(m.change_1m, 1, "%")}</span>
+              <span className="num mono" data-l="z" style={{ color: "var(--faint)" }}>{m.z === null ? "N/A" : sg(m.z)}</span>
+              <span className="mono" data-l="신선도" style={{ color: (m.freshness_days ?? 0) > 5 && !m.structural ? "var(--warn)" : "var(--faint)" }}>{m.freshness_days === null ? "–" : `${m.freshness_days}D`}{m.observations ? ` · 봉 ${m.observations}` : ""}</span>
+              <span data-l="status"><St s={m.status} /></span>
             </div>
           ))}
         </div>
@@ -152,11 +152,11 @@ function StockRow({ r }: { r: AiStockImpactRow }) {
     <div className="ai-sim-row" role="row" data-testid="ai-stock" data-id={r.id} data-overall={r.overall} title={`${r.confirmation} · AI 수요 ${r.ai_demand} · 반도체 ${r.semiconductor} · 상대강도 ${r.relative_strength} · 뉴스 ${r.news_flow} · EPS ${r.eps_revision} · 금리 민감 ${r.rates_sensitivity}`}>
       <span className="ai-sim-name">{r.name}<small className="mono"> {r.id}{r.region !== "US" ? ` · ${r.region}` : ""}</small></span>
       <span className="ai-sim-seg mono">{r.segments.join(" · ")}</span>
-      <span className="mono ai-sim-exp">{r.theme_exposure}</span>
-      {(["theme", "fundamental", "market", "macro"] as const).map((k) => <span key={k} className="ai-sim-ax"><Arrow a={ax[k]?.arrow ?? "?"} title={ax[k]?.detail} /></span>)}
-      <span className="num" style={{ color: r.rel_5d === null ? "var(--faint)" : r.rel_5d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(r.rel_5d, 1, "%p")}</span>
-      <span className="mono" style={{ color: r.eps_revision === "N/A" ? "var(--faint)" : "var(--ink-2)" }}>{r.eps_revision}</span>
-      <St s={r.overall} />
+      <span className="mono ai-sim-exp" data-l="exposure">{r.theme_exposure}</span>
+      {(["theme", "fundamental", "market", "macro"] as const).map((k) => <span key={k} className="ai-sim-ax" data-l={k === "fundamental" ? "FUND" : k === "market" ? "MKT" : k.toUpperCase()}><Arrow a={ax[k]?.arrow ?? "?"} title={ax[k]?.detail} /></span>)}
+      <span className="num" data-l="1W rel" style={{ color: r.rel_5d === null ? "var(--faint)" : r.rel_5d >= 0 ? "var(--up)" : "var(--down)" }}>{sg(r.rel_5d, 1, "%p")}</span>
+      <span className="mono" data-l="EPS" style={{ color: r.eps_revision === "N/A" ? "var(--faint)" : "var(--ink-2)" }}>{r.eps_revision}</span>
+      <span className="ai-sim-ov" data-l="overall"><St s={r.overall} /></span>
       <span className="ai-sim-int">{r.interpretation}</span>
     </div>
   );

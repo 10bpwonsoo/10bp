@@ -1310,3 +1310,71 @@
 .ai-wm-s { display: block; font-size: 10.5px; }
 @media (max-width: 1100px) { .ai-chain { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ai-stage-arrow { display: none; } .ai-sim-row { grid-template-columns: minmax(100px, 1fr) 36px 36px 36px 36px 100px; } .ai-sim-row > :nth-child(2), .ai-sim-row > :nth-child(3), .ai-sim-row > :nth-child(8), .ai-sim-row > :nth-child(9), .ai-sim-row > :nth-child(11) { display: none; } .ai-gap-row { grid-template-columns: 120px minmax(0, 1fr) 70px 46px; } .ai-gap-n { display: none; } }
 @media (max-width: 760px) { .ai-radar, .ai-lead-lists { grid-template-columns: 1fr; } }
+
+
+/* ── 모바일(≤760px): 넓은 표를 카드로 편다. 셀 위에 data-l 라벨을 붙이고 머리행은 숨긴다. 가로 스크롤은 페이지가 아니라 패널 안에서만 ── */
+@media (max-width: 760px) {
+  .panel { min-width: 0; }
+  .panel-body { overflow-x: auto; }
+  .panel-head { flex-wrap: wrap; }
+  .panel-note { margin-left: 0; width: 100%; }
+  .ai-th { display: none !important; }
+  [data-l]::before { content: attr(data-l); display: block; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); font-family: var(--font-mono); text-align: left; }
+  /* AI vs Market */
+  .ai-tr { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 8px; }
+  .ai-tr .ai-td-l { grid-column: 1 / -1; font-weight: 600; }
+  .ai-tr > span:not(.ai-td-l) { text-align: left; }
+  .ai-tr .ai-empty { display: none; }
+  [data-l]:empty { display: none; }
+  /* 바스켓 그룹 */
+  .ai-grp { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 8px; }
+  .ai-grp > :nth-child(n) { display: block; }
+  .ai-grp .ai-grp-name { grid-column: 1 / -1; }
+  .ai-grp .ai-grp-cell, .ai-grp .ai-grp-z, .ai-grp .ai-grp-b, .ai-grp .ai-grp-role { text-align: left; }
+  .ai-grp.ctx { margin-top: 8px; }
+  /* 밸류체인 */
+  .ai-vc-row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 6px; padding: 6px 0; }
+  .ai-vc-row .ai-vc-name { grid-column: 1 / -1; }
+  .ai-vc-row > span:not(.ai-vc-name) { text-align: left; }
+  /* 반도체 영역 · 메모리 표 */
+  .ai-area { grid-template-columns: minmax(0, 1.4fr) 22px 22px 22px 22px 22px 84px; gap: 3px; font-size: 11px; }
+  .ai-mem-tr { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; padding: 6px 0; }
+  .ai-mem-tr .ai-mem-l { grid-column: 1 / -1; font-size: 11.5px; }
+  .ai-mem-tr > :not(:first-child) { text-align: left; }
+  /* 종목 영향도 */
+  .ai-sim { max-height: 560px; }
+  .ai-sim-row { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 8px 0; }
+  .ai-sim-row > * { display: block !important; }
+  .ai-sim-row .ai-sim-name, .ai-sim-row .ai-sim-seg, .ai-sim-row .ai-sim-int { flex: 1 0 100%; }
+  .ai-sim-row .ai-sim-ax { text-align: left; }
+  /* 기대 vs 펀더멘털 */
+  .ai-gap-row { grid-template-columns: minmax(0, 1fr) 70px 46px; }
+  .ai-gap-row .ai-gap-l { grid-column: 1 / -1; }
+  .ai-gap-row .ai-gap-n { grid-column: 1 / -1; display: block; }
+  /* 매크로 확인 · 확인표 — 기대 부호 열은 숨긴다 */
+  .ai-mac { grid-template-columns: 14px minmax(0, 1.3fr) 80px 100px; }
+  .ai-mac > :nth-child(4) { display: none; }
+  .rr-conf { grid-template-columns: 14px minmax(0, 1.1fr) minmax(0, 1.2fr) 88px; }
+  .rr-conf > .rr-conf-exp { display: none; }
+  .or-conf { grid-template-columns: 14px minmax(0, 1.1fr) minmax(0, 1.2fr) 34px; }
+  .or-conf > .or-conf-exp { display: none; }
+  .rr-tenor { grid-template-columns: 30px 56px 52px minmax(0, 1fr); gap: 6px; }
+  /* 구성원 표(Details) */
+  .ai-mem { max-height: none; }
+  .ai-mem-row { grid-template-columns: minmax(0, 1.4fr) 50px 50px 50px 24px 24px; }
+  .ai-mem-row > :nth-child(2) { display: none; }
+  /* 전파 체인 · 카드 */
+  .ai-chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ai-side { min-width: 0; width: 100%; }
+  .ai-label, .rr-label, .or-label { font-size: 22px; }
+  .ai-bigs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .ai-big b { font-size: 20px; }
+  .ai-nd-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 36px; }
+  .ai-quads { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .ai-tr, .ai-vc-row, .ai-mem-tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ai-grp { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ai-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rr-imp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

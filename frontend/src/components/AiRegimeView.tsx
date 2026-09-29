@@ -64,12 +64,12 @@ function GroupRow({ g, leader }: { g: AiGroupMomentum; leader: boolean }) {
   return (
     <div className={`ai-grp${leader ? " on" : ""}${g.in_basket ? "" : " ctx"}`} role="row" data-testid="ai-group" data-key={g.key} data-role={g.role} title={g.note || undefined}>
       <span className="ai-grp-name">{g.label}<small> {g.label_ko}{g.in_basket ? "" : " · 바스켓 외"}</small><span className="ai-grp-n mono">{g.available}/{g.members} · vs {g.benchmark}</span></span>
-      {(["rel_1d", "rel_5d", "rel_21d"] as const).map((k) => (
-        <span key={k} className="ai-grp-cell"><ScoreBar score={g[k]} scale={6} unit="%p" /></span>
+      {(["rel_1d", "rel_5d", "rel_21d"] as const).map((k, i) => (
+        <span key={k} className="ai-grp-cell" data-l={["1D", "1W", "1M"][i]}><ScoreBar score={g[k]} scale={6} unit="%p" /></span>
       ))}
-      <span className="num ai-grp-z" style={{ color: col(g.rel_z_5d) }}>{sg(g.rel_z_5d)}σ</span>
-      <span className="num ai-grp-b" style={{ color: g.above_ma20_pct !== null && g.above_ma20_pct < 50 ? "var(--down)" : "var(--ink-2)" }}>{pc(g.above_ma20_pct)}</span>
-      <span className="mono ai-grp-role" style={{ color: role.color }}>{g.rank_1w ? `#${g.rank_1w} ` : ""}{role.ko}</span>
+      <span className="num ai-grp-z" data-l="rel z 5D" style={{ color: col(g.rel_z_5d) }}>{sg(g.rel_z_5d)}σ</span>
+      <span className="num ai-grp-b" data-l=">MA20" style={{ color: g.above_ma20_pct !== null && g.above_ma20_pct < 50 ? "var(--down)" : "var(--ink-2)" }}>{pc(g.above_ma20_pct)}</span>
+      <span className="mono ai-grp-role" data-l="rank" style={{ color: role.color }}>{g.rank_1w ? `#${g.rank_1w} ` : ""}{role.ko}</span>
     </div>
   );
 }
@@ -156,17 +156,17 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
             <div className="ai-tr ai-th mono"><span></span><span>1D</span><span>1W</span><span>1M</span><span>z</span></div>
             {rowsRet.map((r) => (
               <div key={r.label} className="ai-tr" role="row"><span className="ai-td-l">{r.label}</span>
-                {[r.r1, r.r5, r.r21].map((v, i) => <span key={i} className="num" style={{ color: col(v) }}>{sg(v, 1, "%")}</span>)}
-                <span className="num" style={{ color: col(r.z) }}>{r.z === null ? "" : `${sg(r.z)}σ${r.w === 5 ? " (5일)" : ""}`}</span>
+                {[r.r1, r.r5, r.r21].map((v, i) => <span key={i} className="num" data-l={["1D", "1W", "1M"][i]} style={{ color: col(v) }}>{sg(v, 1, "%")}</span>)}
+                {r.z === null ? <span className="ai-empty"></span> : <span className="num" data-l="z" style={{ color: col(r.z) }}>{`${sg(r.z)}σ${r.w === 5 ? " (5일)" : ""}`}</span>}
               </div>
             ))}
             <div className="ai-tr ai-rel" role="row"><span className="ai-td-l">AI − Nasdaq 100</span>
-              {[a.rel_ndx_1d, a.rel_ndx_5d, a.rel_ndx_21d].map((v, i) => <span key={i} className="num" style={{ color: col(v) }}>{sg(v, 1, "%p")}</span>)}
-              <span className="num" style={{ color: col(a.rel_ndx_z_5d) }}>{sg(a.rel_ndx_z_1d)}σ / {sg(a.rel_ndx_z_5d)}σ (5일)</span>
+              {[a.rel_ndx_1d, a.rel_ndx_5d, a.rel_ndx_21d].map((v, i) => <span key={i} className="num" data-l={["1D", "1W", "1M"][i]} style={{ color: col(v) }}>{sg(v, 1, "%p")}</span>)}
+              <span className="num" data-l="z 1D / 5D" style={{ color: col(a.rel_ndx_z_5d) }}>{sg(a.rel_ndx_z_1d)}σ / {sg(a.rel_ndx_z_5d)}σ (5일)</span>
             </div>
             <div className="ai-tr ai-rel" role="row"><span className="ai-td-l">AI − S&P 500</span>
-              <span></span><span className="num" style={{ color: col(a.rel_spx_5d) }}>{sg(a.rel_spx_5d, 1, "%p")}</span><span></span>
-              <span className="num" style={{ color: col(a.rel_spx_z_5d) }}>{sg(a.rel_spx_z_5d)}σ (5일)</span>
+              <span className="ai-empty"></span><span className="num" data-l="1W" style={{ color: col(a.rel_spx_5d) }}>{sg(a.rel_spx_5d, 1, "%p")}</span><span className="ai-empty"></span>
+              <span className="num" data-l="z 5D" style={{ color: col(a.rel_spx_z_5d) }}>{sg(a.rel_spx_z_5d)}σ (5일)</span>
             </div>
           </div>
           <p className="ai-sent">{a.sentence}</p>
