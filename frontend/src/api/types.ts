@@ -635,6 +635,13 @@ export interface AiRadarBucket { key: "strongest" | "improving" | "narrative_ahe
 export interface AiNewsImpact { event: string; source: string; url: string | null; tone: number; drivers: string[]; primary: string[]; secondary: string[]; infrastructure: string[]; primary_stocks: string[]; secondary_stocks: string[]; infrastructure_stocks: string[]; confirmation: string }
 export interface AiGapRow { key: string; label: string; market_pricing: number | null; fundamental: number | null; gap: number | null; note: string }
 export interface AiMattersItem { key: string; text: string; status: "CONFIRMING" | "WATCH" | "DETERIORATING" | "N/A"; metric: string; current: string; detail: string }
+export interface AiSentimentInput { id: string; label: string; label_ko: string; component: string; value: number | null; display: string; score: number | null; weight: number; available: boolean; note: string }
+export interface AiSentimentComponent { key: string; label: string; label_ko: string; score: number | null; state: string; state_label: string; read: string; weight: number; coverage: number; inputs: AiSentimentInput[] }
+export interface AiSentimentFactor { id: string; label: string; label_ko: string; component: string; score: number; display: string }
+export interface AiSentimentPoint { date: string; index: number | null; components: Record<string, number | null> }
+export interface AiSentimentHistory { points: AiSentimentPoint[]; basis: string[]; excluded: Record<string, string>; days: number; range_min: number | null; range_max: number | null; change_1d: number | null; change_1w: number | null; note: string }
+/** AI SENTIMENT · GREED & FEAR — AI 테마 내부의 투자심리 + 시장 확인 강도(0~100). 확률·전망이 아니라 현재 상태 */
+export interface AiSentiment { index: number | null; state: string; state_label: string; state_ko: string; coverage: number; components: AiSentimentComponent[]; secondary_key: string; secondary_label: string; secondary_ko: string; read: string; support: AiSentimentFactor[]; pressure: AiSentimentFactor[]; history: AiSentimentHistory; bands: { key: string; label: string; min: number }[]; note: string }
 export interface AiRegime {
   as_of: string; regime: AiRegimeKey; regime_label: string; regime_label_ko: string; headline: string; implication: string; checks: AiRegimeCheck[];
   ai_vs_market: AiVsMarket; drivers: AiDriverScore[]; dominant: string | null; runner_up: string | null; margin: number; signal_strength: number; signal_strength_label: string;
@@ -643,6 +650,7 @@ export interface AiRegime {
   regime_subtitle: string; status_strip: AiStatusItem[]; fundamental_confirmation: AiFundamentalConfirmation; summary: string;
   transmission: AiTransmission; value_chain: AiValueChain; semi_confirmation: AiSemiConfirmation; stocks: AiStockImpactRow[]; radar: AiRadarBucket[];
   news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
+  sentiment?: AiSentiment | null;
 }
 
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */

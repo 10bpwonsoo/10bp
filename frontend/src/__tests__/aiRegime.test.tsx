@@ -32,12 +32,13 @@ describe("AiRegimeView", () => {
   it("섹션 순서가 지정된 대로이고 driver 5 · 그룹 7(바스켓 6 + 국내) · breadth 3 지표 · 2×2 · 내러티브 driver 7 · 매크로 행 · 전환 조건 3~5", () => {
     const { container, unmount } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
-    expect(titles).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Fundamental Transmission", "AI / Semi / Infra / Software Leadership", "Semiconductor Fundamental Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
+    expect(titles).toEqual(["AI Trade Regime", "AI Sentiment · Greed & Fear", "AI vs Market", "What Is Driving AI?", "AI Fundamental Transmission", "AI / Semi / Infra / Software Leadership", "Semiconductor Fundamental Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
     unmount();
     // AI 센티(기본) 는 확장 블록 없이 원래 순서
     const basic = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
     expect(Array.from(basic.container.querySelectorAll(".panel-title")).map((e) => e.textContent)).toEqual(["AI Trade Regime", "AI vs Market", "What Is Driving AI?", "AI Leadership", "AI Breadth", "Narrative × Price", "Macro Confirmation", "AI-specific Stress", "What Changes The View?", "Diagnostics"]);
     expect(basic.queryByTestId("ai-status-strip")).toBeNull();
+    expect(basic.queryByTestId("ai-sentiment")).toBeNull(); // 게이지는 AI 센티2 에만
     basic.unmount();
     render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     expect(screen.getAllByTestId("ai-driver").length).toBe(5);
@@ -107,5 +108,34 @@ describe("AiRegimeView", () => {
     r2.unmount();
     render(<ScenarioView check={check} snapshot={snapshot} history={history} investment={null} />);
     expect(screen.getByText(/불러오는 중/)).toBeInTheDocument();
+  });
+
+  it("AI 센티2: AI TRADE REGIME 바로 아래 AI SENTIMENT · GREED & FEAR 반원 게이지 — 0~100 · 5 밴드 · 바늘 각도 −90°+s/100×180° · 구성요소 5 · READ · SUPPORT/PRESSURE ≤3 · 1M 스파크라인 · 확률 표현 없음", () => {
+    const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
+    const s = regime.sentiment!;
+    const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
+    expect(titles.indexOf("AI Sentiment · Greed & Fear")).toBe(titles.indexOf("AI Trade Regime") + 1);
+    expect(titles.indexOf("AI vs Market")).toBe(titles.indexOf("AI Sentiment · Greed & Fear") + 1);
+    const sec = screen.getByTestId("ai-sentiment");
+    expect(within(sec).getByTestId("ai-gf-index").textContent).toBe(s.index!.toFixed(0));
+    expect(within(sec).getByTestId("ai-gf-state").textContent).toBe(s.state_label);
+    expect(within(sec).getAllByTestId("ai-gf-band").length).toBe(5);
+    expect(within(sec).getByTestId("ai-gf-needle").getAttribute("data-deg")).toBe((-90 + (s.index! / 100) * 180).toFixed(1));
+    expect(within(sec).getByTestId("ai-gf-change").textContent).toContain("1D");
+    const comps = within(sec).getAllByTestId("ai-gf-component");
+    expect(comps.map((c) => c.getAttribute("data-key"))).toEqual(["narrative", "price", "breadth", "fundamentals", "macro"]);
+    for (const c of s.components) {
+      const el = comps.find((x) => x.getAttribute("data-key") === c.key)!;
+      expect(el.textContent).toContain(c.score === null ? "DATA MISSING" : c.score.toFixed(0));
+      expect(el.textContent).toContain(c.read);
+    }
+    expect(within(sec).getByTestId("ai-gf-read").textContent).toContain(s.read);
+    expect(within(sec).getByTestId("ai-gf-secondary").textContent).toContain(s.secondary_label);
+    expect(within(sec).getByTestId("ai-gf-support").querySelectorAll("li").length).toBe(Math.min(3, s.support.length));
+    expect(within(sec).getByTestId("ai-gf-pressure").querySelectorAll("li").length).toBe(Math.min(3, s.pressure.length));
+    if (s.history.points.filter((p) => p.index !== null).length >= 2) expect(within(sec).getByTestId("ai-gf-spark")).toBeInTheDocument();
+    expect(sec.querySelector(".panel-body")!.textContent).not.toMatch(/확률|매수|매도/); // 머리글의 "확률·전망 아님" 은 의도된 고지
+    // 기존 horizontal thermometer 는 쓰지 않는다
+    expect(sec.querySelector(".gauge")).toBeNull();
   });
 });

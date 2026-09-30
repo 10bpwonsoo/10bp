@@ -2,11 +2,12 @@ import type { AiRegime, AiDriverScore, AiGroupMomentum, AiMacroRow, AiEvidenceIt
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
+import { AiSentimentSection } from "./AiSentimentSection";
 import { DataQualityBlock, GapSection, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
 
 /**
  * AI 탭 — AI TRADE INTELLIGENCE.
- * 순서: AI REGIME → AI vs MARKET → WHAT IS DRIVING AI? → AI FUNDAMENTAL TRANSMISSION → AI/SEMI/INFRA/SOFTWARE LEADERSHIP → SEMICONDUCTOR FUNDAMENTAL CONFIRMATION
+ * 순서: AI REGIME → (AI 센티2: AI SENTIMENT · GREED & FEAR) → AI vs MARKET → WHAT IS DRIVING AI? → AI FUNDAMENTAL TRANSMISSION → AI/SEMI/INFRA/SOFTWARE LEADERSHIP → SEMICONDUCTOR FUNDAMENTAL CONFIRMATION
  *       → BREADTH → NARRATIVE × PRICE → STOCK IMPACT MAP → STOCK RADAR → NEWS → VALUE CHAIN → STOCK → EXPECTATIONS vs FUNDAMENTALS → MACRO CONFIRMATION
  *       → AI-SPECIFIC STRESS → WHAT MATTERS NOW → WHAT CHANGES THE VIEW → DETAILS / DATA QUALITY(접이식).
  * (2026-09-29 (6)) 반도체·메모리·HBM 데이터는 업사이클 판정이 아니라 Fundamental Confirmation Layer 로 들어온다.
@@ -147,6 +148,9 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
           <p className="ai-ctx mono" data-testid="ai-context">Global market regime(맥락 입력): {regime.context.market_label} {regime.context.market_confidence.toFixed(0)}%{regime.context.thermometer !== null ? ` · 온도계 ${sg(regime.context.thermometer, 0)}` : ""} — {regime.context.note}</p>
         </div>
       </section>
+
+      {/* 1b. AI SENTIMENT · GREED & FEAR — AI 센티2 에만. AI 테마 내부의 투자심리 + 시장 확인 강도(0~100) */}
+      {extended ? <AiSentimentSection regime={regime} /> : null}
 
       {/* 2. AI vs MARKET */}
       <section className="panel span-2" data-testid="ai-vs-market">

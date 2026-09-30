@@ -391,6 +391,79 @@ class MattersItem(Base):
     detail: str = ""
 
 
+class SentimentInput(Base):
+    id: str
+    label: str
+    label_ko: str = ""
+    component: str
+    value: float | None = None
+    display: str = "–"
+    score: float | None = Field(default=None, ge=0.0, le=100.0, description="0~100 (50 = 중립). 결측이면 None")
+    weight: float = 1.0
+    available: bool = True
+    note: str = ""
+
+
+class SentimentComponent(Base):
+    key: str
+    label: str
+    label_ko: str
+    score: float | None = None
+    state: str = "UNKNOWN"
+    state_label: str = "–"
+    read: str = ""
+    weight: float
+    coverage: float = Field(default=0.0, ge=0.0, le=1.0)
+    inputs: list[SentimentInput] = Field(default_factory=list)
+
+
+class SentimentFactor(Base):
+    id: str
+    label: str
+    label_ko: str = ""
+    component: str
+    score: float
+    display: str = ""
+
+
+class SentimentPoint(Base):
+    date: str
+    index: float | None = None
+    components: dict[str, float | None] = Field(default_factory=dict)
+
+
+class SentimentHistory(Base):
+    points: list[SentimentPoint] = Field(default_factory=list)
+    basis: list[str] = Field(default_factory=list, description="1M 이력을 만든 구성요소 — 이력이 없는 구성요소는 뺀다")
+    excluded: dict[str, str] = Field(default_factory=dict)
+    days: int = 0
+    range_min: float | None = None
+    range_max: float | None = None
+    change_1d: float | None = None
+    change_1w: float | None = None
+    note: str = ""
+
+
+class AiSentiment(Base):
+    """AI SENTIMENT · GREED & FEAR — AI 테마 내부의 투자심리 + 시장 확인 강도. 확률·전망이 아니라 현재 상태(0~100)."""
+
+    index: float | None = Field(default=None, ge=0.0, le=100.0)
+    state: str = "UNKNOWN"
+    state_label: str = "–"
+    state_ko: str = ""
+    coverage: float = Field(default=0.0, ge=0.0, le=1.0)
+    components: list[SentimentComponent] = Field(default_factory=list)
+    secondary_key: str = "none"
+    secondary_label: str = ""
+    secondary_ko: str = ""
+    read: str = ""
+    support: list[SentimentFactor] = Field(default_factory=list)
+    pressure: list[SentimentFactor] = Field(default_factory=list)
+    history: SentimentHistory = Field(default_factory=SentimentHistory)
+    bands: list[dict[str, str | float]] = Field(default_factory=list)
+    note: str = ""
+
+
 class AiRegime(Base):
     as_of: datetime
     regime: RegimeKey
@@ -430,3 +503,5 @@ class AiRegime(Base):
     news_impact: list[NewsImpact] = Field(default_factory=list)
     expectation_gap: list[GapRow] = Field(default_factory=list)
     what_matters: list[MattersItem] = Field(default_factory=list)
+    # ── AI SENTIMENT · GREED & FEAR (2026-09-30) ──
+    sentiment: AiSentiment | None = None

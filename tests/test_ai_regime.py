@@ -204,3 +204,82 @@ class TestValueChain:
         r = _build("baseline")  # investment 없음 → 메모리 행 전부 계열 없음
         assert all(m.status == "N/A" and m.value is None for m in r.semi_confirmation.memory)
         assert next(a for a in r.semi_confirmation.areas if a.key == "commodity").status == "UNCONFIRMED"
+
+
+class TestSentiment:
+    """AI SENTIMENT · GREED & FEAR — 다섯 구성요소의 가중 평균(0~100). 확률이 아니라 현재 상태. 결측은 분모에서 뺀다."""
+
+    def test_index_is_weighted_mean_of_available_components_and_bands_match_config(self):
+        r = _build("baseline")
+        s = r.sentiment
+        assert s is not None and len(s.components) == 5 and [c.key for c in s.components] == ["narrative", "price", "breadth", "fundamentals", "macro"]
+        cfg = load_ai_regime_config()["sentiment"]
+        avail = [c for c in s.components if c.score is not None]
+        if s.index is not None:
+            assert s.index == pytest.approx(sum(c.score * c.weight for c in avail) / sum(c.weight for c in avail), abs=0.15)
+            assert 0 <= s.index <= 100
+            band = next(b for b in cfg["bands"] if s.index >= b["min"])
+            assert s.state == band["key"] and s.state_label == band["label"] and s.state_ko == band["ko"]
+        for c in s.components:
+            ins = [i for i in c.inputs if i.available]
+            if ins:
+                assert c.score == pytest.approx(sum(i.score * i.weight for i in ins) / sum(i.weight for i in ins), abs=0.15)
+                assert 0 <= c.score <= 100 and c.read
+            for i in c.inputs:
+                assert (i.score is None) == (not i.available)
+                if not i.available:
+                    assert i.note  # 결측은 이유가 있고 0 으로 채우지 않는다
+        assert s.coverage <= 1.0 and s.bands and s.read and s.secondary_label
+        for w in ("확률", "probab", "매수", "매도", "전망"):
+            assert w not in s.read  # 심리 상태 문장은 확률·추천·전망을 말하지 않는다
+        assert "확률" in s.note and "아니다" in s.note  # 그리고 지표 설명은 그것이 아님을 명시한다
+
+    def test_components_are_taken_from_existing_regime_values_not_new_judgements(self):
+        """PRICE 는 바스켓 z·상대 z, BREADTH 는 breadth 비율, MACRO 는 매크로 행 z × 기대 부호 — 이미 계산된 값의 재표현이다."""
+        r = _build("baseline")
+        s = r.sentiment; cfg = load_ai_regime_config()["sentiment"]
+        price = next(c for c in s.components if c.key == "price"); zref = float(cfg["z_ref"])
+        bp = next(i for i in price.inputs if i.id == "basket_price")
+        assert bp.value == r.ai_vs_market.basket_z and bp.score == pytest.approx(50 + 50 * max(-1, min(1, r.ai_vs_market.basket_z / zref)), abs=0.1)
+        breadth = next(c for c in s.components if c.key == "breadth")
+        assert next(i for i in breadth.inputs if i.id == "above_ma20").score == r.breadth.above_ma20_pct
+        macro = next(c for c in s.components if c.key == "macro")
+        for i in macro.inputs:
+            row = next((m for m in r.macro.rows if m.key == {"credit": "hy"}.get(i.id, i.id)), None)
+            if row is not None and row.z is not None:
+                assert i.value == pytest.approx(row.z * row.expected_sign, abs=0.01)
+        fund = next(c for c in s.components if c.key == "fundamentals")
+        assert not next(i for i in fund.inputs if i.id == "eps").available  # 컨센서스 없음 → 결측, 0 아님
+        assert not next(i for i in fund.inputs if i.id == "commodity_memory").available
+
+    def test_secondary_state_structure_and_history_basis(self):
+        r = _build("ai_sentiment", shock=-0.006, benchmarks_too=True)  # 뉴스 ↑ · 가격 ↓
+        s = r.sentiment; cfg = load_ai_regime_config()["sentiment"]
+        keys = {x["key"] for x in cfg["secondary"]["rules"]} | {"none"}
+        assert s.secondary_key in keys
+        by = {c.key: c.score for c in s.components}
+        if by["narrative"] is not None and by["price"] is not None and by["narrative"] - by["price"] >= cfg["secondary"]["gap"]:
+            assert s.secondary_key in ("narrative_ahead", "fundamentals_over_price", "macro_capped", "macro_supported", "fragile")
+        assert len(s.support) <= 3 and len(s.pressure) <= 3
+        assert all(f.score >= cfg["structure"]["support_min"] for f in s.support) and all(f.score <= cfg["structure"]["pressure_max"] for f in s.pressure)
+        h = s.history
+        assert h.days == cfg["history"]["days"] and len(h.points) <= h.days
+        assert set(h.basis) <= {"narrative", "price", "breadth", "fundamentals", "macro"}
+        assert "fundamentals" not in h.basis and "fundamentals" in h.excluded  # 메모리·EPS 는 날짜별 계열이 없다 — 채워 넣지 않는다
+        for p in h.points:
+            if p.index is not None:
+                use = [(p.components[k], next(c.weight for c in s.components if c.key == k)) for k in h.basis]
+                assert p.index == pytest.approx(sum(v * w for v, w in use) / sum(w for _, w in use), abs=0.15)
+        if h.change_1d is not None:
+            assert h.change_1d == pytest.approx(h.points[-1].index - h.points[-2].index, abs=0.15)
+        assert "기준" in h.note or "이력" in h.note
+
+    def test_missing_basket_yields_no_index_and_no_fabricated_history(self):
+        snap, market, series, bk, by_id = _run("baseline")
+        r = build_ai_regime(market, series, {}, snap.themes, snap.events, by_id, market_label="NEUTRAL", market_confidence=0.0, as_of=AS_OF)
+        s = r.sentiment
+        assert s is not None
+        price = next(c for c in s.components if c.key == "price"); breadth = next(c for c in s.components if c.key == "breadth")
+        assert price.score is None and breadth.score is None and price.coverage == 0.0
+        assert s.coverage < 1.0
+        assert all(p.index is None for p in s.history.points) or not s.history.points

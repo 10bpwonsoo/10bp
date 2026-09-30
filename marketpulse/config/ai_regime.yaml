@@ -313,3 +313,93 @@ triggers:
     - {metric: AI_NEWS_TONE,     op: "<=", value: -20,  text: "AI 내러티브 급락 (뉴스 톤 −20 이하)"}
   release:
     - {metric: AI_REL_NDX_Z5, op: ">=", value: 0.5, text: "AI 바스켓이 Nasdaq 대비 +0.5σ 이상 회복하면 AI 고유 약세 판단을 거둔다"}
+
+#: AI SENTIMENT · GREED & FEAR — AI 투자 테마 내부의 투자심리와 실제 시장 확인 강도(0~100). 일반 시장 Fear & Greed 가 아니다.
+#: 상승·매수 확률·수익률 전망이 아니라 Narrative + Price + Breadth + Fundamentals + Macro 를 합친 현재 상태 지표다.
+#: 각 입력은 clip(값/ref) 을 0~100 으로 옮긴다(50 = 중립). 결측 입력은 분모에서 뺀다 — 0 이 아니다. 엔진(engines/ai_sentiment.py)은 숫자를 갖지 않는다.
+sentiment:
+  z_ref: 2.0            # z 입력: |z| = z_ref 이면 0 또는 100
+  news_ref: 40          # 뉴스 톤 입력: ±40 이면 0 또는 100
+  min_coverage: 0.5     # 가중치 기준 확보율이 이 아래면 INDEX 를 내지 않는다
+  min_events: 3         # AI 기사가 이보다 적으면 뉴스 톤 입력은 결측
+  bands:                # 위에서부터 먼저 걸리는 것
+    - {min: 80, key: EXTREME_GREED, label: "EXTREME GREED", ko: "과열된 투자심리"}
+    - {min: 60, key: GREED,         label: "GREED",         ko: "낙관적인 투자심리"}
+    - {min: 40, key: NEUTRAL,       label: "NEUTRAL",       ko: "중립적인 투자심리"}
+    - {min: 20, key: FEAR,          label: "FEAR",          ko: "불안한 투자심리"}
+    - {min: 0,  key: EXTREME_FEAR,  label: "EXTREME FEAR",  ko: "극단적 공포"}
+  components:
+    - key: narrative
+      label: NARRATIVE
+      label_ko: 내러티브
+      weight: 0.20
+      read: {high: "AI Capex / AI 뉴스 흐름 긍정적", mid: "AI 뉴스 흐름은 중립적", low: "AI 뉴스 흐름 부정적"}
+      inputs:
+        - {id: ai_news_tone, label: "AI News Tone", label_ko: "AI 뉴스 톤", source: news_tone, ref: 40, weight: 1.0}
+        - {id: capex, label: "AI Capex", label_ko: "AI 설비투자 뉴스", source: narrative, key: capex, ref: 40, weight: 0.8}
+        - {id: gpu_demand, label: "GPU Demand", label_ko: "GPU 수요 뉴스", source: narrative, key: gpu_demand, ref: 40, weight: 0.8}
+        - {id: hyperscaler_spending, label: "Hyperscaler Spending", label_ko: "하이퍼스케일러 지출 뉴스", source: narrative, key: hyperscaler_spending, ref: 40, weight: 0.6}
+    - key: price
+      label: PRICE
+      label_ko: 가격
+      weight: 0.25
+      read: {high: "가격이 심리를 확인", mid: "가격 확인은 아직 제한적", low: "가격이 약세를 찍고 있음"}
+      inputs:
+        - {id: basket_price, label: "AI Basket Price", label_ko: "AI 바스켓 가격(z)", source: basket_z, ref: 2.0, weight: 1.0}
+        - {id: relative_strength, label: "AI Relative Strength", label_ko: "Nasdaq 대비 상대강도(z)", source: rel_z, ref: 2.0, weight: 1.0}
+        - {id: basket_1m, label: "AI Basket 1M", label_ko: "AI 바스켓 1개월 수익", source: basket_ret_21d, ref: 10.0, weight: 0.5}
+    - key: breadth
+      label: BREADTH
+      label_ko: 확산도
+      weight: 0.20
+      read: {high: "상승 참여 폭이 넓음", mid: "상승 확산 범위가 좁음", low: "참여 종목이 매우 좁음"}
+      inputs:
+        - {id: above_ma20, label: "Breadth >20DMA", label_ko: "20일선 상회 비율", source: breadth_pct, field: above_ma20_pct, weight: 1.0}
+        - {id: above_ma5, label: "Breadth >5DMA", label_ko: "5일선 상회 비율", source: breadth_pct, field: above_ma5_pct, weight: 0.5}
+        - {id: advancing, label: "Advancing", label_ko: "상승 종목 비율", source: breadth_pct, field: advancing_pct, weight: 0.5}
+    - key: fundamentals
+      label: FUNDAMENTALS
+      label_ko: 펀더멘털
+      weight: 0.15
+      read: {high: "AI Infra / Semiconductor fundamentals 강함", mid: "펀더멘털 확인은 부분적", low: "펀더멘털이 약해지고 있음"}
+      inputs:
+        - {id: hbm, label: "HBM / Memory Fundamentals", label_ko: "HBM · 메모리 데이터", source: stage, key: hbm, ref: 100, weight: 1.0}
+        - {id: commodity_memory, label: "Commodity Memory", label_ko: "범용 메모리 현물", source: stage, key: commodity_memory, ref: 100, weight: 0.6}
+        - {id: eps, label: "EPS Revision", label_ko: "EPS 수정", source: stage, key: eps, ref: 100, weight: 0.8}
+        - {id: semi_confirmation, label: "Semi Fundamental Confirmation", label_ko: "반도체 펀더멘털 확인", source: fundamental_confirmation, weight: 0.8, levels: {STRONG: 80, PARTIAL: 62, WEAK: 30}}
+    - key: macro
+      label: MACRO
+      label_ko: 매크로
+      weight: 0.20
+      read: {high: "금리·Credit 환경이 우호적", mid: "매크로 환경은 중립적", low: "금리·Credit 환경이 부담"}
+      inputs:
+        - {id: rates, label: "Long-End Rates", label_ko: "장기금리", source: macro_row, key: rates, ref: 2.0, weight: 1.0}
+        - {id: real_yield, label: "Real Yield", label_ko: "실질금리", source: macro_row, key: real_yield, ref: 2.0, weight: 1.0}
+        - {id: usd, label: "USD", label_ko: "달러", source: macro_row, key: usd, ref: 2.0, weight: 0.6}
+        - {id: vix, label: "Volatility (VIX)", label_ko: "변동성", source: macro_row, key: vix, ref: 2.0, weight: 0.8}
+        - {id: credit, label: "Credit Stress", label_ko: "신용 스트레스", source: macro_row, key: hy, ref: 2.0, weight: 1.0}
+        - {id: spx, label: "S&P 500", label_ko: "S&P 500", source: macro_row, key: spx, ref: 2.0, weight: 0.6}
+  #: 보조 상태 — 숫자 하나의 '성격'. 긴장이 가장 큰 규칙 하나만 붙인다. kind gap: a − b ≥ gap
+  secondary:
+    gap: 15
+    rules:
+      - {key: fundamentals_over_price, kind: gap, a: fundamentals, b: price, label: "FUNDAMENTALS > PRICE", ko: "펀더멘털에 비해 가격 확인이 부족"}
+      - {key: narrative_ahead, kind: gap, a: narrative, b: price, label: "NARRATIVE AHEAD OF PRICE", ko: "뉴스·기대가 실제 가격보다 앞서 있음"}
+      - {key: price_ahead, kind: gap, a: price, b: narrative, label: "PRICE AHEAD OF NARRATIVE", ko: "가격이 뉴스보다 앞서 움직임"}
+      - {key: fragile, kind: fragile, index_min: 60, breadth_max: 50, label: "FRAGILE", ko: "높은 심리 대비 Breadth 는 좁음"}
+      - {key: macro_capped, kind: cap, index_min: 45, macro_max: 40, label: "MACRO-CAPPED", ko: "매크로 환경이 심리의 상단을 제한"}
+      - {key: macro_supported, kind: floor, index_max: 55, macro_min: 60, label: "MACRO-SUPPORTED", ko: "매크로 환경이 약한 심리를 받침"}
+    none: {label: "BALANCED", ko: "구성요소 간 큰 긴장 없음"}
+  structure: {support_min: 60, pressure_max: 40, max: 3}   # SUPPORT / PRESSURE 요인 (입력 단위)
+  read:
+    support_and_pressure: "{strong}은(는) 투자심리를 지지하고 있지만 {weak}은(는) 아직 이를 확인하지 못하고 있습니다."
+    support_only: "{strong}이(가) 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다."
+    pressure_only: "{weak}이(가) 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다."
+    neither: "다섯 구성요소가 모두 중립 구간에 있어 심리의 방향이 뚜렷하지 않습니다."
+    pressure_factors_greed: "{factors}이(가) 현재 Greed 확산을 제한하는 주요 요인입니다."
+    pressure_factors_fear: "{factors}이(가) 현재 Fear 를 만드는 주요 요인입니다."
+    support_factors: "{factors}이(가) 심리를 끌어올리는 주요 요인입니다."
+  history:
+    days: 21            # 1M
+    min_days: 10        # 구성요소가 창 안에서 이 일수 이상 나와야 1M 이력의 기준(basis)에 넣는다
+    news_hours: 36      # 이력에서 하루의 뉴스 톤은 그 날 끝 기준 감쇠 가중 — 창 밖 기사는 안 센다

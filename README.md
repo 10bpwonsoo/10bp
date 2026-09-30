@@ -468,6 +468,32 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · AI SENTIMENT · GREED & FEAR (2026-09-30)
+
+`AI 센티2` 탭의 AI TRADE REGIME 바로 아래, AI vs MARKET 위에 붙는 영역이다(AI 센티 기본 화면과 기존 AI 센티2 의 구조·판정
+로직은 그대로). 일반 시장 Fear & Greed 가 아니라 **AI 투자 테마 내부의 투자심리와 실제 시장 확인 강도**를 0~100 하나로
+잰 현재 상태 지표이고, 상승·매수 확률이나 수익률 전망이 아니다. `config/ai_regime.yaml sentiment` 가 전부를 정한다:
+구성요소 5개(NARRATIVE 0.20 · PRICE 0.25 · BREADTH 0.20 · FUNDAMENTALS 0.15 · MACRO 0.20)와 각 입력(AI 뉴스 톤 · Capex /
+GPU / Hyperscaler driver 톤 · 바스켓 z · Nasdaq 대비 상대 z · 1M 수익 · 5/20일선·상승 비율 · HBM / 범용 메모리 / EPS 전파 단계 ·
+반도체 펀더멘털 확인 · 금리 / 실질금리 / 달러 / VIX / 신용 / S&P z × 기대 부호), 밴드(0–20 EXTREME FEAR · 20–40 FEAR ·
+40–60 NEUTRAL · 60–80 GREED · 80–100 EXTREME GREED), 보조 상태 규칙, SUPPORT / PRESSURE 문턱, READ 템플릿, 1M 이력 창.
+엔진 `engines/ai_sentiment.py` 는 새 판정을 만들지 않는다 — 이미 계산된 AiRegime 값을 clip(값/ref) 로 0~100 에 옮기고
+(50 = 중립) 가중 평균한다. **결측은 0 이 아니라 분모에서 뺀다**(EPS 컨센서스 없음, 범용 메모리 계열 없음은 DATA MISSING 으로
+남고 구성요소 확보율에 적힌다). 보조 상태는 긴장이 가장 큰 규칙 하나(FUNDAMENTALS > PRICE · NARRATIVE AHEAD OF PRICE ·
+PRICE AHEAD OF NARRATIVE · FRAGILE · MACRO-CAPPED · MACRO-SUPPORTED, 없으면 BALANCED). SENTIMENT STRUCTURE 는 입력 단위로
+SUPPORT(≥60) / PRESSURE(≤40) 각 ≤3. 1M 이력은 같은 공식을 바스켓·벤치마크 종가 · 시장 계열 · 기사 시각으로 하루씩 되돌려
+만들고, 날짜별 계열이 없는 구성요소(메모리 데이터·EPS)와 창 안에서 충분히 잴 수 없는 구성요소(뉴스는 기사가 있는 날만)는
+basis 에서 빼고 그렇게 적는다 — 1D/1W 변화도 그 basis 위의 값이며 화면에 † 로 표시한다. 프런트 `AiSentimentSection.tsx`:
+SVG 반원 게이지(viewBox, 밴드 5, 눈금 0·20·40·60·80·100, FEAR / NEUTRAL / GREED 라벨, 바늘 각도 −90° + s/100 × 180°,
+load 때 한 번만 움직임), 중앙 점수 · 상태 · 한글 · 1D/1W, 아래 보조 상태; 오른쪽(데스크톱 0.8fr : 1.2fr) 구성요소 분해
+(점수 · 상태 · 한글 해석 · 입력 확보), 그 아래 AI SENTIMENT READ(2~3문장) · SENTIMENT STRUCTURE(SUPPORT / PRESSURE) ·
+1M 스파크라인(Range); 900px 이하는 게이지 `min(100%, 360px)` 가운데 정렬 single column. 색은 탈색 청 → 청회 → 웜 그레이 →
+앰버 → 적갈의 muted 팔레트(`--gf-*`)로 심리 상태만 구분하고 좋고 나쁨(적/청)을 뜻하지 않는다. 9/29: **40 NEUTRAL** —
+NARRATIVE 62 GREED(Capex +18 · 뉴스 톤 +6) · PRICE 32 FEAR(바스켓 −1.2σ · 상대 −0.7σ) · BREADTH 36 FEAR(5일선 위 12%) ·
+FUNDAMENTALS 66 GREED(HBM +39 · 반도체 확인 PARTIAL; 범용 메모리·EPS 결측) · MACRO 13 EXTREME FEAR(HY OAS +3.9σ ·
+실질금리 +1.5σ) → 보조 상태 FUNDAMENTALS > PRICE; SUPPORT AI Capex · HBM · Semi Confirmation, PRESSURE Credit Stress ·
+Real Yield · Breadth >5DMA; 1M 이력은 PRICE · BREADTH · MACRO 기준(Range 21–82). 테스트 +4(백엔드) +1(프런트).
+
 #### 실시간 2 · MARKET LEADERSHIP → Full-width Leadership Detail Panel (2026-09-30)
 
 레이아웃·상호작용만 바꾼 수정이다(판단 로직 · 엔진 · 데이터 계약은 그대로). 좁은 카드 column 안에서 상세를 펼치던 구조를

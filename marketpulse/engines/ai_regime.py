@@ -613,4 +613,9 @@ def build_ai_regime(
 
     extend_with_value_chain(result, cfg, market=market, extra=extra, names=names, closes=closes, stats=stats, bench_closes=bench_closes, ai_events=ai_events,
                             narr=narr, themes=theme_by_id, investment=investment, inst_names=inst_names, instruments_by_id=instruments_by_id, as_of=as_of, zwin=zwin, config_dir=config_dir)
+    # ── AI SENTIMENT · GREED & FEAR (2026-09-30) — 위 값들을 0~100 하나로 합친 현재 상태 지표. 새 판정을 만들지 않는다 ──
+    from .ai_sentiment import build_ai_sentiment
+
+    build_ai_sentiment(result, cfg, ai_events=ai_events, as_of=as_of, closes=closes, basket_ids=basket_ids, bench=bench_closes.get(primary, []), market_series=market_series,
+                       instruments_by_id=instruments_by_id, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
     return result

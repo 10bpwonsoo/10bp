@@ -55,6 +55,14 @@
   --lbl-geopolitical: #c2b24a;
   --lbl-neutral: #6b6e5f;
 
+  /* AI SENTIMENT · GREED & FEAR 반원 게이지 밴드 — 심리 상태이지 좋고 나쁨이 아니다: 탈색 청 → 청회 → 웜 그레이 → 앰버 → 적갈 */
+  --gf-xf: #4a6a94;
+  --gf-f: #5f7488;
+  --gf-n: #8a877a;
+  --gf-g: #b08a45;
+  --gf-xg: #a75a4a;
+  --gf-track: #2a2e21;
+
   /* 온도계 밴드 = 공포·탐욕. 결빙(극단적 공포) → 과열(극단적 탐욕) 발산형 */
   --band-frozen: #3d78c2;
   --band-cool: #7fb0e0;
@@ -108,6 +116,13 @@
     --lbl-growth: #6f3fb8;
     --lbl-liquidity: #1e8785;
     --lbl-policy: #386643;
+
+    --gf-xf: #6f8fb8;
+    --gf-f: #93a5b6;
+    --gf-n: #b9b5a6;
+    --gf-g: #cfae6b;
+    --gf-xg: #c27f6e;
+    --gf-track: #e6e6dc;
     --lbl-geopolitical: #7d7014;
     --lbl-neutral: #9a9c8e;
 
