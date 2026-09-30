@@ -1793,19 +1793,19 @@
 .ck-h-heat-legend { margin-top: 2px; }
 .ck-h-heat-legend span { color: var(--ink-2); font-weight: 600; margin-right: 3px; }
 @media (max-width: 768px) {
-  .ck-h-heat { gap: 18px; }
-  .ck-h-heat-row { grid-template-columns: 1fr; gap: 7px; padding-bottom: 12px; border-bottom: 1px dashed var(--rule-soft); }
+  .ck-h-heat { gap: 14px; }
+  .ck-h-heat-row { grid-template-columns: 1fr; gap: 6px; padding-bottom: 10px; border-bottom: 1px dashed var(--rule-soft); }
   .ck-h-heat-row:last-of-type { border-bottom: 0; }
-  .ck-h-heat-l b { font-size: 17px; }
-  .ck-h-heat-l small { font-size: 13px; }
-  .ck-h-heat-cells { height: 14px; }
-  .ck-h-heat-body { gap: 7px; }
-  .ck-h-heat-a { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .ck-h-heat-st > b { font-size: 15px; }
-  .ck-h-heat-st em { font-size: 14.5px; }
-  .ck-h-heat-hz { font-size: 13px; flex-wrap: wrap; white-space: normal; gap: 4px 14px; }
-  .ck-h-heat-read { font-size: 13px; }
-  .ck-h-heat-axis { font-size: 11px; }
+  .ck-h-heat-l b { font-size: 13px; }
+  .ck-h-heat-l small { font-size: 11px; }
+  .ck-h-heat-cells { height: 12px; }
+  .ck-h-heat-body { gap: 5px; }
+  .ck-h-heat-a { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .ck-h-heat-st > b { font-size: 12px; }
+  .ck-h-heat-st em { font-size: 12px; }
+  .ck-h-heat-hz { font-size: 11px; flex-wrap: wrap; white-space: normal; gap: 3px 12px; }
+  .ck-h-heat-read { font-size: 11px; }
+  .ck-h-heat-axis { font-size: 10px; }
 }
 
 @media (max-width: 1100px) { .ck { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "now drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } }
