@@ -1383,6 +1383,8 @@
 .ck { display: grid; gap: 12px; padding: var(--gap); grid-template-columns: repeat(10, minmax(0, 1fr));
   grid-template-areas: "now now now now drivers drivers drivers drivers drivers drivers" "cross cross cross cross cross lead lead lead lead lead" "trans trans trans trans trans trans trans trans trans trans"
     "radar radar radar radar radar cat cat cat cat cat" "earn earn earn earn earn earn earn earn earn earn" "next next next next next next watch watch watch watch" "status status status status status status status status status status" "details details details details details details details details details details"; }
+.ck.ck-ldopen { grid-template-areas: "now now now now drivers drivers drivers drivers drivers drivers" "cross cross cross cross cross lead lead lead lead lead" "leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet" "trans trans trans trans trans trans trans trans trans trans"
+    "radar radar radar radar radar cat cat cat cat cat" "earn earn earn earn earn earn earn earn earn earn" "next next next next next next watch watch watch watch" "status status status status status status status status status status" "details details details details details details details details details details"; }
 .ck-card { min-width: 0; }
 .ck-card .panel-body { gap: 8px; }
 .ck-accent { border-top: 2px solid var(--accent); }
@@ -1425,7 +1427,7 @@
 .ck-div { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
 .ck-div-row { display: flex; flex-direction: column; font-size: 12px; line-height: 1.45; }
 .ck-div-m { color: var(--ink-2); }
-.ck-lead-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ck-lead-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .ck-lead-row { display: grid; grid-template-columns: minmax(0, 1fr) 26px; gap: 4px 8px; font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
 .ck-lead-l { font-weight: 500; }
 .ck-lead-v { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); }
@@ -1484,6 +1486,8 @@
 
 /* ── 실시간 2 · MARKET REGIME HISTORY · 1M ─────────────────────────── */
 .ck.ck-hist { grid-template-areas: "now now now now hist hist hist hist hist hist" "drivers drivers drivers drivers drivers drivers drivers drivers drivers drivers" "cross cross cross cross cross lead lead lead lead lead" "trans trans trans trans trans trans trans trans trans trans"
+    "radar radar radar radar radar cat cat cat cat cat" "earn earn earn earn earn earn earn earn earn earn" "next next next next next next watch watch watch watch" "status status status status status status status status status status" "details details details details details details details details details details"; }
+.ck.ck-hist.ck-ldopen { grid-template-areas: "now now now now hist hist hist hist hist hist" "drivers drivers drivers drivers drivers drivers drivers drivers drivers drivers" "cross cross cross cross cross lead lead lead lead lead" "leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet leaddet" "trans trans trans trans trans trans trans trans trans trans"
     "radar radar radar radar radar cat cat cat cat cat" "earn earn earn earn earn earn earn earn earn earn" "next next next next next next watch watch watch watch" "status status status status status status status status status status" "details details details details details details details details details details"; }
 .ck-h { display: grid; grid-template-columns: minmax(0, 1fr) 200px; grid-template-rows: auto 1fr auto; gap: 8px 18px; grid-template-areas: "main side" "main share" "foot foot"; }
 .ck-h-main { grid-area: main; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -1547,9 +1551,10 @@
 .ck-h-empty { font-size: 11px; color: var(--faint); }
 .ck-h-fold > summary { display: none; }
 @media (min-width: 761px) { .ck-h-trans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } .ck-h-trans > .ck-k { grid-column: 1 / -1; } }
-@media (max-width: 1100px) { .ck.ck-hist { grid-template-areas: "now hist" "drivers drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } .ck-h { grid-template-columns: 1fr; grid-template-rows: auto; grid-template-areas: "side" "main" "share" "foot"; } }
+@media (max-width: 1100px) { .ck.ck-hist { grid-template-areas: "now hist" "drivers drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } .ck.ck-hist.ck-ldopen { grid-template-areas: "now hist" "drivers drivers" "cross lead" "leaddet leaddet" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } .ck-h { grid-template-columns: 1fr; grid-template-rows: auto; grid-template-areas: "side" "main" "share" "foot"; } }
 @media (max-width: 760px) {
   .ck.ck-hist { grid-template-areas: "now" "hist" "drivers" "cross" "lead" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }
+  .ck.ck-hist.ck-ldopen { grid-template-areas: "now" "hist" "drivers" "cross" "lead" "leaddet" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }
   .ck-h-fold > summary { display: block; font-size: 10.5px; color: var(--accent); cursor: pointer; padding: 4px 0; }
   .ck-h-ctx-grid { grid-template-columns: repeat(4, 1fr); }
   .ck-h-tipwrap { left: 50% !important; }
@@ -1694,52 +1699,105 @@
 
 
 /* ── 실시간 2 · LEADERSHIP INTELLIGENCE ───────────────── */
-.ck-lead-row.has-detail { cursor: pointer; border-radius: var(--radius); padding: 4px 6px; margin: 0 -6px; }
-.ck-lead-row.has-detail:hover, .ck-lead-row.open { background: var(--surface-2); }
-.ck-lead-h { display: flex; gap: 6px; align-items: baseline; }
+.ck-lead-row.has-detail { cursor: pointer; border-radius: var(--radius); padding: 4px 6px; margin: 0 -6px; border: 1px solid transparent; }
+.ck-lead-row.has-detail:hover { background: var(--surface-2); }
+.ck-lead-row.open { background: var(--surface-2); border-color: var(--rule); }
+.ck-lead-h { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
 .ck-lead-h .ck-nx-open { margin-left: auto; margin-top: 0; }
+.ck-lead-h .ck-lead-active + .ck-nx-open { margin-left: 0; }
+.ck-lead-active { margin-left: auto; font-size: 9px; letter-spacing: .08em; color: var(--accent); border: 1px solid var(--accent); border-radius: 3px; padding: 0 4px; line-height: 1.5; }
 .ck-lead-sv { display: block; font-size: 11px; color: var(--ink-2); line-height: 1.4; margin-top: 2px; }
 .ck-lead-sv .ck-k { margin-right: 4px; }
-.ck-ld-wrap { margin-top: 6px; }
-.ck-ld-head { display: flex; align-items: baseline; gap: 10px; font-size: 13px; }
-.ck-ld-head .ck-more { margin-left: auto; }
-.ck-ld { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-top: 6px; padding: 10px 12px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface); cursor: default; }
-.ck-ld-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.ck-ld-sec { display: flex; flex-direction: column; gap: 3px; }
+
+/* ── 실시간 2 · MARKET LEADERSHIP → Full-width Leadership Detail Panel ─────────
+   목록(compact) 과 상세(full-width) 를 분리한다. 패널은 그리드의 "leaddet" 행 = 부모 그리드 전체 폭.
+   패널 안은 최대 2열(왼쪽 WHY · SYSTEM VIEW · CONFIRMATION, 오른쪽 STREET · KEY STOCKS · WATCH),
+   viewport 1280px 미만이거나 패널 폭이 부족하면 한 열. 어디서도 가로 스크롤을 만들지 않는다. */
+.ck { width: 100%; max-width: 100%; box-sizing: border-box; }
+.ck > * { min-width: 0; max-width: 100%; }
+.ck-ldp { grid-column: 1 / -1; container-type: inline-size; container-name: ldp; border-top: 2px solid var(--accent); }
+.ck-ldp .panel-body { gap: 12px; }
+.ck-ldp-head { flex-wrap: wrap; row-gap: 4px; }
+.ck-ldp-head .panel-title { min-width: 0; }
+.ck-ldp-kind { font-weight: 400; color: var(--muted); font-size: 12px; }
+.ck-ldp-head .panel-note { min-width: 0; overflow-wrap: anywhere; }
+.ck-ldp-close { margin-left: auto; align-self: baseline; white-space: nowrap; }
+.ck-ldp-sum { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 10px 12px; border: 1px solid var(--rule-soft); border-left: 3px solid var(--accent); border-radius: var(--radius); background: var(--surface-2); }
+.ck-ldp-sum-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 16px; }
+.ck-ldp-sum-kv > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
+.ck-ldp-sum-kv b { font-weight: 600; color: var(--ink); }
+.ck-ldp-sum-kv small { font-size: 10.5px; color: var(--muted); }
+.ck-ldp-sum-read { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ck-ldp-sum-read p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink); overflow-wrap: anywhere; }
+.ck-ld { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; min-width: 0; max-width: 100%; cursor: default; }
+.ck-ld-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; max-width: 100%; }
+.ck-ld-sec { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 8px 10px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface); }
+.ck-ld-sec > .ck-k { font-size: 10px; }
 .ck-ld-sec > .ck-k em { font-style: normal; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
-.ck-ld-why { margin: 2px 0 0; padding-left: 18px; font-size: 11.5px; line-height: 1.45; color: var(--ink); display: flex; flex-direction: column; gap: 2px; }
-.ck-ld-cf { display: grid; grid-template-columns: 118px 92px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 11px; padding: 2px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-sec p, .ck-ld-sec li, .ck-ld-sec span, .ck-ld-sec a { overflow-wrap: anywhere; word-break: break-word; white-space: normal; min-width: 0; }
+.ck-ld-why { margin: 2px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.5; color: var(--ink); display: flex; flex-direction: column; gap: 3px; }
+/* MARKET CONFIRMATION — Metric | Value | Status 세 칸, 좁으면 위아래로 쌓인다 */
+.ck-ld-cfs { display: flex; flex-direction: column; margin-top: 2px; }
+.ck-ld-cf { display: grid; grid-template-columns: minmax(96px, 0.8fr) minmax(0, 0.9fr) minmax(0, 1.6fr); gap: 4px 10px; align-items: start; font-size: 11.5px; padding: 5px 0; border-bottom: 1px dashed var(--rule-soft); }
 .ck-ld-cf:last-child { border-bottom: 0; }
-.ck-ld-cf-l { font-size: 10px; letter-spacing: .04em; color: var(--ink-2); }
-.ck-ld-sys { padding: 7px 9px; border-left: 2px solid var(--accent); background: var(--surface-2); }
-.ck-ld-sys p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink); }
-.ck-ld-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 10.5px; color: var(--ink-2); margin-top: 4px; }
-.ck-ld-3 span { display: flex; flex-direction: column; gap: 1px; }
+.ck-ld-cf-l { font-size: 10px; letter-spacing: .04em; color: var(--ink-2); line-height: 1.5; }
+.ck-ld-cf-v { line-height: 1.5; }
+.ck-ld-cf-s { min-width: 0; }
+.ck-ld-cf-s .ck-sk { display: flex; }
+.ck-ld-sys { border-left: 3px solid var(--accent); background: var(--surface-2); }
+.ck-ld-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 14px; font-size: 11.5px; color: var(--ink); margin-top: 2px; }
+.ck-ld-3 > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ck-ld-3 i { font-style: normal; }
-.ck-ld-3 small { color: var(--muted); }
-.ck-ld-street { padding: 7px 9px; border-left: 2px solid var(--down); background: var(--surface-2); }
-.ck-ld-sv { display: flex; flex-direction: column; gap: 2px; padding: 5px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-3 small { font-size: 10.5px; color: var(--muted); }
+/* STREET VIEW — normal flow, height auto. 기본 노출은 기관·날짜·한글 요약, 영어 원문은 2줄까지 접힘 */
+.ck-ld-street { border-left: 3px solid var(--down); background: var(--surface-2); height: auto; }
+.ck-ld-sv { display: flex; flex-direction: column; gap: 3px; padding: 6px 0; border-bottom: 1px dashed var(--rule-soft); min-width: 0; }
 .ck-ld-sv:last-of-type { border-bottom: 0; }
-.ck-ld-sv-h { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; color: var(--muted); flex-wrap: wrap; }
+.ck-ld-sv-h { display: flex; justify-content: space-between; gap: 4px 10px; font-size: 10.5px; color: var(--muted); flex-wrap: wrap; }
 .ck-ld-sv-h b { color: var(--ink); }
-.ck-ld-sv-q { font-size: 11px; color: var(--ink-2); font-style: italic; }
-.ck-ld-sv-s { font-size: 11.5px; line-height: 1.45; color: var(--ink); }
-.ck-ld-sv-f { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
-.ck-ld-read { font-size: 11px; color: var(--ink-2); margin-top: 4px; }
-.ck-ld-ks { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) 56px; gap: 8px; align-items: baseline; font-size: 11px; padding: 2px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-sv-s { font-size: 12px; line-height: 1.5; color: var(--ink); }
+.ck-ld-sv-q { font-size: 11px; line-height: 1.45; color: var(--ink-2); font-style: italic; }
+.ck-ld-sv-q[role="button"] { cursor: pointer; }
+.ck-ld-sv-q.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ck-ld-sv-more { font-style: normal; font-size: 10px; color: var(--accent); }
+.ck-ld-sv-f { display: flex; justify-content: space-between; gap: 4px 10px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
+.ck-ld-sv-f a { white-space: nowrap; }
+.ck-ld-read { font-size: 11.5px; line-height: 1.5; color: var(--ink-2); margin-top: 4px; }
+/* KEY STOCKS — 표가 아니라 종목마다 독립된 row/card */
+.ck-ld-kss { display: flex; flex-direction: column; margin-top: 2px; }
+.ck-ld-ks { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; font-size: 12px; padding: 6px 0; border-bottom: 1px dashed var(--rule-soft); min-width: 0; }
 .ck-ld-ks:last-child { border-bottom: 0; }
 .ck-ld-ks.radar { cursor: pointer; }
-.ck-ld-ks-r { font-size: 10.5px; color: var(--muted); }
-.ck-ld-ks .num { text-align: right; }
-@media (max-width: 1100px) { .ck-ld { grid-template-columns: 1fr; } }
-@media (max-width: 760px) {
-  .ck-ld-cf { grid-template-columns: 96px minmax(0, 1fr); }
-  .ck-ld-cf .ck-sk { grid-column: 1 / -1; }
-  .ck-ld-3 { grid-template-columns: 1fr; }
-  .ck-ld-ks { grid-template-columns: minmax(0, 1fr) 52px; }
-  .ck-ld-ks-r { grid-column: 1 / -1; }
+.ck-ld-ks.radar:hover { background: var(--surface-2); }
+.ck-ld-ks-n { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.ck-ld-ks-z { text-align: right; white-space: nowrap; }
+.ck-ld-ks-r { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); }
+.ck-ld-ks-st { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 1px; font-size: 11px; color: var(--ink-2); }
+.ck-ld-ks-st small { font-size: 10.5px; color: var(--muted); }
+/* Detail 2열 — 넓은 데스크톱에서만, 그리고 패널 자체 폭이 충분할 때만 */
+@media (min-width: 1280px) {
+  @container ldp (min-width: 1100px) {
+    .ck-ld { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 }
-
+@container ldp (max-width: 620px) {
+  .ck-ld-cf { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ck-ld-3 { grid-template-columns: minmax(0, 1fr); }
+  .ck-ldp-sum-kv { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 768px) {
+  .ck-ld { gap: 12px; }
+  .ck-ld-col { gap: 12px; }
+  .ck-ld-cf { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ck-ld-3 { grid-template-columns: minmax(0, 1fr); }
+  .ck-ldp-sum-kv { grid-template-columns: minmax(0, 1fr); }
+  .ck-ldp-sum-read p { font-size: 12.5px; }
+  .ck-ld-sv-h, .ck-ld-sv-f { flex-direction: column; }
+  /* 패널은 전체 폭이므로 상태 옆에 짧은 꼬리 대신 온전한 의미를 보인다 */
+  .ck-ld-cf .ck-sk { flex-direction: column; gap: 1px; align-items: flex-start; }
+  .ck-ld-cf .ck-sk-ko { display: inline; }
+  .ck-ld-cf .ck-sk-short { display: none; }
+}
 
 /* ── 실시간 2 · TRANSMISSION read · WATCHLIST checkpoints ───────────────────── */
 .ck-tr.focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
@@ -1808,9 +1866,11 @@
   .ck-h-heat-axis { font-size: 10px; }
 }
 
-@media (max-width: 1100px) { .ck { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "now drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } }
+@media (max-width: 1100px) { .ck { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "now drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; }
+  .ck.ck-ldopen { grid-template-areas: "now drivers" "cross lead" "leaddet leaddet" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } }
 @media (max-width: 760px) {
   .ck { grid-template-columns: 1fr; grid-template-areas: "now" "drivers" "cross" "lead" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }
+  .ck.ck-ldopen { grid-template-areas: "now" "drivers" "cross" "lead" "leaddet" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }
   .ck-m-hide { display: none; }
   .ck-m-only { display: inline-block; }
   .ck-now-label { font-size: 24px; }

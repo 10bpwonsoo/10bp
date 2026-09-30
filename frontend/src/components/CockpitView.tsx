@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Cockpit, CkArrow, CkDriver, CkCatalyst, CkRadarStock, CkLeaderRow, CkWatchRow, AnalystView, AnalystViews, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
+import type { Cockpit, CkArrow, CkDriver, CkCatalyst, CkRadarStock, CkLeaderRow, CkStreetView, CkWatchRow, AnalystView, AnalystViews, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
 import { useAnalystViews } from "../api/useAnalystViews";
 import { IssuePathView } from "./IssuePath";
 import { COLOR_LEGEND, MATCH_COLOR, STATUS_KO, STATUS_KO_SHORT, glossaryFor } from "./ko";
@@ -154,76 +154,128 @@ function CrossAssetCard({ c }: { c: Cockpit }) {
 }
 
 const STANCE_KO2: Record<string, string> = { constructive: "긍정적", cautious: "신중", neutral: "중립", mixed: "혼재" };
+/** KEY STOCKS 의 role 을 읽기 쉬운 라벨로 — 표시만 바꾸고 판단은 바꾸지 않는다 */
+const ROLE_KO: Record<string, string> = { airline: "항공", equipment: "장비", memory: "메모리", memory_hbm: "HBM 메모리", compute: "컴퓨트", foundry: "파운드리", hyperscalers: "하이퍼스케일러", software: "소프트웨어", refining: "정유", dc_infra: "데이터센터 인프라" };
+const roleLabel = (r: string) => ROLE_KO[r] ?? r.replace(/_/g, " ");
+/** KEY STOCKS 의 note("price ↓ — 확인 안 됨" 같은 엔진 문장)를 상태와 뜻으로 나눠 보여준다 — 문장은 그대로, 줄만 나눈다 */
+const splitNote = (note: string): [string, string] => { const i = note.indexOf(" — "); return i < 0 ? [note, ""] : [note.slice(0, i), note.slice(i + 3)]; };
+const sectionTitle = (kind: string, ko: string) => <span className="ck-k mono">{kind}<em>{ko}</em></span>;
 
+function StreetItem({ v }: { v: CkStreetView }) {
+  const [full, setFull] = useState(false);
+  const long = (v.quote || "").length > 90;
+  return (
+    <div className="ck-ld-sv" data-testid="ck-ld-street-item">
+      <div className="ck-ld-sv-h mono"><b>{v.institution}{v.analyst ? ` · ${v.analyst}` : " Research"}</b><span>{v.published_date.slice(5).replace("-", "/")} · {v.freshness} · {STANCE_KO2[v.stance] ?? v.stance}</span></div>
+      <div className="ck-ld-sv-s">{v.summary}</div>
+      {v.quote ? (
+        <div className={`ck-ld-sv-q${long && !full ? " clamp" : ""}`} data-testid="ck-ld-street-quote" onClick={long ? () => setFull((f) => !f) : undefined} role={long ? "button" : undefined} title={long ? (full ? "접기" : "원문 더 보기") : undefined}>
+          “{v.quote}”{long ? <span className="ck-ld-sv-more mono">{full ? " 접기" : " 더 보기"}</span> : null}
+        </div>
+      ) : null}
+      <div className="ck-ld-sv-f mono">{v.key_variables.length ? <span>{v.key_variables.join(" · ")}</span> : null}<a className="news-link" href={v.source_url} target="_blank" rel="noreferrer" title={v.source_title || v.source_url}>View source ↗</a></div>
+    </div>
+  );
+}
+
+/** Full-width detail body — LEFT: WHY LEADING → SYSTEM VIEW → MARKET CONFIRMATION, RIGHT: STREET VIEW → KEY STOCKS → WHAT TO WATCH. 1280px 미만이면 한 열. */
 function LeadershipDetailView({ r, onStock }: { r: CkLeaderRow; onStock?: (id: string) => void }) {
   const d = r.detail!;
   return (
-    <div className="ck-ld" data-testid="ck-lead-detail" onClick={(e) => e.stopPropagation()}>
+    <div className="ck-ld" data-testid="ck-lead-detail">
       <div className="ck-ld-col">
-        <div className="ck-ld-sec" data-testid="ck-ld-why"><span className="ck-k mono">Why leading?</span><span className="ck-sub-i">시장 데이터로 본 이유 — 수익률 반복이 아니라 무엇이 확인되는가</span>
+        <div className="ck-ld-sec" data-testid="ck-ld-why">{sectionTitle("Why leading?", "시장 데이터로 본 이유")}<span className="ck-sub-i">수익률 반복이 아니라 무엇이 확인되는가</span>
           <ol className="ck-ld-why">{d.why.map((w, i) => <li key={i}>{w}</li>)}</ol></div>
-        <div className="ck-ld-sec" data-testid="ck-ld-conf"><span className="ck-k mono">Market confirmation</span><span className="ck-sub-i">가격만 보지 않는다 — 상대강도 · breadth · 뉴스 · 펀더멘털 · driver</span>
-          {d.confirmation.map((c) => <div key={c.key} className="ck-ld-cf"><span className="ck-ld-cf-l mono">{c.label}</span><span className="num mono">{c.value}</span><StatusKo s={c.status} ko={c.meaning} /></div>)}</div>
-        <div className="ck-ld-sec ck-ld-sys" data-testid="ck-ld-system"><span className="ck-k mono">System view <em>INTERNAL · 내부 데이터 해석</em></span>
-          <p>{d.system_view}</p>
-          <div className="ck-ld-3 mono"><span><i className="ck-k">Driver</i>{d.driver}</span><span><i className="ck-k">Quality</i><b>{d.quality}</b> <small>{d.quality_ko}{d.quality_detail ? ` · ${d.quality_detail}` : ""}</small></span><span><i className="ck-k">Risk</i>{d.risk}</span></div></div>
+        <div className="ck-ld-sec ck-ld-sys" data-testid="ck-ld-system">{sectionTitle("System view", "INTERNAL · 내부 데이터 해석")}
+          <div className="ck-ld-3 mono">
+            <span><i className="ck-k">Driver</i>{d.driver}</span>
+            <span><i className="ck-k">Quality</i><b>{d.quality}</b><small>{d.quality_ko}{d.quality_detail ? ` · ${d.quality_detail}` : ""}</small></span>
+            <span><i className="ck-k">Risk</i>{d.risk}</span>
+          </div></div>
+        <div className="ck-ld-sec" data-testid="ck-ld-conf">{sectionTitle("Market confirmation", "시장이 얼마나 확인하는가")}<span className="ck-sub-i">가격만 보지 않는다 — 상대강도 · breadth · 뉴스 · 펀더멘털 · driver</span>
+          <div className="ck-ld-cfs">
+            {d.confirmation.map((c) => (
+              <div key={c.key} className="ck-ld-cf" data-testid="ck-ld-cf">
+                <span className="ck-ld-cf-l mono">{c.label}</span>
+                <span className="ck-ld-cf-v num mono">{c.value}</span>
+                <span className="ck-ld-cf-s"><StatusKo s={c.status} ko={c.meaning} /></span>
+              </div>
+            ))}
+          </div></div>
       </div>
       <div className="ck-ld-col">
         {d.street.length ? (
-          <div className="ck-ld-sec ck-ld-street" data-testid="ck-ld-street"><span className="ck-k mono">Street view <em>EXTERNAL · 외부 리서치 / 시장 전문가</em></span>
-            {d.street.map((v, i) => (
-              <div key={i} className="ck-ld-sv">
-                <div className="ck-ld-sv-h mono"><b>{v.institution}{v.analyst ? ` · ${v.analyst}` : " Research"}</b><span>{v.published_date.slice(5).replace("-", "/")} · {v.freshness} · {STANCE_KO2[v.stance] ?? v.stance}</span></div>
-                {v.quote ? <div className="ck-ld-sv-q">“{v.quote}”</div> : null}
-                <div className="ck-ld-sv-s">{v.summary}</div>
-                <div className="ck-ld-sv-f mono">{v.key_variables.length ? <span>{v.key_variables.join(" · ")}</span> : null}<a className="news-link" href={v.source_url} target="_blank" rel="noreferrer">{v.source_title || "출처"}</a></div>
-              </div>
-            ))}
+          <div className="ck-ld-sec ck-ld-street" data-testid="ck-ld-street">{sectionTitle("Street view", "EXTERNAL · 외부 리서치 / 시장 전문가")}
+            {d.street.map((v, i) => <StreetItem key={i} v={v} />)}
             {d.street_read ? <div className="ck-ld-read"><span className="ck-k mono">System read</span> {d.street_read}</div> : null}
           </div>
         ) : null}
         {d.key_stocks.length ? (
-          <div className="ck-ld-sec" data-testid="ck-ld-stocks"><span className="ck-k mono">Key stocks</span><span className="ck-sub-i">구성종목 목록이 아니라 지금 leadership 을 설명하는 종목</span>
-            {d.key_stocks.map((k) => (
-              <div key={k.id} className={`ck-ld-ks${k.in_radar ? " radar" : ""}`} data-testid="ck-ld-stock" onClick={k.in_radar && onStock ? () => onStock(k.id) : undefined} role={k.in_radar && onStock ? "button" : undefined}>
-                <span className="ck-ld-ks-n"><b>{k.name}</b>{k.in_radar ? <em className="ck-p-radar" title="STOCK RADAR 에 있는 종목 — 누르면 radar 로">RADAR ●</em> : null}</span>
-                <span className="mono ck-ld-ks-r">{k.role}{k.role && k.note ? " · " : ""}{k.note}</span>
-                <span className="num mono">{k.z === null ? "–" : `${sg(k.z)}σ`}</span>
-              </div>
-            ))}</div>
+          <div className="ck-ld-sec" data-testid="ck-ld-stocks">{sectionTitle("Key stocks", "leadership 을 만드는 종목")}<span className="ck-sub-i">구성종목 목록이 아니라 지금 leadership 을 설명하는 종목</span>
+            <div className="ck-ld-kss">
+              {d.key_stocks.map((k) => { const [st, why] = splitNote(k.note); return (
+                <div key={k.id} className={`ck-ld-ks${k.in_radar ? " radar" : ""}`} data-testid="ck-ld-stock" onClick={k.in_radar && onStock ? () => onStock(k.id) : undefined} role={k.in_radar && onStock ? "button" : undefined}>
+                  <span className="ck-ld-ks-n"><b>{k.name}</b>{k.in_radar ? <em className="ck-p-radar" title="STOCK RADAR 에 있는 종목 — 누르면 radar 로">RADAR ●</em> : null}</span>
+                  <span className="num mono ck-ld-ks-z">{k.z === null ? "–" : `${sg(k.z)}σ`}</span>
+                  <span className="mono ck-ld-ks-r">{roleLabel(k.role)}</span>
+                  <span className="ck-ld-ks-st mono">{st}{why ? <small>{why}</small> : null}</span>
+                </div>); })}
+            </div></div>
         ) : null}
-        {d.watch.length ? <div className="ck-ld-sec" data-testid="ck-ld-watch"><span className="ck-k mono">What to watch</span><span className="ck-sub-i">이 leadership 이 유지되거나 약해질 조건</span><ol className="ck-ld-why">{d.watch.map((w, i) => <li key={i}>{w}</li>)}</ol></div> : null}
+        {d.watch.length ? <div className="ck-ld-sec" data-testid="ck-ld-watch">{sectionTitle("What to watch", "계속 봐야 할 것")}<span className="ck-sub-i">이 leadership 이 유지되거나 약해질 조건</span><ol className="ck-ld-why">{d.watch.map((w, i) => <li key={i}>{w}</li>)}</ol></div> : null}
       </div>
     </div>
+  );
+}
+
+const leadMetrics = (r: CkLeaderRow) => `${sg(r.z_1d)}σ 1D | vs market ${sg(r.rel_1w)}σ | breadth ${r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}`;
+
+/** MARKET LEADERSHIP 목록 아래(그리드 전체 폭)에 열리는 Full-width Detail Panel — 한 번에 한 테마만 */
+function LeadershipDetailPanel({ r, onClose, onStock }: { r: CkLeaderRow; onClose: () => void; onStock?: (id: string) => void }) {
+  const d = r.detail!;
+  return (
+    <section className="panel ck-card ck-ldp" style={{ gridArea: "leaddet" }} data-testid="ck-lead-detail-wrap" data-key={r.key}>
+      <header className="panel-head ck-ldp-head">
+        <h2 className="panel-title">{r.label} <span className="ck-ldp-kind">· Leadership detail</span></h2>
+        <div className="panel-note mono">{leadMetrics(r)}</div>
+        <button type="button" className="ck-more ck-ldp-close" onClick={onClose} aria-label="Leadership detail 닫기">닫기 ✕</button>
+      </header>
+      <div className="panel-body">
+        <div className="ck-ldp-sum" data-testid="ck-ld-summary">
+          <div className="ck-ldp-sum-kv">
+            <span><i className="ck-k mono">Leadership quality</i><b className="mono">{d.quality}</b><small>{d.quality_ko}</small></span>
+            <span><i className="ck-k mono">Primary driver</i><b className="mono">{d.driver}</b></span>
+            <span><i className="ck-k mono">Key risk</i><b>{d.risk}</b></span>
+          </div>
+          <div className="ck-ldp-sum-read"><span className="ck-k mono">System read</span><p>{d.system_view}</p></div>
+        </div>
+        <LeadershipDetailView r={r} onStock={onStock} />
+      </div>
+    </section>
   );
 }
 
 function LeadRow({ r, open, setOpen }: { r: CkLeaderRow; open: string | null; setOpen: (k: string | null) => void }) {
   const isOpen = open === r.key;
   return (
-    <div className={`ck-lead-row${r.detail ? " has-detail" : ""}${isOpen ? " open" : ""}`} data-testid="ck-lead-row" data-key={r.key} title={`${r.kind} · ${r.available}/${r.instruments} 계열`} onClick={r.detail ? () => setOpen(isOpen ? null : r.key) : undefined} role={r.detail ? "button" : undefined} tabIndex={r.detail ? 0 : undefined} onKeyDown={(e) => { if (r.detail && e.key === "Enter") setOpen(isOpen ? null : r.key); }}>
-      <div className="ck-lead-h"><span className="ck-lead-l">{r.label}</span><Arrow a={r.arrow} />{r.detail ? <span className="ck-nx-open mono">{isOpen ? "▾" : "›"}</span> : null}</div>
+    <div className={`ck-lead-row${r.detail ? " has-detail" : ""}${isOpen ? " open" : ""}`} data-testid="ck-lead-row" data-key={r.key} title={`${r.kind} · ${r.available}/${r.instruments} 계열`} onClick={r.detail ? () => setOpen(isOpen ? null : r.key) : undefined} role={r.detail ? "button" : undefined} tabIndex={r.detail ? 0 : undefined} aria-expanded={r.detail ? isOpen : undefined} onKeyDown={(e) => { if (r.detail && e.key === "Enter") setOpen(isOpen ? null : r.key); }}>
+      <div className="ck-lead-h"><span className="ck-lead-l">{r.label}</span><Arrow a={r.arrow} />{isOpen ? <span className="ck-lead-active mono" data-testid="ck-lead-active">ACTIVE</span> : null}{r.detail ? <span className="ck-nx-open mono">{isOpen ? "▾" : "›"}</span> : null}</div>
       <span className="mono ck-lead-v">{sg(r.z_1d)}σ <small>1D</small> | vs market {sg(r.rel_1w)}σ | breadth {r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}</span>
       {r.system_view ? <span className="ck-lead-sv" data-testid="ck-lead-system-view"><span className="ck-k mono">System view</span> {r.system_view}</span> : null}
     </div>
   );
 }
 
-function LeadershipCard({ c, onStock }: { c: Cockpit; onStock?: (id: string) => void }) {
-  const l = c.leadership; const [pulseOpen, setPulseOpen] = useState(false); const [open, setOpen] = useState<string | null>(null);
+function LeadershipCard({ c, open, setOpen }: { c: Cockpit; open: string | null; setOpen: (k: string | null) => void }) {
+  const l = c.leadership; const [pulseOpen, setPulseOpen] = useState(false);
   return (
-    <Card title="Market Leadership" area="lead" testid="ck-leadership" note="1D z · 1주 상대(vs S&P) · breadth(20일선 위) · 테마를 누르면 Leadership detail">
+    <Card title="Market Leadership" area="lead" testid="ck-leadership" note="1D z · 1주 상대(vs S&P) · breadth(20일선 위) · 테마를 누르면 아래에 Leadership detail 이 전체 폭으로 열림">
       <p className="ck-sub">무엇이 강한가에 더해 왜 강한가 · 무엇이 확인하는가 · 지속 가능한가 · 어떤 종목으로 이어지는가를 봅니다. 하루 수익률 순이 아니라 상대강도 · breadth · 지속성 · 확인 여부로 고릅니다.</p>
       {l.read ? <div className="ck-read" data-testid="ck-lead-read"><span className="ck-k mono">Leadership read</span><p>{l.read}</p></div> : null}
       <div className="ck-lead-cols">
         <div><span className="ck-k mono">Leaders</span>{l.leaders.length ? l.leaders.map((r) => <LeadRow key={r.key} r={r} open={open} setOpen={setOpen} />) : <div className="sv-muted">문턱을 넘는 리더 없음</div>}</div>
         <div><span className="ck-k mono">Laggards</span>{l.laggards.length ? l.laggards.map((r) => <LeadRow key={r.key} r={r} open={open} setOpen={setOpen} />) : <div className="sv-muted">문턱을 넘는 후미 없음</div>}</div>
       </div>
-      {(() => { const r = [...l.leaders, ...l.laggards].find((x) => x.key === open); return r && r.detail ? (
-        <div className="ck-ld-wrap" data-testid="ck-lead-detail-wrap">
-          <div className="ck-ld-head"><b>{r.label}</b><span className="mono ck-sub-i">Leadership detail · {sg(r.z_1d)}σ 1D | vs market {sg(r.rel_1w)}σ | breadth {r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}</span><button type="button" className="ck-more" onClick={() => setOpen(null)}>닫기</button></div>
-          <LeadershipDetailView r={r} onStock={onStock} />
-        </div>) : null; })()}
       {l.pulse.length ? (
         <details className="ck-pulse" open={pulseOpen} onToggle={(e) => setPulseOpen((e.target as HTMLDetailsElement).open)} data-testid="ck-pulse">
           <summary className="ck-k mono">Theme Pulse · {l.pulse.length} themes <span style={{ color: "var(--faint)" }}>— PRICE / NEWS / REL</span></summary>
@@ -446,6 +498,7 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
   const [openIssue, setOpenIssue] = useState<string | null>(null);
   const [focusStock, setFocusStock] = useState<string | null>(null);
   const [focusChain, setFocusChain] = useState<string | null>(null);
+  const [leadOpen, setLeadOpen] = useState<string | null>(null);
   const goChain = (key: string) => { setFocusChain(key); const el = typeof document !== "undefined" ? document.getElementById(`ck-tr-${key}`) : null; el?.scrollIntoView?.({ behavior: "smooth", block: "center" }); };
   // ANALYST VIEW 는 radar 종목만, 비동기 — radar 가 먼저 뜨고 이 층은 나중에 채워진다. 테스트·정적 배포본은 prop 으로 넣을 수 있다.
   const fetched = useAnalystViews(scenario, cockpit.radar.map((r) => r.id), analystViews === undefined);
@@ -454,13 +507,15 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
   const goStock = (id: string) => { setFocusStock(id); const el = typeof document !== "undefined" ? document.getElementById(`ck-rd-${id}`) : null; el?.scrollIntoView?.({ behavior: "smooth", block: "center" }); };
   void snapshot; void history;
   const ds = cockpit.data_status;
+  const leadRow = leadOpen ? [...cockpit.leadership.leaders, ...cockpit.leadership.laggards].find((x) => x.key === leadOpen && x.detail) ?? null : null;
   return (
-    <div className={`ck${cockpit.history ? " ck-hist" : ""}`} data-testid="cockpit">
+    <div className={`ck${cockpit.history ? " ck-hist" : ""}${leadRow ? " ck-ldopen" : ""}`} data-testid="cockpit">
       <MarketNow c={cockpit} />
       {cockpit.history ? <RegimeHistoryCard h={cockpit.history} /> : null}
       <Drivers c={cockpit} mobileTop={3} />
       <CrossAssetCard c={cockpit} />
-      <LeadershipCard c={cockpit} onStock={goStock} />
+      <LeadershipCard c={cockpit} open={leadOpen} setOpen={setLeadOpen} />
+      {leadRow ? <LeadershipDetailPanel r={leadRow} onClose={() => setLeadOpen(null)} onStock={goStock} /> : null}
       <TransmissionCard c={cockpit} focus={focusChain} />
       <RadarCard c={cockpit} views={views} onIssue={goIssue} focus={focusStock} />
       <CatalystsCard c={cockpit} />

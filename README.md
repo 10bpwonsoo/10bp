@@ -460,13 +460,28 @@ FUNDAMENTAL / DRIVER·MACRO 를 영어 상태 + 한글 의미로, 리더와 후�
 데이터 해석 + DRIVER / QUALITY / RISK; QUALITY 는 BROADENING · NARROW · FUNDAMENTAL-LED · PRICE-LED · MACRO-DRIVEN ·
 NEWS-DRIVEN · FRAGILE) → STREET VIEW(EXTERNAL — 기관 · 애널리스트(확인된 경우만) · 날짜 · 원문 한 줄 · 요약 · 핵심
 변수 · 출처; 견해가 갈리면 SYSTEM READ 로 나란히, 컨센서스로 합치지 않음; 없으면 영역 숨김) → KEY STOCKS(≤5,
-leadership 을 설명하는 종목, RADAR ● 은 radar 로 연결) → WHAT TO WATCH(≤3). 데스크톱은 2열(왼쪽 WHY · CONFIRMATION ·
-SYSTEM VIEW, 오른쪽 STREET VIEW · KEY STOCKS · WHAT TO WATCH), 모바일은 한 열. 엔진 `engines/leadership_intel.py` 는
+leadership 을 설명하는 종목, RADAR ● 은 radar 로 연결) → WHAT TO WATCH(≤3). 상세는 카드 안이 아니라 MARKET LEADERSHIP 아래 그리드 전체 폭의
+Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 엔진 `engines/leadership_intel.py` 는
 새 판정을 만들지 않고 기존 값(1D z · 1주 상대 · breadth · 테마 뉴스 톤 · AI 전파 단계 · 관련 계열 z · 종목 상대 z)을
 `config/cockpit.yaml leadership_intel.hints`(driver · links · risk · watch · stocks · view 템플릿)와 합쳐 문장으로
 만든다. STREET VIEW 재료는 `data/street_views/manual/*.json`(9/30 수기 확인 6건: JPMorgan Harlan Sur 9/18 · UBS 9/19 ·
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
+
+#### 실시간 2 · MARKET LEADERSHIP → Full-width Leadership Detail Panel (2026-09-30)
+
+레이아웃·상호작용만 바꾼 수정이다(판단 로직 · 엔진 · 데이터 계약은 그대로). 좁은 카드 column 안에서 상세를 펼치던 구조를
+버리고 **목록(compact) 과 상세(full-width) 를 분리**했다. MARKET LEADERSHIP 카드는 LEADERS / LAGGARDS 목록만 보이고,
+테마를 누르면 그리드의 `leaddet` 행(`grid-column: 1 / -1`, 부모 그리드 전체 폭)에 `{테마} · LEADERSHIP DETAIL` 패널이 열린다.
+한 번에 한 테마만 열리고(다른 테마를 누르면 교체, 다시 누르거나 닫기로 닫힘), 열린 행에는 작은 ACTIVE 표시가 붙는다.
+패널 맨 위는 Summary(LEADERSHIP QUALITY · PRIMARY DRIVER · KEY RISK · SYSTEM READ)이고 그 아래가 상세다: 왼쪽 WHY LEADING →
+SYSTEM VIEW(INTERNAL: DRIVER / QUALITY / RISK) → MARKET CONFIRMATION(Metric | Value | Status 세 칸, 좁으면 세로 스택),
+오른쪽 STREET VIEW(EXTERNAL: 기관 · 애널리스트 · 날짜 · 한글 요약 · 핵심 변수 · View source; 긴 영어 원문은 2줄까지 접힘, 눌러야
+펼침) → KEY STOCKS(표가 아니라 종목마다 이름 · σ · 역할 · 상태 줄을 가진 독립 row) → WHAT TO WATCH(별도 block). 2열은
+viewport 1280px 이상이면서 패널 자체 폭이 충분할 때만(`@container ldp`), 그 아래(iPad landscape 1024~1200px 포함)는 한 열,
+768px 이하는 완전한 single column. 그리드 자식은 `min-width: 0`, 열은 `repeat(2, minmax(0, 1fr))`, 긴 문장·URL 은
+`overflow-wrap: anywhere` 로 page-level 가로 스크롤을 만들지 않는다. Playwright 로 1440 / 1366 / 1280 / 1180 / 1024 / 768 /
+390px 에서 가로 스크롤 없음 · 패널이 부모 그리드 밖으로 나가지 않음 · 섹션/행 겹침 없음 · 열고 닫은 뒤 layout shift 없음을 확인.
 
 #### 실시간 2 · MARKET → STOCK TRANSMISSION read 와 WATCHLIST 체크포인트 (2026-09-30)
 

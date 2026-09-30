@@ -245,7 +245,17 @@ describe("CockpitView — DRIVER HEAT 의미 층 · MARKET LEADERSHIP intelligen
     fireEvent.click(row);
     const d = screen.getByTestId("ck-lead-detail"); const t = d.textContent!;
     const idx = (s: string) => t.indexOf(s);
-    expect(idx("Why leading?")).toBeLessThan(idx("Market confirmation")); expect(idx("Market confirmation")).toBeLessThan(idx("System view"));
+    expect(idx("Why leading?")).toBeLessThan(idx("System view")); expect(idx("System view")).toBeLessThan(idx("Market confirmation"));
+    expect(idx("Market confirmation")).toBeLessThan(idx("Street view")); expect(idx("Street view")).toBeLessThan(idx("Key stocks")); expect(idx("Key stocks")).toBeLessThan(idx("What to watch"));
+    // full-width panel: 카드 안이 아니라 그리드의 형제(leaddet 행) 로 열리고, 맨 위에 Summary 가 온다
+    const wrap = screen.getByTestId("ck-lead-detail-wrap");
+    expect(screen.getByTestId("ck-leadership").contains(wrap)).toBe(false);
+    expect(wrap.style.gridArea).toBe("leaddet");
+    expect(screen.getByTestId("cockpit").className).toContain("ck-ldopen");
+    const sum = screen.getByTestId("ck-ld-summary").textContent!;
+    expect(sum).toContain(withStreet.detail!.quality); expect(sum).toContain(withStreet.detail!.driver); expect(sum).toContain(withStreet.detail!.system_view);
+    expect(wrap.textContent!.indexOf(withStreet.detail!.system_view)).toBeLessThan(wrap.textContent!.indexOf("Why leading?"));
+    expect(within(row).getByTestId("ck-lead-active").textContent).toBe("ACTIVE");
     expect(t).toContain("INTERNAL"); expect(t).toContain("EXTERNAL");
     expect(screen.getByTestId("ck-ld-street").textContent).toContain(withStreet.detail!.street[0]!.institution);
     expect(within(screen.getByTestId("ck-ld-conf")).getAllByText(/CONFIRMED|PARTIAL|UNCONFIRMED|CONTRADICTED|DATA MISSING/).length).toBeGreaterThanOrEqual(3);
@@ -257,6 +267,35 @@ describe("CockpitView — DRIVER HEAT 의미 층 · MARKET LEADERSHIP intelligen
     for (const s of stocks) if (s.textContent?.includes("RADAR ●")) expect([...radarNames].some((n) => s.textContent!.includes(n))).toBe(true);
     const noStreet = [...l.leaders, ...l.laggards].find((r) => r.detail && !r.detail.street.length);
     if (noStreet) { fireEvent.click(rows.find((r) => r.getAttribute("data-key") === noStreet.key)!); expect(screen.queryByTestId("ck-ld-street")).toBeNull(); }
+    // one selected theme at a time: 다른 테마를 누르면 패널이 교체되고, 다시 누르거나 닫기를 누르면 닫힌다
+    const others = [...l.leaders, ...l.laggards].filter((r) => r.detail && r.key !== withStreet.key);
+    if (others.length) {
+      fireEvent.click(rows.find((r) => r.getAttribute("data-key") === others[0]!.key)!);
+      expect(screen.getAllByTestId("ck-lead-detail-wrap").length).toBe(1);
+      expect(screen.getByTestId("ck-lead-detail-wrap").getAttribute("data-key")).toBe(others[0]!.key);
+      expect(screen.getAllByTestId("ck-lead-active").length).toBe(1);
+    }
+    fireEvent.click(screen.getByRole("button", { name: /Leadership detail 닫기/ }));
+    expect(screen.queryByTestId("ck-lead-detail-wrap")).toBeNull();
+    expect(screen.getByTestId("cockpit").className).not.toContain("ck-ldopen");
+  });
+
+  it("STREET VIEW 는 기관 · 날짜 · 한글 요약 · View source 를 기본으로 보이고 긴 영어 원문은 접혀 있다가 눌러야 펼쳐진다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const l = cockpit.leadership;
+    const withLong = [...l.leaders, ...l.laggards].find((r) => r.detail && r.detail.street.some((v) => (v.quote || "").length > 90));
+    if (!withLong) return;
+    fireEvent.click(screen.getAllByTestId("ck-lead-row").find((r) => r.getAttribute("data-key") === withLong.key)!);
+    const items = screen.getAllByTestId("ck-ld-street-item");
+    expect(items.length).toBe(withLong.detail!.street.length);
+    const v = withLong.detail!.street.find((x) => (x.quote || "").length > 90)!;
+    const item = items[withLong.detail!.street.indexOf(v)]!;
+    expect(item.textContent).toContain(v.summary); expect(item.textContent).toContain("View source");
+    expect(item.querySelector("a")!.getAttribute("href")).toBe(v.source_url);
+    const q = within(item).getByTestId("ck-ld-street-quote");
+    expect(q.className).toContain("clamp");
+    fireEvent.click(q);
+    expect(q.className).not.toContain("clamp");
   });
 });
 
