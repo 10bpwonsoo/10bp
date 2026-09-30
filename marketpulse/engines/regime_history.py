@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Mapping, Sequence
 
-from ..models.cockpit import DriverHeat, HistoryRange, RegimeBlock, RegimeDay, RegimeHistory, RegimeShare, RegimeTransition
+from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeShare, RegimeTransition
 
 ARROW_TXT = {"↑↑": "↑↑", "↑": "↑", "↓": "↓", "↓↓": "↓↓", "→": "→", "?": "?"}
 
@@ -111,6 +111,7 @@ def build_regime_history(
     observations: Sequence[StateObservation] = (),
     as_of: datetime | None = None,
     stored_days: int | None = None,
+    horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None,
 ) -> RegimeHistory | None:
     """history = MarketStateHistory(재생). 없거나 비면 None — 카드를 숨긴다."""
     points = list(getattr(history, "points", []) or [])
@@ -221,7 +222,21 @@ def build_regime_history(
     heat = []
     for dk in drivers_cfg:
         k = str(dk["key"]); vals = [d.factors.get(k) for d in days]; cur_v = next((v for v in reversed(vals) if v is not None), None)
-        heat.append(DriverHeat(key=k, label=str(dk["label"]), values=vals, current=cur_v, arrow=_arrow(cur_v, hi, lo)))  # type: ignore[arg-type]
+        arrow = _arrow(cur_v, hi, lo)
+        mean = dk.get("meaning") or {}
+        meaning = str(mean.get("up" if arrow in ("↑", "↑↑") else "down" if arrow in ("↓", "↓↓") else "flat", "")) if cur_v is not None else "데이터 없음"
+        hz_cfg = dk.get("horizon") or {}; hzs: list[Horizon] = []; hread = ""
+        if hz_cfg and horizon_z and str(hz_cfg.get("id")) in horizon_z:
+            z1, z5 = horizon_z[str(hz_cfg["id"])]; sgn = int(hz_cfg.get("sign", 1))
+            a1 = None if z1 is None else z1 * sgn; a5 = None if z5 is None else z5 * sgn
+            hzs = [Horizon(key="1D", z=None if a1 is None else round(a1, 2), arrow=_arrow(a1, hi, lo)), Horizon(key="5D", z=None if a5 is None else round(a5, 2), arrow=_arrow(a5, hi, lo))]  # type: ignore[arg-type]
+            rd = dk.get("read") or {}
+            if a1 is not None and a5 is not None and abs(a5) >= lo and (a1 > 0) != (a5 > 0) and abs(a1) >= lo * 0.6:
+                hread = str(rd.get("pullback_up" if a5 > 0 else "pullback_down", ""))
+            elif a1 is not None and a5 is not None and abs(a1) >= lo and abs(a5) >= lo:
+                hread = f"오늘도, 최근 5일도 {mean.get('up' if a5 > 0 else 'down', '')} 방향"
+        heat.append(DriverHeat(key=k, label=str(dk["label"]), values=vals, current=cur_v, arrow=arrow, label_ui=str(dk.get("label_ui") or dk["label"]), label_ko=str(dk.get("label_ko") or ""),  # type: ignore[arg-type]
+                               meaning=meaning, horizon_label=str(dk.get("horizon_label") or ""), horizons=hzs, horizon_read=hread))
 
     cur = blocks[-1]; prev_b = blocks[-2] if len(blocks) >= 2 else None
     last = days[-1]

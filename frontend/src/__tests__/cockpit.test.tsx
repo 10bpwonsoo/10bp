@@ -216,3 +216,46 @@ describe("CockpitView — 표현 층: 영어 상태값 + 한글 의미 (CROSS-AS
     expect(screen.getByTestId("ck-path-confirm").textContent).toMatch(/확률이 아니라 조건 수/);
   });
 });
+
+describe("CockpitView — DRIVER HEAT 의미 층 · MARKET LEADERSHIP intelligence", () => {
+  it("DRIVER HEAT 행은 경제적 라벨(Credit Stress · 신용 스트레스)과 화살표 옆 현재 의미, 1D/5D 기간, 색/화살표 legend 를 보여준다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const rows = screen.getAllByTestId("ck-h-heat-row");
+    expect(rows.length).toBe(5);
+    const credit = rows.find((r) => r.getAttribute("data-key") === "Credit")!;
+    expect(credit.textContent).toContain("Credit Stress"); expect(credit.textContent).toContain("신용 스트레스");
+    const meaning = within(credit).getByTestId("ck-h-heat-meaning").textContent!;
+    expect(meaning).toMatch(/확대|완화|중립/); expect(meaning).toMatch(/1D/); expect(meaning).toMatch(/5D/);
+    const rates = rows.find((r) => r.getAttribute("data-key") === "Rates")!;
+    expect(rates.textContent).toContain("Rate Pressure");
+    const h = cockpit.history!.drivers.find((d) => d.key === "Rates")!;
+    if (h.horizon_read) expect(rates.textContent).toContain(h.horizon_read);
+    expect(screen.getByTestId("ck-h-heat-legend").textContent).toMatch(/COLOR.*ARROW/);
+  });
+
+  it("MARKET LEADERSHIP 은 LEADERSHIP READ 와 행마다 SYSTEM VIEW 한 줄을 보이고, 테마를 누르면 WHY → CONFIRMATION → SYSTEM VIEW(INTERNAL) → STREET VIEW(EXTERNAL, 있을 때만) → KEY STOCKS(RADAR ●) → WHAT TO WATCH 가 열린다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const l = cockpit.leadership;
+    expect(screen.getByTestId("ck-lead-read").textContent).toContain(l.read);
+    const rows = screen.getAllByTestId("ck-lead-row");
+    expect(screen.getAllByTestId("ck-lead-system-view").length).toBe(rows.length);
+    expect(screen.queryByTestId("ck-lead-detail")).toBeNull();
+    const withStreet = [...l.leaders, ...l.laggards].find((r) => r.detail && r.detail.street.length)!;
+    const row = rows.find((r) => r.getAttribute("data-key") === withStreet.key)!;
+    fireEvent.click(row);
+    const d = screen.getByTestId("ck-lead-detail"); const t = d.textContent!;
+    const idx = (s: string) => t.indexOf(s);
+    expect(idx("Why leading?")).toBeLessThan(idx("Market confirmation")); expect(idx("Market confirmation")).toBeLessThan(idx("System view"));
+    expect(t).toContain("INTERNAL"); expect(t).toContain("EXTERNAL");
+    expect(screen.getByTestId("ck-ld-street").textContent).toContain(withStreet.detail!.street[0]!.institution);
+    expect(within(screen.getByTestId("ck-ld-conf")).getAllByText(/CONFIRMED|PARTIAL|UNCONFIRMED|CONTRADICTED|DATA MISSING/).length).toBeGreaterThanOrEqual(3);
+    expect(t).toContain(withStreet.detail!.quality); expect(t).toContain(withStreet.detail!.quality_ko);
+    expect(screen.getByTestId("ck-ld-watch").querySelectorAll("li").length).toBeLessThanOrEqual(3);
+    const stocks = screen.getAllByTestId("ck-ld-stock");
+    expect(stocks.length).toBeLessThanOrEqual(5);
+    const radarNames = new Set(cockpit.radar.map((r) => r.name));
+    for (const s of stocks) if (s.textContent?.includes("RADAR ●")) expect([...radarNames].some((n) => s.textContent!.includes(n))).toBe(true);
+    const noStreet = [...l.leaders, ...l.laggards].find((r) => r.detail && !r.detail.street.length);
+    if (noStreet) { fireEvent.click(rows.find((r) => r.getAttribute("data-key") === noStreet.key)!); expect(screen.queryByTestId("ck-ld-street")).toBeNull(); }
+  });
+});

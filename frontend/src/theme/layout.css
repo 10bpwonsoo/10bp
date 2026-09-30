@@ -1705,6 +1705,73 @@
   .ck-p-cf2 .ck-p-st-c { grid-column: 2 / -1; }
 }
 
+
+/* ── 실시간 2 · DRIVER HEAT 의미 층 · LEADERSHIP INTELLIGENCE ───────────────── */
+.ck-h-heat-row { grid-template-columns: 118px 1fr minmax(150px, 190px); align-items: start; }
+.ck-h-heat-head { grid-template-columns: 118px 1fr auto minmax(150px, 190px); }
+.ck-h-heat-l { display: flex; flex-direction: column; gap: 0; line-height: 1.2; }
+.ck-h-heat-l b { font-weight: 600; font-size: 11px; }
+.ck-h-heat-l small { font-size: 10px; color: var(--muted); }
+.ck-h-heat-cells { margin-top: 3px; }
+.ck-h-heat-a { text-align: left; font-weight: 400; display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+.ck-h-heat-a > b { font-size: 12px; color: var(--ink-2); }
+.ck-h-heat-a em { font-style: normal; font-size: 11px; color: var(--ink); }
+.ck-h-heat-hz { font-size: 10px; color: var(--muted); display: flex; gap: 8px; }
+.ck-h-heat-hz i { font-style: normal; color: var(--faint); }
+.ck-h-heat-read { font-size: 10px; color: var(--warn); line-height: 1.3; }
+.ck-h-heat-row.split .ck-h-heat-a > b { color: var(--warn); }
+.ck-h-heat-legend { margin-top: 4px; }
+.ck-h-heat-legend span { color: var(--ink-2); font-weight: 600; margin-right: 3px; }
+.ck-lead-row.has-detail { cursor: pointer; border-radius: var(--radius); padding: 4px 6px; margin: 0 -6px; }
+.ck-lead-row.has-detail:hover, .ck-lead-row.open { background: var(--surface-2); }
+.ck-lead-h { display: flex; gap: 6px; align-items: baseline; }
+.ck-lead-h .ck-nx-open { margin-left: auto; margin-top: 0; }
+.ck-lead-sv { display: block; font-size: 11px; color: var(--ink-2); line-height: 1.4; margin-top: 2px; }
+.ck-lead-sv .ck-k { margin-right: 4px; }
+.ck-ld-wrap { margin-top: 6px; }
+.ck-ld-head { display: flex; align-items: baseline; gap: 10px; font-size: 13px; }
+.ck-ld-head .ck-more { margin-left: auto; }
+.ck-ld { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-top: 6px; padding: 10px 12px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface); cursor: default; }
+.ck-ld-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ck-ld-sec { display: flex; flex-direction: column; gap: 3px; }
+.ck-ld-sec > .ck-k em { font-style: normal; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+.ck-ld-why { margin: 2px 0 0; padding-left: 18px; font-size: 11.5px; line-height: 1.45; color: var(--ink); display: flex; flex-direction: column; gap: 2px; }
+.ck-ld-cf { display: grid; grid-template-columns: 118px 92px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 11px; padding: 2px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-cf:last-child { border-bottom: 0; }
+.ck-ld-cf-l { font-size: 10px; letter-spacing: .04em; color: var(--ink-2); }
+.ck-ld-sys { padding: 7px 9px; border-left: 2px solid var(--accent); background: var(--surface-2); }
+.ck-ld-sys p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink); }
+.ck-ld-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 10.5px; color: var(--ink-2); margin-top: 4px; }
+.ck-ld-3 span { display: flex; flex-direction: column; gap: 1px; }
+.ck-ld-3 i { font-style: normal; }
+.ck-ld-3 small { color: var(--muted); }
+.ck-ld-street { padding: 7px 9px; border-left: 2px solid var(--down); background: var(--surface-2); }
+.ck-ld-sv { display: flex; flex-direction: column; gap: 2px; padding: 5px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-sv:last-of-type { border-bottom: 0; }
+.ck-ld-sv-h { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; color: var(--muted); flex-wrap: wrap; }
+.ck-ld-sv-h b { color: var(--ink); }
+.ck-ld-sv-q { font-size: 11px; color: var(--ink-2); font-style: italic; }
+.ck-ld-sv-s { font-size: 11.5px; line-height: 1.45; color: var(--ink); }
+.ck-ld-sv-f { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
+.ck-ld-read { font-size: 11px; color: var(--ink-2); margin-top: 4px; }
+.ck-ld-ks { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) 56px; gap: 8px; align-items: baseline; font-size: 11px; padding: 2px 0; border-bottom: 1px dashed var(--rule-soft); }
+.ck-ld-ks:last-child { border-bottom: 0; }
+.ck-ld-ks.radar { cursor: pointer; }
+.ck-ld-ks-r { font-size: 10.5px; color: var(--muted); }
+.ck-ld-ks .num { text-align: right; }
+@media (max-width: 1100px) { .ck-ld { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .ck-h-heat-row { grid-template-columns: 84px 1fr; }
+  .ck-h-heat-head { grid-template-columns: 84px 1fr auto; }
+  .ck-h-heat-head span:nth-child(4) { display: none; }
+  .ck-h-heat-a { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; padding-left: 2px; }
+  .ck-ld-cf { grid-template-columns: 96px minmax(0, 1fr); }
+  .ck-ld-cf .ck-sk { grid-column: 1 / -1; }
+  .ck-ld-3 { grid-template-columns: 1fr; }
+  .ck-ld-ks { grid-template-columns: minmax(0, 1fr) 52px; }
+  .ck-ld-ks-r { grid-column: 1 / -1; }
+}
+
 @media (max-width: 1100px) { .ck { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "now drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } }
 @media (max-width: 760px) {
   .ck { grid-template-columns: 1fr; grid-template-areas: "now" "drivers" "cross" "lead" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }

@@ -443,6 +443,31 @@ CONTRADICTED 는 오류가 아니라 "다른 driver 가 더 강하다"는 신호
 confirmed + "확률이 아니라 조건 수" + 한 줄 해석). 전문 용어(Real Yield · Duration · Credit Spread · Relative
 Strength · Breadth 등)는 그대로 두고 점선 밑줄 툴팁으로 뜻을 붙였다.
 
+#### 실시간 2 · DRIVER HEAT 의미 층과 MARKET LEADERSHIP → Leadership Intelligence (2026-09-30)
+
+**DRIVER HEAT**: factor 이름을 경제적 의미로 바꿔 부른다 — Risk Appetite(위험선호) · Liquidity Condition(유동성
+환경) · Rate Pressure(금리 압력) · Inflation Pressure(인플레이션 압력) · Credit Stress(신용 스트레스). 화살표 옆에
+현재 의미를 붙인다("Credit Stress ↑↑ 신용 스트레스 확대", "Rate Pressure ↓ 금리 압력 완화") — 점수 부호의 번역이
+아니라 `config/cockpit.yaml history.drivers[].meaning` 의 factor 별 의미다. 대표 계열의 1D / 5D z 를 함께 보이고
+(Rates → US 10Y, Credit → HY OAS, Liquidity → MOVE 역방향 …) 단기와 5일이 갈리면 한 줄 해석("오늘 금리는
+하락했지만 최근 5일 장기금리 상승 압력은 유지")을 붙인다. legend: COLOR = factor 방향(빨강 +, 파랑 −, 좋고 나쁨
+아님) · ARROW = 현재 경제적 의미.
+
+**MARKET LEADERSHIP**: 기본 화면은 그대로 compact(1D z | vs market | breadth)이고 행마다 SYSTEM VIEW 한 줄, 맨 위에
+LEADERSHIP READ(판정 · 상대강도 · breadth 종합 한두 문장)가 붙는다. 테마/섹터를 누르면 아래에 LEADERSHIP DETAIL 이
+열린다: WHY LEADING?(시장 데이터 기반 1~3개) → MARKET CONFIRMATION(PRICE / RELATIVE STRENGTH / BREADTH / NEWS /
+FUNDAMENTAL / DRIVER·MACRO 를 영어 상태 + 한글 의미로, 리더와 후미의 의미를 따로) → SYSTEM VIEW(INTERNAL — 내부
+데이터 해석 + DRIVER / QUALITY / RISK; QUALITY 는 BROADENING · NARROW · FUNDAMENTAL-LED · PRICE-LED · MACRO-DRIVEN ·
+NEWS-DRIVEN · FRAGILE) → STREET VIEW(EXTERNAL — 기관 · 애널리스트(확인된 경우만) · 날짜 · 원문 한 줄 · 요약 · 핵심
+변수 · 출처; 견해가 갈리면 SYSTEM READ 로 나란히, 컨센서스로 합치지 않음; 없으면 영역 숨김) → KEY STOCKS(≤5,
+leadership 을 설명하는 종목, RADAR ● 은 radar 로 연결) → WHAT TO WATCH(≤3). 데스크톱은 2열(왼쪽 WHY · CONFIRMATION ·
+SYSTEM VIEW, 오른쪽 STREET VIEW · KEY STOCKS · WHAT TO WATCH), 모바일은 한 열. 엔진 `engines/leadership_intel.py` 는
+새 판정을 만들지 않고 기존 값(1D z · 1주 상대 · breadth · 테마 뉴스 톤 · AI 전파 단계 · 관련 계열 z · 종목 상대 z)을
+`config/cockpit.yaml leadership_intel.hints`(driver · links · risk · watch · stocks · view 템플릿)와 합쳐 문장으로
+만든다. STREET VIEW 재료는 `data/street_views/manual/*.json`(9/30 수기 확인 6건: JPMorgan Harlan Sur 9/18 · UBS 9/19 ·
+DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
+발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

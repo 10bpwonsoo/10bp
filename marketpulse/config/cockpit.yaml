@@ -175,6 +175,92 @@ leadership:
   laggards_max: 3
   min_rel: 0.3
   exclude_themes: [korea_governance, shareholder_return, rates, inflation, usd]   # 수급·지배구조·금리·물가·환율 테마는 주식 리더십이 아니다
+#: LEADERSHIP INTELLIGENCE — 테마/섹터별 힌트(driver · 관련 계열 · 위험 · 감시 조건 · 핵심 종목). 문장은 엔진이 지금 데이터로 만든다; 없는 종목은 빠진다.
+leadership_intel:
+  breadth_confirm: 70
+  breadth_partial: 40
+  rel_confirm: 0.8
+  price_confirm: 0.8
+  news_confirm: 15
+  key_stocks_max: 5
+  watch_max: 3
+  street_max_age_days: 30
+  street_path: data/street_views/manual
+  #: quality 판정 순서 — 먼저 맞는 것
+  quality_ko:
+    BROADENING: "상승 참여 종목 확대"
+    NARROW: "소수 대형주 중심"
+    FUNDAMENTAL-LED: "EPS · 펀더멘털 동반"
+    PRICE-LED: "가격이 펀더멘털보다 선행"
+    MACRO-DRIVEN: "매크로 factor 가 주요 원인"
+    NEWS-DRIVEN: "뉴스 catalyst 중심"
+    FRAGILE: "breadth 또는 confirmation 부족"
+  default:
+    watch: ["S&P 500 대비 1주 상대강도 유지", "Breadth 70% 이상 유지", "시장 판정이 바뀌어도 leadership 유지"]
+    risk: "시장 베타 반전"
+  hints:
+    semiconductor:
+      driver: "AI Infrastructure / Equipment"
+      links: [{id: AI_EQUIPMENT_REL, sign: 1, text: "AI/장비 상대강도가 반도체 leadership 을 지지"}, {id: AI_REL_NDX, sign: 1, text: "AI 바스켓의 Nasdaq 대비 상대강도"}, {id: SOXX, sign: 1, text: "반도체 지수"}]
+      ai_segment: equipment
+      risk: "US 10Y / AI capex slowdown"
+      watch: ["SOX / Nasdaq 상대강도 유지", "Breadth 70% 이상 유지", "US 10Y 추가 상승에도 leadership 유지"]
+      stocks: [TEL, AMAT, SKHYNIX, MU, NVDA]
+      view_up: "반도체 강세는 지수 베타보다 {rel_text}가 더 크게 기여하고 있고, {breadth_text}. 세그먼트로는 {seg_text}."
+      view_down: "반도체 약세는 {rel_text}로 지수보다 깊고, {breadth_text}."
+    SOXX: {alias: semiconductor}
+    ai:
+      driver: "AI Capex / Compute"
+      links: [{id: AI_REL_NDX, sign: 1, text: "AI 바스켓의 Nasdaq 대비 상대강도"}, {id: AI_EQUIPMENT_REL, sign: 1, text: "AI 장비 세그먼트 상대강도"}]
+      ai_segment: compute
+      risk: "US 10Y / AI capex slowdown / 수익화 격차"
+      watch: ["AI 바스켓 / Nasdaq 상대강도 유지", "Compute 에서 Software 로 확산되는지", "장기금리 상승에도 상대강도 유지"]
+      stocks: [NVDA, AVGO, TSM, MSFT, SMCI]
+      view_up: "AI 강세는 {rel_text}가 이끌고 {breadth_text}. {seg_text}."
+      view_down: "AI 약세는 {rel_text}로 지수보다 깊고 {breadth_text}. {seg_text}."
+    XLK:
+      driver: "Semiconductor / AI weight"
+      links: [{id: SOXX, sign: 1, text: "반도체 지수"}, {id: NDX, sign: 1, text: "Nasdaq 100"}]
+      risk: "US 10Y 상승 · 대형 기술주 밸류에이션"
+      watch: ["Nasdaq 100 대비 상대강도", "반도체 비중이 IT 섹터를 끌고 가는지", "장기금리 상승에도 유지"]
+      stocks: [MSFT, NVDA, AVGO, ORCL, CRM]
+      view_up: "IT 섹터 강세는 {link_text}와 함께 나타나며 {breadth_text}."
+      view_down: "IT 섹터 약세는 {link_text}와 함께 나타나며 {breadth_text}."
+    JETS:
+      driver: "Oil ↓"
+      links: [{id: BRENT, sign: -1, text: "브렌트 하락으로 연료비 부담 완화", macro: true}, {id: XLE, sign: -1, text: "에너지 섹터 약세와 반대 방향"}]
+      risk: "Demand slowdown · 제트유 크랙 스프레드"
+      watch: ["브렌트 하락 지속 여부", "항공 demand 지표 · 예약 데이터", "경기둔화 시 demand deterioration"]
+      stocks: [KOREAN_AIR]
+      view_up: "항공주는 {link_text}의 수혜를 받고 있고 {breadth_text}. 다만 경기둔화가 심화되면 수요 우려가 비용 개선 효과를 상쇄할 수 있다."
+      view_down: "항공주 약세는 {link_text}와 겹친다 — 연료비보다 수요 쪽 부담을 의심."
+    oil:
+      driver: "Brent ↓"
+      links: [{id: BRENT, sign: 1, text: "브렌트", macro: true}, {id: WTI, sign: 1, text: "WTI", macro: true}]
+      risk: "지정학 · 공급 차질 재점화"
+      watch: ["브렌트 방향", "지정학 프리미엄 재확대 여부", "기대인플레이션 전이"]
+      stocks: [SOIL, SK_INNOVATION]
+      view_up: "유가 테마 강세는 {link_text} 상승과 함께 나타난다."
+      view_down: "유가 테마는 {link_text} 하락과 함께 leadership 에서 이탈하고 있다."
+    energy:
+      driver: "Oil ↓"
+      links: [{id: BRENT, sign: 1, text: "브렌트", macro: true}, {id: XLE, sign: 1, text: "에너지 섹터"}]
+      risk: "유가 반등 · 정제 마진"
+      watch: ["브렌트 하락 지속 여부", "에너지 섹터 상대강도 반전", "정제 마진"]
+      stocks: [SOIL, SK_INNOVATION]
+      view_up: "에너지 강세는 {link_text}와 같은 방향이다."
+      view_down: "에너지는 {link_text} 약세와 함께 leadership 에서 이탈하고 있다."
+    XLE: {alias: energy}
+    defense:
+      driver: "Geopolitical risk"
+      links: [{id: ITA, sign: 1, text: "방산 지수"}]
+      risk: "지정학 완화"
+      watch: ["지정학 뉴스 톤", "방산 지수 상대강도"]
+      stocks: [HANWHA_AERO, LIG_NEX1]
+      view_up: "방산 강세는 지정학 프리미엄과 함께 나타나며 {breadth_text}."
+      view_down: "방산 약세는 지정학 완화와 함께 나타난다."
+    ITA: {alias: defense}
+
 theme_pulse:
   max: 6
   price_ref: 30     # price_momentum(−100~100) → ↑ ≥ 15, ↑↑ ≥ 45
@@ -554,12 +640,19 @@ history:
     strong_evidence: 80
     min_dwell_share: 0.5
   #: DRIVER HEAT STRIP — 판정 엔진 factor 점수(z 단위) 다섯 개. heat_ref 에서 색이 포화한다. 화살표 문턱은 factor z 기준.
+  #: factor 점수의 부호를 그대로 번역하지 않는다 — 각 factor 의 경제적 의미로 현재 상태를 말한다. horizon 은 대표 계열의 1D / 5D z(부호 = factor 방향).
   drivers:
-    - {key: RiskAppetite, label: "Risk Appetite"}
-    - {key: Liquidity,    label: "Liquidity"}
-    - {key: Rates,        label: "Rates"}
-    - {key: Inflation,    label: "Inflation"}
-    - {key: Credit,       label: "Credit"}
+    - {key: RiskAppetite, label: "Risk Appetite",       label_ui: "Risk Appetite",       label_ko: "위험선호",      meaning: {up: "위험선호 강화", down: "위험선호 약화", flat: "위험선호 중립"}, horizon: {id: SPX, sign: 1}, horizon_label: "S&P 500",
+       read: {pullback_up: "오늘은 주가가 밀렸지만 최근 5일 위험선호 회복은 유지", pullback_down: "오늘은 반등했지만 최근 5일 위험선호 약화 흐름은 유지"}}
+    - {key: Liquidity,    label: "Liquidity",           label_ui: "Liquidity Condition", label_ko: "유동성 환경",    meaning: {up: "유동성 환경 개선", down: "유동성 환경 악화", flat: "유동성 환경 중립"}, horizon: {id: MOVE, sign: -1}, horizon_label: "MOVE(채권 변동성, 역방향)",
+       read: {pullback_up: "오늘은 채권 변동성이 올랐지만 최근 5일 유동성 환경은 개선", pullback_down: "오늘은 채권 변동성이 진정됐지만 최근 5일 유동성 악화 흐름은 유지"}}
+    - {key: Rates,        label: "Rates",               label_ui: "Rate Pressure",       label_ko: "금리 압력",      meaning: {up: "금리 압력 상승", down: "금리 압력 완화", flat: "금리 압력 중립"}, horizon: {id: US10Y, sign: 1}, horizon_label: "US 10Y",
+       read: {pullback_up: "오늘 금리는 하락했지만 최근 5일 장기금리 상승 압력은 유지", pullback_down: "오늘 금리는 올랐지만 최근 5일 장기금리 하락 흐름은 유지"}}
+    - {key: Inflation,    label: "Inflation",           label_ui: "Inflation Pressure",  label_ko: "인플레이션 압력", meaning: {up: "물가 압력 상승", down: "물가 압력 완화", flat: "물가 압력 중립"}, horizon: {id: BE10Y, sign: 1}, horizon_label: "US 10Y Breakeven",
+       read: {pullback_up: "오늘 기대인플레이션은 내렸지만 최근 5일 물가 압력은 유지", pullback_down: "오늘 기대인플레이션은 올랐지만 최근 5일 물가 압력 완화는 유지"}}
+    - {key: Credit,       label: "Credit",              label_ui: "Credit Stress",       label_ko: "신용 스트레스",   meaning: {up: "신용 스트레스 확대", down: "신용 스트레스 완화", flat: "신용 스트레스 중립"}, horizon: {id: US_HY_OAS, sign: 1}, horizon_label: "US HY OAS",
+       read: {pullback_up: "오늘 스프레드는 좁혀졌지만 최근 5일 신용 스트레스 확대는 유지", pullback_down: "오늘 스프레드는 벌어졌지만 최근 5일 신용 스트레스 완화는 유지"}}
+  heat_legend: {color: "COLOR = factor 방향 (빨강 +, 파랑 −) — 좋고 나쁨이 아니다", arrow: "ARROW = 현재 경제적 의미 (오른쪽 한글)"}
   heat_ref: 2.0
   heat_arrow: [1.5, 0.5]
   #: 전환의 primary driver — 도착 regime 과 결이 맞는 factor 중 변화가 가장 큰 것. Neutral 로의 전환은 떠난 regime 의 factor 가 풀린 것.

@@ -29,6 +29,7 @@ from ..models.cockpit import (
 from ..models.market import Instrument, MarketSnapshot
 from .regime_history import StateObservation, build_regime_history
 from .issue_path import Observer, build_issue_path
+from .leadership_intel import build_leadership_intel, leadership_read, load_street_views
 from ..models.snapshot import IntelligenceSnapshot
 
 KST = timezone(timedelta(hours=9))
@@ -172,7 +173,9 @@ def build_cockpit(
                     latency=f"최대 {dh.max_freshness_trading_days}거래일 지연" if dh.max_freshness_trading_days else "")
 
     # ── 1b. MARKET REGIME HISTORY · 1M (실시간 2 전용) ────────
-    regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days) if history is not None else None
+    hz_ids = [str((d.get("horizon") or {}).get("id")) for d in (cfg.get("history", {}).get("drivers") or []) if d.get("horizon")]
+    regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days,
+                                          horizon_z={i: (Z.z1(i), Z.z5(i)) for i in hz_ids}) if history is not None else None
 
     # ── 2. TODAY'S MARKET DRIVERS ────────────────────────────
     dc = cfg.get("drivers", {}); w = dc.get("weights", {}); news_ref = float(dc.get("news_ref", 40))
@@ -418,6 +421,30 @@ def build_cockpit(
     radar = [RadarStock(id=sid, name=c["name"], change_1d=_r(c["change"]), tag=c["tag"] or "–", why=" · ".join(dict.fromkeys(c["why"]))[:90], kind=c["kind"], score=round(c["score"], 2), signals=list(dict.fromkeys(c["signals"])))  # type: ignore[arg-type]
              for sid, c in cand.items() if c["score"] >= float(rc.get("min_score", 1.0))]
     radar.sort(key=lambda r: -r.score); radar = radar[: int(rc.get("max", 8))]
+
+    # ── 4b. LEADERSHIP INTELLIGENCE — 왜 강한가 · 확인 · 질 · 종목 · 외부 view (섹션 5·6 의 종목 자료를 쓴다) ──
+    li = cfg.get("leadership_intel", {}) or {}
+    ex_ = cfg.get("explain", {}) or {}
+    rs_ = str((ex_.get("regime_short") or {}).get(label, LABEL_TEXT[label]))
+    segments_li = {str(sg.key): sg for sg in (getattr(getattr(ai_regime, "value_chain", None), "segments", None) or [])}
+    def _stock_li(sid: str):
+        if sid in inv_stocks:
+            st = inv_stocks[sid]; return (st.row.name, st.row.relative_z if st.row.relative_z is not None else st.row.z, str(getattr(st.meta, "industry", "") or ""))
+        if sid in ai_stocks:
+            st = ai_stocks[sid]; mk = next((a.value for a in st.axes if a.key == "market"), None)
+            return (st.name, mk, str(st.segments[0]) if st.segments else "")
+        return None
+    street = load_street_views(Path(__file__).resolve().parents[1] / str(li.get("street_path", "data/street_views/manual")), as_of=snapshot.as_of, max_age_days=int(li.get("street_max_age_days", 30)))
+    lead_ids = {r.key for r in leaders}
+    radar_ids_li = {r.id for r in radar}
+    tr_stages = {str(st.key): st for st in (getattr(getattr(ai_regime, "transmission", None), "stages", None) or [])}
+    def _fund_of(seg_key: str) -> tuple[float | None, str]:
+        st = tr_stages.get(seg_key)
+        return (None, "") if st is None or getattr(st, "score", None) is None else (float(st.score), f"{st.label} 전파 {st.status}")
+    enriched = build_leadership_intel(leaders + laggards, li, z_of=lambda k: Z.zmax(k)[0], name_of=Z.name, themes=theme_by_id, segments=segments_li, stock_of=_stock_li,
+                                      radar_ids=radar_ids_li, street=street, regime_short=rs_, is_leader=lambda r: r.key in lead_ids, fund_of=_fund_of)
+    leaders = [r for r in enriched if r.key in lead_ids]; laggards = [r for r in enriched if r.key not in lead_ids]
+    leadership = leadership.model_copy(update={"leaders": leaders, "laggards": laggards, "read": leadership_read(leaders, laggards, regime_short=rs_, label=label)})
 
     # ── 7. LIVE CATALYSTS ────────────────────────────────────
     cc = cfg.get("catalysts", {}); lv = cc.get("levels", {}); crit = float(lv.get("critical", 55)); high = float(lv.get("high", 35))

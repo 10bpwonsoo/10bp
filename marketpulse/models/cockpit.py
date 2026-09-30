@@ -16,6 +16,7 @@ from pydantic import Field
 from .common import Base
 
 Arrow = Literal["↑↑", "↑", "→", "↓", "↓↓", "?"]
+PathStatus = Literal["CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING"]
 
 
 class KeyVariable(Base):
@@ -112,6 +113,53 @@ class CrossAsset(Base):
     total_divergences: int = 0
 
 
+class ConfirmRow(Base):
+    key: str
+    label: str
+    value: str = ""
+    status: PathStatus = "DATA MISSING"
+    meaning: str = ""
+
+
+class StreetView(Base):
+    institution: str
+    analyst: str = Field(default="", description="확인된 경우에만")
+    published_date: str
+    source_url: str
+    source_title: str = ""
+    quote: str = Field(default="", description="원문 한 줄(있으면)")
+    summary: str = Field(description="무엇을 핵심 driver 로 보는가 — 1~2줄 요약")
+    stance: Literal["constructive", "cautious", "neutral", "mixed"] = "neutral"
+    key_variables: list[str] = Field(default_factory=list)
+    age_days: int = 0
+    freshness: str = ""
+    retrieved_by: Literal["manual", "llm_web"] = "manual"
+
+
+class KeyStock(Base):
+    id: str
+    name: str
+    role: str = Field(default="", description="'Equipment leader'")
+    note: str = Field(default="", description="'relative strength ↑'")
+    in_radar: bool = False
+    z: float | None = None
+
+
+class LeadershipDetail(Base):
+    why: list[str] = Field(default_factory=list, description="WHY LEADING? 1~3개 — 시장 데이터 기반")
+    confirmation: list[ConfirmRow] = Field(default_factory=list, description="PRICE / RELATIVE STRENGTH / BREADTH / NEWS / FUNDAMENTAL / FLOW")
+    system_view: str = ""
+    driver: str = ""
+    quality: str = ""
+    quality_ko: str = ""
+    quality_detail: str = ""
+    risk: str = ""
+    street: list[StreetView] = Field(default_factory=list, description="확인된 외부 view 만 — 없으면 빈 목록(영역 숨김)")
+    street_read: str = Field(default="", description="여러 기관 견해가 갈릴 때 SYSTEM READ")
+    key_stocks: list[KeyStock] = Field(default_factory=list)
+    watch: list[str] = Field(default_factory=list)
+
+
 class LeaderRow(Base):
     key: str
     label: str
@@ -122,6 +170,8 @@ class LeaderRow(Base):
     arrow: Arrow
     instruments: int = 0
     available: int = 0
+    system_view: str = Field(default="", description="기본 화면 한 줄")
+    detail: LeadershipDetail | None = None
 
 
 class ThemePulseRow(Base):
@@ -143,6 +193,7 @@ class Leadership(Base):
     all_rows: list[LeaderRow] = Field(default_factory=list)
     pulse: list[ThemePulseRow] = Field(default_factory=list)
     sentence: str = ""
+    read: str = Field(default="", description="LEADERSHIP READ — 판정 · 크로스에셋 · 상대강도 · breadth 종합 한두 문장")
 
 
 class TransmissionStock(Base):
@@ -212,7 +263,6 @@ class EarningsPulse(Base):
     note: str = ""
 
 
-PathStatus = Literal["CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING"]
 
 
 class PathCheck(Base):
@@ -384,6 +434,12 @@ class DriverHeat(Base):
     values: list[float | None] = Field(default_factory=list, description="날짜순 factor z (결측 None)")
     current: float | None = None
     arrow: Arrow = "?"
+    label_ui: str = Field(default="", description="'Credit Stress'")
+    label_ko: str = Field(default="", description="'신용 스트레스'")
+    meaning: str = Field(default="", description="현재 경제적 의미 — '신용 스트레스 확대'")
+    horizon_label: str = ""
+    horizons: list["Horizon"] = Field(default_factory=list, description="대표 계열의 1D / 5D (부호 = factor 방향)")
+    horizon_read: str = ""
 
 
 class RegimeShare(Base):

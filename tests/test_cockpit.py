@@ -226,3 +226,56 @@ class TestIssuePathAndAnalystView:
         assert set(body["requested"]) == set(v["stock_id"] for v in body["views"]) | set(body["missing"])
         for v in body["views"]:
             assert v["analyst"] and v["broker"] and v["source_url"].startswith("http") and v["freshness"].endswith("D")
+
+
+class TestHeatAndLeadershipIntel:
+    """DRIVER HEAT 는 factor 부호가 아니라 경제적 의미로 말하고, MARKET LEADERSHIP 은 왜·확인·질·종목·외부 view 를 함께 준다. 외부 view 는 확인된 것만."""
+
+    def test_heat_labels_meaning_and_horizons(self):
+        from datetime import datetime, timezone
+        from marketpulse.engines.state_history import replay_market_state
+        from marketpulse.engines.regime_history import build_regime_history
+        settings = Settings(data_mode="MOCK", scenario="inflation_shock", llm_enabled=False)
+        r = run_pipeline_detailed(settings, as_of=AS_OF)
+        ins = get_instruments().instruments
+        hist = replay_market_state(ins, r.series_by_id, as_of=AS_OF, days=8, mode=r.snapshot.mode, zscore_window=settings.zscore_window)
+        cfg = load_cockpit_config()["history"]
+        h = build_regime_history(hist, cfg, horizon_z={"US10Y": (-0.5, 1.4), "US_HY_OAS": (3.9, 3.7), "SPX": (-1.2, -0.9), "MOVE": (1.0, 2.6), "BE10Y": (-0.1, -0.3)})
+        by = {d.key: d for d in h.drivers}
+        assert by["Credit"].label_ui == "Credit Stress" and by["Credit"].label_ko == "신용 스트레스" and by["Rates"].label_ui == "Rate Pressure"
+        for d in h.drivers:
+            assert d.meaning and d.meaning != d.label and any(w in d.meaning for w in ("확대", "완화", "강화", "약화", "개선", "악화", "상승", "중립", "없음"))
+        rates = by["Rates"]
+        assert [x.key for x in rates.horizons] == ["1D", "5D"] and rates.horizons[0].z == -0.5 and rates.horizons[1].z == 1.4
+        assert "5일" in rates.horizon_read and "오늘" in rates.horizon_read
+        # MOVE 는 역방향(sign −1): 채권 변동성 ↑ = 유동성 악화
+        liq = by["Liquidity"]; assert liq.horizons[0].z == -1.0 and liq.horizons[1].z == -2.6
+
+    def test_leadership_rows_have_detail_and_read(self):
+        snap, market, by_id = _run("inflation_shock")
+        c = build_cockpit(snap, market, by_id)
+        l = c.leadership
+        assert l.read
+        for r in l.leaders + l.laggards:
+            d = r.detail
+            assert d is not None and r.system_view and 1 <= len(d.why) <= 3
+            keys = [x.key for x in d.confirmation]
+            assert keys[:3] == ["PRICE", "RELATIVE", "BREADTH"] and all(x.meaning for x in d.confirmation)
+            assert d.quality in ("BROADENING", "NARROW", "FUNDAMENTAL-LED", "PRICE-LED", "MACRO-DRIVEN", "NEWS-DRIVEN", "FRAGILE") and d.quality_ko
+            assert d.system_view and d.driver and d.risk and 1 <= len(d.watch) <= 3 and len(d.key_stocks) <= 5
+            for v in d.street:
+                assert v.institution and v.source_url.startswith("http") and v.summary and 0 <= v.age_days <= 30
+            assert "확률" not in d.system_view
+
+    def test_street_views_only_verified_and_fresh(self, tmp_path):
+        import json
+        from datetime import datetime, timezone
+        from marketpulse.engines.leadership_intel import load_street_views
+        (tmp_path / "a.json").write_text(json.dumps({"views": [
+            {"themes": ["semiconductor"], "institution": "X Research", "published_date": "2026-09-20", "source_url": "https://x/a", "summary": "ok"},
+            {"themes": ["semiconductor"], "institution": "", "published_date": "2026-09-20", "source_url": "https://x/b", "summary": "no institution"},
+            {"themes": ["semiconductor"], "institution": "Old", "published_date": "2026-07-01", "source_url": "https://x/c", "summary": "too old"},
+            {"themes": ["ai"], "institution": "Y", "published_date": "2026-09-28", "source_url": "not-a-url", "summary": "bad url"},
+        ]}), encoding="utf-8")
+        sv = load_street_views(tmp_path, as_of=datetime(2026, 9, 29, tzinfo=timezone.utc), max_age_days=30)
+        assert list(sv) == ["semiconductor"] and len(sv["semiconductor"]) == 1 and sv["semiconductor"][0].analyst == ""

@@ -654,9 +654,13 @@ export interface CkDriver { key: string; label: string; label_ko: string; direct
 export interface CkCrossAssetRow { key: string; label: string; instrument: string; z: number | null; arrow: CkArrow; status: "CONFIRM" | "DIVERGE" | "HEADWIND" | "FLAT" | "NEUTRAL" | "MISSING"; note: string; instrument_label: string; group: "RISK" | "MACRO" | "COMMODITY"; meaning: string }
 export interface CkKeyDivergence { title: string; meaning: string; severity: number; source: string; assets: string[]; phenomenon: string; why: string; reference: string[] }
 export interface CkCrossAsset { rows: CkCrossAssetRow[]; confirm: number; evaluated: number; sentence: string; divergences: CkKeyDivergence[]; total_divergences: number; current_view: string; regime_short: string; confirm_text: string; market_read: string }
-export interface CkLeaderRow { key: string; label: string; kind: "theme" | "sector"; z_1d: number | null; rel_1w: number | null; breadth: number | null; arrow: CkArrow; instruments: number; available: number }
+export interface CkConfirmRow { key: string; label: string; value: string; status: CkPathStatus; meaning: string }
+export interface CkStreetView { institution: string; analyst: string; published_date: string; source_url: string; source_title: string; quote: string; summary: string; stance: "constructive" | "cautious" | "neutral" | "mixed"; key_variables: string[]; age_days: number; freshness: string; retrieved_by: "manual" | "llm_web" }
+export interface CkKeyStock { id: string; name: string; role: string; note: string; in_radar: boolean; z: number | null }
+export interface CkLeadershipDetail { why: string[]; confirmation: CkConfirmRow[]; system_view: string; driver: string; quality: string; quality_ko: string; quality_detail: string; risk: string; street: CkStreetView[]; street_read: string; key_stocks: CkKeyStock[]; watch: string[] }
+export interface CkLeaderRow { key: string; label: string; kind: "theme" | "sector"; z_1d: number | null; rel_1w: number | null; breadth: number | null; arrow: CkArrow; instruments: number; available: number; system_view: string; detail: CkLeadershipDetail | null }
 export interface CkThemePulseRow { theme_id: string; name: string; price: CkArrow; news: CkArrow; rel: CkArrow; theme_score: number; news_sentiment: number | null; price_momentum: number | null; rel_1w: number | null; why: string }
-export interface CkLeadership { leaders: CkLeaderRow[]; laggards: CkLeaderRow[]; all_rows: CkLeaderRow[]; pulse: CkThemePulseRow[]; sentence: string }
+export interface CkLeadership { leaders: CkLeaderRow[]; laggards: CkLeaderRow[]; all_rows: CkLeaderRow[]; pulse: CkThemePulseRow[]; sentence: string; read: string }
 export interface CkTransmissionStock { id: string; name: string; status: "CONFIRMED" | "UNCONFIRMED" | "CONTRADICTED" | "NO DATA"; z: number | null; change_1d: number | null; note: string }
 export interface CkTransmissionChain { driver_key: string; driver_label: string; arrow: CkArrow; mechanism: string; industries: string[]; stocks: CkTransmissionStock[]; confirmed: number; source: "driver" | "commodity" }
 export type CkPathStatus = "CONFIRMED" | "PARTIAL" | "UNCONFIRMED" | "CONTRADICTED" | "DATA MISSING";
@@ -680,7 +684,7 @@ export interface CkDataStatus { line: string; warnings: string[]; coverage: numb
 export interface CkRegimeDay { date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean }
 export interface CkRegimeBlock { regime: string; label: string; start: string; end: string; days: number; current: boolean }
 export interface CkRegimeTransition { date: string; from_regime: string; from_label: string; to_regime: string; to_label: string; primary_driver: string; confirmation: string; evidence: string[]; evidence_strength: number }
-export interface CkDriverHeat { key: string; label: string; values: (number | null)[]; current: number | null; arrow: CkArrow }
+export interface CkDriverHeat { key: string; label: string; values: (number | null)[]; current: number | null; arrow: CkArrow; label_ui: string; label_ko: string; meaning: string; horizon_label: string; horizons: CkHorizon[]; horizon_read: string }
 export interface CkRegimeShare { regime: string; label: string; days: number; share: number }
 export interface CkHistoryRange { key: string; days: number; available: boolean; reason: string }
 export interface CkRegimeHistory {
