@@ -248,6 +248,8 @@
 
 - **실시간 2 · TRANSMISSION read + WATCHLIST 체크포인트(2026-09-30)**: `config/cockpit.yaml transmission.strength/strength_ko/subject_ko/industry_labels`, `watchlist`(weights · priority_high · driver_labels · hints); 모델 TransmissionStock.industry, TransmissionChain.evaluated/strength/strength_ko/read, WatchLink, WatchRow.theme/why/key_drivers/trigger/reasons/priority/transmission/issues/commentary/eps_revision; 엔진 `_strength`(확인 비율 × driver 강도) · `_read`(STRONG/PARTIAL/LIMITED/UNCONFIRMED 별 문장 + CONTRADICTED 종목 점검 문장), 워치리스트 선정 점수와 WHY(펀더멘털/테마 상태 + 가격 confirmation, '이고/지만' 연결) · KEY DRIVER ≤3 · TRIGGER · 태그 · 전파/이슈 연결. 프런트 TransmissionCard(강도 + read, 링크 focus), `WatchRowView`(TRANSMISSION ● → 전파 카드 스크롤·강조, RELATED ISSUE → 이슈 열기, 탭 펼침). 9/29: LONG-END RATES 4/5 STRONG("Software · Data Center Infra 까지 폭넓게 확인, Palantir 는 예상과 다르게 상대강도 유지"), CREDIT STRESS 2/5 PARTIAL, VOLATILITY 1/3 LIMITED, OIL 3/3 STRONG, EQUITY DIRECTION 0/4 UNCONFIRMED; 워치리스트 SK하이닉스 · 삼성전자 · HMM · 한미반도체 · 대한항공(모두 HIGH). 테스트 +2(백엔드) +2(프런트).
 
+- DRIVER HEAT 모바일 겹침 수정(2026-09-30): factor 를 이름/한글 → 띠(width 100%) → 상태·1D/5D → 해석문 순 세로 스택 블록으로 재구성. 데스크톱은 150px 라벨 | 본문 2열, 768px 이하는 단일 열. 고정폭·nowrap 제거, 날짜축은 공통 헤더 한 줄. Playwright 로 1680/390/360px 에서 라벨·띠 겹침 없음 확인.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

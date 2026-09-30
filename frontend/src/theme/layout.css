@@ -1530,17 +1530,6 @@
 .ck-h-line { stroke: var(--ink-2); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
 .ck-h-dot { fill: var(--accent); }
 .ck-h-spark-t { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-.ck-h-heat { display: flex; flex-direction: column; gap: 3px; }
-.ck-h-heat-head { display: grid; grid-template-columns: 96px 1fr auto 28px; gap: 8px; font-size: 9.5px; color: var(--faint); }
-.ck-h-heat-head span:nth-child(3) { text-align: right; }
-.ck-h-heat-row { display: grid; grid-template-columns: 96px 1fr 28px; gap: 8px; align-items: center; font-size: 11px; }
-.ck-h-heat-l { color: var(--ink-2); white-space: nowrap; }
-.ck-h-heat-cells { display: flex; gap: 2px; height: 11px; }
-.ck-h-heat-cells i { flex: 1; border-radius: 1px; }
-.ck-h-heat-cells i.pos { background: var(--up); }
-.ck-h-heat-cells i.neg { background: var(--down); }
-.ck-h-heat-cells i.miss { border: 1px dashed var(--rule); opacity: .6; }
-.ck-h-heat-a { text-align: right; font-weight: 600; color: var(--ink-2); }
 .ck-h-share { display: flex; flex-direction: column; gap: 5px; }
 .ck-h-share-row { display: grid; grid-template-columns: 82px 1fr 34px; gap: 6px; align-items: center; font-size: 11px; color: var(--muted); }
 .ck-h-share-row.cur { color: var(--ink); font-weight: 600; }
@@ -1563,8 +1552,6 @@
   .ck.ck-hist { grid-template-areas: "now" "hist" "drivers" "cross" "lead" "radar" "cat" "next" "trans" "earn" "watch" "status" "details"; }
   .ck-h-fold > summary { display: block; font-size: 10.5px; color: var(--accent); cursor: pointer; padding: 4px 0; }
   .ck-h-ctx-grid { grid-template-columns: repeat(4, 1fr); }
-  .ck-h-heat-head, .ck-h-heat-row { grid-template-columns: 78px 1fr 24px; }
-  .ck-h-heat-head { grid-template-columns: 78px 1fr auto 24px; }
   .ck-h-tipwrap { left: 50% !important; }
 }
 
@@ -1706,22 +1693,7 @@
 }
 
 
-/* ── 실시간 2 · DRIVER HEAT 의미 층 · LEADERSHIP INTELLIGENCE ───────────────── */
-.ck-h-heat-row { grid-template-columns: 118px 1fr minmax(150px, 190px); align-items: start; }
-.ck-h-heat-head { grid-template-columns: 118px 1fr auto minmax(150px, 190px); }
-.ck-h-heat-l { display: flex; flex-direction: column; gap: 0; line-height: 1.2; }
-.ck-h-heat-l b { font-weight: 600; font-size: 11px; }
-.ck-h-heat-l small { font-size: 10px; color: var(--muted); }
-.ck-h-heat-cells { margin-top: 3px; }
-.ck-h-heat-a { text-align: left; font-weight: 400; display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
-.ck-h-heat-a > b { font-size: 12px; color: var(--ink-2); }
-.ck-h-heat-a em { font-style: normal; font-size: 11px; color: var(--ink); }
-.ck-h-heat-hz { font-size: 10px; color: var(--muted); display: flex; gap: 8px; }
-.ck-h-heat-hz i { font-style: normal; color: var(--faint); }
-.ck-h-heat-read { font-size: 10px; color: var(--warn); line-height: 1.3; }
-.ck-h-heat-row.split .ck-h-heat-a > b { color: var(--warn); }
-.ck-h-heat-legend { margin-top: 4px; }
-.ck-h-heat-legend span { color: var(--ink-2); font-weight: 600; margin-right: 3px; }
+/* ── 실시간 2 · LEADERSHIP INTELLIGENCE ───────────────── */
 .ck-lead-row.has-detail { cursor: pointer; border-radius: var(--radius); padding: 4px 6px; margin: 0 -6px; }
 .ck-lead-row.has-detail:hover, .ck-lead-row.open { background: var(--surface-2); }
 .ck-lead-h { display: flex; gap: 6px; align-items: baseline; }
@@ -1761,10 +1733,6 @@
 .ck-ld-ks .num { text-align: right; }
 @media (max-width: 1100px) { .ck-ld { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
-  .ck-h-heat-row { grid-template-columns: 84px 1fr; }
-  .ck-h-heat-head { grid-template-columns: 84px 1fr auto; }
-  .ck-h-heat-head span:nth-child(4) { display: none; }
-  .ck-h-heat-a { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; padding-left: 2px; }
   .ck-ld-cf { grid-template-columns: 96px minmax(0, 1fr); }
   .ck-ld-cf .ck-sk { grid-column: 1 / -1; }
   .ck-ld-3 { grid-template-columns: 1fr; }
@@ -1797,6 +1765,47 @@
 @media (max-width: 760px) {
   .ck-wl-b { grid-template-columns: 64px minmax(0, 1fr); font-size: 10.5px; }
   .ck-wl { gap: 2px; }
+}
+
+
+/* ── 실시간 2 · DRIVER HEAT — factor block stacked layout (겹침 없음) ───────── */
+.ck-h-heat { display: flex; flex-direction: column; gap: 14px; }
+.ck-h-heat-title { display: flex; flex-direction: column; gap: 1px; }
+.ck-h-heat-axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--faint); padding-bottom: 4px; border-bottom: 1px solid var(--rule-soft); margin-bottom: -4px; }
+.ck-h-heat-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 14px; align-items: start; }
+.ck-h-heat-l { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; min-width: 0; }
+.ck-h-heat-l b { font-weight: 600; font-size: 12px; overflow-wrap: anywhere; }
+.ck-h-heat-l small { font-size: 10.5px; color: var(--muted); }
+.ck-h-heat-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ck-h-heat-cells { display: flex; gap: 2px; height: 12px; width: 100%; }
+.ck-h-heat-cells i { flex: 1 1 0; min-width: 0; border-radius: 1px; }
+.ck-h-heat-cells i.pos { background: var(--up); }
+.ck-h-heat-cells i.neg { background: var(--down); }
+.ck-h-heat-cells i.miss { border: 1px dashed var(--rule); opacity: .6; }
+.ck-h-heat-a { display: flex; flex-wrap: wrap; gap: 3px 14px; align-items: baseline; line-height: 1.3; }
+.ck-h-heat-st { display: inline-flex; gap: 6px; align-items: baseline; }
+.ck-h-heat-st > b { font-size: 12px; color: var(--ink-2); }
+.ck-h-heat-st em { font-style: normal; font-size: 11.5px; color: var(--ink); }
+.ck-h-heat-hz { font-size: 10.5px; color: var(--muted); display: inline-flex; gap: 10px; white-space: nowrap; }
+.ck-h-heat-hz i { font-style: normal; color: var(--faint); }
+.ck-h-heat-read { font-size: 10.5px; color: var(--warn); line-height: 1.4; }
+.ck-h-heat-row.split .ck-h-heat-st > b { color: var(--warn); }
+.ck-h-heat-legend { margin-top: 2px; }
+.ck-h-heat-legend span { color: var(--ink-2); font-weight: 600; margin-right: 3px; }
+@media (max-width: 768px) {
+  .ck-h-heat { gap: 18px; }
+  .ck-h-heat-row { grid-template-columns: 1fr; gap: 7px; padding-bottom: 12px; border-bottom: 1px dashed var(--rule-soft); }
+  .ck-h-heat-row:last-of-type { border-bottom: 0; }
+  .ck-h-heat-l b { font-size: 17px; }
+  .ck-h-heat-l small { font-size: 13px; }
+  .ck-h-heat-cells { height: 14px; }
+  .ck-h-heat-body { gap: 7px; }
+  .ck-h-heat-a { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .ck-h-heat-st > b { font-size: 15px; }
+  .ck-h-heat-st em { font-size: 14.5px; }
+  .ck-h-heat-hz { font-size: 13px; flex-wrap: wrap; white-space: normal; gap: 4px 14px; }
+  .ck-h-heat-read { font-size: 13px; }
+  .ck-h-heat-axis { font-size: 11px; }
 }
 
 @media (max-width: 1100px) { .ck { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "now drivers" "cross lead" "trans trans" "radar cat" "earn earn" "next watch" "status status" "details details"; } }

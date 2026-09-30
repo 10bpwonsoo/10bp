@@ -132,32 +132,37 @@ function Spark({ h }: { h: CkRegimeHistory }) {
 
 function Heat({ h }: { h: CkRegimeHistory }) {
   const ref = 2.0;
+  const first = md(h.days[0]?.date ?? ""); const last = md(h.days[h.days.length - 1]?.date ?? "");
   return (
     <div className="ck-h-heat" data-testid="ck-h-heat">
-      <div className="ck-h-heat-head mono"><span className="ck-k">Driver heat</span><span>{md(h.days[0]?.date ?? "")}</span><span>{md(h.days[h.days.length - 1]?.date ?? "")}</span><span className="ck-k">Now · 의미</span></div>
+      <div className="ck-h-heat-title"><span className="ck-k mono">Driver heat</span><span className="ck-sub-i">factor 별 최근 한 달 흐름 — 위에서 아래로: 이름 / 띠 / 지금 상태 / 해석</span></div>
+      <div className="ck-h-heat-axis mono" data-testid="ck-h-heat-axis"><span>{first}</span><span>{last}</span></div>
       {h.drivers.map((dr) => {
         const h1 = dr.horizons.find((x) => x.key === "1D"); const h5 = dr.horizons.find((x) => x.key === "5D");
         const split = !!(h1 && h5 && h1.z !== null && h5.z !== null && h1.arrow !== "?" && h5.arrow !== "?" && ((h1.z > 0) !== (h5.z > 0)) && Math.abs(h1.z) >= 0.3 && Math.abs(h5.z) >= 0.5);
         return (
           <div key={dr.key} className={`ck-h-heat-row${split ? " split" : ""}`} data-testid="ck-h-heat-row" data-key={dr.key}>
-            <span className="ck-h-heat-l"><b>{dr.label_ui || dr.label}</b><small>{dr.label_ko}</small></span>
-            <span className="ck-h-heat-cells">
-              {dr.values.map((v, i) => (
-                <i key={i} className={v === null ? "miss" : v >= 0 ? "pos" : "neg"} style={v === null ? undefined : { opacity: 0.12 + 0.88 * Math.min(1, Math.abs(v) / ref) }} title={`${h.days[i]?.date ?? ""} ${dr.label_ui || dr.label} factor ${v === null ? "결측" : sg(v, 2)}`} />
-              ))}
-            </span>
-            <span className="ck-h-heat-a" data-testid="ck-h-heat-meaning"><b className="mono">{dr.arrow}</b><em>{dr.meaning}</em>
-              {dr.horizons.length ? (
-                <span className="mono ck-h-heat-hz" title={dr.horizon_label ? `대표 계열 ${dr.horizon_label}` : undefined}>
-                  {dr.horizons.map((x) => <span key={x.key}><i>{x.key}</i> {x.arrow !== "?" ? x.arrow : "–"}{x.z !== null ? ` ${sg(x.z)}σ` : ""}</span>)}
-                </span>
-              ) : null}
-              {dr.horizon_read ? <small className="ck-h-heat-read">{dr.horizon_read}</small> : null}
-            </span>
+            <div className="ck-h-heat-l"><b>{dr.label_ui || dr.label}</b><small>{dr.label_ko}</small></div>
+            <div className="ck-h-heat-body">
+              <div className="ck-h-heat-cells">
+                {dr.values.map((v, i) => (
+                  <i key={i} className={v === null ? "miss" : v >= 0 ? "pos" : "neg"} style={v === null ? undefined : { opacity: 0.12 + 0.88 * Math.min(1, Math.abs(v) / ref) }} title={`${h.days[i]?.date ?? ""} ${dr.label_ui || dr.label} factor ${v === null ? "결측" : sg(v, 2)}`} />
+                ))}
+              </div>
+              <div className="ck-h-heat-a" data-testid="ck-h-heat-meaning">
+                <span className="ck-h-heat-st"><b className="mono">{dr.arrow}</b><em>{dr.meaning}</em></span>
+                {dr.horizons.length ? (
+                  <span className="mono ck-h-heat-hz" title={dr.horizon_label ? `대표 계열 ${dr.horizon_label}` : undefined}>
+                    {dr.horizons.map((x) => <span key={x.key}><i>{x.key}</i> {x.arrow !== "?" ? x.arrow : "–"}{x.z !== null ? ` ${sg(x.z)}σ` : ""}</span>)}
+                  </span>
+                ) : null}
+              </div>
+              {dr.horizon_read ? <div className="ck-h-heat-read">{dr.horizon_read}</div> : null}
+            </div>
           </div>
         );
       })}
-      <div className="ck-legend mono ck-h-heat-legend" data-testid="ck-h-heat-legend"><span>COLOR</span> factor 방향 (빨강 +, 파랑 −) — 좋고 나쁨이 아니다 · <span>ARROW</span> 현재 경제적 의미 (오른쪽 한글)</div>
+      <div className="ck-legend mono ck-h-heat-legend" data-testid="ck-h-heat-legend"><span>COLOR</span> factor 방향 (빨강 +, 파랑 −) — 좋고 나쁨이 아니다 · <span>ARROW</span> 현재 경제적 의미</div>
     </div>
   );
 }
