@@ -79,10 +79,13 @@ class CrossAssetRow(Base):
     key: str
     label: str
     instrument: str
+    instrument_label: str = Field(default="", description="대표 지표 이름 — 'S&P 500', 'US HY OAS'")
+    group: Literal["RISK", "MACRO", "COMMODITY"] = "RISK"
     z: float | None = None
     arrow: Arrow
     status: Literal["CONFIRM", "DIVERGE", "HEADWIND", "FLAT", "NEUTRAL", "MISSING"]
     note: str = ""
+    meaning: str = Field(default="", description="영어 상태값 옆의 짧은 한글 의미 — 지금 판정 기준")
 
 
 class KeyDivergence(Base):
@@ -91,6 +94,9 @@ class KeyDivergence(Base):
     severity: float
     source: Literal["divergence", "rates_regime", "oil_regime"] = "divergence"
     assets: list[str] = Field(default_factory=list)
+    phenomenon: str = Field(default="", description="현상 한 줄 — 'VIX 는 상승했지만 금은 오히려 하락'")
+    why: str = Field(default="", description="왜 중요한가")
+    reference: list[str] = Field(default_factory=list, description="통계 근거 — 'Expected relationship +70', 'Recent correlation −45'")
 
 
 class CrossAsset(Base):
@@ -98,6 +104,10 @@ class CrossAsset(Base):
     confirm: int = 0
     evaluated: int = 0
     sentence: str = ""
+    current_view: str = Field(default="", description="지금 검증하는 판정 — 'LIQUIDITY STRESS / RISK-OFF'")
+    regime_short: str = Field(default="", description="문장용 짧은 이름 — 'Risk-Off'")
+    confirm_text: str = Field(default="", description="'7개 주요 자산군 중 5개가 현재 Risk-Off 판단과 같은 방향'")
+    market_read: str = Field(default="", description="MARKET READ — 표 앞에 오는 1~2문장")
     divergences: list[KeyDivergence] = Field(default_factory=list)
     total_divergences: int = 0
 
@@ -221,6 +231,7 @@ class PathStage(Base):
     text: list[str] = Field(default_factory=list)
     checks: list[PathCheck] = Field(default_factory=list)
     status: PathStatus = "DATA MISSING"
+    explain: str = Field(default="", description="영어 단계명 아래 한글 — 왜 이 단계로 연결되는가")
 
 
 class PathStock(Base):
@@ -234,6 +245,19 @@ class PathStock(Base):
     segment: str = ""
     in_radar: bool = False
     note: str = ""
+    expected_text: str = Field(default="", description="'↓ 금리 상승 시 약세 예상'")
+    priority: float = Field(default=0.0, description="메인 노출 우선순위 — radar → |z| → 뚜렷한 확인 → 중요한 contradiction")
+
+
+class PathSummary(Base):
+    main_impact: list[str] = Field(default_factory=list, description="'장기금리 상승 → 실질금리 / 할인율 상승 → 고 duration 자산 부담'")
+    stages_confirmed: int = 0
+    stages_total: int = 0
+    stages_text: str = ""
+    most_exposed: list[str] = Field(default_factory=list)
+    exception: list[str] = Field(default_factory=list, description="RELATIVE EXCEPTION — 예상과 반대로 버티는 것")
+    observed_read: str = Field(default="", description="EXPECTED vs OBSERVED 한 줄 해석")
+    confirm_read: str = Field(default="", description="WHAT WOULD CONFIRM 한 줄 해석")
 
 
 class PathTier(Base):
@@ -256,6 +280,14 @@ class IssuePath(Base):
     confirm: list[PathCheck] = Field(default_factory=list, description="WHAT WOULD CONFIRM? 체크리스트")
     confirm_count: int = 0
     source: Literal["config", "ai_value_chain"] = "config"
+    summary: PathSummary | None = None
+    tier_show: dict[str, int] = Field(default_factory=dict, description="메인에 보이는 tier 당 종목 수(0 = 접기)")
+
+
+class Horizon(Base):
+    key: Literal["1D", "5D", "1M"]
+    z: float | None = None
+    arrow: Arrow = "?"
 
 
 class NextItem(Base):
@@ -266,6 +298,9 @@ class NextItem(Base):
     current: str
     driver_key: str
     path: IssuePath | None = None
+    horizons: list[Horizon] = Field(default_factory=list, description="같은 지표의 1D · 5D · 1M z — 기간을 늘 함께 보여준다")
+    horizon_read: str = Field(default="", description="'오늘은 일부 되돌렸지만 최근 5일 상승 흐름은 유지'")
+    why_next: str = Field(default="", description="닫힌 상태에서도 보이는 WHY IT MATTERS 한 줄")
 
 
 class UpcomingEvent(Base):

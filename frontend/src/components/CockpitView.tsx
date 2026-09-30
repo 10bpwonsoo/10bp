@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Cockpit, CkArrow, CkDriver, CkCatalyst, CkRadarStock, AnalystView, AnalystViews, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
 import { useAnalystViews } from "../api/useAnalystViews";
 import { IssuePathView } from "./IssuePath";
+import { COLOR_LEGEND, MATCH_COLOR, STATUS_KO, STATUS_KO_SHORT, glossaryFor } from "./ko";
 import { LABEL_KO } from "./StateHistoryStrip";
 import { RegimeHistoryCard } from "./RegimeHistoryCard";
 
@@ -90,25 +91,64 @@ function Drivers({ c, mobileTop }: { c: Cockpit; mobileTop: number }) {
   );
 }
 
+/** 영어 상태값 + 한글 의미. 데스크톱은 두 줄, 모바일은 `CONFIRM · 판단 지지` 한 줄(CSS 로 전환). */
+export function StatusKo({ s, ko }: { s: string; ko?: string }) {
+  return (
+    <span className="ck-sk" data-status={s}>
+      <span className="mono ck-st" style={{ color: MATCH_COLOR[s] ?? "var(--muted)" }}>{s}</span>
+      <span className="ck-sk-ko">{ko ?? STATUS_KO[s] ?? ""}</span>
+      <span className="ck-sk-short">· {STATUS_KO_SHORT[s] ?? ""}</span>
+    </span>
+  );
+}
+
+const GROUP_ORDER: ("RISK" | "MACRO" | "COMMODITY")[] = ["RISK", "MACRO", "COMMODITY"];
+const GROUP_LABEL: Record<string, string> = { RISK: "RISK", MACRO: "MACRO", COMMODITY: "COMMODITY / SAFE HAVEN" };
+
 function CrossAssetCard({ c }: { c: Cockpit }) {
   const ca = c.cross_asset; const [all, setAll] = useState(false);
+  const shown = all ? ca.divergences : ca.divergences.slice(0, 2);
   return (
-    <Card title="Cross-Asset Confirmation" area="cross" testid="ck-cross" note={<span>Regime Confirmation <b style={{ color: "var(--ink)" }}>{ca.confirm} / {ca.evaluated}</b> assets</span>}>
-      <div className="ck-ca" role="table" aria-label="크로스에셋 확인">
-        {ca.rows.map((r) => (
-          <div key={r.key} className="ck-ca-row" role="row" data-testid="ck-ca-row" data-status={r.status} title={`${r.instrument} ${sg(r.z)}σ · ${r.note}`}>
-            <span className="ck-ca-k mono">{r.key}</span><Arrow a={r.arrow} /><St s={r.status} />
-          </div>
-        ))}
+    <Card title="Cross-Asset Confirmation" area="cross" testid="ck-cross" note={<span>Regime Confirmation <b className="num">{ca.confirm} / {ca.evaluated}</b> assets</span>}>
+      <p className="ck-sub" data-testid="ck-cross-purpose">현재 시장 판단이 주식·금리·신용·달러 등 다른 시장에서도 같은 방향으로 확인되는지 점검합니다.</p>
+      <div className="ck-ca-top">
+        <div><span className="ck-k mono">Current market view</span><b className="ck-ca-view" style={{ color: LABEL_COLOR[c.market_now.label] ?? "var(--ink)" }} data-testid="ck-cross-view">{ca.current_view}</b></div>
+        <div><span className="ck-k mono">Regime confirmation</span><b className="num mono ck-ca-n">{ca.confirm} / {ca.evaluated} assets</b><span className="ck-ca-ct" data-testid="ck-cross-confirm-text">{ca.confirm_text}</span></div>
+      </div>
+      {ca.market_read ? <div className="ck-read" data-testid="ck-market-read"><span className="ck-k mono">Market read</span><p>{ca.market_read}</p></div> : null}
+      <div className="ck-ca-groups">
+        {GROUP_ORDER.map((g) => {
+          const rows = ca.rows.filter((r) => r.group === g);
+          if (!rows.length) return null;
+          return (
+            <div key={g} className="ck-ca-group" data-testid="ck-ca-group" data-group={g}>
+              <span className="ck-k mono ck-ca-gl">{GROUP_LABEL[g]}</span>
+              {rows.map((r) => (
+                <div key={r.key} className="ck-ca-row2" data-testid="ck-ca-row" data-status={r.status}>
+                  <div className="ck-ca-l"><b className="mono">{r.key}</b><span className="ck-ca-inst" title={glossaryFor(r.instrument_label)}>{r.instrument_label}</span></div>
+                  <div className="ck-ca-v num mono">{r.z === null ? "–" : `${sg(r.z)}σ`} <Arrow a={r.arrow} /></div>
+                  <div className="ck-ca-s"><StatusKo s={r.status} ko={r.meaning} /></div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
       {ca.divergences.length ? (
         <div className="ck-div" data-testid="ck-divergences">
-          <span className="ck-k mono">Key Divergence</span>
-          {ca.divergences.map((d) => <div key={d.title} className="ck-div-row"><b>{d.title}</b><span className="ck-div-m">→ {d.meaning}</span></div>)}
-          {ca.total_divergences > ca.divergences.length ? <button className="ck-more" onClick={() => setAll(!all)}>{all ? "접기" : `View all (${ca.total_divergences})`}</button> : null}
-          {all ? <div className="ck-ev mono">전체 괴리 목록은 아래 Details / Diagnostics 의 Divergence 패널에 있다.</div> : null}
+          <div className="ck-div-h"><span className="ck-k mono">Key divergence</span><span className="ck-sub-i">보통 같이 움직이던 두 신호가 지금 갈리는 곳 — 현상 → 왜 중요한가 → 근거</span></div>
+          {shown.map((d, k) => (
+            <div key={k} className="ck-div-row" data-testid="ck-divergence">
+              <div className="ck-div-t"><b>{d.title}</b><span className="num mono ck-div-sev" title="괴리 심각도 0~100 (확률 아님)">{d.severity.toFixed(0)}</span></div>
+              {d.phenomenon ? <div className="ck-div-ph">{d.phenomenon}</div> : null}
+              <div className="ck-div-why"><span className="ck-k mono">Why it matters</span> {d.why || d.meaning}</div>
+              {d.reference.length ? <div className="ck-div-ref mono"><span className="ck-k">Reference</span> {d.reference.map((r) => <span key={r}>{r}</span>)}</div> : null}
+            </div>
+          ))}
+          {ca.total_divergences > 2 ? <button type="button" className="ck-more" onClick={() => setAll(!all)}>{all ? "접기" : `View all (${ca.total_divergences})`}</button> : null}
         </div>
       ) : null}
+      <div className="ck-legend mono">{COLOR_LEGEND}</div>
     </Card>
   );
 }
@@ -271,15 +311,28 @@ function EarningsCard({ c }: { c: Cockpit }) {
 
 function NextCard({ c, open, setOpen, onStock }: { c: Cockpit; open: string | null; setOpen: (id: string | null) => void; onStock?: (id: string) => void }) {
   return (
-    <Card title="What Matters Next" area="next" testid="ck-next" note="오늘 판단을 바꿀 수 있는 것 · 최대 5 · 클릭하면 '더 진행되면 어디로 번지는가' 전파 경로">
+    <Card title="What Matters Next" area="next" testid="ck-next" note="오늘 판단을 바꿀 수 있는 것 · 최대 5">
+      <p className="ck-sub" data-testid="ck-next-purpose">현재 시장 판단을 강화하거나 뒤집을 수 있는 다음 핵심 변수를 보여줍니다. 항목을 누르면 그 변화가 자산 → 산업 → 종목으로 어떻게 전파될 수 있는지 볼 수 있습니다.</p>
       <ol className="ck-next">
-        {c.what_matters_next.map((n, k) => (
-          <li key={n.id || k} id={`ck-next-${n.id}`} data-testid="ck-next-item" data-status={n.status} className={`${n.path ? "has-path" : ""}${open === n.id ? " open" : ""}`} onClick={n.path ? () => setOpen(open === n.id ? null : n.id) : undefined} role={n.path ? "button" : undefined} tabIndex={n.path ? 0 : undefined} onKeyDown={(e) => { if (n.path && e.key === "Enter") setOpen(open === n.id ? null : n.id); }}>
-            <span className="ck-next-t">{n.text}{n.path ? <span className="ck-next-chev mono" aria-hidden="true">{open === n.id ? "▾" : "›"}</span> : null}</span>
-            <span className="mono ck-next-s"><St s={n.status} /> <span style={{ color: "var(--faint)" }}>· {n.metric} {n.current}</span></span>
-            {n.path && open === n.id ? <IssuePathView p={n.path} status={n.status} current={`${n.metric} ${n.current}`} onStock={onStock} /> : null}
-          </li>
-        ))}
+        {c.what_matters_next.map((n, k) => {
+          const isOpen = open === n.id;
+          return (
+            <li key={n.id || k} id={`ck-next-${n.id}`} data-testid="ck-next-item" data-status={n.status} className={`${n.path ? "has-path" : ""}${isOpen ? " open" : ""}`} onClick={n.path ? () => setOpen(isOpen ? null : n.id) : undefined} role={n.path ? "button" : undefined} tabIndex={n.path ? 0 : undefined} onKeyDown={(e) => { if (n.path && e.key === "Enter") setOpen(isOpen ? null : n.id); }}>
+              <div className="ck-nx-h">
+                <span className="ck-next-t">{n.text.replace(/가 고점을 갱신하는가$/, "가 다시 상승하는가?").replace(/는가$/, "는가?")}</span>
+                <StatusKo s={n.status} />
+              </div>
+              <div className="ck-nx-cur mono" data-testid="ck-next-horizons">
+                <span className="ck-k">Current · {n.metric}</span>
+                {n.horizons.length ? n.horizons.map((h) => <span key={h.key} className="ck-nx-hz"><i>{h.key}</i> <b className="num">{h.z === null ? "–" : `${sg(h.z)}σ`}</b> {h.arrow !== "?" ? h.arrow : ""}</span>) : <span className="num">{n.current}</span>}
+                {n.horizon_read ? <span className="ck-nx-read">{n.horizon_read}</span> : null}
+              </div>
+              {n.why_next ? <div className="ck-nx-why"><span className="ck-k mono">Why it matters</span> {n.why_next}</div> : null}
+              {n.path && !isOpen ? <span className="ck-nx-open mono">View transmission ›</span> : null}
+              {n.path && isOpen ? <IssuePathView p={n.path} status={n.status} current={n.horizons.map((h) => `${h.key} ${h.z === null ? "–" : `${sg(h.z)}σ`}`).join(" / ") || n.current} title={n.text} onStock={onStock} /> : null}
+            </li>
+          );
+        })}
       </ol>
       {c.upcoming.length ? <div className="ck-up mono"><span className="ck-k">Upcoming</span> {c.upcoming.map((u) => `${u.date} ${u.label}${u.days_until !== null ? ` (D${u.days_until >= 0 ? "-" : "+"}${Math.abs(u.days_until)})` : ""}${u.verified ? "" : " (미확인)"}`).join(" · ")}</div> : null}
     </Card>

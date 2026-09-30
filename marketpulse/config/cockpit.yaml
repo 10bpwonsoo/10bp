@@ -50,6 +50,7 @@ drivers:
       evidence: [{id: US_HY_OAS, sign: 1, weight: 1.5}, {id: VIX, sign: 1, weight: 1.0}, {id: SPX, sign: -1, weight: 1.0}]
       why: {up: "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.", down: "신용여건 완화가 위험자산을 지지한다."}
       next: {up: "HY OAS 가 추가 확대되는가", down: "HY OAS 축소가 이어지는가"}
+      why_next: {up: "HY OAS 가 더 벌어지면 금융여건이 조여 고베타·소형주·레버리지 기업 압력이 커집니다.", down: "HY OAS 축소가 이어지면 위험선호가 회복되고 고베타·경기민감주에 순풍입니다."}
     volatility_regime:
       impact: 0.85
       label: "VOLATILITY"
@@ -57,6 +58,7 @@ drivers:
       evidence: [{id: VIX, sign: 1, weight: 1.0}, {id: MOVE, sign: 1, weight: 1.0}, {id: VIX_RV_SPX, sign: 1, weight: 0.5}]
       why: {up: "주식·채권 변동성이 같이 오른다 — 포지션 축소 압력이 자산군을 넘어 번진다.", down: "변동성이 가라앉으며 위험 감수 여력이 회복된다."}
       next: {up: "VIX·MOVE 상승이 이어지는가", down: "변동성 진정이 유지되는가"}
+      why_next: {up: "주식·채권 변동성이 함께 오르면 포지션 축소가 자산군을 넘어 번집니다.", down: "변동성이 가라앉으면 위험 감수 여력이 돌아와 고베타가 먼저 반응합니다."}
     equity_beta:
       impact: 0.9
       label: "EQUITY DIRECTION"
@@ -65,6 +67,7 @@ drivers:
       theme: null
       why: {up: "지수가 넓게 오른다 — 위험선호가 주식으로 들어온다.", down: "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다."}
       next: {up: "지수 상승이 breadth 를 동반하는가", down: "지수 하락이 확산되는가"}
+      why_next: {up: "상승이 breadth 를 동반하면 베타 랠리가 중소형·섹터로 확산됩니다.", down: "하락이 확산되면 개별 요인이 아니라 베타라서 대형주에서 중소형·섹터로 번집니다."}
     long_end_rates:
       impact: 1.0
       label: "LONG-END RATES"
@@ -75,6 +78,7 @@ drivers:
       why: {up: "인플레이션 기대보다 real yield / term-premium 성격의 금리 상승에 가깝다.", down: "장기금리 하락이 듀레이션 자산을 지지한다."}
       why_be_up: {up: "기대인플레이션이 같이 올라 물가 리프라이싱 성격의 금리 상승이다."}
       next: {up: "US 10Y 가 고점을 갱신하는가", down: "장기금리 하락이 이어지는가"}
+      why_next: {up: "장기금리가 다시 오르면 Software·Growth·REIT 의 할인율 부담이 커집니다.", down: "장기금리 하락이 이어지면 듀레이션 자산(Software·REIT)이 먼저 회복합니다."}
     fed_path:
       impact: 0.7
       label: "FED PATH / FRONT END"
@@ -83,6 +87,7 @@ drivers:
       theme: rates
       why: {up: "단기금리가 오르며 인하 기대가 밀린다.", down: "단기금리 하락 — 시장이 완화 경로를 당겨 잡는다. 장기물과 갈리면 커브 스티프닝이다."}
       next: {up: "2년물 상승이 이어지는가", down: "2년물 하락(완화 기대)이 유지되는가"}
+      why_next: {up: "2년물이 더 오르면 인하 기대가 밀려 달러 강세·금 약세·커브 플래트닝으로 이어집니다.", down: "2년물 하락이 유지되면 완화 기대가 달러 약세·스티프닝·원화 자산 순풍으로 이어집니다."}
     usd:
       impact: 0.8
       label: "US DOLLAR"
@@ -91,6 +96,7 @@ drivers:
       theme: usd
       why: {up: "달러 강세 — 글로벌 위험자산과 원화 자산에 역풍.", down: "달러 약세 — 신흥국·원화 자산에 순풍."}
       next: {up: "달러 강세가 원달러로 전이되는가", down: "달러 약세가 이어지는가"}
+      why_next: {up: "달러 강세가 원달러로 옮겨가면 외국인 이탈 압력과 원화 자산 할인이 커집니다.", down: "달러 약세가 이어지면 신흥국·원화 자산에 자금이 돌아옵니다."}
     oil:
       impact: 0.8
       label: "OIL"
@@ -99,6 +105,7 @@ drivers:
       theme: oil
       why: {up: "유가 상승이 물가 기대와 에너지 주식으로 번진다.", down: "유가 하락 — 항공·운송에 순풍, 에너지·정유에 역풍. 기대인플레이션 전이는 따로 본다."}
       next: {up: "유가 상승이 기대인플레이션으로 전달되는가", down: "유가 하락이 기대인플레이션으로 전달되는가"}
+      why_next: {up: "유가 상승이 기대인플레이션으로 옮겨가면 명목금리를 밀어 올려 성장주까지 번집니다.", down: "유가 하락이 기대인플레이션으로 옮겨가면 금리 부담이 줄고 항공·운송에 순풍입니다."}
     gold_real:
       impact: 0.6
       label: "GOLD / REAL RATES"
@@ -106,6 +113,7 @@ drivers:
       evidence: [{id: GOLD, sign: -1, weight: 1.0}, {id: TIPS10Y, sign: 1, weight: 1.0}]
       why: {up: "실질금리 상승이 금을 누른다 — 안전자산이 아니라 디레버리징 매도.", down: "실질금리 하락과 금 강세 — 안전자산 수요."}
       next: {up: "금 급락이 실질금리 상승과 함께 이어지는가", down: "금 강세가 유지되는가"}
+      why_next: {up: "금 급락이 실질금리 상승과 함께 이어지면 안전자산까지 팔리는 디레버리징입니다.", down: "금 강세가 유지되면 실질금리 하락·안전자산 수요가 이어집니다."}
     ai_semi_relative:
       impact: 0.75
       label: "AI / SEMI RELATIVE"
@@ -115,6 +123,7 @@ drivers:
       label_resilient: "AI / SEMI RELATIVE RESILIENCE"
       why: {up: "시장 Risk-Off 에도 AI infrastructure 일부(장비·패키징)는 상대강도를 유지한다.", down: "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다."}
       next: {up: "AI/Semi 상대강도가 유지되는가", down: "AI 상대 약세가 −1σ 아래로 깊어지는가"}
+      why_next: {up: "AI/Semi 상대강도가 유지되면 Risk-Off 속에서도 AI 밸류체인이 리더십을 지킵니다.", down: "AI 상대 약세가 −1σ 아래로 깊어지면 베타가 아닌 AI 고유 요인으로 밸류체인 전반에 압력이 갑니다."}
     korea:
       impact: 0.75
       label: "KOREA"
@@ -123,6 +132,7 @@ drivers:
       theme: korea_governance
       why: {up: "국내 지수·원화가 같이 강하다.", down: "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다."}
       next: {up: "외국인 매수 전환이 이어지는가", down: "외국인 한국 주식 매도가 지속되는가"}
+      why_next: {up: "외국인 매수 전환이 이어지면 대형 반도체·금융에서 자동차·인터넷으로 확산됩니다.", down: "외국인 매도가 지속되면 원화 약세와 함께 자금 이탈 성격이 짙어집니다."}
     china:
       impact: 0.6
       label: "CHINA"
@@ -131,6 +141,7 @@ drivers:
       theme: china
       why: {up: "중국 주식·구리가 같이 오른다 — 중국 수요 기대.", down: "중국 주식·구리 약세 — 중국 수요 우려가 원자재로 번진다."}
       next: {up: "중국 수요 기대가 구리에서 확인되는가", down: "중국 약세가 원자재로 더 번지는가"}
+      why_next: {up: "중국 수요 기대가 구리에서 확인되면 철강·비철·화학·벌크 해운으로 번집니다.", down: "중국 약세가 원자재로 번지면 철강·비철·화학 순으로 압력이 갑니다."}
   #: 대체데이터는 |z| 가 클 때만 driver 로 등장한다 (Investment 층의 commodity_impact / alternative 에서)
   alt:
     min_z: 1.2
@@ -145,13 +156,13 @@ drivers:
 
 #: CROSS-ASSET CONFIRMATION — 판정 라벨별 기대 방향. 0 이면 기대 없음. mismatch 가 HEADWIND 인 자산은 '반대지만 괴리가 아니라 역풍'
 cross_assets:
-  - {key: EQUITY,     label: "Equity",     ids: [SPX, NDX],        expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: -1, GEOPOLITICAL_RISK: -1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
-  - {key: RATES,      label: "Rates",      ids: [US10Y],           expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: -1, POLICY_DRIVEN: 0, NEUTRAL: 0}, mismatch: HEADWIND}
-  - {key: CREDIT,     label: "Credit",     ids: [US_HY_OAS],       expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}, invert_arrow: true}
-  - {key: VOLATILITY, label: "Volatility", ids: [VIX, MOVE],       expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 1, NEUTRAL: 0}}
-  - {key: USD,        label: "USD",        ids: [DXY],             expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
-  - {key: OIL,        label: "Oil",        ids: [BRENT, WTI],      expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
-  - {key: GOLD,       label: "Gold",       ids: [GOLD],            expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
+  - {key: EQUITY,     label: "Equity",     group: RISK,      ids: [SPX, NDX],        expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: -1, GEOPOLITICAL_RISK: -1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
+  - {key: RATES,      label: "Rates",      group: MACRO,     ids: [US10Y],           expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: -1, POLICY_DRIVEN: 0, NEUTRAL: 0}, mismatch: HEADWIND}
+  - {key: CREDIT,     label: "Credit",     group: RISK,      ids: [US_HY_OAS],       expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}, invert_arrow: true}
+  - {key: VOLATILITY, label: "Volatility", group: RISK,      ids: [VIX, MOVE],       expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 1, NEUTRAL: 0}}
+  - {key: USD,        label: "USD",        group: MACRO,     ids: [DXY],             expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
+  - {key: OIL,        label: "Oil",        group: COMMODITY, ids: [BRENT, WTI],      expect: {RISK_OFF: -1, LIQUIDITY_STRESS: -1, RISK_ON: 1, GROWTH_SHOCK: -1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
+  - {key: GOLD,       label: "Gold",       group: COMMODITY, ids: [GOLD],            expect: {RISK_OFF: 1, LIQUIDITY_STRESS: 1, RISK_ON: -1, GROWTH_SHOCK: 1, INFLATION_SHOCK: 1, GEOPOLITICAL_RISK: 1, POLICY_DRIVEN: 0, NEUTRAL: 0}}
 key_divergences_max: 2
 
 #: MARKET LEADERSHIP — 테마(themes.yaml 구성 자산) + 섹터 ETF. 1D z · 1주 상대(z_5d − 벤치마크 z_5d) · breadth(20일선 위 비율)
@@ -216,9 +227,13 @@ what_matters_next:
   paths:
     long_end_rates:
       up:
+        trigger_explain: "장기금리 상승"
         trigger: {label: "US 10Y ↑", checks: [{id: US10Y, sign: 1, label: "US 10Y Yield ↑"}, {id: TIPS10Y, sign: 1, label: "Real Yield ↑ 여부"}]}
+        first_order_explain: "금리 상승으로 미래 현금흐름의 현재가치 부담 증가"
         first_order: {label: "REAL YIELD / DISCOUNT RATE", text: ["Duration pressure", "Equity discount rate ↑"], checks: [{id: TIPS10Y, sign: 1}, {id: MOVE, sign: 1}]}
+        assets_explain: "금리에 민감한 long-duration 자산에 부담"
         assets: [{label: "Growth / Software", kind: segment, key: software, sign: -1}, {label: "REIT / DC infra", kind: segment, key: dc_infra, sign: -1}, {label: "Gold", kind: instrument, key: GOLD, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes_explain: "할인율 부담이 집중되는 테마"
         themes: [{label: "AI Software", kind: segment, key: software, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}, {label: "Data Center REIT / Infra", kind: segment, key: dc_infra, sign: -1}, {label: "Hyperscalers", kind: segment, key: hyperscalers, sign: -1}]
         expect: -1
         stocks: {direct: [NOW, DDOG, PLTR, SNOW, CRM, NET], secondary: [EQIX, DLR, APP], tertiary: [MSFT, GOOGL, AMZN]}
@@ -235,9 +250,13 @@ what_matters_next:
         confirm: [{label: "10Y ↓ 지속", id: US10Y, sign: -1}, {label: "Real Yield ↓", id: TIPS10Y, sign: -1}, {label: "Software relative ↑", kind: segment, key: software, sign: 1}]
     credit_stress:
       up:
+        trigger_explain: "신용스프레드 확대 — 기업 신용위험 프리미엄 상승"
         trigger: {label: "HY OAS ↑", checks: [{id: US_HY_OAS, sign: 1, label: "HY OAS 확대"}]}
+        first_order_explain: "금융여건이 조여 위험 감수 여력 축소"
         first_order: {label: "FINANCIAL CONDITIONS TIGHTEN", text: ["Risk appetite ↓", "Funding cost ↑"], checks: [{id: VIX, sign: 1}, {id: SPX, sign: -1}]}
+        assets_explain: "고베타·소형주·레버리지 기업에 압력"
         assets: [{label: "High beta / Small cap", kind: instrument, key: RUT, sign: -1}, {label: "S&P 500", kind: instrument, key: SPX, sign: -1}, {label: "Financials", kind: instrument, key: XLF, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes_explain: "경기민감·고베타 테마에 압력이 집중되는지"
         themes: [{label: "Cyclicals / Discretionary", kind: instrument, key: XLY, sign: -1}, {label: "Semiconductors (high beta)", kind: instrument, key: SOXX, sign: -1}, {label: "AI Software", kind: segment, key: software, sign: -1}, {label: "Korea (foreign flow)", kind: instrument, key: KOSPI, sign: -1}]
         expect: -1
         stocks: {direct: [APP, SMCI, SNDK, HANMI_SEMI, KOREAN_AIR], secondary: [KB, SHINHAN, HMM, PAN_OCEAN], tertiary: [HYUNDAI_MOTOR, KIA, POSCO]}
@@ -254,9 +273,13 @@ what_matters_next:
         confirm: [{label: "HY OAS 축소 지속", id: US_HY_OAS, sign: -1}, {label: "VIX ↓", id: VIX, sign: -1}, {label: "Russell ↑", id: RUT, sign: 1}]
     volatility_regime:
       up:
+        trigger_explain: "주식·채권 변동성 동반 상승"
         trigger: {label: "VIX / MOVE ↑", checks: [{id: VIX, sign: 1, label: "VIX ↑"}, {id: MOVE, sign: 1, label: "MOVE ↑"}]}
+        first_order_explain: "변동성 목표 펀드 매도 등 포지션 축소"
         first_order: {label: "DE-RISKING", text: ["Position cut across assets", "Vol-target funds sell"], checks: [{id: SPX, sign: -1}, {id: US_HY_OAS, sign: 1}]}
+        assets_explain: "고베타 자산부터 압력"
         assets: [{label: "S&P 500", kind: instrument, key: SPX, sign: -1}, {label: "Nasdaq 100", kind: instrument, key: NDX, sign: -1}, {label: "Gold (deleveraging)", kind: instrument, key: GOLD, sign: -1}, {label: "USD", kind: instrument, key: DXY, sign: 1}]
+        themes_explain: "고베타 테마에서 압력 확인"
         themes: [{label: "Semiconductors (high beta)", kind: instrument, key: SOXX, sign: -1}, {label: "AI Software", kind: segment, key: software, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}]
         expect: -1
         stocks: {direct: [SMCI, APP, PLTR, NVDA, AMD], secondary: [HANMI_SEMI, SNDK, MU], tertiary: [SKHYNIX, SAMSUNG]}
@@ -282,9 +305,13 @@ what_matters_next:
         expected: "대형주 ↑ 가 중소형·섹터로 확산"
         confirm: [{label: "S&P 상승종목 비율 ↑", id: SPX_ADV_RATIO, sign: 1}, {label: "KOSPI 상승종목 비율 ↑", id: KOSPI_ADV_RATIO, sign: 1}, {label: "Russell ↑", id: RUT, sign: 1}]
       down:
+        trigger_explain: "미국·한국 지수 동반 하락"
         trigger: {label: "지수 ↓", checks: [{id: SPX, sign: -1, label: "S&P 500 ↓"}, {id: KOSPI, sign: -1, label: "KOSPI ↓"}]}
+        first_order_explain: "하락이 얼마나 많은 종목으로 확산되는지(breadth)"
         first_order: {label: "BREADTH", text: ["하락이 확산되는가", "베타 vs 개별 요인"], checks: [{id: SPX_ADV_RATIO, sign: -1}, {id: KOSPI_ADV_RATIO, sign: -1}, {id: RUT, sign: -1}]}
+        assets_explain: "중소형·반도체·금융까지 번지는지"
         assets: [{label: "Russell 2000", kind: instrument, key: RUT, sign: -1}, {label: "Semiconductors", kind: instrument, key: SOXX, sign: -1}, {label: "Financials", kind: instrument, key: XLF, sign: -1}, {label: "VIX", kind: instrument, key: VIX, sign: 1}]
+        themes_explain: "테마·세그먼트 단위 확인"
         themes: [{label: "Semiconductor (theme)", kind: theme, key: semiconductor, sign: -1}, {label: "AI (theme)", kind: theme, key: ai, sign: -1}, {label: "AI Compute", kind: segment, key: compute, sign: -1}, {label: "Korea", kind: instrument, key: KOSPI, sign: -1}]
         expect: -1
         stocks: {direct: [SAMSUNG, SKHYNIX, NVDA, MSFT], secondary: [KB, SHINHAN, HYUNDAI_MOTOR], tertiary: [NAVER, KAKAO]}
@@ -339,9 +366,13 @@ what_matters_next:
         expected: "E&P·정유 + · 항공·운송·화학 − · 기대인플레 ↑"
         confirm: [{label: "브렌트 ↑ 지속", id: BRENT, sign: 1}, {label: "기대인플레이션 ↑", id: BE10Y, sign: 1}, {label: "명목금리 ↑", id: US10Y, sign: 1}]
       down:
+        trigger_explain: "유가 하락 — 에너지 투입 비용 하락"
         trigger: {label: "Brent ↓", checks: [{id: BRENT, sign: -1, label: "브렌트 ↓"}, {id: WTI, sign: -1, label: "WTI ↓"}]}
+        first_order_explain: "기대인플레이션과 명목·실질금리로 옮겨가는지"
         first_order: {label: "ENERGY INPUT COST ↓", text: ["Inflation expectation ↓ ?", "Nominal / Real rates"], checks: [{id: BE10Y, sign: -1}, {id: US10Y, sign: -1}]}
+        assets_explain: "물가 기대·금리·에너지 섹터·항공 반응"
         assets: [{label: "US 10Y Breakeven", kind: instrument, key: BE10Y, sign: -1}, {label: "US 10Y", kind: instrument, key: US10Y, sign: -1}, {label: "Energy sector", kind: instrument, key: XLE, sign: -1}, {label: "Airlines", kind: instrument, key: JETS, sign: 1}]
+        themes_explain: "에너지·물가 테마 가격 반응"
         themes: [{label: "Oil (theme)", kind: theme, key: oil, sign: -1}, {label: "Energy (theme)", kind: theme, key: energy, sign: -1}, {label: "Inflation (theme)", kind: theme, key: inflation, sign: -1}]
         expect: -1
         stocks: {direct: {sign: -1, ids: [SOIL, SK_INNOVATION]}, secondary: {sign: 1, ids: [KOREAN_AIR, HMM, LGCHEM, LOTTE_CHEM]}, tertiary: {sign: 1, ids: [KEPCO, CJ_CJ]}}
@@ -422,6 +453,64 @@ what_matters_next:
   #: AI value chain 재사용 — ai_regime.value_chain 세그먼트를 그대로 단계로, 종목은 ai_regime.stocks 의 세그먼트별로 tier 를 나눈다. 새 AI 로직은 없다.
   ai_chain_order: [compute, networking, memory_hbm, foundry, equipment, packaging, power, dc_infra, software]
   ai_chain_tiers: {direct: [compute, hyperscalers], secondary: [networking, memory_hbm, foundry, equipment, packaging], tertiary: [power, dc_infra, software]}
+
+#: 처음 보는 사람을 위한 표현 층 — 영어 상태값은 그대로, 그 옆에 짧은 한글 의미. 판단 로직과 무관하다.
+explain:
+  regime_short: {LIQUIDITY_STRESS: "Risk-Off", RISK_OFF: "Risk-Off", RISK_ON: "Risk-On", GROWTH_SHOCK: "성장 충격", INFLATION_SHOCK: "물가 충격", POLICY_DRIVEN: "정책 주도", GEOPOLITICAL_RISK: "지정학 위험", NEUTRAL: "판정 없음"}
+  cross_groups: {RISK: "RISK", MACRO: "MACRO", COMMODITY: "COMMODITY / SAFE HAVEN"}
+  cross_group_ko: {EQUITY: "주식", CREDIT: "신용", VOLATILITY: "변동성", RATES: "장기금리", USD: "달러", OIL: "유가", GOLD: "금"}
+  #: 자산별 상태 의미. {regime} 은 regime_short. 없는 조합은 default.
+  cross_meaning:
+    CONFIRM:
+      default: "{regime} 판단과 같은 방향"
+      CREDIT: "신용시장도 {regime} 판단을 지지"
+      VOLATILITY: "위험회피 확대를 확인"
+      USD: "달러 흐름이 {regime} 판단과 정합"
+      OIL: "수요·{regime} 압력과 같은 방향"
+      RATES: "금리도 {regime} 판단과 같은 방향"
+      GOLD: "안전자산 수요가 {regime} 판단을 확인"
+    HEADWIND:
+      default: "{regime} 판단과 반대지만 위험자산에 추가 부담"
+      RATES: "높은 장기금리가 위험자산에 할인율 부담"
+    DIVERGE:
+      default: "{regime} 판단과 다른 움직임"
+      GOLD: "전형적인 안전자산 흐름과 불일치"
+      OIL: "수요 경로와 다른 움직임 — 공급·지정학 요인 확인"
+    FLAT: {default: "움직임이 작아 방향 판단 없음"}
+    NEUTRAL: {default: "이 판정은 이 자산에 기대 방향이 없음"}
+    MISSING: {default: "데이터 없음"}
+  #: KEY DIVERGENCE — 현상 → 왜 중요한가. 짝은 자산 id 를 | 로 이은 것(순서 무관). 없으면 legs 로 일반 문장을 만든다.
+  divergence_notes:
+    "GOLD|VIX":
+      phenomenon: "VIX 는 상승했지만 금은 오히려 하락"
+      why: "전형적인 안전자산 매수 패턴이 나타나지 않고 있습니다. 실질금리 또는 달러 강세가 금 가격에 더 크게 작용하는지 추가 확인이 필요합니다."
+    "DXY|USDKRW":
+      phenomenon: "글로벌 달러는 강하지만 USD/KRW 는 예상 경로와 다르게 움직임"
+      why: "원화 움직임을 글로벌 달러 하나로 설명하기 어렵습니다. 국내 주식 수급이나 한국 고유 요인을 추가 확인할 필요가 있습니다."
+    "BRENT|BE10Y":
+      phenomenon: "유가는 크게 내렸지만 기대인플레이션은 거의 움직이지 않음"
+      why: "시장이 유가 변동을 물가 경로로 옮기지 않고 있습니다. 일시적 변동으로 보는지, 봉 자체가 의심스러운지 확인이 필요합니다."
+    "GOLD|TIPS10Y":
+      phenomenon: "실질금리가 오르는 동안 금이 하락"
+      why: "실질금리 상승이 금을 누르는 고전적 전이입니다. 안전자산 수요보다 금리가 금 가격을 지배하고 있습니다."
+  #: WHAT MATTERS NEXT — 기간별 자동 해석
+  horizon_read:
+    same_up: "오늘도 상승, 최근 5일 상승 흐름 유지"
+    same_down: "오늘도 하락, 최근 5일 하락 흐름 유지"
+    pullback_up: "오늘은 일부 되돌렸지만 최근 5일 상승 흐름은 유지"
+    pullback_down: "오늘은 반등했지만 최근 5일 하락 흐름은 유지"
+    turn_up: "최근 5일은 약했지만 오늘 반등"
+    turn_down: "최근 5일은 강했지만 오늘 조정"
+    flat: "단기·5일 모두 움직임이 작음"
+  #: 전파 단계의 일반 설명(영어 단계명 옆 한글). 경로별 *_explain 이 있으면 그것을 쓴다.
+  stage_explain:
+    trigger: "판단을 바꿀 수 있는 변수의 변화"
+    first_order: "그 변화가 다음 시장 변수로 옮겨가는 경로"
+    assets: "영향을 받는 자산군 — 지금 실제로 그렇게 움직이는지"
+    themes: "영향이 집중되는 산업·테마"
+    stocks: "실제 종목에서 해당 영향이 나타나는지 확인"
+  #: 메인에 보이는 tier 당 종목 수. TERTIARY 0 = 기본 접기. 우선순위: radar 종목 → |z| 큰 종목 → 확인이 뚜렷한 종목 → 중요한 contradiction.
+  tier_show: {DIRECT: 4, SECONDARY: 3, TERTIARY: 0}
 
 #: STOCK RADAR · ANALYST VIEW — 외부 애널리스트 코멘트. 시스템 판단과 섞지 않는다. 웹에서 이름·증권사·날짜·URL·맥락이 모두 확인된 것만 싣고
 #: 하나라도 없으면 그 종목의 줄은 숨긴다. 생성·추정 금지. 7일 이내 우선, 30일 넘으면 싣지 않는다.

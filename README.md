@@ -422,6 +422,27 @@ n/m. AI 이슈는 ai_regime 의 value_chain / stocks 를 그대로 재사용한�
 카드("지금 일어나는 전파")는 그대로다. MARKET ISSUE ↔ STOCK 양방향: 경로의 radar 종목엔 RADAR ● 이 붙고
 누르면 radar 로, radar 의 Related market issues 를 누르면 그 이슈가 열린다.
 
+#### 실시간 2 · 표현 층 — 영어 상태값 + 한글 의미 (2026-09-30)
+
+CROSS-ASSET CONFIRMATION 과 WHAT MATTERS NEXT(전파 경로 포함)의 판단 로직·계산은 그대로 두고 표현만
+바꿨다. 원칙은 `ENGLISH STATUS` 가 먼저, 짧은 한글 의미가 뒤 — 영어를 치환하지 않는다(CONFIRM · HEADWIND ·
+DIVERGE · PARTIAL · CONTRADICTED · EXPECTED · OBSERVED · DIRECT / SECONDARY / TERTIARY · WATCH / CONFIRMING /
+REVERSING 유지). 화면 순서는 `결론 → 쉬운 한글 해석 → 핵심 근거 → 전문 상세`. `config/cockpit.yaml explain`
+(regime_short, 자산별 상태 의미 템플릿, 괴리 짝별 현상·왜 중요한가, 기간 자동 해석, 단계 설명, tier 노출 수)과
+프런트 `components/ko.ts`(상태값 한글 사전·모바일 짧은 꼬리·tier 툴팁·용어집·일치도 색)가 표현 층이다.
+CROSS-ASSET: 목적 한 줄 → CURRENT MARKET VIEW + "7개 중 5개가 현재 Risk-Off 판단과 같은 방향" → MARKET READ
+1~2문장(숫자 반복 없음) → RISK / MACRO / COMMODITY·SAFE HAVEN 그룹에 대표 지표(S&P 500 −1.2σ ↓)와 영어 상태 +
+한글 의미 → KEY DIVERGENCE 는 현상 → WHY IT MATTERS → REFERENCE(Expected relationship / Recent correlation) 순
+→ 색상 legend("좋고 나쁨이 아니라 일치 여부"). WHAT MATTERS NEXT: 목적 두 줄 → 닫힌 항목엔 영어 상태 + 한글,
+CURRENT 1D / 5D / 1M z 와 자동 해석("오늘은 일부 되돌렸지만 최근 5일 상승 흐름은 유지"), WHY IT MATTERS 만 →
+열면 SUMMARY(MAIN IMPACT 체인 · n / m stages confirmed · MOST EXPOSED · RELATIVE EXCEPTION) → EXPECTED /
+OBSERVED(각각 뜻 한 줄, 테마별 WEAK / RESILIENT + 한 줄 해석) → ① TRIGGER ② TRANSMISSION ③ ASSET IMPACT ④ THEME /
+INDUSTRY(영어 단계명 + 왜 이어지는지 한글 + 단계 상태 영어·한글) → STOCK IMPACT(DIRECT 4 · SECONDARY 3 · TERTIARY
+접기, 우선순위 radar → |z| → 뚜렷한 확인 → 중요한 contradiction; 종목마다 EXPECTED / OBSERVED / 상태 + 의미,
+CONTRADICTED 는 오류가 아니라 "다른 driver 가 더 강하다"는 신호로 설명) → WHAT WOULD CONFIRM?(n / m conditions
+confirmed + "확률이 아니라 조건 수" + 한 줄 해석). 전문 용어(Real Yield · Duration · Credit Spread · Relative
+Strength · Breadth 등)는 그대로 두고 점선 밑줄 툴팁으로 뜻을 붙였다.
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

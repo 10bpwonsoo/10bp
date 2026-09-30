@@ -24,7 +24,7 @@ from ..config.registry import get_themes
 from ..config.settings import CONFIG_DIR
 from ..models.cockpit import (
     CatalystItem, Cockpit, CrossAsset, CrossAssetRow, DataStatus, Driver, EarningsPulse, EvidenceRow, KeyDivergence, KeyVariable,
-    LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, SystemAxis, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
+    Horizon, LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, SystemAxis, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
 )
 from ..models.market import Instrument, MarketSnapshot
 from .regime_history import StateObservation, build_regime_history
@@ -225,12 +225,19 @@ def build_cockpit(
     drivers.sort(key=lambda d: -d.importance); drivers = drivers[: int(dc.get("max", 5))]
 
     # ── 3. CROSS-ASSET CONFIRMATION + KEY DIVERGENCES ────────
+    ex = cfg.get("explain", {}) or {}
+    regime_short = str((ex.get("regime_short") or {}).get(label, LABEL_TEXT[label]))
+    cm = ex.get("cross_meaning") or {}
+    def _meaning(st: str, key: str) -> str:
+        m = cm.get(st) or {}
+        return str(m.get(key) or m.get("default") or "").replace("{regime}", regime_short)
     rows_ca: list[CrossAssetRow] = []; confirm = evaluated = 0
     for a in cfg.get("cross_assets", []):
         ids = [str(i) for i in a.get("ids", [])]; iid = next((i for i in ids if Z.zmax(i)[0] is not None), ids[0])
         z, _w = Z.zmax(iid); exp = int((a.get("expect") or {}).get(label, 0))
+        grp = str(a.get("group", "RISK"))
         if z is None:
-            rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, arrow="?", status="MISSING", note="결측")); continue
+            rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=Z.name(iid), group=grp, arrow="?", status="MISSING", note="결측", meaning=_meaning("MISSING", str(a["key"])))); continue  # type: ignore[arg-type]
         arrow = _arrow(z, hi, lo)
         if exp == 0:
             st, note = "NEUTRAL", f"{LABEL_TEXT[label]} 판정은 이 자산에 기대 방향이 없다"
@@ -241,19 +248,54 @@ def build_cockpit(
         else:
             st, note = str(a.get("mismatch", "DIVERGE")), "판정이 기대한 방향과 반대"
         if st in ("CONFIRM", "DIVERGE", "HEADWIND"): evaluated += 1
-        rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, z=_r(z), arrow=arrow, status=st, note=note))  # type: ignore[arg-type]
+        rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=Z.name(iid), group=grp, z=_r(z), arrow=arrow, status=st, note=note, meaning=_meaning(st, str(a["key"]))))  # type: ignore[arg-type]
+    dnotes = ex.get("divergence_notes") or {}
+    def _note(assets: Sequence[str]) -> dict:
+        ids = list(assets[:2])
+        return dict(dnotes.get("|".join(ids)) or dnotes.get("|".join(reversed(ids))) or {})
+    dir_ko = {"up": "상승", "down": "하락", "flat": "제자리"}
     divs: list[KeyDivergence] = []
     for d in sorted(snapshot.divergences, key=lambda d: -d.severity):
         meaning = d.explanation.split(". ")[-1].strip() if d.explanation else ""
         title = " / ".join(Z.name(x) for x in d.related_assets[:2]) if d.related_assets else (d.related_theme or d.type.value)
         first = d.explanation.split(". ")[0] if d.explanation else ""
-        divs.append(KeyDivergence(title=title, meaning=(first + ". " + meaning).strip(". ") if meaning and meaning != first else first, severity=round(d.severity, 0), assets=list(d.related_assets)))
+        nt = _note(d.related_assets)
+        legs = list(d.legs)
+        phen = str(nt.get("phenomenon") or (f"{legs[0].name}는 {dir_ko.get(legs[0].direction, legs[0].direction)}인데 {legs[1].name}는 {dir_ko.get(legs[1].direction, legs[1].direction)}" if len(legs) >= 2 else first))
+        why = str(nt.get("why") or meaning or first)
+        ref = [f"{lg.name} {lg.value:+.0f}" + (f" (z {lg.z:+.1f}σ)" if lg.z is not None else "") for lg in legs[:2]]
+        if d.type.value == "CORRELATION_REGIME" and len(legs) >= 2:
+            ref = [f"Expected relationship {legs[0].value:+.0f}", f"Recent correlation {legs[1].value:+.0f}"]
+        divs.append(KeyDivergence(title=title, meaning=(first + ". " + meaning).strip(". ") if meaning and meaning != first else first, severity=round(d.severity, 0), assets=list(d.related_assets),
+                                  phenomenon=phen, why=why, reference=ref))
     for rd in getattr(rates_regime, "divergences", None) or []:
-        divs.append(KeyDivergence(title=rd.label, meaning=rd.why, severity=round(min(100.0, rd.severity * 25.0), 0), source="rates_regime", assets=list(rd.values.keys())))
+        ids = list(rd.values.keys()); nt = _note(ids)
+        divs.append(KeyDivergence(title=rd.label, meaning=rd.why, severity=round(min(100.0, rd.severity * 25.0), 0), source="rates_regime", assets=ids,
+                                  phenomenon=str(nt.get("phenomenon") or rd.label), why=str(nt.get("why") or rd.why), reference=[f"{Z.name(k)} z {v:+.1f}σ" for k, v in list(rd.values.items())[:3] if v is not None]))
     divs.sort(key=lambda d: -d.severity)
     kmax = int(cfg.get("key_divergences_max", 2))
+    # MARKET READ — 숫자를 반복하지 않고, 확인한 자산군 · 역풍 · 괴리를 1~2문장으로
+    gko = ex.get("cross_group_ko") or {}
+    conf_names = [str(gko.get(r.key, r.label)) for r in rows_ca if r.status == "CONFIRM"]
+    head_rows = [r for r in rows_ca if r.status == "HEADWIND"]; div_rows = [r for r in rows_ca if r.status == "DIVERGE"]
+    def _josa(word: str, with_b: str, without_b: str) -> str:
+        ch = word[-1] if word else ""
+        has_b = "가" <= ch <= "힣" and (ord(ch) - 0xAC00) % 28 != 0
+        return word + (with_b if has_b or not ("가" <= ch <= "힣") else without_b)
+    if conf_names:
+        read = f"{_josa('·'.join(conf_names), '이', '가')} {regime_short} 판단을 확인하고 있습니다."
+    else:
+        read = f"{regime_short} 판단을 같은 방향으로 확인하는 자산군이 아직 없습니다."
+    if head_rows:
+        read += " " + " ".join(f"{_josa(str(gko.get(r.key, r.label)) + (' 상승' if (r.z or 0) > 0 else ' 하락'), '이', '가')} 위험자산에 추가 부담을 주고 있습니다." for r in head_rows[:2])
+    if div_rows:
+        read += " 다만 " + _josa("·".join(str(gko.get(r.key, r.label)) for r in div_rows[:2]), "은", "는") + " 전형적인 패턴과 다르게 움직이고 있습니다."
+    n_rows = len(rows_ca)
     ca = CrossAsset(rows=rows_ca, confirm=confirm, evaluated=evaluated, divergences=divs[:kmax], total_divergences=len(divs),
-                    sentence=f"{LABEL_TEXT[label]} 판정을 {confirm}/{evaluated} 자산이 확인한다." + (" 반대로 가는 자산은 괴리·역풍으로 아래에 적는다." if evaluated - confirm > 0 else ""))
+                    sentence=f"{LABEL_TEXT[label]} 판정을 {confirm}/{evaluated} 자산이 확인한다." + (" 반대로 가는 자산은 괴리·역풍으로 아래에 적는다." if evaluated - confirm > 0 else ""),
+                    current_view=now.label_text, regime_short=regime_short,
+                    confirm_text=f"{n_rows}개 주요 자산군 중 {confirm}개가 현재 {regime_short} 판단과 같은 방향" + (f" · 평가 제외 {n_rows - evaluated}개(방향 없음·결측)" if n_rows - evaluated > 0 else ""),
+                    market_read=read)
 
     # ── 4. LEADERSHIP + THEME PULSE ──────────────────────────
     lc = cfg.get("leadership", {}); bench = str(lc.get("benchmark", "SPX")); bz5 = Z.z5(bench) or 0.0
@@ -442,7 +484,19 @@ def build_cockpit(
         elif (z1 * ev_sign > 0) == (sgn > 0) and abs(z1) >= flat: st = "CONFIRMING"
         elif (z1 * ev_sign > 0) != (sgn > 0) and abs(z1) >= flat: st = "REVERSING"
         else: st = "WATCH"
-        nxt.append(NextItem(text=text, status=st, metric=Z.name(lead_id) if lead_id else d.label, current="–" if z1 is None else f"하루 z {z1:+.1f}σ", driver_key=d.key))  # type: ignore[arg-type]
+        f = market.features.get(lead_id) if lead_id else None
+        z5 = f.z_5d if f is not None else (Z.z5(lead_id) if lead_id else None); z20 = f.z_20d if f is not None else None
+        hz = [Horizon(key="1D", z=_r(z1), arrow=_arrow(z1, hi, lo)), Horizon(key="5D", z=_r(z5), arrow=_arrow(z5, hi, lo))]  # type: ignore[arg-type]
+        if z20 is not None: hz.append(Horizon(key="1M", z=_r(z20), arrow=_arrow(z20, hi, lo)))  # type: ignore[arg-type]
+        hr = cfg.get("explain", {}).get("horizon_read") or {}
+        if z1 is None or z5 is None: hread = ""
+        elif abs(z1) < flat and abs(z5) < flat: hread = str(hr.get("flat", ""))
+        elif abs(z5) >= flat and (abs(z1) < flat or (z1 > 0) == (z5 > 0)) and abs(z1) < abs(z5): hread = str(hr.get("same_up" if z5 > 0 and abs(z1) >= flat else "same_down" if z5 < 0 and abs(z1) >= flat else ("pullback_up" if z5 > 0 else "pullback_down"), ""))
+        elif abs(z5) >= flat and (z1 > 0) != (z5 > 0): hread = str(hr.get("pullback_up" if z5 > 0 else "pullback_down", ""))
+        elif abs(z5) >= flat and (z1 > 0) == (z5 > 0): hread = str(hr.get("same_up" if z5 > 0 else "same_down", ""))
+        else: hread = str(hr.get("turn_up" if z1 > 0 else "turn_down", ""))
+        wn = str((spec.get("why_next") or {}).get(d.direction, "")) or d.why
+        nxt.append(NextItem(text=text, status=st, metric=Z.name(lead_id) if lead_id else d.label, current="–" if z1 is None else f"하루 z {z1:+.1f}σ", driver_key=d.key, horizons=hz, horizon_read=hread, why_next=wn))  # type: ignore[arg-type]
         if len(nxt) >= int(cfg.get("what_matters_next", {}).get("max", 5)): break
     # ── 9b. MARKET TRANSMISSION PATH — 이슈가 더 진행되면 어디로 번지는가 (예상 vs 관측) ──
     wm = cfg.get("what_matters_next", {}); paths_cfg = wm.get("paths") or {}
@@ -461,7 +515,7 @@ def build_cockpit(
     for it in nxt:
         d = next((x for x in drivers if x.key == it.driver_key), None)
         spec = ((paths_cfg.get(it.driver_key) or {}).get(d.direction) if d is not None else None) or None
-        path = build_issue_path(spec, wm, observer, radar_ids=radar_ids, ai_regime=ai_regime, driver_label=d.label if d else it.metric) if spec else None
+        path = build_issue_path(spec, wm, observer, radar_ids=radar_ids, ai_regime=ai_regime, driver_label=d.label if d else it.metric, explain=cfg.get("explain", {})) if spec else None
         with_paths.append(it.model_copy(update={"id": f"{it.driver_key}:{d.direction if d else 'na'}", "path": path}))
     nxt = with_paths
     # STOCK RADAR ↔ ISSUE 양방향: radar 종목의 시스템 축과 관련 이슈

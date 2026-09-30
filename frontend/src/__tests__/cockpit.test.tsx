@@ -152,3 +152,67 @@ describe("CockpitView — STOCK RADAR analyst view · WHAT MATTERS NEXT transmis
     void r;
   });
 });
+
+describe("CockpitView — 표현 층: 영어 상태값 + 한글 의미 (CROSS-ASSET · WHAT MATTERS NEXT)", () => {
+  it("CROSS-ASSET 은 목적 설명 → 현재 판단 · n/m 의 뜻 → MARKET READ → RISK / MACRO / COMMODITY 그룹의 대표 지표 + 영어 상태 + 한글 의미 → KEY DIVERGENCE(현상 → 왜 중요 → 근거) → 색상 legend 순", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const card = screen.getByTestId("ck-cross"); const ca = cockpit.cross_asset;
+    expect(screen.getByTestId("ck-cross-purpose").textContent).toMatch(/다른 시장에서도 같은 방향/);
+    expect(screen.getByTestId("ck-cross-view").textContent).toBe(ca.current_view);
+    expect(screen.getByTestId("ck-cross-confirm-text").textContent).toBe(ca.confirm_text);
+    expect(screen.getByTestId("ck-market-read").textContent).toContain(ca.market_read);
+    const groups = screen.getAllByTestId("ck-ca-group").map((g) => g.getAttribute("data-group"));
+    expect(groups).toEqual(["RISK", "MACRO", "COMMODITY"]);
+    const rows = screen.getAllByTestId("ck-ca-row");
+    expect(rows.length).toBe(ca.rows.length);
+    for (const r of ca.rows) {
+      const el = rows.find((x) => x.textContent?.includes(r.key))!;
+      expect(el.textContent).toContain(r.instrument_label);   // 대표 지표
+      expect(el.textContent).toContain(r.status);             // 영어 상태값 유지
+      if (r.meaning) expect(el.textContent).toContain(r.meaning); // 한글 의미
+    }
+    // 순서: 영어가 먼저, 한글이 뒤
+    const gold = rows.find((x) => x.textContent?.includes("GOLD"))!;
+    expect(gold.textContent!.indexOf("DIVERGE")).toBeLessThan(gold.textContent!.indexOf("불일치"));
+    const divs = screen.getAllByTestId("ck-divergence");
+    expect(divs.length).toBeLessThanOrEqual(2);
+    const d0 = ca.divergences[0]!; const t = divs[0]!.textContent!;
+    expect(t).toContain(d0.phenomenon); expect(t).toContain("Why it matters"); expect(t).toContain("Reference");
+    expect(t.indexOf(d0.phenomenon)).toBeLessThan(t.indexOf("Reference"));
+    expect(card.textContent).toMatch(/일치 여부/);
+    expect(card.textContent).not.toMatch(/확률/);
+  });
+
+  it("WHAT MATTERS NEXT 는 닫힌 상태에 목적 · 영어 상태 + 한글 · 1D/5D 기간 · 자동 해석 · Why it matters 만, 열면 SUMMARY → EXPECTED/OBSERVED → 단계별 한글 설명 → DIRECT 4 / SECONDARY 3 / TERTIARY 접기 → n / m conditions confirmed", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    expect(screen.getByTestId("ck-next-purpose").textContent).toMatch(/자산 → 산업 → 종목/);
+    const items = screen.getAllByTestId("ck-next-item");
+    const i = cockpit.what_matters_next.findIndex((n) => n.path); const n = cockpit.what_matters_next[i]!; const li = items[i]!;
+    expect(li.textContent).toContain(n.status);
+    expect(li.textContent).toContain(n.why_next);
+    const hz = within(li).getByTestId("ck-next-horizons").textContent!;
+    expect(hz).toMatch(/1D/); expect(hz).toMatch(/5D/); if (n.horizon_read) expect(hz).toContain(n.horizon_read);
+    expect(screen.queryByTestId("ck-path")).toBeNull();
+    fireEvent.click(li);
+    const path = screen.getByTestId("ck-path"); const pt = path.textContent!;
+    const sm = n.path!.summary!;
+    expect(screen.getByTestId("ck-path-summary").textContent).toContain(`${sm.stages_confirmed} / ${sm.stages_total} stages confirmed`);
+    // 순서: SUMMARY → EXPECTED/OBSERVED → TRANSMISSION PATH → STOCK IMPACT → WHAT WOULD CONFIRM
+    const idx = (s: string) => pt.indexOf(s);
+    expect(idx("Summary")).toBeLessThan(idx("Expected")); expect(idx("Expected")).toBeLessThan(idx("Transmission path")); expect(idx("Transmission path")).toBeLessThan(idx("Stock impact")); expect(idx("Stock impact")).toBeLessThan(idx("What would confirm?"));
+    expect(pt).toContain("일반적으로 예상되는 시장 반응"); expect(pt).toContain("현재 실제 시장에서 나타나는 반응");
+    const stages = within(path).getAllByTestId("ck-path-stage");
+    expect(stages.map((s) => s.getAttribute("data-key"))).toEqual(["trigger", "first_order", "assets", "themes"]);
+    for (let k = 0; k < 4; k++) { const st = [n.path!.trigger, n.path!.first_order, n.path!.assets, n.path!.themes][k]!; expect(stages[k]!.textContent).toContain(st.status); if (st.explain) expect(stages[k]!.textContent).toContain(st.explain); }
+    // 종목: EXPECTED / OBSERVED / 영어 상태 + 한글, tier 기본 노출 수
+    const tiers = screen.getByTestId("ck-path-tiers");
+    const shown = within(tiers).getAllByTestId("ck-path-stock").length;
+    const expected = n.path!.tiers.reduce((a, t) => a + Math.min(t.stocks.length, n.path!.tier_show[t.tier] ?? n.path!.tier_max), 0);
+    expect(shown).toBe(expected);
+    expect(tiers.textContent).toContain("DIRECT"); expect(tiers.textContent).toContain("1차 영향");
+    const contra = within(tiers).getAllByTestId("ck-path-stock").find((e) => e.textContent?.includes("CONTRADICTED"));
+    if (contra) expect(contra.textContent).toMatch(/오류가 아니라/);
+    expect(screen.getByTestId("ck-path-confirm").textContent).toMatch(/\d+ \/ \d+ conditions confirmed/);
+    expect(screen.getByTestId("ck-path-confirm").textContent).toMatch(/확률이 아니라 조건 수/);
+  });
+});

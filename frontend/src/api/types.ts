@@ -651,9 +651,9 @@ export interface CkKeyVariable { id: string; label: string; z: number; arrow: Ck
 export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string }
 export interface CkEvidence { id: string; label: string; z: number | null; display: string; context: boolean; available: boolean }
 export interface CkDriver { key: string; label: string; label_ko: string; direction: "up" | "down"; arrow: CkArrow; strength: number; importance: number; coverage: number; confirmed_by_regime: boolean; persistent: boolean; news_tone: number | null; evidence: CkEvidence[]; why: string; source: "market" | "alternative" }
-export interface CkCrossAssetRow { key: string; label: string; instrument: string; z: number | null; arrow: CkArrow; status: "CONFIRM" | "DIVERGE" | "HEADWIND" | "FLAT" | "NEUTRAL" | "MISSING"; note: string }
-export interface CkKeyDivergence { title: string; meaning: string; severity: number; source: string; assets: string[] }
-export interface CkCrossAsset { rows: CkCrossAssetRow[]; confirm: number; evaluated: number; sentence: string; divergences: CkKeyDivergence[]; total_divergences: number }
+export interface CkCrossAssetRow { key: string; label: string; instrument: string; z: number | null; arrow: CkArrow; status: "CONFIRM" | "DIVERGE" | "HEADWIND" | "FLAT" | "NEUTRAL" | "MISSING"; note: string; instrument_label: string; group: "RISK" | "MACRO" | "COMMODITY"; meaning: string }
+export interface CkKeyDivergence { title: string; meaning: string; severity: number; source: string; assets: string[]; phenomenon: string; why: string; reference: string[] }
+export interface CkCrossAsset { rows: CkCrossAssetRow[]; confirm: number; evaluated: number; sentence: string; divergences: CkKeyDivergence[]; total_divergences: number; current_view: string; regime_short: string; confirm_text: string; market_read: string }
 export interface CkLeaderRow { key: string; label: string; kind: "theme" | "sector"; z_1d: number | null; rel_1w: number | null; breadth: number | null; arrow: CkArrow; instruments: number; available: number }
 export interface CkThemePulseRow { theme_id: string; name: string; price: CkArrow; news: CkArrow; rel: CkArrow; theme_score: number; news_sentiment: number | null; price_momentum: number | null; rel_1w: number | null; why: string }
 export interface CkLeadership { leaders: CkLeaderRow[]; laggards: CkLeaderRow[]; all_rows: CkLeaderRow[]; pulse: CkThemePulseRow[]; sentence: string }
@@ -661,17 +661,19 @@ export interface CkTransmissionStock { id: string; name: string; status: "CONFIR
 export interface CkTransmissionChain { driver_key: string; driver_label: string; arrow: CkArrow; mechanism: string; industries: string[]; stocks: CkTransmissionStock[]; confirmed: number; source: "driver" | "commodity" }
 export type CkPathStatus = "CONFIRMED" | "PARTIAL" | "UNCONFIRMED" | "CONTRADICTED" | "DATA MISSING";
 export interface CkPathCheck { label: string; id: string; kind: "instrument" | "segment" | "theme"; expect: number; observed: number | null; observed_text: string; status: CkPathStatus }
-export interface CkPathStage { key: string; label: string; text: string[]; checks: CkPathCheck[]; status: CkPathStatus }
-export interface CkPathStock { id: string; name: string; expect: number; arrow: "↑" | "↓"; z: number | null; change_1d: number | null; status: CkPathStatus; segment: string; in_radar: boolean; note: string }
+export interface CkPathStage { key: string; label: string; text: string[]; checks: CkPathCheck[]; status: CkPathStatus; explain: string }
+export interface CkPathStock { id: string; name: string; expect: number; arrow: "↑" | "↓"; z: number | null; change_1d: number | null; status: CkPathStatus; segment: string; in_radar: boolean; note: string; expected_text: string; priority: number }
 export interface CkPathTier { tier: "DIRECT" | "SECONDARY" | "TERTIARY"; stocks: CkPathStock[] }
-export interface CkIssuePath { trigger: CkPathStage; first_order: CkPathStage; assets: CkPathStage; themes: CkPathStage; tiers: CkPathTier[]; tier_max: number; expected: string; observed: string; conclusion: string; confirm: CkPathCheck[]; confirm_count: number; source: "config" | "ai_value_chain" }
+export interface CkPathSummary { main_impact: string[]; stages_confirmed: number; stages_total: number; stages_text: string; most_exposed: string[]; exception: string[]; observed_read: string; confirm_read: string }
+export interface CkIssuePath { trigger: CkPathStage; first_order: CkPathStage; assets: CkPathStage; themes: CkPathStage; tiers: CkPathTier[]; tier_max: number; expected: string; observed: string; conclusion: string; confirm: CkPathCheck[]; confirm_count: number; source: "config" | "ai_value_chain"; summary: CkPathSummary | null; tier_show: Record<string, number> }
 export interface CkSystemAxis { key: string; label: string; arrow: CkArrow; detail: string }
 export interface AnalystView { stock_id: string; stock_name: string; analyst: string; broker: string; published_date: string; source_url: string; source_title: string; summary: string; key_view: string; key_variables: string[]; stance: "constructive" | "cautious" | "neutral" | "mixed"; rating: string; target_change: string; retrieved_at: string; retrieved_by: "manual" | "llm_web"; age_days: number; freshness: string }
 export interface AnalystViews { as_of: string; views: AnalystView[]; requested: string[]; pending: string[]; missing: string[]; provider: string; note: string }
 export interface CkRadarStock { id: string; name: string; change_1d: number | null; tag: string; why: string; kind: "why" | "watch"; score: number; signals: string[]; system_axes: CkSystemAxis[]; related_issues: string[] }
 export interface CkCatalyst { id: string; time: string; tag: string; headline: string; level: "CRITICAL" | "HIGH" | "MEDIUM"; kind: "news" | "alert"; impact: string; confidence: string; cluster_size: number; cluster_titles: string[]; why: string; related_assets: string[]; related_stocks: string[]; price_confirmation: string; url: string | null; source: string; importance: number }
 export interface CkEarnings { rows: Record<string, string>[]; note: string }
-export interface CkNextItem { text: string; status: "CONFIRMING" | "WATCH" | "REVERSING"; metric: string; current: string; driver_key: string; id: string; path: CkIssuePath | null }
+export interface CkHorizon { key: "1D" | "5D" | "1M"; z: number | null; arrow: CkArrow }
+export interface CkNextItem { text: string; status: "CONFIRMING" | "WATCH" | "REVERSING"; metric: string; current: string; driver_key: string; id: string; path: CkIssuePath | null; horizons: CkHorizon[]; horizon_read: string; why_next: string }
 export interface CkUpcoming { date: string; label: string; days_until: number | null; verified: boolean }
 export interface CkWatchRow { id: string; name: string; change_1d: number | null; watch: string; indicators: string[] }
 export interface CkDataStatus { line: string; warnings: string[]; coverage: number; available: number; expected: number; stale: number; max_lag_days: number; news_judgment: string }
