@@ -618,4 +618,8 @@ def build_ai_regime(
 
     build_ai_sentiment(result, cfg, ai_events=ai_events, as_of=as_of, closes=closes, basket_ids=basket_ids, bench=bench_closes.get(primary, []), market_series=market_series,
                        instruments_by_id=instruments_by_id, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
+    # ── AI VS MARKET → WHAT IS DRIVING AI 표시 층 (2026-09-30): 4개 핵심 판단 · driver 카드 라벨 · DRIVER VERDICT. 점수는 그대로 ──
+    from .ai_driver_view import annotate_driver_view
+
+    annotate_driver_view(result, cfg)
     return result

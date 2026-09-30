@@ -3,6 +3,7 @@ import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
 import { AiSentimentSection } from "./AiSentimentSection";
+import { DriversSection, VsMarketSection } from "./AiDriverSections";
 import { DataQualityBlock, GapSection, RegimeLongText, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
 
 /**
@@ -152,7 +153,8 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
       {/* 1b. AI SENTIMENT · GREED & FEAR — AI 센티2 에만. AI 테마 내부의 투자심리 + 시장 확인 강도(0~100) */}
       {extended ? <AiSentimentSection regime={regime} /> : null}
 
-      {/* 2. AI vs MARKET */}
+      {/* 2. AI vs MARKET — AI 센티2: OBSERVATION 카드(4개 핵심 판단 + compact 표 + read + 연결 문구) */}
+      {extended ? <VsMarketSection regime={regime} /> : (
       <section className="panel span-2" data-testid="ai-vs-market">
         <header className="panel-head"><h2 className="panel-title">AI vs Market</h2><div className="panel-note mono">절대 수익 · Nasdaq 100 / S&P 500 대비 상대 수익(%p) · 상대 z(바스켓/벤치마크 비율 지수)</div></header>
         <div className="panel-body">
@@ -176,14 +178,17 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
           <p className="ai-sent">{a.sentence}</p>
         </div>
       </section>
+      )}
 
-      {/* 3. WHAT IS DRIVING AI? */}
+      {/* 3. WHAT IS DRIVING AI? — AI 센티2: ATTRIBUTION 카드(EVIDENCE SCORE 범례 + DRIVER VERDICT + driver 카드) */}
+      {extended ? <DriversSection regime={regime} /> : (
       <section className="panel" data-testid="ai-drivers">
         <header className="panel-head"><h2 className="panel-title">What Is Driving AI?</h2><div className="panel-note mono">evidence score · −100 … +100 · 상태는 바스켓 방향과의 일치</div></header>
         <div className="panel-body ai-drivers">
           {ordered.map((d) => <DriverRow key={d.id} d={d} dominant={d.id === regime.dominant} />)}
         </div>
       </section>
+      )}
 
       {extended ? (<>
         {/* 4. AI FUNDAMENTAL TRANSMISSION */}

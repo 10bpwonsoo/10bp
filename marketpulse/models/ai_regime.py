@@ -33,6 +33,11 @@ class EvidenceItem(Base):
     note: str = ""
 
 
+class PriceCheck(Base):
+    label: str
+    value: str
+
+
 class DriverScore(Base):
     id: str
     label: str
@@ -45,6 +50,17 @@ class DriverScore(Base):
     coverage: float = Field(ge=0.0, le=1.0)
     evidence: list[EvidenceItem] = Field(default_factory=list)
     implication: str = ""
+    # ── 표시 층 (2026-09-30): 점수의 질적 라벨 · 한 줄 의미 · 시장 → AI 연결 · 가격 확인 · 상태 뜻. 점수 계산은 바꾸지 않는다 ──
+    band: str = ""
+    band_ko: str = ""
+    why: str = ""
+    transmission: list[str] = Field(default_factory=list)
+    price_check: list[PriceCheck] = Field(default_factory=list)
+    status_ko: str = ""
+    status_meaning: str = ""
+    aux_label: str = ""
+    aux_ko: str = ""
+    top_evidence: list[str] = Field(default_factory=list)
 
 
 class MemberRow(Base):
@@ -123,6 +139,20 @@ class AiVsMarket(Base):
     abs_direction: Literal["up", "down", "flat", "unknown"] = "unknown"
     rel_verdict: Literal["outperform", "inline", "underperform", "unknown"] = "unknown"
     sentence: str = ""
+    # ── 표시 층 (2026-09-30): 4개 핵심 판단 + 상대성과 읽기. 값은 위 수치의 재표현이다 ──
+    absolute_trend: str = ""
+    absolute_ko: str = ""
+    absolute_text: str = ""
+    relative_trend: str = ""
+    relative_ko: str = ""
+    relative_text: str = ""
+    relative_z_text: str = ""
+    relative_z_ko: str = ""
+    market_read_label: str = ""
+    market_read: str = ""
+    relative_read: str = ""
+    connector: str = ""
+    connector_ko: str = ""
 
 
 class Breadth(Base):
@@ -470,6 +500,31 @@ class AiSentiment(Base):
     note: str = ""
 
 
+class DriverRef(Base):
+    id: str
+    label: str
+    score: float
+    status: str
+    role: str
+    rank_value: float = 0.0
+
+
+class DriverVerdict(Base):
+    """DRIVER VERDICT — AI vs MARKET 의 차이를 어떤 driver 가 설명하는가. 순위는 |score| × 확인 가중 × 확보율."""
+
+    gap_label: str = ""
+    gap_value: str = ""
+    gap_question: str = ""
+    primary: DriverRef | None = None
+    secondary: DriverRef | None = None
+    offset: list[DriverRef] = Field(default_factory=list)
+    unconfirmed: list[DriverRef] = Field(default_factory=list)
+    conclusion: str = ""
+    method: str = ""
+    score_legend: dict[str, str] = Field(default_factory=dict)
+    status_meaning: dict[str, str] = Field(default_factory=dict)
+
+
 class AiRegime(Base):
     as_of: datetime
     regime: RegimeKey
@@ -512,3 +567,4 @@ class AiRegime(Base):
     # ── AI SENTIMENT · GREED & FEAR (2026-09-30) ──
     sentiment: AiSentiment | None = None
     regime_read: str = Field(default="", description="AI REGIME READ — FUNDAMENTAL CONFIRMATION · SUMMARY · 맥락을 대신하는 2~3문장")
+    driver_verdict: DriverVerdict = Field(default_factory=DriverVerdict)

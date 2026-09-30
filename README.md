@@ -468,6 +468,27 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · AI VS MARKET → WHAT IS DRIVING AI? (OBSERVATION → ATTRIBUTION) (2026-09-30)
+
+두 카드만 바꿨고 점수 계산은 그대로다(표시 층: `config/ai_regime.yaml vs_market · driver_view · driver_verdict`,
+`engines/ai_driver_view.py`, 프런트 `AiDriverSections.tsx`; AI 센티 기본 탭은 예전 카드 그대로). **AI VS MARKET** 은
+"AI 가 절대적으로 약한가 → 시장보다도 약한가 → 그 차이가 평소 범위를 벗어났는가" 를 바로 답한다: 상단 ABSOLUTE TREND
+(RISING / WEAK / FLAT) · RELATIVE TREND(OUTPERFORMING / IN LINE / UNDERPERFORMING) · RELATIVE Z(σ · 5D, 평소 대비 의미) 세
+타일(영어 상태 + 한글 한 줄), 오른쪽 compact 1D / 1W / 1M 표(AI Basket · Nasdaq 100 · S&P 500 · **AI vs Nasdaq** 강조 ·
+AI vs S&P), 아래 MARKET READ(라벨 = regime 짧은 이름 + AI RELATIVE WEAKNESS/STRENGTH, 2문장: 시장 상황 + AI-specific
+deterioration 확인 여부) · RELATIVE PERFORMANCE READ(≤2문장) · 연결 문구 WHAT EXPLAINS THE GAP?. **WHAT IS DRIVING AI?** 는
+EVIDENCE SCORE 범례(−100 강한 AI 하방 압력 · 0 방향성 근거 없음 · +100 강한 AI 상방 지지, "확률·수익률 전망이 아니라 내부
+evidence 로 표준화한 값") → **DRIVER VERDICT**(AI UNDERPERFORMANCE −1.5%p vs Nasdaq · 1W 를 어떤 driver 가 설명하는가:
+PRIMARY / SECONDARY PRESSURE · OFFSETTING SUPPORT · NOT YET CONFIRMED + 한글 결론; 순위 = |score| × 확인 가중(CONFIRMED
+1.0 · UNCONFIRMED 0.6 · CONTRADICTED 0.3) × 데이터 확보율이라 점수만 커도 UNCONFIRMED 가 primary 가 되지 않는다) →
+CONFIRMED / UNCONFIRMED / CONTRADICTED / PARTIAL 뜻 → driver 카드(점수 · 질적 라벨 STRONG NEGATIVE … STRONG POSITIVE ·
+driver 별 한 줄 의미 · 0 중앙 NEGATIVE|POSITIVE 막대 · MARKET CONDITION evidence ≤3 · WHY IT MATTERS 1문장 · PRICE CHECK ·
+상태 + 뜻; AI Narrative 는 NARRATIVE > PRICE 보조 라벨, AI-specific Fundamental Stress 는 Hyperscalers · AI Narrative ·
+Semi Fundamentals 행) — 누르면 TRANSMISSION(시장 → AI 4단계) · 상태 뜻 · 전체 evidence · implication. 9/29: WEAK ·
+UNDERPERFORMING · −0.7σ · MACRO-DRAGGED + AI RELATIVE WEAKNESS; VERDICT PRIMARY Macro / Rates −76 CONFIRMED · SECONDARY
+Broad Risk-Off −56 CONFIRMED · OFFSETTING AI Narrative +22 · NOT YET CONFIRMED AI-specific Fundamental Stress −22 →
+"현재 AI 약세는 AI 산업 자체의 펀더멘털 훼손보다는 Macro / Rates 와 Broad Risk-Off 의 설명력이 더 큽니다." 테스트 +4(백엔드) +1(프런트).
+
 #### AI 센티2 · 상태값 의미 줄 · AI REGIME READ · AI SENTIMENT 시각 재구성 (2026-09-30)
 
 판단 로직·점수 계산은 그대로이고 표현만 바꿨다. **AI TRADE REGIME** 상태 띠의 각 카드는 ENGLISH CATEGORY / ENGLISH STATUS /

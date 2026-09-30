@@ -447,3 +447,107 @@ sentiment:
     days: 21            # 1M
     min_days: 10        # 구성요소가 창 안에서 이 일수 이상 나와야 1M 이력의 기준(basis)에 넣는다
     news_hours: 36      # 이력에서 하루의 뉴스 톤은 그 날 끝 기준 감쇠 가중 — 창 밖 기사는 안 센다
+
+#: AI VS MARKET (2026-09-30) — 관찰(OBSERVATION): AI 가 절대적으로 약한가 → 시장보다도 약한가 → 그 차이가 평소 범위를 벗어났는가. 값은 ai_vs_market 의 기존 수치만 쓴다.
+vs_market:
+  absolute: {up: {label: RISING, ko: "최근 1주 AI 관련 종목의 절대가격이 상승"}, down: {label: WEAK, ko: "최근 1주 AI 관련 종목의 절대가격이 약세"}, flat: {label: FLAT, ko: "AI 절대가격에 뚜렷한 방향 없음"}, unknown: {label: "–", ko: "바스켓 계열 없음"}}
+  relative: {outperform: {label: OUTPERFORMING, ko: "AI 가 기술주 시장보다 강하게 움직임"}, inline: {label: "IN LINE", ko: "AI 가 기술주 시장과 같은 걸음"}, underperform: {label: UNDERPERFORMING, ko: "AI 가 기술주 시장보다 더 약하게 움직임"}, unknown: {label: "–", ko: "상대 계열 없음"}}
+  relative_z: {extreme: 1.0, notable: 0.5, extreme_ko: "평소 범위를 벗어난 AI 상대{dir}", notable_ko: "최근 평균보다 AI 상대{dir}가 확대된 상태", normal_ko: "평소 범위 안의 상대 움직임", missing_ko: "상대 z 없음", weak: "약세", strong: "강세"}
+  regime_short: {macro_dragged: "MACRO-DRAGGED", ai_specific_derisking: "AI-SPECIFIC DE-RISKING", leadership_narrowing: "LEADERSHIP NARROWING", narrative_ahead: "NARRATIVE AHEAD", confirmed_risk_on: "CONFIRMED RISK-ON", confirmed_risk_off: "CONFIRMED RISK-OFF", price_resilience: "PRICE RESILIENCE", mixed: "MIXED", unknown: "UNKNOWN"}
+  read_add: {underperform: " + AI RELATIVE WEAKNESS", outperform: " + AI RELATIVE STRENGTH", inline: "", unknown: ""}
+  read:
+    down_under: "시장 전체가 {market}인 가운데 AI 는 Nasdaq 보다 추가로 약합니다."
+    down_hold: "시장 전체가 약하지만 AI 는 Nasdaq 대비 상대강도를 유지하고 있습니다 — AI-specific selloff 가 아닙니다."
+    up_out: "AI 가 시장보다 강하게 오르고 있습니다 — 절대·상대 모두 AI 가 리더십을 쥐고 있습니다."
+    up_under: "AI 는 오르지만 시장보다 덜 오릅니다 — 리더십이 AI 밖에 있습니다."
+    up_inline: "AI 가 시장과 같은 걸음으로 오르고 있습니다."
+    flat: "AI 바스켓은 아직 방향을 찍지 않았습니다."
+    stress_unconfirmed: "다만 현재까지 AI-specific fundamental deterioration 이 명확하게 확인된 것은 아닙니다."
+    stress_confirmed: "AI 고유 펀더멘털 스트레스도 가격에 함께 확인되고 있습니다."
+    market_riskoff: "Risk-Off"
+    market_weak: "약세"
+  relative_read:
+    first: "AI Basket 은 최근 1주 Nasdaq 100 보다 {gap}%p 더 {dir}했습니다."
+    under_down: "시장 전체 약세만으로 설명하기 어려운 AI 상대약세가 추가로 나타나고 있습니다."
+    under_up: "시장은 오르는데 AI 는 덜 오르고 있어 리더십이 AI 밖에 있습니다."
+    inline_down: "시장 전체가 약하지만 AI 는 Nasdaq 대비 상대강도를 유지하고 있습니다."
+    inline_up: "AI 는 시장과 같은 속도로 오르고 있습니다 — AI 고유의 강세는 아닙니다."
+    out_down: "시장이 약한데도 AI 는 덜 빠지고 있습니다 — 상대강도가 유지됩니다."
+    out_up: "AI 가 시장보다 더 오르고 있습니다 — AI 고유의 상대강세입니다."
+    missing: "상대 수익을 낼 계열이 없다."
+  connector: "WHAT EXPLAINS THE GAP?"
+  connector_ko: "왜 AI 가 시장과 다르게 움직이는가 — 아래 WHAT IS DRIVING AI 로 이어진다"
+
+#: WHAT IS DRIVING AI? (2026-09-30) — 귀속(ATTRIBUTION). evidence score(−100…+100)는 확률·수익률 전망이 아니라 driver 가 AI 가격에 주는 방향·강도를 내부 evidence 로 표준화한 값. 점수 계산은 drivers: 그대로이고 여기는 표시 층이다.
+driver_view:
+  score_legend: {neg: "강한 AI 하방 압력", zero: "방향성 근거 없음", pos: "강한 AI 상방 지지", note: "이 점수는 수익률 전망이나 확률이 아니라, 현재 각 driver 가 AI 가격에 미치는 방향과 강도를 내부 evidence 로 표준화한 값입니다."}
+  bands:   # 위에서부터 먼저 걸리는 것
+    - {min: 60,   label: "STRONG POSITIVE"}
+    - {min: 20,   label: "POSITIVE"}
+    - {min: -20,  label: "NEUTRAL"}
+    - {min: -60,  label: "NEGATIVE"}
+    - {min: -100, label: "STRONG NEGATIVE"}
+  status_meaning:
+    CONFIRMED: "해당 driver 가 예상하는 방향과 현재 AI 가격 움직임이 일치"
+    UNCONFIRMED: "driver 신호는 존재하지만 현재 가격 또는 관련 데이터가 아직 확인하지 않음"
+    CONTRADICTED: "해당 driver 가 예상하는 방향과 현재 가격이 반대로 움직임"
+    PARTIAL: "일부 데이터에서만 확인"
+  price_labels: {basket: {up: STRONG, down: WEAK, flat: FLAT, unknown: "–"}, relative: {outperform: OUTPERFORMING, inline: "IN LINE", underperform: UNDERPERFORMING, unknown: "–"}, ndx: {up: STRONG, down: WEAK, flat: FLAT, unknown: "–"}}
+  top_evidence: 3
+  drivers:
+    macro_rates:
+      meaning: {strong_neg: "AI valuation 에 강한 하방 압력", neg: "금리·달러가 AI valuation 을 누르는 방향", neutral: "금리·달러는 현재 AI 방향을 정하지 않음", pos: "금리·달러 완화가 AI valuation 을 받치는 방향", strong_pos: "금리·달러 완화가 AI valuation 을 강하게 지지"}
+      why: "실질금리와 장기금리가 상승하면 미래 이익의 현재가치가 낮아져 AI·Growth 자산의 valuation 부담이 커집니다."
+      transmission: ["금리 / 실질금리 상승", "Discount Rate 상승", "Long-duration Growth valuation 부담", "AI 가격 압박"]
+      price_check: [basket, relative]
+      status_ko: {CONFIRMED: "현재 AI 가격 약세와 같은 방향", UNCONFIRMED: "금리 신호는 있지만 AI 가격이 아직 확인하지 않음", CONTRADICTED: "금리 방향과 AI 가격이 반대로 움직임"}
+    broad_risk_off:
+      meaning: {strong_neg: "시장 전반의 위험회피가 AI 에 강한 부담", neg: "시장 전반의 위험회피가 AI 에도 부담", neutral: "시장 위험선호는 AI 방향을 정하지 않음", pos: "시장 전반의 위험선호가 AI 를 받침", strong_pos: "시장 전반의 위험선호가 AI 를 강하게 지지"}
+      why: "신용스프레드와 변동성이 함께 상승하면 고beta·고duration 자산의 risk premium 이 확대될 수 있습니다."
+      transmission: ["신용스프레드 · VIX 상승", "Risk premium 확대", "고beta · 고duration 자산 매도", "AI 가격 압박(베타)"]
+      price_check: [basket, ndx]
+      status_ko: {CONFIRMED: "AI 약세가 시장 전체 Risk-Off 와도 일치", UNCONFIRMED: "위험회피 신호는 있지만 AI 가격이 아직 확인하지 않음", CONTRADICTED: "시장 위험선호 방향과 AI 가격이 반대"}
+    semi_cycle:
+      meaning: {strong_neg: "반도체 사이클이 AI 하드웨어 다리를 강하게 누름", neg: "반도체 사이클이 AI 하드웨어에 부담", neutral: "현재 AI 가격 방향을 설명하는 핵심 driver 는 아님", pos: "반도체 사이클이 AI 하드웨어를 받침", strong_pos: "반도체 사이클이 AI 하드웨어를 강하게 지지"}
+      why: "메모리 가격·반도체 지수·장비는 AI 수요가 실제 하드웨어 매출로 이어지는 다리입니다."
+      why_neutral: "반도체 사이클은 현재 뚜렷한 상방 또는 하방 압력을 제공하지 않고 있습니다."
+      transmission: ["메모리 가격 · 반도체 지수 · 장비", "AI 하드웨어 매출 확인", "반도체 · 컴퓨트 상대강도", "AI 가격"]
+      price_check: [basket, relative]
+      status_ko: {CONFIRMED: "반도체 사이클 방향과 AI 가격이 일치", UNCONFIRMED: "반도체 사이클 신호가 약해 AI 방향을 설명하지 못함", CONTRADICTED: "반도체 사이클과 AI 가격이 반대"}
+    ai_narrative:
+      meaning: {strong_neg: "AI 뉴스·Capex narrative 가 가격을 강하게 누름", neg: "AI 뉴스·Capex narrative 가 부정적", neutral: "AI 뉴스 흐름에 뚜렷한 방향 없음", pos: "AI 뉴스·Capex narrative 는 지지적", strong_pos: "AI 뉴스·Capex narrative 가 강한 상방 지지"}
+      why: "AI 투자와 GPU 수요 관련 narrative 는 AI 자산에 긍정적인 방향이지만 현재 가격은 이를 충분히 따라오지 못하고 있습니다."
+      why_confirmed: "AI 투자와 GPU 수요 관련 narrative 가 가격과 같은 방향으로 확인되고 있습니다."
+      transmission: ["AI Capex · GPU 수요 뉴스", "기대 형성", "가격 확인 여부", "AI 가격"]
+      price_check: [basket]
+      status_ko: {CONFIRMED: "내러티브와 가격이 같은 방향", UNCONFIRMED: "Narrative positive / Price negative — 가격이 아직 확인하지 않음", CONTRADICTED: "내러티브 방향과 가격이 반대"}
+      aux: {narrative_ahead: {label: "NARRATIVE > PRICE", ko: "내러티브가 가격보다 앞서 있음"}, price_ahead: {label: "PRICE > NARRATIVE", ko: "가격이 내러티브보다 앞서 있음"}}
+    ai_fundamental_stress:
+      meaning: {strong_neg: "AI 고유 펀더멘털 훼손이 가격에 강하게 찍힘", neg: "AI 자체 펀더멘털 약화 신호는 아직 제한적", neutral: "AI 고유 펀더멘털 스트레스 신호 없음", pos: "AI 고유 요인이 가격을 받침", strong_pos: "AI 고유 요인이 가격을 강하게 지지"}
+      why: "AI 가 시장보다 약하더라도 AI-specific fundamentals 까지 악화됐는지 별도로 확인해야 합니다."
+      transmission: ["수익화 · 밸류에이션 · 경쟁 우려", "하이퍼스케일러 · 소프트웨어 상대약세", "AI 바스켓의 Nasdaq 대비 추가 약세", "알파 훼손"]
+      price_check: [relative]
+      extra_rows: [{label: "Hyperscalers", source: group_role, key: hyperscalers}, {label: "AI Narrative", source: narrative_tone}, {label: "Semi Fundamentals", source: fc_level}]
+      status_ko: {CONFIRMED: "AI 고유 펀더멘털 훼손이 가격에 확인됨", UNCONFIRMED: "AI 산업 자체의 펀더멘털 훼손 근거는 아직 부족", CONTRADICTED: "AI 고유 요인과 가격이 반대"}
+      important: "AI underperformance ≠ AI fundamental deterioration — 이 둘을 구분하는 카드"
+
+#: DRIVER VERDICT — 순위는 |score| 만이 아니라 확인 여부·데이터 확보율을 곱한 값. 지속성은 driver 이력이 없어 아직 못 쓴다(note 에 적는다).
+driver_verdict:
+  status_weight: {CONFIRMED: 1.0, UNCONFIRMED: 0.6, CONTRADICTED: 0.3}
+  min_abs: 10               # |score| 가 이 아래면 어느 역할에도 넣지 않는다
+  roles_down: {primary: "PRIMARY PRESSURE", secondary: "SECONDARY PRESSURE", offset: "OFFSETTING SUPPORT", unconfirmed: "NOT YET CONFIRMED"}
+  roles_up: {primary: "PRIMARY SUPPORT", secondary: "SECONDARY SUPPORT", offset: "OFFSETTING PRESSURE", unconfirmed: "NOT YET CONFIRMED"}
+  gap_label: {underperform: "AI UNDERPERFORMANCE", outperform: "AI OUTPERFORMANCE", inline: "AI IN LINE WITH MARKET", unknown: "AI vs MARKET"}
+  gap_question: "AI 의 Nasdaq 대비 {gap}%p 를 어떤 driver 가 설명하고 있는가"
+  macro_drivers: [macro_rates, broad_risk_off]
+  conclusion:
+    down_macro: "현재 AI 약세는 AI 산업 자체의 펀더멘털 훼손보다는 {primary}{secondary_clause}의 설명력이 더 큽니다."
+    down_specific: "현재 AI 약세는 {primary} 등 AI 고유 요인의 설명력이 큽니다 — 베타가 아니라 알파의 훼손을 의심합니다."
+    up: "현재 AI 강세는 {primary}{secondary_clause}가 주로 설명합니다."
+    flat: "AI 바스켓이 방향을 찍지 않아 driver 의 설명력을 가격으로 확인하지 못합니다."
+    offset: " {offset}은(는) 오히려 {dir} 압력을 일부 상쇄하고 있습니다."
+    unconfirmed: " {unconfirmed}은(는) 아직 가격으로 확인되지 않았습니다."
+    secondary_clause: "와(과) {secondary}"
+    dir_down: "하방"
+    dir_up: "상방"
+  method: "순위 = |evidence score| × 확인 가중(CONFIRMED 1.0 · UNCONFIRMED 0.6 · CONTRADICTED 0.3) × 데이터 확보율. 지속성은 driver 이력이 쌓이면 반영한다."

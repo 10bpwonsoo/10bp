@@ -599,7 +599,10 @@ export interface RatesRegime {
 /** AI Trade Intelligence — AI 트레이드 자체의 상태. 시장 온도가 아니다. 서버(ai_regime.yaml)가 만든다 */
 export type AiRegimeKey = "ai_specific_derisking" | "macro_dragged" | "leadership_narrowing" | "narrative_ahead" | "confirmed_risk_on" | "confirmed_risk_off" | "price_resilience" | "mixed" | "unknown";
 export interface AiEvidenceItem { id: string; label: string; kind: "price" | "news"; layer: "market" | "alternative" | "theme" | "basket" | "narrative"; value: number | null; window: number | null; sign: number; weight: number; contribution: number; available: boolean; note: string }
-export interface AiDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: AiEvidenceItem[]; implication: string }
+export interface AiPriceCheck { label: string; value: string }
+export interface AiDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: AiEvidenceItem[]; implication: string; band: string; band_ko: string; why: string; transmission: string[]; price_check: AiPriceCheck[]; status_ko: string; status_meaning: string; aux_label: string; aux_ko: string; top_evidence: string[] }
+export interface AiDriverRef { id: string; label: string; score: number; status: string; role: string; rank_value: number }
+export interface AiDriverVerdict { gap_label: string; gap_value: string; gap_question: string; primary: AiDriverRef | null; secondary: AiDriverRef | null; offset: AiDriverRef[]; unconfirmed: AiDriverRef[]; conclusion: string; method: string; score_legend: Record<string, string>; status_meaning: Record<string, string> }
 export interface AiMemberRow { id: string; name: string; group: string; available: boolean; last_date: string | null; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_5d: number | null; above_ma5: boolean | null; above_ma20: boolean | null; advancing: boolean | null; note: string }
 export interface AiGroupMomentum { key: string; label: string; label_ko: string; benchmark: string; in_basket: boolean; members: number; available: number; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_1d: number | null; rel_5d: number | null; rel_21d: number | null; rel_z_1d: number | null; rel_z_5d: number | null; above_ma20_pct: number | null; down_1w: number; rank_1w: number | null; role: "leader" | "strong" | "neutral" | "lagging" | "laggard" | "unknown"; note: string }
 export interface AiLeadership { groups: AiGroupMomentum[]; leader_1d: string | null; leader_1w: string | null; leader_1m: string | null; laggard_1w: string | null; rotation: "none" | "rotating" | "early" | "unknown"; sentence: string }
@@ -609,6 +612,7 @@ export interface AiVsMarket {
   ndx_ret_1d: number | null; ndx_ret_5d: number | null; ndx_ret_21d: number | null; spx_ret_5d: number | null; spx_ret_21d: number | null;
   rel_ndx_1d: number | null; rel_ndx_5d: number | null; rel_ndx_21d: number | null; rel_ndx_z_1d: number | null; rel_ndx_z_5d: number | null; rel_ndx_z: number | null; rel_spx_5d: number | null; rel_spx_z_5d: number | null;
   abs_direction: "up" | "down" | "flat" | "unknown"; rel_verdict: "outperform" | "inline" | "underperform" | "unknown"; sentence: string;
+  absolute_trend: string; absolute_ko: string; absolute_text: string; relative_trend: string; relative_ko: string; relative_text: string; relative_z_text: string; relative_z_ko: string; market_read_label: string; market_read: string; relative_read: string; connector: string; connector_ko: string;
 }
 export interface AiBreadth { members: number; above_ma5_pct: number | null; above_ma20_pct: number | null; advancing_pct: number | null; above_ma20_pct_1w_ago: number | null; change_1w_pts: number | null; trend: "widening" | "narrowing" | "stable" | "unknown"; narrowing_with_index_up: boolean; by_group: Record<string, number | null>; sentence: string }
 export interface AiNarrativeDriver { key: string; label: string; label_ko: string; tone: number | null; count: number; samples: string[] }
@@ -652,6 +656,7 @@ export interface AiRegime {
   news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
   sentiment?: AiSentiment | null;
   regime_read: string;
+  driver_verdict: AiDriverVerdict;
 }
 
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */

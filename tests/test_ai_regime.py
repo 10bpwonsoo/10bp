@@ -283,3 +283,56 @@ class TestSentiment:
         assert price.score is None and breadth.score is None and price.coverage == 0.0
         assert s.coverage < 1.0
         assert all(p.index is None for p in s.history.points) or not s.history.points
+
+
+class TestDriverView:
+    """AI VS MARKET(관찰) → WHAT IS DRIVING AI(귀속) 표시 층 — 점수는 그대로, 라벨·문장·순위만 더한다."""
+
+    def test_vs_market_labels_are_re_expressions_of_existing_values(self):
+        r = _build("ai_sentiment", shock=-0.012)  # 바스켓만 −6%: 절대 하락 · underperform
+        a = r.ai_vs_market; cfg = load_ai_regime_config()["vs_market"]
+        assert a.absolute_trend == cfg["absolute"][a.abs_direction]["label"] and a.absolute_ko
+        assert a.relative_trend == cfg["relative"][a.rel_verdict]["label"] and a.relative_ko
+        assert a.abs_direction == "down" and a.rel_verdict == "underperform"
+        assert f"{a.basket_ret_5d:+.1f}%" in a.absolute_text and f"{a.rel_ndx_5d:+.1f}%p" in a.relative_text
+        assert "σ" in a.relative_z_text and a.relative_z_ko
+        assert "AI RELATIVE WEAKNESS" in a.market_read_label and a.market_read and a.relative_read
+        assert f"{abs(a.rel_ndx_5d):.1f}%p" in a.relative_read and (a.relative_read.count("다.") <= 2)
+        assert a.connector
+        for w in ("확률", "매수", "매도", "전망"):
+            assert w not in a.market_read and w not in a.relative_read
+
+    def test_driver_bands_meanings_and_price_check(self):
+        r = _build("baseline")
+        cfg = load_ai_regime_config()["driver_view"]
+        for d in r.drivers:
+            band = next(b["label"] for b in cfg["bands"] if d.score >= b["min"])
+            assert d.band == band and d.band_ko and d.why and d.status_ko and d.status_meaning
+            assert 1 <= len(d.top_evidence) <= cfg["top_evidence"] or not [e for e in d.evidence if e.available]
+            assert len(d.transmission) >= 3 and d.price_check
+            for w in ("확률", "전망"):
+                assert w not in d.why
+        assert "확률이 아니라" in cfg["score_legend"]["note"]
+
+    def test_verdict_prefers_confirmed_over_raw_score_and_separates_unconfirmed(self):
+        r = _build("ai_sentiment", shock=-0.012)
+        v = r.driver_verdict
+        assert v.gap_label and "%p" in v.gap_value and v.conclusion and v.method
+        assert v.primary is not None and v.primary.role.startswith("PRIMARY")
+        cfg = load_ai_regime_config()["driver_verdict"]
+        chosen = ([v.primary, v.secondary] if v.secondary else [v.primary]) + v.offset + v.unconfirmed
+        for x in chosen:  # 순위 = |score| × 확인 가중 × 확보율
+            d = next(dd for dd in r.drivers if dd.id == x.id)
+            assert x.rank_value == pytest.approx(abs(d.score) * cfg["status_weight"][d.status] * d.coverage, abs=0.15)
+        cands = [d for d in r.drivers if abs(d.score) >= cfg["min_abs"] and d.score < 0]
+        if any(d.status == "CONFIRMED" for d in cands):  # CONFIRMED 후보가 있으면 UNCONFIRMED 가 점수만 커도 primary 가 아니다
+            assert v.primary.status == "CONFIRMED"
+        assert len({x.id for x in chosen}) == len(chosen)  # 역할 중복 없음
+        assert all(x.status != "CONFIRMED" for x in v.unconfirmed)
+        for w in ("확률", "매수", "매도"):
+            assert w not in v.conclusion
+
+    def test_flat_basket_has_no_primary_attribution(self):
+        snap, market, series, bk, by_id = _run("baseline")
+        r = build_ai_regime(market, series, {}, snap.themes, snap.events, by_id, market_label="NEUTRAL", market_confidence=0.0, as_of=AS_OF)
+        assert r.ai_vs_market.absolute_trend == "–" and r.driver_verdict.primary is None and r.driver_verdict.conclusion

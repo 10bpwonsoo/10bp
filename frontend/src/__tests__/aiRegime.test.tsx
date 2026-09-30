@@ -1,6 +1,6 @@
 /** AI 탭 — AI TRADE INTELLIGENCE. Regime → AI vs Market → Drivers → Leadership → Breadth → Narrative×Price → Macro → Stress → What Changes → Diagnostics. 시장 온도는 핵심 화면에 없다. */
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import snap from "../__fixtures__/snapshot.json";
 import hist from "../__fixtures__/state_history.json";
 import regimeFx from "../__fixtures__/ai_regime.json";
@@ -166,5 +166,47 @@ describe("AiRegimeView", () => {
     expect(sec.querySelector(".gf-legend")).toBeNull(); // 큰 5개 legend 없음
     expect(sec.querySelector(".panel-body")!.textContent).not.toMatch(/확률|매수|매도/);
     expect(sec.querySelector(".gauge")).toBeNull();
+  });
+
+  it("AI 센티2: AI VS MARKET 은 ABSOLUTE / RELATIVE / RELATIVE Z + MARKET READ + compact 표(AI vs Nasdaq 강조) + RELATIVE PERFORMANCE READ + 연결 문구, WHAT IS DRIVING AI 는 EVIDENCE SCORE 범례 + DRIVER VERDICT + driver 카드(질적 라벨 · 한글 의미 · evidence ≤3 · why · PRICE CHECK · 상태 뜻), 클릭하면 전파 경로", () => {
+    render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
+    const a = regime.ai_vs_market; const vm = screen.getByTestId("ai-vs-market");
+    expect(within(vm).getByTestId("ai-vm-abs").textContent).toContain(a.absolute_trend); expect(within(vm).getByTestId("ai-vm-abs").textContent).toContain(a.absolute_ko);
+    expect(within(vm).getByTestId("ai-vm-rel").textContent).toContain(a.relative_trend); expect(within(vm).getByTestId("ai-vm-relz").textContent).toContain(a.relative_z_text);
+    expect(within(vm).getByTestId("ai-vm-market-read").textContent).toContain(a.market_read_label); expect(within(vm).getByTestId("ai-vm-market-read").textContent).toContain(a.market_read);
+    expect(within(vm).getByTestId("ai-vm-key-row").textContent).toContain("AI vs Nasdaq");
+    expect(within(vm).getByTestId("ai-vm-relative-read").textContent).toContain(a.relative_read);
+    expect((a.relative_read.match(/다\./g) ?? []).length).toBeLessThanOrEqual(2);
+    expect(within(vm).getByTestId("ai-vm-connector").textContent).toContain(a.connector);
+    const dv = screen.getByTestId("ai-drivers"); const v = regime.driver_verdict;
+    expect(within(dv).getByTestId("ai-score-legend").textContent).toMatch(/−100.*0.*\+100/s);
+    expect(within(dv).getByTestId("ai-score-legend").textContent).toContain("확률이 아니라");
+    const verdict = within(dv).getByTestId("ai-driver-verdict");
+    expect(verdict.textContent).toContain(v.gap_label); expect(verdict.textContent).toContain(v.gap_value);
+    const refs = within(verdict).getAllByTestId("ai-verdict-ref");
+    expect(refs[0]!.getAttribute("data-id")).toBe(v.primary!.id); expect(refs[0]!.getAttribute("data-role")).toBe(v.primary!.role);
+    expect(within(dv).getByTestId("ai-verdict-conclusion").textContent).toBe(v.conclusion);
+    // verdict 는 DRIVER 카드보다 먼저
+    expect(dv.textContent!.indexOf("Driver verdict")).toBeLessThan(dv.textContent!.indexOf(regime.drivers[0]!.why));
+    const cards = within(dv).getAllByTestId("ai-driver");
+    expect(cards.length).toBe(5);
+    for (const d of regime.drivers) {
+      const el = cards.find((c) => c.getAttribute("data-id") === d.id)!;
+      expect(within(el).getByTestId("ai-driver-band").textContent).toBe(d.band);
+      expect(el.textContent).toContain(d.band_ko); expect(el.textContent).toContain(d.why);
+      expect(within(el).getAllByTestId("ai-driver-price-check").length).toBe(d.price_check.length);
+      expect(within(el).getByTestId("ai-driver-status").textContent).toContain(d.status);
+      expect(within(el).queryByTestId("ai-driver-more")).toBeNull();
+      expect(el.textContent).not.toContain("Transmission");
+    }
+    const bands = new Set(regime.drivers.map((d) => d.band));
+    for (const b of bands) expect(["STRONG POSITIVE", "POSITIVE", "NEUTRAL", "NEGATIVE", "STRONG NEGATIVE"]).toContain(b);
+    // 클릭 → 전파 경로 · 전체 evidence
+    const first = cards.find((c) => c.getAttribute("data-id") === "macro_rates")!;
+    fireEvent.click(first);
+    expect(within(first).getByTestId("ai-driver-more").textContent).toContain(regime.drivers.find((d) => d.id === "macro_rates")!.transmission[0]);
+    // 9/29 실데이터: AI 약세의 primary 는 Macro / Rates(CONFIRMED), AI 고유 스트레스는 NOT YET CONFIRMED
+    expect(v.primary!.id).toBe("macro_rates"); expect(v.unconfirmed.some((x) => x.id === "ai_fundamental_stress")).toBe(true);
+    expect(v.conclusion).toMatch(/펀더멘털 훼손보다는/);
   });
 });
