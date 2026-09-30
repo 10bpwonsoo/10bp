@@ -279,3 +279,30 @@ class TestHeatAndLeadershipIntel:
         ]}), encoding="utf-8")
         sv = load_street_views(tmp_path, as_of=datetime(2026, 9, 29, tzinfo=timezone.utc), max_age_days=30)
         assert list(sv) == ["semiconductor"] and len(sv["semiconductor"]) == 1 and sv["semiconductor"][0].analyst == ""
+
+
+class TestTransmissionReadAndWatchlist:
+    """전파 카드는 강도(영어+한글)와 1~2문장 read, 워치리스트는 why · driver ≤3 · trigger · 태그 ≤3 · 연결. 숫자 임계를 만들지 않는다."""
+
+    def test_chain_strength_and_read(self):
+        snap, market, by_id = _run("inflation_shock")
+        c = build_cockpit(snap, market, by_id)
+        assert c.transmission
+        for t in c.transmission:
+            assert t.strength in ("STRONG", "PARTIAL", "LIMITED", "UNCONFIRMED") and t.strength_ko
+            assert t.evaluated <= len(t.stocks) and t.confirmed <= max(t.evaluated, 0)
+            assert t.read and t.read.count(".") <= 3 and "확률" not in t.read and "때문이다" not in t.read
+            if t.strength == "UNCONFIRMED": assert t.confirmed == 0
+            if t.strength == "STRONG": assert t.evaluated >= 2 and t.confirmed / t.evaluated >= 0.66
+
+    def test_watchlist_checkpoints(self):
+        import json
+        from marketpulse.models.cockpit import Cockpit
+        c = Cockpit.model_validate_json((__import__("pathlib").Path(__file__).resolve().parents[1] / "marketpulse/data/captures/2026-09-29-manual/cockpit.json").read_text(encoding="utf-8"))
+        assert 1 <= len(c.watchlist) <= 5
+        for w in c.watchlist:
+            assert w.why and w.trigger and 1 <= len(w.key_drivers) <= 3 and len(w.reasons) <= 3 and w.priority in ("HIGH", "MEDIUM")
+            assert not any(ch.isdigit() for ch in w.trigger) or "σ" in w.trigger  # 시스템 임계가 없으면 숫자 없음
+            for l in w.transmission: assert any(t.driver_key == l.key for t in c.transmission)
+            for l in w.issues: assert any(n.id == l.key for n in c.what_matters_next)
+            assert set(w.reasons) <= {"NEWS", "THEME", "MACRO", "FUNDAMENTAL", "DIVERGENCE", "ALT DATA", "TRANSMISSION"}

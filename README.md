@@ -468,6 +468,26 @@ SYSTEM VIEW, 오른쪽 STREET VIEW · KEY STOCKS · WHAT TO WATCH), 모바일은
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### 실시간 2 · MARKET → STOCK TRANSMISSION read 와 WATCHLIST 체크포인트 (2026-09-30)
+
+**MARKET → STOCK TRANSMISSION**: DRIVER → INDUSTRY / THEME → STOCK 과 종목별 CONFIRMED / UNCONFIRMED / CONTRADICTED
+판정은 그대로다. 체인마다 `n / m confirmed`(NO DATA 제외) 옆에 TRANSMISSION STRENGTH — STRONG(전파 강함) · PARTIAL(일부
+전파) · LIMITED(전파 제한적) · UNCONFIRMED(아직 미확인) — 를 붙인다. 비율만이 아니라 driver 강도를 함께 본다
+(`config/cockpit.yaml transmission.strength`). 그 아래 **TRANSMISSION READ** 1~2문장: 어느 산업까지 실제 가격에서
+확인됐는지, 어디로의 확산은 추가 확인이 필요한지, 어떤 종목이 예상과 다르게 움직이는지(원인을 단정하지 않고
+"종목·테마 고유 driver 가능성을 점검할 필요") 를 지금 데이터로만 만든다. 주어는 `transmission.subject_ko`(driver ×
+방향), 산업 이름은 `industry_labels`.
+
+**WATCHLIST**: '관심종목 5개' 가 아니라 '오늘 다시 확인해야 할 종목과 기다리는 trigger' 다. 제목 아래 목적 설명과
+Stock Radar 와의 역할 차이("왜 오늘 움직였는가" vs "다음에 무엇이 나타나면 다시 봐야 하는가"). 종목마다 이름 / 수익률
+→ Theme / Industry → **WHY WATCH**(1~2줄, 지금 데이터: 펀더멘털·테마 leadership 상태 + 가격 confirmation + 매크로 노출
+/ 뉴스 / 대체데이터) → **KEY DRIVER**(≤3) → **TRIGGER**(무엇이 나타나면 다시 판단하는가; 시스템 임계가 없으므로 숫자
+없음) → WATCH REASON 태그(NEWS · THEME · MACRO · FUNDAMENTAL · DIVERGENCE · ALT DATA · TRANSMISSION ≤3) → **TRANSMISSION
+●**(누르면 해당 전파 카드로) · **RELATED ISSUE**(누르면 WHAT MATTERS NEXT 항목이 열림). 누르면 해설 발췌 · EPS revision ·
+ANALYST VIEW 가 펼쳐진다. 선정은 수익률 순이 아니라 뉴스 · 상대강도 · 매크로 노출 · 테마 leadership · 전파 관련성 ·
+이슈 관련성 · 대체데이터의 합(`watchlist.weights`)이고, 점수는 보이지 않고 HIGH 만 표식한다. driver 라벨과 종목별
+driver/trigger 힌트는 `watchlist.driver_labels` / `watchlist.hints`, 없으면 종목 메타의 driver 로 만든다.
+
 ### 유가 탭 — 시장 원인 판별 (2026-09-29)
 
 유가 탭은 룰 판정("Geopolitical Risk 아님")을 앞세우지 않는다. `engines/oil_regime.py`

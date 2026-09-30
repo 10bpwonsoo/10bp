@@ -259,3 +259,40 @@ describe("CockpitView — DRIVER HEAT 의미 층 · MARKET LEADERSHIP intelligen
     if (noStreet) { fireEvent.click(rows.find((r) => r.getAttribute("data-key") === noStreet.key)!); expect(screen.queryByTestId("ck-ld-street")).toBeNull(); }
   });
 });
+
+describe("CockpitView — TRANSMISSION read · WATCHLIST checkpoints", () => {
+  it("전파 카드마다 n / m confirmed 옆에 STRONG/PARTIAL/LIMITED/UNCONFIRMED + 한글, 그리고 TRANSMISSION READ 1~2문장이 있다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    const chains = screen.getAllByTestId("ck-chain");
+    expect(chains.length).toBe(cockpit.transmission.length);
+    for (const ch of chains) {
+      expect(within(ch).getByTestId("ck-chain-strength").textContent).toMatch(/\d+ \/ \d+ confirmed.*(STRONG|PARTIAL|LIMITED|UNCONFIRMED).*(전파|미확인)/);
+      expect(within(ch).getByTestId("ck-chain-read").textContent).toMatch(/Transmission read/);
+    }
+  });
+
+  it("WATCHLIST 는 목적 설명과 종목마다 테마 · WHY WATCH · KEY DRIVER(≤3) · TRIGGER · 태그, TRANSMISSION ● / RELATED ISSUE 링크가 전파 카드·이슈로 이어지고, 점수 숫자는 보이지 않는다", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
+    expect(screen.getByTestId("ck-watch-purpose").textContent).toMatch(/다음에 무엇이 나타나면/);
+    const rows = screen.getAllByTestId("ck-watch-row");
+    expect(rows.length).toBe(cockpit.watchlist.length);
+    for (let i = 0; i < rows.length; i++) {
+      const w = cockpit.watchlist[i]!; const r = rows[i]!;
+      expect(within(r).getByTestId("ck-watch-why").textContent).toContain(w.why);
+      expect(within(r).getByTestId("ck-watch-trigger").textContent).toContain(w.trigger);
+      expect(within(r).getByTestId("ck-watch-drivers").textContent!.split(" · ").length).toBeLessThanOrEqual(3);
+      expect(r.textContent).not.toMatch(/\d+점/);
+    }
+    const withChain = cockpit.watchlist.find((w) => w.transmission.length)!;
+    const row = rows[cockpit.watchlist.indexOf(withChain)]!;
+    const btn = within(row).getAllByRole("button").find((b) => b.textContent?.includes("TRANSMISSION ●"))!;
+    fireEvent.click(btn);
+    expect(document.getElementById(`ck-tr-${withChain.transmission[0]!.key}`)!.className).toContain("focus");
+    const withIssue = cockpit.watchlist.find((w) => w.issues.length);
+    if (withIssue) {
+      const r2 = rows[cockpit.watchlist.indexOf(withIssue)]!;
+      fireEvent.click(within(r2).getAllByRole("button").find((b) => b.textContent?.includes("RELATED ISSUE"))!);
+      expect(screen.getByTestId("ck-path")).toBeInTheDocument();
+    }
+  });
+});

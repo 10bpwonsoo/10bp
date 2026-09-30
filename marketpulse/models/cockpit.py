@@ -203,6 +203,7 @@ class TransmissionStock(Base):
     z: float | None = None
     change_1d: float | None = None
     note: str = ""
+    industry: str = Field(default="", description="전파 read 용 산업/세그먼트 표시 이름")
 
 
 class TransmissionChain(Base):
@@ -214,6 +215,10 @@ class TransmissionChain(Base):
     stocks: list[TransmissionStock] = Field(default_factory=list)
     confirmed: int = 0
     source: Literal["driver", "commodity"] = "driver"
+    evaluated: int = Field(default=0, description="NO DATA 를 뺀 종목 수")
+    strength: Literal["STRONG", "PARTIAL", "LIMITED", "UNCONFIRMED"] = "UNCONFIRMED"
+    strength_ko: str = ""
+    read: str = Field(default="", description="TRANSMISSION READ — 1~2문장, 지금 데이터만")
 
 
 class SystemAxis(Base):
@@ -360,12 +365,27 @@ class UpcomingEvent(Base):
     verified: bool = True
 
 
+class WatchLink(Base):
+    key: str
+    label: str
+
+
 class WatchRow(Base):
     id: str
     name: str
     change_1d: float | None = None
     watch: str = ""
     indicators: list[str] = Field(default_factory=list)
+    theme: str = Field(default="", description="'HBM / Semiconductor'")
+    why: str = Field(default="", description="WHY WATCH — 1~2줄, 지금 데이터")
+    key_drivers: list[str] = Field(default_factory=list, description="최대 3")
+    trigger: str = Field(default="", description="무엇이 나타나면 다시 판단하는가 — 시스템 임계가 없으면 숫자 없음")
+    reasons: list[str] = Field(default_factory=list, description="WATCH REASON 태그 ≤3 — NEWS · THEME · MACRO · FUNDAMENTAL · DIVERGENCE · ALT DATA · TRANSMISSION")
+    priority: Literal["HIGH", "MEDIUM"] = "MEDIUM"
+    transmission: list[WatchLink] = Field(default_factory=list, description="이 종목이 등장하는 MARKET → STOCK TRANSMISSION 체인")
+    issues: list[WatchLink] = Field(default_factory=list, description="이 종목이 등장하는 WHAT MATTERS NEXT 이슈")
+    commentary: str = Field(default="", description="펼침 — 수기 해설 발췌(있을 때)")
+    eps_revision: float | None = None
 
 
 class DataStatus(Base):

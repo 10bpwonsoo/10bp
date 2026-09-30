@@ -268,6 +268,25 @@ theme_pulse:
 
 #: MARKET → STOCK TRANSMISSION — driver 별 경로. stocks 는 AI universe(ai_regime.yaml) 또는 국내 universe id
 transmission:
+  #: TRANSMISSION STRENGTH — 확인 종목 비율(NO DATA 제외)에 driver 강도를 함께 본다. 영어 상태 + 한글.
+  strength: {strong: 0.66, partial: 0.4, min_evaluated: 2, driver_min: 0.35}
+  strength_ko: {STRONG: "전파 강함", PARTIAL: "일부 전파", LIMITED: "전파 제한적", UNCONFIRMED: "아직 미확인"}
+  #: TRANSMISSION READ 의 주어(driver × 방향). 없으면 "{label_ko} {상승/하락}의 영향".
+  subject_ko:
+    long_end_rates: {up: "장기금리 상승 부담", down: "장기금리 하락의 순풍"}
+    credit_stress: {up: "신용 스트레스 확대의 압력", down: "신용여건 완화의 순풍"}
+    volatility_regime: {up: "변동성 상승에 따른 디레버리징 압력", down: "변동성 진정의 순풍"}
+    equity_beta: {up: "지수 상승(베타)", down: "지수 하락(베타) 압력"}
+    fed_path: {up: "단기금리 상승 부담", down: "완화 기대의 순풍"}
+    usd: {up: "달러 강세 부담", down: "달러 약세의 순풍"}
+    oil: {up: "유가 상승의 영향", down: "유가 약세의 영향"}
+    gold_real: {up: "실질금리 상승·금 급락의 디레버리징", down: "안전자산 수요"}
+    ai_semi_relative: {up: "AI/반도체 상대강도", down: "AI 고유 요인의 압력"}
+    korea: {up: "외국인 매수 전환의 순풍", down: "외국인 매도 압력"}
+    china: {up: "중국 수요 기대", down: "중국 수요 우려"}
+  #: 종목 산업/세그먼트 코드 → 표시 이름 (전파 read 에서 '어디까지 확인됐는가' 를 말할 때)
+  industry_labels: {software: "Software", dc_infra: "Data Center Infra", hyperscalers: "Hyperscalers", compute: "Compute", memory_hbm: "Memory / HBM", memory: "국내 메모리", equipment: "Equipment", foundry: "Foundry", networking: "Networking", power: "Power", packaging: "Packaging",
+                    airline: "항공", refining: "정유", container_shipping: "컨테이너 해운", dry_bulk: "벌크 해운", bank: "은행", auto: "자동차", auto_parts: "자동차 부품", steel: "철강", nonferrous: "비철", petrochemical: "화학", battery: "배터리", shipbuilding: "조선", defense: "방산", power_equipment: "전력기기", nuclear_power: "원전", internet: "인터넷", utility: "유틸리티", food: "식품", biosimilar: "바이오", cdmo: "CDMO", components: "부품"}
   max_stocks: 5
   chains:
     long_end_rates:  {up: {mechanism: "Long-duration pressure", industries: ["Software / Growth", "REIT / 데이터센터 인프라"], stocks: [PLTR, NOW, SNOW, DLR, EQIX], expect: -1}, down: {mechanism: "Duration relief", industries: ["Software / Growth"], stocks: [PLTR, NOW, SNOW], expect: 1}}
@@ -609,6 +628,24 @@ analyst_view:
   manual_dir: data/analyst_views/manual
   search_max_uses: 3
 watchlist_max: 5
+#: WATCHLIST — '오늘 다시 확인해야 할 종목과 기다리는 trigger'. 선정은 수익률 순이 아니라 뉴스·테마·매크로·상대강도·펀더멘털·대체데이터·전파·이슈 관련성의 합.
+watchlist:
+  max: 5
+  weights: {badge: 1.0, relative: 0.6, macro: 0.8, theme_lead: 0.8, transmission: 0.9, issue: 0.7, alt: 0.6, radar_penalty: -0.3}
+  priority_high: 2.4
+  #: driver id → 표시 이름
+  driver_labels: {SOX: "SOX Relative", DRAM_SPOT: "Memory Pricing", NAND_SPOT: "NAND Pricing", USDKRW: "USD/KRW", US10Y: "US 10Y", IRON_ORE: "Iron Ore", STEEL_ETF: "Steel Price", CSI300: "China Demand", LITHIUM_ETF: "Lithium", SCFI: "Freight Rate (SCFI)", DRY_BULK_ETF: "BDI / Dry Bulk", BRENT: "Brent", NATGAS: "Natural Gas", KR_FOREIGN_NET: "Foreign Flow", US2Y: "US 2Y", DXY: "DXY", COPPER: "Copper", HSCEI: "China Equity", USDCNH: "CNY", KOSPI: "KOSPI", VIX: "VIX", US_HY_OAS: "HY OAS", JETS: "Airlines ETF", XLE: "Energy ETF", HBM: "HBM Pricing"}
+  #: 종목별 힌트 — driver 는 최대 3, trigger 는 숫자 없이(시스템 임계가 없으므로). why 는 엔진이 지금 데이터로 만든다.
+  hints:
+    SKHYNIX: {drivers: [HBM, SOX, USDKRW], trigger: "SOX 대비 상대강도 개선과 HBM 가격 상승이 함께 나타나면 국내 반도체 확산 여부 재평가"}
+    SAMSUNG: {drivers: [DRAM_SPOT, KR_FOREIGN_NET, USDKRW], trigger: "메모리 가격 개선과 외국인 수급 반전이 동시에 나타나면 재평가"}
+    POSCO: {drivers: [CSI300, STEEL_ETF, USDCNH], trigger: "중국 수요지표 개선 또는 철강가격 반등 시 재평가"}
+    HMM: {drivers: [SCFI, CSI300, DRY_BULK_ETF], trigger: "운임지수 방향 전환 시 재평가"}
+    HD_HHI: {drivers: [DRY_BULK_ETF, STEEL_ETF, USDKRW], trigger: "건화물 운임 반등 또는 수주 뉴스 확인 시 재평가"}
+    KOREAN_AIR: {drivers: [BRENT, USDKRW, JETS], trigger: "브렌트 반등 또는 수요 지표 약화 시 재평가"}
+    SOIL: {drivers: [BRENT, XLE], trigger: "정제마진 축소 또는 유가 방향 전환 시 재평가"}
+    HANMI_SEMI: {drivers: [HBM, SOX, US_HY_OAS], trigger: "HBM 장비 수주 확인 또는 고베타 디레버리징 확산 시 재평가"}
+    KB: {drivers: [US10Y, KR_FOREIGN_NET, KOSPI], trigger: "장기금리·커브 방향 전환 또는 외국인 수급 반전 시 재평가"}
 data_status:
   important: [SPX, NDX, US10Y, US_HY_OAS, VIX, KOSPI, BRENT, DXY]
   stale_warn_days: 3

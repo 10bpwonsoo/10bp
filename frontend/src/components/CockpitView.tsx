@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Cockpit, CkArrow, CkDriver, CkCatalyst, CkRadarStock, CkLeaderRow, AnalystView, AnalystViews, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
+import type { Cockpit, CkArrow, CkDriver, CkCatalyst, CkRadarStock, CkLeaderRow, CkWatchRow, AnalystView, AnalystViews, IntelligenceSnapshot, MarketStateHistory } from "../api/types";
 import { useAnalystViews } from "../api/useAnalystViews";
 import { IssuePathView } from "./IssuePath";
 import { COLOR_LEGEND, MATCH_COLOR, STATUS_KO, STATUS_KO_SHORT, glossaryFor } from "./ko";
@@ -237,19 +237,26 @@ function LeadershipCard({ c, onStock }: { c: Cockpit; onStock?: (id: string) => 
   );
 }
 
-function TransmissionCard({ c }: { c: Cockpit }) {
+const STRENGTH_COLOR: Record<string, string> = { STRONG: "var(--ok)", PARTIAL: "var(--warn)", LIMITED: "var(--muted)", UNCONFIRMED: "var(--faint)" };
+
+function TransmissionCard({ c, focus }: { c: Cockpit; focus?: string | null }) {
   if (!c.transmission.length) return null;
   return (
     <Card title="Market → Stock Transmission" area="trans" testid="ck-transmission" note="DRIVER → INDUSTRY / THEME → STOCK · 가격 확인 붙임">
+      <p className="ck-sub">지금 시장 충격이 실제 종목 가격까지 어디까지 번졌는지 — 영향을 줄 수 있다가 아니라 실제로 얼마나 전파됐고 어디서는 아직 아닌지.</p>
       <div className="ck-trans">
         {c.transmission.map((t) => (
-          <div key={t.driver_key} className="ck-tr" data-testid="ck-chain">
+          <div key={t.driver_key} id={`ck-tr-${t.driver_key}`} className={`ck-tr${focus === t.driver_key ? " focus" : ""}`} data-testid="ck-chain" data-key={t.driver_key}>
             <div className="ck-tr-d"><b>{t.driver_label}</b></div>
             <div className="ck-tr-m mono">→ {t.mechanism}{t.industries.length ? <span className="ck-tr-i"> · {t.industries.join(" · ")}</span> : null}</div>
             <div className="ck-tr-s">
-              {t.stocks.map((s) => <span key={s.id} className="ck-tr-stock" title={s.note}><span>{s.name}</span><St s={s.status} /></span>)}
-              <span className="mono ck-tr-n">{t.confirmed}/{t.stocks.length} confirmed</span>
+              {t.stocks.map((s) => <span key={s.id} className="ck-tr-stock" title={`${s.industry ? s.industry + " · " : ""}${s.note}`}><span>{s.name}</span><St s={s.status} /></span>)}
             </div>
+            <div className="ck-tr-str" data-testid="ck-chain-strength">
+              <span className="mono ck-tr-n">{t.confirmed} / {t.evaluated || t.stocks.length} confirmed</span>
+              <span className="ck-sk"><span className="mono ck-st" style={{ color: STRENGTH_COLOR[t.strength] }}>{t.strength}</span><span className="ck-sk-ko" style={{ display: "inline" }}>{t.strength_ko}</span></span>
+            </div>
+            {t.read ? <div className="ck-tr-read" data-testid="ck-chain-read"><span className="ck-k mono">Transmission read</span><p>{t.read}</p></div> : null}
           </div>
         ))}
       </div>
@@ -396,13 +403,40 @@ function NextCard({ c, open, setOpen, onStock }: { c: Cockpit; open: string | nu
   );
 }
 
-function WatchCard({ c }: { c: Cockpit }) {
+function WatchRowView({ w, views, onIssue, onChain }: { w: CkWatchRow; views: AnalystViews | null; onIssue?: (id: string) => void; onChain?: (key: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const av = views?.views.find((v) => v.stock_id === w.id);
+  const hasMore = !!(w.commentary || av || w.eps_revision !== null);
+  return (
+    <div className={`ck-wl${open ? " open" : ""}`} data-testid="ck-watch-row" data-priority={w.priority} onClick={hasMore ? () => setOpen(!open) : undefined} role={hasMore ? "button" : undefined} tabIndex={hasMore ? 0 : undefined}>
+      <div className="ck-wl-h"><b>{w.name}</b><span className="num mono" style={{ color: w.change_1d === null ? "var(--faint)" : "var(--ink-2)" }}>{sg(w.change_1d, 1, "%")}</span></div>
+      {w.theme ? <div className="ck-wl-t mono">{w.theme}{w.priority === "HIGH" ? <em className="ck-wl-pr" title="선정 우선순위 — 점수는 보이지 않는다">HIGH</em> : null}</div> : null}
+      <div className="ck-wl-b" data-testid="ck-watch-why"><span className="ck-k mono">Why watch</span><span>{w.why}</span></div>
+      {w.key_drivers.length ? <div className="ck-wl-b" data-testid="ck-watch-drivers"><span className="ck-k mono">Key driver</span><span className="mono">{w.key_drivers.join(" · ")}</span></div> : null}
+      {w.trigger ? <div className="ck-wl-b" data-testid="ck-watch-trigger"><span className="ck-k mono">Trigger</span><span>{w.trigger}</span></div> : null}
+      <div className="ck-wl-tags mono" data-testid="ck-watch-tags">
+        {w.reasons.map((r) => <em key={r}>{r}</em>)}
+        {w.transmission.map((l) => <button key={l.key} type="button" className="ck-wl-link" title="MARKET → STOCK TRANSMISSION 의 이 체인으로" onClick={(e) => { e.stopPropagation(); onChain?.(l.key); }}>TRANSMISSION ● <span>{l.label}</span></button>)}
+        {w.issues.map((l) => <button key={l.key} type="button" className="ck-wl-link" title="WHAT MATTERS NEXT 의 이 이슈로" onClick={(e) => { e.stopPropagation(); onIssue?.(l.key); }}>RELATED ISSUE <span>{l.label}</span></button>)}
+        {hasMore ? <span className="ck-nx-open">{open ? "▾" : "›"}</span> : null}
+      </div>
+      {open ? (
+        <div className="ck-wl-x" data-testid="ck-watch-extra" onClick={(e) => e.stopPropagation()}>
+          {w.commentary ? <div><span className="ck-k mono">Commentary</span> {w.commentary}</div> : null}
+          {w.eps_revision !== null ? <div className="mono"><span className="ck-k">EPS revision 1M</span> {sg(w.eps_revision, 1, "%")}</div> : null}
+          {av ? <div><span className="ck-k mono">Analyst view · {av.freshness}</span> {av.analyst} · {av.broker} — {av.summary}</div> : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WatchCard({ c, views, onIssue, onChain }: { c: Cockpit; views: AnalystViews | null; onIssue?: (id: string) => void; onChain?: (key: string) => void }) {
   if (!c.watchlist.length) return null;
   return (
-    <Card title="Watchlist" area="watch" testid="ck-watchlist" note={`${c.watchlist.length}종목 · 변화가 있는 종목만 표식`}>
-      <div className="ck-watch">
-        {c.watchlist.map((w) => <div key={w.id} className="ck-watch-row"><span>{w.name}</span><span className="num mono">{sg(w.change_1d, 1, "%")}</span><span className="mono ck-watch-w">{w.watch ? `Watch: ${w.watch}` : ""}</span><span className="ck-watch-i mono">{w.indicators.map((i) => <em key={i}>{i}</em>)}</span></div>)}
-      </div>
+    <Card title="Watchlist" area="watch" testid="ck-watchlist" note={`${c.watchlist.length}종목 · 오늘 다시 확인할 종목과 기다리는 trigger`}>
+      <p className="ck-sub" data-testid="ck-watch-purpose">현재 뉴스·테마·매크로·상대강도·펀더멘털에서 의미 있는 변화가 감지된 종목만 표시합니다. Stock Radar 가 "왜 오늘 움직였는가" 라면 여기는 "다음에 무엇이 나타나면 다시 봐야 하는가" 입니다.</p>
+      <div className="ck-watch">{c.watchlist.map((w) => <WatchRowView key={w.id} w={w} views={views} onIssue={onIssue} onChain={onChain} />)}</div>
     </Card>
   );
 }
@@ -411,6 +445,8 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
   const [showDetails, setShowDetails] = useState(false);
   const [openIssue, setOpenIssue] = useState<string | null>(null);
   const [focusStock, setFocusStock] = useState<string | null>(null);
+  const [focusChain, setFocusChain] = useState<string | null>(null);
+  const goChain = (key: string) => { setFocusChain(key); const el = typeof document !== "undefined" ? document.getElementById(`ck-tr-${key}`) : null; el?.scrollIntoView?.({ behavior: "smooth", block: "center" }); };
   // ANALYST VIEW 는 radar 종목만, 비동기 — radar 가 먼저 뜨고 이 층은 나중에 채워진다. 테스트·정적 배포본은 prop 으로 넣을 수 있다.
   const fetched = useAnalystViews(scenario, cockpit.radar.map((r) => r.id), analystViews === undefined);
   const views = analystViews === undefined ? fetched : analystViews;
@@ -425,12 +461,12 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
       <Drivers c={cockpit} mobileTop={3} />
       <CrossAssetCard c={cockpit} />
       <LeadershipCard c={cockpit} onStock={goStock} />
-      <TransmissionCard c={cockpit} />
+      <TransmissionCard c={cockpit} focus={focusChain} />
       <RadarCard c={cockpit} views={views} onIssue={goIssue} focus={focusStock} />
       <CatalystsCard c={cockpit} />
       <EarningsCard c={cockpit} />
       <NextCard c={cockpit} open={openIssue} setOpen={setOpenIssue} onStock={goStock} />
-      <WatchCard c={cockpit} />
+      <WatchCard c={cockpit} views={views} onIssue={goIssue} onChain={goChain} />
       <div className="ck-status mono" style={{ gridArea: "status" }} data-testid="ck-data-status">
         <span className="ck-k">DATA</span> {ds.line}{ds.warnings.map((w) => <span key={w} className="ck-warn">{w}</span>)}
         <button className="ck-more" onClick={() => setShowDetails(!showDetails)} data-testid="ck-details-toggle">{showDetails ? "Details / Diagnostics 닫기" : "Details / Diagnostics 열기"}</button>

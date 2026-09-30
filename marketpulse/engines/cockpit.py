@@ -24,7 +24,7 @@ from ..config.registry import get_themes
 from ..config.settings import CONFIG_DIR
 from ..models.cockpit import (
     CatalystItem, Cockpit, CrossAsset, CrossAssetRow, DataStatus, Driver, EarningsPulse, EvidenceRow, KeyDivergence, KeyVariable,
-    Horizon, LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, SystemAxis, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchRow,
+    Horizon, LeaderRow, Leadership, MarketNow, NextItem, RadarStock, SparkPoint, SystemAxis, ThemePulseRow, TransmissionChain, TransmissionStock, UpcomingEvent, WatchLink, WatchRow,
 )
 from ..models.market import Instrument, MarketSnapshot
 from .regime_history import StateObservation, build_regime_history
@@ -351,6 +351,15 @@ def build_cockpit(
     inv_stocks = getattr(investment, "stocks", None) or {}
     ai_stocks = {s.id: s for s in (getattr(ai_regime, "stocks", None) or [])}
     ai_members = {m.id: m for m in (getattr(ai_regime, "members", None) or [])}
+    ind_lbl = tc_.get("industry_labels") or {}
+    def _industry(sid: str) -> str:
+        if sid in inv_stocks:
+            k = str(getattr(inv_stocks[sid].meta, "industry", "") or "")
+        elif sid in ai_stocks and ai_stocks[sid].segments:
+            k = str(ai_stocks[sid].segments[0])
+        else:
+            k = ""
+        return str(ind_lbl.get(k, k))
     def _stock(sid: str, expect: int) -> TransmissionStock:
         if sid in inv_stocks:
             s = inv_stocks[sid]; z = s.row.z; name = s.row.name; ch = s.row.change_1d
@@ -359,7 +368,7 @@ def build_cockpit(
         else:
             return TransmissionStock(id=sid, name=sid, status="NO DATA")
         if z is None:
-            return TransmissionStock(id=sid, name=name, status="NO DATA", change_1d=_r(ch))
+            return TransmissionStock(id=sid, name=name, status="NO DATA", change_1d=_r(ch), industry=_industry(sid))
         if expect == 0:
             st = "CONFIRMED" if abs(z) >= cz else "UNCONFIRMED"
         elif (z > 0) == (expect > 0) and abs(z) >= cz:
@@ -368,22 +377,55 @@ def build_cockpit(
             st = "CONTRADICTED"
         else:
             st = "UNCONFIRMED"
-        return TransmissionStock(id=sid, name=name, status=st, z=_r(z), change_1d=_r(ch), note=f"{'시장 축' if sid in ai_stocks else 'z'} {z:+.1f}")  # type: ignore[arg-type]
+        return TransmissionStock(id=sid, name=name, status=st, z=_r(z), change_1d=_r(ch), note=f"{'시장 축' if sid in ai_stocks else 'z'} {z:+.1f}", industry=_industry(sid))  # type: ignore[arg-type]
+    # TRANSMISSION STRENGTH + READ — 확인 비율 × driver 강도. 원인을 단정하지 않고 '확인되고 있다 / 점검 필요' 로 쓴다.
+    sc = tc_.get("strength") or {}; sko = tc_.get("strength_ko") or {}; subj_cfg = tc_.get("subject_ko") or {}
+    def _strength(stocks: list[TransmissionStock], dstrength: float | None) -> tuple[str, int]:
+        ev = [x for x in stocks if x.status != "NO DATA"]; conf = sum(1 for x in ev if x.status == "CONFIRMED")
+        if len(ev) < int(sc.get("min_evaluated", 2)) or conf == 0:
+            return ("UNCONFIRMED" if conf == 0 else "LIMITED"), len(ev)
+        ratio = conf / len(ev)
+        if ratio >= float(sc.get("strong", 0.66)) and (dstrength is None or abs(dstrength) >= float(sc.get("driver_min", 0.35))):
+            return "STRONG", len(ev)
+        if ratio >= float(sc.get("partial", 0.4)):
+            return "PARTIAL", len(ev)
+        return "LIMITED", len(ev)
+    def _read(subject: str, expect: int, stocks: list[TransmissionStock], strength: str) -> str:
+        conf = [x for x in stocks if x.status == "CONFIRMED"]; contra = [x for x in stocks if x.status == "CONTRADICTED"]; unc = [x for x in stocks if x.status == "UNCONFIRMED"]
+        inds = lambda xs: " · ".join(dict.fromkeys(x.industry or x.name for x in xs))  # noqa: E731
+        if strength == "STRONG":
+            s1 = f"{subject}이 {inds(conf)} 까지 실제 가격에서 폭넓게 확인되고 있다."
+        elif strength == "PARTIAL":
+            s1 = f"{subject}은 {inds(conf)} 에서 먼저 확인되고 있으나 " + (f"{inds(unc + contra)} 로의 확산 여부는 추가 확인이 필요하다." if (unc or contra) else "확산은 아직 일부다.")
+        elif strength == "LIMITED":
+            s1 = f"{subject} 자체는 나타났지만 종목 전반으로의 가격 전파는 아직 제한적이다" + (f" ({inds(conf)} 만 확인)." if conf else ".")
+        else:
+            s1 = f"{subject}은 아직 종목 가격에서 확인되지 않는다" + (f" — {inds(unc)} 는 움직임이 작다." if unc else ".")
+        s2 = ""
+        if contra:
+            names = " · ".join(x.name for x in contra[:3])
+            s2 = f" {names} 는 예상과 다르게 {'상대강도를 유지한다' if expect < 0 else '약세다'} — 종목·테마 고유 driver 가능성을 점검할 필요가 있다."
+        return (s1 + s2).strip()
     chains: list[TransmissionChain] = []
     for d in drivers:
         spec = (chains_cfg.get(d.key) or {}).get(d.direction)
         if not spec: continue
         stocks = [_stock(str(s), int(spec.get("expect", 0))) for s in spec.get("stocks", [])][:max_st]
+        strength, n_ev = _strength(stocks, d.strength)
+        subject = str((subj_cfg.get(d.key) or {}).get(d.direction) or f"{d.label_ko} {'상승' if d.direction == 'up' else '하락'}의 영향")
         chains.append(TransmissionChain(driver_key=d.key, driver_label=f"{d.label} {d.arrow}", arrow=d.arrow, mechanism=str(spec.get("mechanism", "")), industries=[str(i) for i in spec.get("industries", [])],
-                                        stocks=stocks, confirmed=sum(1 for s in stocks if s.status == "CONFIRMED")))
+                                        stocks=stocks, confirmed=sum(1 for s in stocks if s.status == "CONFIRMED"), evaluated=n_ev, strength=strength, strength_ko=str(sko.get(strength, "")),  # type: ignore[arg-type]
+                                        read=_read(subject, int(spec.get("expect", 0)), stocks, strength)))
     for c in (getattr(investment, "commodity_impact", None) or []):
         if abs(c.z) < float(dc.get("alt", {}).get("min_z", 1.2)) or not c.links: continue
         stocks = []
         for l in c.links[:max_st]:
             exp = int(l.direction) * (1 if c.z > 0 else -1)
             stocks.append(_stock(l.stock_id, exp))
+        strength, n_ev = _strength(stocks, c.z / 2.0)
         chains.append(TransmissionChain(driver_key=f"alt_{c.commodity_id}", driver_label=f"{c.label} {_arrow(c.z, hi, lo)}", arrow=_arrow(c.z, hi, lo), mechanism=" / ".join(c.industries[:3]) or "원자재 경로",  # type: ignore[arg-type]
-                                        industries=list(c.industries[:3]), stocks=stocks, confirmed=sum(1 for s in stocks if s.status == "CONFIRMED"), source="commodity"))
+                                        industries=list(c.industries[:3]), stocks=stocks, confirmed=sum(1 for s in stocks if s.status == "CONFIRMED"), source="commodity", evaluated=n_ev, strength=strength, strength_ko=str(sko.get(strength, "")),
+                                        read=_read(f"{c.label} {'상승' if c.z > 0 else '하락'}의 영향", 1 if c.z > 0 else -1, stocks, strength)))
 
     # ── 6. STOCK RADAR ───────────────────────────────────────
     rc = cfg.get("stock_radar", {}); rw = rc.get("weights", {}); cand: dict[str, dict] = {}
@@ -568,15 +610,89 @@ def build_cockpit(
         for ev in list(cal.in_window) + list(cal.upcoming):
             upcoming.append(UpcomingEvent(date=ev.date.isoformat(), label=ev.label, days_until=ev.days_until, verified=ev.verified))
 
-    # ── 10. WATCHLIST (compact) ──────────────────────────────
+    # ── 10. WATCHLIST — 오늘 다시 확인해야 할 종목과 기다리는 trigger (radar 는 '이미 움직인 것', 여기는 '다음에 무엇을 볼 것인가') ──
     ind_map = {"NEW_EVENT": "NEWS", "EPS_REVISION": "EPS", "ANALYST_CHANGE": "EPS", "FLOW_INFLECTION": "FLOW", "ALTERNATIVE_DATA_SIGNAL": "ALT", "COMMODITY_IMPACT": "ALT", "UNUSUAL_MOVE": "PRICE", "THEME_STRENGTHENING": "THEME", "THEME_WEAKENING": "THEME"}
-    wl = []
-    for wr in sorted((getattr(investment, "watchlist", None) or []), key=lambda w: -len(w.badges)):
-        s = inv_stocks.get(wr.stock_id)
-        inds = list(dict.fromkeys(ind_map.get(b, b) for b in wr.badges))
+    wc = cfg.get("watchlist", {}) or {}; ww = wc.get("weights") or {}; dl = wc.get("driver_labels") or {}; whints = wc.get("hints") or {}
+    lead_keys = {r.label: r for r in leaders}; lag_keys = {r.label: r for r in laggards}
+    chain_of_stock: dict[str, list[WatchLink]] = {}
+    for ch_ in chains:
+        for st_ in ch_.stocks:
+            chain_of_stock.setdefault(st_.id, []).append(WatchLink(key=ch_.driver_key, label=ch_.driver_label))
+    issue_of_stock_w: dict[str, list[WatchLink]] = {}
+    for it in nxt:
+        if it.path is None: continue
+        for t in it.path.tiers:
+            for ps in t.stocks:
+                issue_of_stock_w.setdefault(ps.id, []).append(WatchLink(key=it.id, label=it.text))
+    def _arrow_word(v: float | None, up: str, down: str, flat: str, thr: float = 0.8, lo_: float = 0.3) -> str:
+        if v is None: return ""
+        return up if v >= thr else down if v <= -thr else flat if abs(v) < lo_ else (up if v > 0 else down)
+    cand_w: list[tuple[float, WatchRow]] = []
+    for wr in (getattr(investment, "watchlist", None) or []):
+        s_ = inv_stocks.get(wr.stock_id); row = s_.row if s_ else None; meta = s_.meta if s_ else None
+        h = dict(whints.get(wr.stock_id) or {})
+        inds = list(dict.fromkeys(ind_map.get(b_, b_) for b_ in wr.badges))
         if wr.macro_driver: inds.append("MACRO")
-        wl.append(WatchRow(id=wr.stock_id, name=wr.name, change_1d=_r(s.row.change_1d) if s else None, watch=wr.macro_driver or wr.theme or "", indicators=inds))
-        if len(wl) >= int(cfg.get("watchlist_max", 5)): break
+        # 선정 점수 — 수익률 순 아님
+        score = float(ww.get("badge", 1.0)) * len(wr.badges)
+        rel = row.relative_z if row is not None else None
+        if rel is not None: score += float(ww.get("relative", 0.6)) * min(2.0, abs(rel))
+        if wr.macro_driver and wr.macro_impact is not None: score += float(ww.get("macro", 0.8)) * min(1.0, abs(wr.macro_impact) / 10.0)
+        theme_lead = wr.theme in lead_keys or wr.theme in lag_keys
+        if theme_lead: score += float(ww.get("theme_lead", 0.8))
+        if wr.stock_id in chain_of_stock: score += float(ww.get("transmission", 0.9))
+        if wr.stock_id in issue_of_stock_w: score += float(ww.get("issue", 0.7))
+        if wr.alt_signal: score += float(ww.get("alt", 0.6))
+        if wr.stock_id in radar_ids: score += float(ww.get("radar_penalty", -0.3))
+        # WHY WATCH — 지금 데이터만: 테마 leadership 상태 + 가격 confirmation + 매크로/뉴스/대체데이터
+        ai_st = ai_stocks.get(wr.stock_id)
+        axes_ = {a_.key: a_ for a_ in (ai_st.axes if ai_st else [])}
+        # 앞절(테마/펀더멘털 상태) + 뒷절(가격 confirmation). 뒷절이 확인이면 '이고', 아니면 '지만' 으로 잇는다.
+        mk_ = axes_.get("market"); fd_ = axes_.get("fundamental")
+        if fd_ is not None and fd_.arrow in ("↑", "↑↑"):
+            head = f"{seg_word if (seg_word := (str(ind_lbl.get(str(ai_st.segments[0]), ai_st.segments[0])) if ai_st and ai_st.segments else '')) else '세그먼트'} 펀더멘털 확인은 강하"
+        elif wr.theme in lead_keys: head = f"{wr.theme} leadership 은 개선되고 있"
+        elif wr.theme in lag_keys: head = f"{wr.theme} 테마는 leadership 에서 이탈하고 있"
+        elif wr.theme: head = f"{wr.theme} 테마의 변화가 감지됐"
+        else: head = ""
+        if mk_ is not None:
+            price_state = ("시장 대비 강세로 가격 confirmation 이 나타난다" if mk_.arrow in ("↑", "↑↑") else "가격은 상대 약세라 confirmation 이 없다" if mk_.arrow in ("↓", "↓↓") else "가격 confirmation 은 아직 부분적이다")
+            confirmed_ = mk_.arrow in ("↑", "↑↑")
+        else:
+            price_state = _arrow_word(rel, "시장 대비 강세로 가격 confirmation 이 나타난다", "시장 대비 약세라 가격 confirmation 은 없다", "가격은 아직 반응이 작다")
+            if rel is not None and 0.3 <= abs(rel) < 0.8: price_state = "가격 confirmation 은 아직 부분적이다"
+            confirmed_ = rel is not None and rel >= 0.8
+        parts = []
+        if head and price_state: parts.append(head + ("고 " if confirmed_ else "지만 ") + price_state)
+        elif head: parts.append(head + "다")
+        elif price_state: parts.append(price_state)
+        tail_bits = []
+        if wr.macro_driver: tail_bits.append(f"{wr.macro_driver} 노출이 커 매크로 방향에 민감하다")
+        if "NEW_EVENT" in wr.badges: tail_bits.append("종목 지목 뉴스가 있어 재료 확인이 필요하다")
+        if wr.alt_signal: tail_bits.append(f"대체데이터({wr.alt_signal})가 먼저 움직이고 있다")
+        why = (" ".join(parts).rstrip(".") + ".") if parts else ""
+        if tail_bits: why = (why + " " + tail_bits[0] + ".").strip()
+        # KEY DRIVER ≤3 · TRIGGER
+        drv_ids = [str(x) for x in (h.get("drivers") or (list(meta.drivers) if meta is not None else []))][:3]
+        key_drivers = [str(dl.get(x, x)) for x in drv_ids]
+        trigger = str(h.get("trigger") or (f"{key_drivers[0]} 방향 전환 시 재평가" if key_drivers else "상대강도 방향 전환 시 재평가"))
+        reasons = []
+        if "NEW_EVENT" in wr.badges: reasons.append("NEWS")
+        if theme_lead: reasons.append("THEME")
+        if wr.macro_driver: reasons.append("MACRO")
+        if wr.eps_revision_1m is not None or "EPS_REVISION" in wr.badges: reasons.append("FUNDAMENTAL")
+        if "fundamental" in axes_ and "market" in axes_ and axes_["fundamental"].arrow in ("↑", "↑↑") and axes_["market"].arrow in ("↓", "↓↓", "→"): reasons.append("DIVERGENCE")
+        if wr.alt_signal: reasons.append("ALT DATA")
+        if wr.stock_id in chain_of_stock: reasons.append("TRANSMISSION")
+        seg_lbl = ""
+        if ai_st and ai_st.segments: seg_lbl = str(ind_lbl.get(str(ai_st.segments[0]), ai_st.segments[0]))
+        elif meta is not None: seg_lbl = str(ind_lbl.get(str(meta.industry), meta.industry))
+        theme_txt = " / ".join(x for x in [seg_lbl, wr.theme] if x)
+        cand_w.append((score, WatchRow(id=wr.stock_id, name=wr.name, change_1d=_r(wr.change_1d), watch=wr.macro_driver or wr.theme or "", indicators=inds, theme=theme_txt, why=why or "의미 있는 변화가 감지된 종목 — 아래 driver 를 확인",
+                                       key_drivers=key_drivers, trigger=trigger, reasons=reasons[:3], priority="HIGH" if score >= float(wc.get("priority_high", 2.4)) else "MEDIUM",
+                                       transmission=chain_of_stock.get(wr.stock_id, [])[:2], issues=issue_of_stock_w.get(wr.stock_id, [])[:2], commentary=(wr.commentary_excerpt or "")[:160], eps_revision=wr.eps_revision_1m)))
+    cand_w.sort(key=lambda x: -x[0])
+    wl = [w for _sc, w in cand_w[: int(wc.get("max", cfg.get("watchlist_max", 5)))]]
 
     # ── 11. DATA STATUS ──────────────────────────────────────
     ds = cfg.get("data_status", {}); important = set(ds.get("important", []))
