@@ -74,9 +74,19 @@ describe("AiRegimeView", () => {
 
   it("확장 층(AI 센티2): 상태 띠에 FUNDAMENTAL CONFIRMATION 이 있고, 전파 체인 9단계, 밸류체인 10세그먼트, 반도체 영역 6 + 메모리 6행(변화율 없는 행은 N/A), 종목 4축, 레이더 5버킷(이유 포함), 뉴스→종목, 기대 vs 펀더멘털 10행, What Matters ≤5", () => {
     const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
-    expect(screen.getByTestId("ai-fundamental-confirmation").textContent).toContain(regime.fundamental_confirmation.level);
+    // 상태 띠: ENGLISH CATEGORY / ENGLISH STATUS / 한 줄 한국어 의미. 장문(FC 문장 · SUMMARY · 맥락)은 Details 안으로
+    const strip = screen.getByTestId("ai-status-strip");
+    expect(within(strip).getAllByTestId("ai-strip-meaning").length).toBe(regime.status_strip.length);
+    for (const it of regime.status_strip) expect(strip.textContent).toContain(it.meaning);
+    expect(within(strip).getByTestId("ai-regime-read").textContent).toContain(regime.regime_read);
+    expect((regime.regime_read.match(/다\./g) ?? []).length).toBeLessThanOrEqual(3);
+    if (regime.sentiment && regime.sentiment.secondary_key !== "none") expect(within(strip).getByTestId("ai-key-tension").textContent).toContain(regime.sentiment.secondary_label);
+    expect(within(strip).queryByTestId("ai-summary")).toBeNull();
+    const diag = within(screen.getByTestId("ai-diagnostics"));
+    expect(diag.getByTestId("ai-fundamental-confirmation").textContent).toContain(regime.fundamental_confirmation.level);
+    expect(diag.getByTestId("ai-summary").textContent?.length).toBeGreaterThan(20);
+    expect(diag.getByTestId("ai-context").textContent).toMatch(/맥락 입력/);
     expect(screen.getByTestId("ai-regime-subtitle").textContent).toContain("FUNDAMENTALS");
-    expect(screen.getByTestId("ai-summary").textContent?.length).toBeGreaterThan(20);
     expect(screen.getAllByTestId("ai-stage").length).toBe(9);
     expect(screen.getAllByTestId("ai-segment").length).toBe(10);
     expect(within(screen.getByTestId("ai-leadership-list")).getAllByRole("listitem").length).toBe(regime.value_chain.leadership.length);
@@ -110,7 +120,7 @@ describe("AiRegimeView", () => {
     expect(screen.getByText(/불러오는 중/)).toBeInTheDocument();
   });
 
-  it("AI 센티2: AI TRADE REGIME 바로 아래 AI SENTIMENT · GREED & FEAR 반원 게이지 — 0~100 · 5 밴드 · 바늘 각도 −90°+s/100×180° · 구성요소 5 · READ · SUPPORT/PRESSURE ≤3 · 1M 스파크라인 · 확률 표현 없음", () => {
+  it("AI 센티2: AI TRADE REGIME 바로 아래 AI SENTIMENT · GREED & FEAR — 게이지 → 5 factor bar(FUNDAMENTALS·NARRATIVE·PRICE·BREADTH·MACRO) → KEY TENSION → SUPPORT/PRESSURE + NET → 1M(밴드 배경·현재점·NOW/1W/RANGE·변화 한 줄) → READ ≤2문장 · 숫자 나열·큰 legend 없음", () => {
     const { container } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     const s = regime.sentiment!;
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
@@ -123,19 +133,38 @@ describe("AiRegimeView", () => {
     expect(within(sec).getByTestId("ai-gf-needle").getAttribute("data-deg")).toBe((-90 + (s.index! / 100) * 180).toFixed(1));
     expect(within(sec).getByTestId("ai-gf-change").textContent).toContain("1D");
     const comps = within(sec).getAllByTestId("ai-gf-component");
-    expect(comps.map((c) => c.getAttribute("data-key"))).toEqual(["narrative", "price", "breadth", "fundamentals", "macro"]);
+    expect(comps.map((c) => c.getAttribute("data-key"))).toEqual(["fundamentals", "narrative", "price", "breadth", "macro"]);
     for (const c of s.components) {
       const el = comps.find((x) => x.getAttribute("data-key") === c.key)!;
       expect(el.textContent).toContain(c.score === null ? "DATA MISSING" : c.score.toFixed(0));
-      expect(el.textContent).toContain(c.read);
+      expect(el.textContent).toContain(c.desc_ko);
+      const bar = el.querySelector(".gf-fb-bar i") as HTMLElement | null;
+      if (c.score !== null) expect(bar!.style.width).toBe(`${c.score}%`);
     }
-    expect(within(sec).getByTestId("ai-gf-read").textContent).toContain(s.read);
+    // 읽는 순서: 게이지 → factor → KEY TENSION → DRIVERS → 1M → READ
+    const t = sec.textContent!;
+    expect(t.indexOf("Why ")).toBeLessThan(t.indexOf("Key tension"));
+    expect(t.indexOf("Key tension")).toBeLessThan(t.indexOf("Sentiment Drivers"));
+    expect(t.indexOf("Sentiment Drivers")).toBeLessThan(t.indexOf("1M Sentiment"));
+    expect(t.indexOf("1M Sentiment")).toBeLessThan(t.indexOf("AI Sentiment Read"));
     expect(within(sec).getByTestId("ai-gf-secondary").textContent).toContain(s.secondary_label);
+    expect(within(sec).getByTestId("ai-gf-gap").textContent).toBe(s.gap_read);
     expect(within(sec).getByTestId("ai-gf-support").querySelectorAll("li").length).toBe(Math.min(3, s.support.length));
     expect(within(sec).getByTestId("ai-gf-pressure").querySelectorAll("li").length).toBe(Math.min(3, s.pressure.length));
-    if (s.history.points.filter((p) => p.index !== null).length >= 2) expect(within(sec).getByTestId("ai-gf-spark")).toBeInTheDocument();
-    expect(sec.querySelector(".panel-body")!.textContent).not.toMatch(/확률|매수|매도/); // 머리글의 "확률·전망 아님" 은 의도된 고지
-    // 기존 horizontal thermometer 는 쓰지 않는다
+    expect(within(sec).getByTestId("ai-gf-net").textContent).toContain(s.net_effect);
+    const read = within(sec).getByTestId("ai-gf-read").textContent!;
+    expect(read).toContain(s.read);
+    expect((s.read.match(/다\./g) ?? []).length).toBeLessThanOrEqual(2);
+    if (s.history.points.filter((p) => p.index !== null).length >= 2) {
+      const spark = within(sec).getByTestId("ai-gf-spark");
+      expect(spark.querySelectorAll(".gf-hist-band").length).toBe(5);
+      expect(spark.querySelector(".gf-hist-now")).not.toBeNull();
+      expect(within(sec).getByTestId("ai-gf-hist-kv").textContent).toMatch(/NOW.*1W.*1M RANGE/);
+      expect(within(sec).getByTestId("ai-gf-hist-read").textContent).toBe(s.history.read);
+      expect(t).not.toMatch(/\d+ → \d+ → \d+/); // 숫자 나열 없음
+    }
+    expect(sec.querySelector(".gf-legend")).toBeNull(); // 큰 5개 legend 없음
+    expect(sec.querySelector(".panel-body")!.textContent).not.toMatch(/확률|매수|매도/);
     expect(sec.querySelector(".gauge")).toBeNull();
   });
 });

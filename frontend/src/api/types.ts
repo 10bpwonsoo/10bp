@@ -620,7 +620,7 @@ export interface AiStress { level: "LOW" | "MODERATE" | "HIGH" | "UNKNOWN"; scor
 export interface AiRegimeCheck { key: AiRegimeKey; label: string; passed: boolean; detail: string }
 export interface AiGlobalContext { market_label: string; market_confidence: number; thermometer: number | null; band: string | null; note: string }
 export type AiArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
-export interface AiStatusItem { key: string; label: string; value: string; tone: "good" | "warn" | "bad" | "muted"; detail: string }
+export interface AiStatusItem { key: string; label: string; value: string; tone: "good" | "warn" | "bad" | "muted"; detail: string; meaning: string }
 export interface AiFundamentalConfirmation { level: "STRONG" | "PARTIAL" | "WEAK" | "UNCONFIRMED"; confirming: string[]; lagging: string[]; sentence: string }
 export interface AiTransmissionStage { key: string; label: string; status: "ACCELERATING" | "POSITIVE" | "STRONG" | "IMPROVING" | "STABLE" | "MIXED" | "DETERIORATING" | "UNCONFIRMED"; score: number | null; evidence: string }
 export interface AiTransmission { stages: AiTransmissionStage[]; sentence: string }
@@ -636,12 +636,12 @@ export interface AiNewsImpact { event: string; source: string; url: string | nul
 export interface AiGapRow { key: string; label: string; market_pricing: number | null; fundamental: number | null; gap: number | null; note: string }
 export interface AiMattersItem { key: string; text: string; status: "CONFIRMING" | "WATCH" | "DETERIORATING" | "N/A"; metric: string; current: string; detail: string }
 export interface AiSentimentInput { id: string; label: string; label_ko: string; component: string; value: number | null; display: string; score: number | null; weight: number; available: boolean; note: string }
-export interface AiSentimentComponent { key: string; label: string; label_ko: string; score: number | null; state: string; state_label: string; read: string; weight: number; coverage: number; inputs: AiSentimentInput[] }
+export interface AiSentimentComponent { key: string; label: string; label_ko: string; score: number | null; state: string; state_label: string; read: string; weight: number; coverage: number; inputs: AiSentimentInput[]; desc_ko: string }
 export interface AiSentimentFactor { id: string; label: string; label_ko: string; component: string; score: number; display: string }
 export interface AiSentimentPoint { date: string; index: number | null; components: Record<string, number | null> }
-export interface AiSentimentHistory { points: AiSentimentPoint[]; basis: string[]; excluded: Record<string, string>; days: number; range_min: number | null; range_max: number | null; change_1d: number | null; change_1w: number | null; note: string }
+export interface AiSentimentHistory { points: AiSentimentPoint[]; basis: string[]; excluded: Record<string, string>; days: number; range_min: number | null; range_max: number | null; change_1d: number | null; change_1w: number | null; note: string; state_1w: string; read: string }
 /** AI SENTIMENT · GREED & FEAR — AI 테마 내부의 투자심리 + 시장 확인 강도(0~100). 확률·전망이 아니라 현재 상태 */
-export interface AiSentiment { index: number | null; state: string; state_label: string; state_ko: string; coverage: number; components: AiSentimentComponent[]; secondary_key: string; secondary_label: string; secondary_ko: string; read: string; support: AiSentimentFactor[]; pressure: AiSentimentFactor[]; history: AiSentimentHistory; bands: { key: string; label: string; min: number }[]; note: string }
+export interface AiSentiment { index: number | null; state: string; state_label: string; state_ko: string; coverage: number; components: AiSentimentComponent[]; secondary_key: string; secondary_label: string; secondary_ko: string; read: string; gap_read: string; net_effect: string; support: AiSentimentFactor[]; pressure: AiSentimentFactor[]; history: AiSentimentHistory; bands: { key: string; label: string; min: number }[]; note: string }
 export interface AiRegime {
   as_of: string; regime: AiRegimeKey; regime_label: string; regime_label_ko: string; headline: string; implication: string; checks: AiRegimeCheck[];
   ai_vs_market: AiVsMarket; drivers: AiDriverScore[]; dominant: string | null; runner_up: string | null; margin: number; signal_strength: number; signal_strength_label: string;
@@ -651,6 +651,7 @@ export interface AiRegime {
   transmission: AiTransmission; value_chain: AiValueChain; semi_confirmation: AiSemiConfirmation; stocks: AiStockImpactRow[]; radar: AiRadarBucket[];
   news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
   sentiment?: AiSentiment | null;
+  regime_read: string;
 }
 
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */

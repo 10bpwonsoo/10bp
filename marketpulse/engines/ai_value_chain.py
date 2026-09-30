@@ -25,6 +25,7 @@ from ..models.market import Instrument, MarketSnapshot
 from ..models.news import NewsEvent
 from ..models.theme import ThemeState
 from .ai_regime import _clip, _equal_weight_index, _feature, _member_stats, _pct, _r, _ratio, _z_of
+from .korean import fix_particles
 from .sentiment import decay_weight
 
 ARROWS = ("↑↑", "↑", "→", "↓", "↓↓")
@@ -440,6 +441,12 @@ def extend_with_value_chain(result: AiRegime, cfg: dict, *, market: MarketSnapsh
         StatusItem(key="macro", label="Macro", value=macro_lbl, tone=good_t(macro_lbl, ("TAILWIND",), ("HEADWIND",)), detail=result.macro.sentence),
         StatusItem(key="fundamental", label="Fundamental Confirmation", value=level, tone=good_t(level, ("STRONG",), ("WEAK",)), detail=fc_sent),
     ]
+    # 상태값 아래 한 줄 의미 (config status_meaning) — 번역이 아니라 '지금 이 상태가 뜻하는 것'
+    sm = cfg.get("status_meaning", {}) or {}
+    conf_txt = " · ".join(strong_a[:2]) if strong_a else "일부 영역"
+    for item in result.status_strip:
+        m = (sm.get(item.key) or {}).get(item.value)
+        item.meaning = fix_particles(str(m).replace("{confirming}", conf_txt)) if m else str(sm.get("missing", "데이터 없음")) if item.value == "–" else ""
     sub_map = {"STRONG": "FUNDAMENTALS CONFIRMED", "PARTIAL": "FUNDAMENTALS RESILIENT", "WEAK": "FUNDAMENTALS WEAK", "UNCONFIRMED": "FUNDAMENTALS UNCONFIRMED"}
     result.regime_subtitle = f"{result.regime_label} / {sub_map[level]}"
     lead_txt = " · ".join(lab[k] for k in leadership) if leadership else "없음"
@@ -448,3 +455,10 @@ def extend_with_value_chain(result: AiRegime, cfg: dict, *, market: MarketSnapsh
                        + ("금리·위험회피 환경이 가격을 압박하고 있다. " if macro_lbl == "HEADWIND" else "가격은 " + {"STRONG": "이를 확인한다. ", "FLAT": "아직 확인하지 않는다. ", "WEAK": "약하다. ", "–": "계열이 없다. "}[price_lbl]))
                       + f"현재 리더십(1주 상대)은 {lead_txt} 에 있고, {lag_txt} 는 뒤처진다. "
                       + (f"Software 와 범용 메모리로의 확산은 {'확인된다' if sw_lbl == 'STRONG' and any(r.status == 'IMPROVING' for r in memory_rows if not r.structural) else '아직 제한적이다'}."))
+    # AI REGIME READ — 2~3문장 (config regime_read). 상태 띠의 값만 조합한다
+    rr = cfg.get("regime_read", {}) or {}
+    mk = "strong" if price_lbl == "STRONG" and br_lbl != "NARROWING" else "weak" if price_lbl == "WEAK" or br_lbl == "NARROWING" else "mixed"
+    s1 = str((rr.get("fund") or {}).get(level, "")) + str((rr.get("market") or {}).get(mk, ""))
+    lead2 = [lab[k] for k in leadership[:2]]
+    s2 = (str(rr.get("leaders", "")).format(leaders=" · ".join(lead2)) if lead2 else str(rr.get("no_leaders", ""))) + str((rr.get("macro") or {}).get(macro_lbl, ""))
+    result.regime_read = fix_particles(" ".join(x for x in (s1, s2) if x).strip())

@@ -114,7 +114,7 @@ def score_components(cfg: Mapping, values: Values) -> list[SentimentComponent]:
         score, cov = _wmean([(i.score, i.weight) for i in inputs])
         band = _band(cfg, score)
         reads = c.get("read", {}) or {}
-        comps.append(SentimentComponent(key=str(c["key"]), label=str(c["label"]), label_ko=str(c.get("label_ko", c["label"])), score=score, state=str(band.get("key", "UNKNOWN")),
+        comps.append(SentimentComponent(key=str(c["key"]), label=str(c["label"]), label_ko=str(c.get("label_ko", c["label"])), desc_ko=str(c.get("desc_ko", "")), score=score, state=str(band.get("key", "UNKNOWN")),
                                         state_label=str(band.get("label", "–")), read=str(reads.get(_tier(cfg, score), "")) if score is not None else "입력이 없어 잴 수 없다",
                                         weight=float(c.get("weight", 1.0)), coverage=cov, inputs=inputs))
     return comps
@@ -213,12 +213,18 @@ def _join(names: Sequence[str]) -> str:
     return " · ".join(names)
 
 
-def read_sentence(cfg: Mapping, index: float | None, comps: Sequence[SentimentComponent], support: Sequence[SentimentFactor], pressure: Sequence[SentimentFactor], secondary_ko: str, secondary_key: str) -> str:
+def _tiers(cfg: Mapping, comps: Sequence[SentimentComponent]) -> tuple[list[str], list[str]]:
+    strong = [c.label_ko for c in comps if c.score is not None and _tier(cfg, c.score) == "high"]
+    weak = [c.label_ko for c in comps if c.score is not None and _tier(cfg, c.score) == "low"]
+    return strong, weak
+
+
+def gap_sentence(cfg: Mapping, index: float | None, comps: Sequence[SentimentComponent]) -> str:
+    """KEY TENSION 아래 한 문장 — 구성요소 단위로 무엇이 지지하고 무엇이 확인하지 못하는가."""
     t = cfg.get("read", {}) or {}
     if index is None:
         return "입력이 부족해 AI SENTIMENT INDEX 를 내지 못한다."
-    strong = [c.label_ko for c in comps if c.score is not None and _tier(cfg, c.score) == "high"]
-    weak = [c.label_ko for c in comps if c.score is not None and _tier(cfg, c.score) == "low"]
+    strong, weak = _tiers(cfg, comps)
     if strong and weak:
         s1 = str(t.get("support_and_pressure", "")).format(strong=_join(strong), weak=_join(weak))
     elif strong:
@@ -227,15 +233,54 @@ def read_sentence(cfg: Mapping, index: float | None, comps: Sequence[SentimentCo
         s1 = str(t.get("pressure_only", "")).format(weak=_join(weak))
     else:
         s1 = str(t.get("neither", ""))
-    parts = [s1]
-    if pressure:
-        key = "pressure_factors_greed" if index >= 40 else "pressure_factors_fear"
-        parts.append(str(t.get(key, "")).format(factors=_join([f.label for f in pressure[:2]])))
-    elif support:
-        parts.append(str(t.get("support_factors", "")).format(factors=_join([f.label for f in support[:2]])))
-    if secondary_key != "none" and secondary_ko:
-        parts.append(secondary_ko + ".")
-    return fix_particles(" ".join(p for p in parts if p))
+    return fix_particles(s1)
+
+
+def read_sentence(cfg: Mapping, index: float | None, comps: Sequence[SentimentComponent], support: Sequence[SentimentFactor], pressure: Sequence[SentimentFactor]) -> str:
+    """AI SENTIMENT READ — 최대 2문장. 1) 무엇이 지지하는가(입력 단위) 2) 무엇이 따라오지 않고 무엇이 압박하는가."""
+    t = cfg.get("read", {}) or {}
+    if index is None:
+        return "입력이 부족해 AI SENTIMENT INDEX 를 내지 못한다."
+    _strong, weak = _tiers(cfg, comps)
+    s1 = str(t.get("read_support", "")).format(factors=_join([f.label for f in support[:2]])) if support else str(t.get("read_no_support", ""))
+    pf = _join([f.label for f in pressure[:2]])
+    if weak and pressure:
+        s2 = str(t.get("read_weak_and_pressure", "")).format(weak=_join(weak), factors=pf)
+    elif weak:
+        s2 = str(t.get("read_weak_only", "")).format(weak=_join(weak))
+    elif pressure:
+        s2 = str(t.get("read_pressure_only", "")).format(factors=pf)
+    else:
+        s2 = str(t.get("read_no_pressure", ""))
+    return fix_particles(" ".join(x for x in (s1, s2) if x))
+
+
+def net_effect(cfg: Mapping, index: float | None, comps: Sequence[SentimentComponent]) -> str:
+    t = cfg.get("read", {}) or {}
+    if index is None:
+        return ""
+    strong, weak = _tiers(cfg, comps)
+    if index < 50 and weak:
+        return fix_particles(str(t.get("net_below" if strong else "net_below_only", "")).format(weak=_join(weak), strong=_join(strong)))
+    if index >= 50 and strong:
+        return fix_particles(str(t.get("net_above" if weak else "net_above_only", "")).format(weak=_join(weak), strong=_join(strong)))
+    return str(t.get("net_balanced", ""))
+
+
+def history_read(cfg: Mapping, hist: SentimentHistory) -> None:
+    t = cfg.get("read", {}) or {}
+    pts = hist.points
+    if len(pts) < 6 or pts[-1].index is None or pts[-6].index is None:
+        hist.read = str(t.get("hist_none", "")); return
+    now_b, then_b = _band(cfg, pts[-1].index), _band(cfg, pts[-6].index)
+    hist.state_1w = str(then_b.get("key", ""))
+    fast = str(t.get("hist_fast", "")) if abs(pts[-1].index - pts[-6].index) >= float(t.get("hist_fast_change", 20)) else ""
+    if now_b.get("key") == then_b.get("key"):
+        hist.read = str(t.get("hist_same", "")).format(now=then_b.get("label", ""))
+    elif pts[-1].index < pts[-6].index:
+        hist.read = str(t.get("hist_down", "")).format(then=then_b.get("label", ""), now=now_b.get("label", ""), fast=fast)
+    else:
+        hist.read = str(t.get("hist_up", "")).format(then=then_b.get("label", ""), now=now_b.get("label", ""), fast=fast)
 
 
 # ── 1M 이력 (같은 공식을 하루씩 되돌린다) ────────────────────
@@ -361,11 +406,14 @@ def build_ai_sentiment(r: AiRegime, cfg_all: Mapping, *, ai_events: Sequence[New
                       secondary_key=sk, secondary_label=sl, secondary_ko=sko, support=support, pressure=pressure,
                       bands=[{"key": str(b["key"]), "label": str(b["label"]), "min": float(b["min"])} for b in cfg.get("bands", [])],
                       note="AI 테마 내부의 투자심리와 시장 확인 강도를 합친 현재 상태 지표(0~100)다. 상승 확률·매수 확률·수익률 전망이 아니다. 각 입력은 AI Trade Intelligence 의 값을 clip(값/ref)로 0~100 에 옮긴 것이고 결측은 분모에서 뺀다.")
-    out.read = read_sentence(cfg, index, comps, support, pressure, sko, sk)
+    out.gap_read = gap_sentence(cfg, index, comps)
+    out.read = read_sentence(cfg, index, comps, support, pressure)
+    out.net_effect = net_effect(cfg, index, comps)
     r.sentiment = out
     try:
         out.history = replay_history(cfg, r, closes=closes, basket_ids=basket_ids, bench=bench, market_series=market_series, instruments_by_id=instruments_by_id, ai_events=ai_events,
                                      as_of=as_of, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
+        history_read(cfg, out.history)
     except Exception as exc:  # 이력은 보조 층 — 실패해도 지수는 뜬다
         out.history = SentimentHistory(days=int((cfg.get("history") or {}).get("days", 21)), note=f"1M 이력 계산 실패: {exc}")
     return out

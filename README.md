@@ -468,6 +468,24 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · 상태값 의미 줄 · AI REGIME READ · AI SENTIMENT 시각 재구성 (2026-09-30)
+
+판단 로직·점수 계산은 그대로이고 표현만 바꿨다. **AI TRADE REGIME** 상태 띠의 각 카드는 ENGLISH CATEGORY / ENGLISH STATUS /
+한 줄 한국어 의미로 통일했다 — 번역이 아니라 "지금 이 상태가 뜻하는 것"(`config/ai_regime.yaml status_meaning`, 예: PRICE WEAK
+→ "실제 가격은 AI 기대를 충분히 확인하지 못함", BREADTH NARROWING → "상승에 참여하는 종목 수가 감소", SEMI PARTIAL 은 확인
+영역 이름을 채운다). FUNDAMENTAL CONFIRMATION 장문 · SUMMARY · Global market regime 설명은 **AI REGIME READ**(2~3문장,
+`regime_read` 템플릿: 펀더멘털 수준 + 가격·breadth 확인 + 리더 세그먼트 + 매크로) 하나로 합치고 그 아래 **KEY TENSION**
+(sentiment 의 보조 상태 재사용) 한 줄을 둔다; 원문 장문은 Details / Data Quality 안으로 내렸다(삭제 아님). **AI SENTIMENT** 는
+읽는 순서를 게이지 → 5 factor bar(FUNDAMENTALS · NARRATIVE · PRICE · BREADTH · MACRO, 가로 막대 + 점수 + 상태 + 한 줄
+sublabel) → KEY TENSION + 한 문장(`gap_read`) → SENTIMENT DRIVERS(SUPPORT ↑ / PRESSURE ↓ 2열 + NET EFFECT 한 줄) →
+1M SENTIMENT(밴드 배경을 연하게 깐 스파크라인, 현재 점 강조, NOW / 1W / 1M RANGE, 변화의 뜻 한 줄 `history.read`, 작은
+FEAR ← 0 — 50 — 100 → GREED 눈금) → AI SENTIMENT READ(입력 단위 최대 2문장) 로 바꿨다. 숫자 나열(44 → 56 → …)과 5개 큰 legend
+는 없앴다. 데스크톱은 게이지 40% : factor 60%, 아래 full width 3열; 모바일은 single column. 9/29: 상태 띠 NEUTRAL+ · SOFT ·
+WEAK · PARTIAL(Advanced Packaging · Equipment) · WEAK · NEUTRAL · NARROWING · HEADWIND · PARTIAL; AI REGIME READ "AI 펀더멘털은
+유지되고 있지만 가격 confirmation 과 시장 breadth 는 약합니다. Semiconductor Equipment · Advanced Packaging 은 상대적으로
+견조하지만 금리·Credit Stress 가 AI 전반의 확산을 제한하고 있습니다."; NET EFFECT "가격 · 확산도 · 매크로 압력이 내러티브 ·
+펀더멘털 지지보다 우세"; 1M "1주 전 EXTREME GREED 영역에서 현재 FEAR 로 빠르게 냉각".
+
 #### AI 센티2 · AI SENTIMENT · GREED & FEAR (2026-09-30)
 
 `AI 센티2` 탭의 AI TRADE REGIME 바로 아래, AI vs MARKET 위에 붙는 영역이다(AI 센티 기본 화면과 기존 AI 센티2 의 구조·판정

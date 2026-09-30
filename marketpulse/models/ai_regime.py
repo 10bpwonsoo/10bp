@@ -232,6 +232,7 @@ class StatusItem(Base):
     value: str
     tone: Literal["good", "warn", "bad", "muted"] = "muted"
     detail: str = ""
+    meaning: str = Field(default="", description="이 상태가 지금 시장에서 뜻하는 것 — 한 줄 한국어(번역이 아니라 투자적 의미)")
 
 
 class FundamentalConfirmation(Base):
@@ -415,6 +416,7 @@ class SentimentComponent(Base):
     weight: float
     coverage: float = Field(default=0.0, ge=0.0, le=1.0)
     inputs: list[SentimentInput] = Field(default_factory=list)
+    desc_ko: str = Field(default="", description="구성요소가 무엇을 재는지 한 줄")
 
 
 class SentimentFactor(Base):
@@ -442,6 +444,8 @@ class SentimentHistory(Base):
     change_1d: float | None = None
     change_1w: float | None = None
     note: str = ""
+    state_1w: str = ""
+    read: str = Field(default="", description="1주 변화의 뜻 한 줄")
 
 
 class AiSentiment(Base):
@@ -456,7 +460,9 @@ class AiSentiment(Base):
     secondary_key: str = "none"
     secondary_label: str = ""
     secondary_ko: str = ""
-    read: str = ""
+    read: str = Field(default="", description="AI SENTIMENT READ — 최대 2문장")
+    gap_read: str = Field(default="", description="KEY TENSION 아래 한 문장 — 구성요소 단위 지지/미확인")
+    net_effect: str = Field(default="", description="SUPPORT vs PRESSURE 의 순효과 한 줄")
     support: list[SentimentFactor] = Field(default_factory=list)
     pressure: list[SentimentFactor] = Field(default_factory=list)
     history: SentimentHistory = Field(default_factory=SentimentHistory)
@@ -505,3 +511,4 @@ class AiRegime(Base):
     what_matters: list[MattersItem] = Field(default_factory=list)
     # ── AI SENTIMENT · GREED & FEAR (2026-09-30) ──
     sentiment: AiSentiment | None = None
+    regime_read: str = Field(default="", description="AI REGIME READ — FUNDAMENTAL CONFIRMATION · SUMMARY · 맥락을 대신하는 2~3문장")

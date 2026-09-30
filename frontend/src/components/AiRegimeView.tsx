@@ -3,7 +3,7 @@ import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
 import { AiSentimentSection } from "./AiSentimentSection";
-import { DataQualityBlock, GapSection, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
+import { DataQualityBlock, GapSection, RegimeLongText, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
 
 /**
  * AI 탭 — AI TRADE INTELLIGENCE.
@@ -145,7 +145,7 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
           <p className="ai-headline">{regime.headline}</p>
           <p className="ai-impl"><span className="ai-k mono">IMPLICATION</span> {regime.implication}</p>
           {extended ? <StatusStrip regime={regime} /> : null}
-          <p className="ai-ctx mono" data-testid="ai-context">Global market regime(맥락 입력): {regime.context.market_label} {regime.context.market_confidence.toFixed(0)}%{regime.context.thermometer !== null ? ` · 온도계 ${sg(regime.context.thermometer, 0)}` : ""} — {regime.context.note}</p>
+          {!extended ? <p className="ai-ctx mono" data-testid="ai-context">Global market regime(맥락 입력): {regime.context.market_label} {regime.context.market_confidence.toFixed(0)}%{regime.context.thermometer !== null ? ` · 온도계 ${sg(regime.context.thermometer, 0)}` : ""} — {regime.context.note}</p> : null}
         </div>
       </section>
 
@@ -310,7 +310,7 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
       <details className="panel span-3 ai-diag" data-testid="ai-diagnostics">
         <summary className="panel-head"><h2 className="panel-title">{extended ? "Details / Data Quality" : "Diagnostics"}</h2><div className="panel-note mono">{extended ? "데이터 품질 · " : ""}판정 규칙 검사 · Global market regime(시장 온도·공포/탐욕 띠) · 구성원 표 · 시나리오 서명 대조 · driver 증거 전체 — 접어 둔 내부 진단</div></summary>
         <div className="panel-body">
-          {extended ? <DataQualityBlock regime={regime} /> : null}
+          {extended ? <><RegimeLongText regime={regime} /><p className="ai-ctx mono" data-testid="ai-context">Global market regime(맥락 입력): {regime.context.market_label} {regime.context.market_confidence.toFixed(0)}%{regime.context.thermometer !== null ? ` · 온도계 ${sg(regime.context.thermometer, 0)}` : ""} — {regime.context.note}</p><DataQualityBlock regime={regime} /></> : null}
           <div className="ai-diag-grid" style={{ marginTop: extended ? 10 : 0 }}>
             <div>
               <div className="ai-k mono">판정 규칙 — 위에서부터 먼저 걸리는 것</div>

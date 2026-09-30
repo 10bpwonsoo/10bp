@@ -3,13 +3,13 @@ import type { AiRegime, AiSentiment, AiSentimentComponent, AiSentimentFactor, Ai
 
 /**
  * AI SENTIMENT · GREED & FEAR (AI 센티2 전용) — AI 투자 테마 내부의 투자심리 + 실제 시장 확인 강도(0~100).
- * 일반 시장 Fear & Greed 가 아니고, 상승·매수 확률·수익률 전망도 아니다. 숫자는 서버(config/ai_regime.yaml `sentiment`)가 만들고
- * 화면은 반원 게이지 + 구성요소 분해 + SENTIMENT READ + SENTIMENT STRUCTURE + 1M 스파크라인만 그린다.
- * 색은 심리 상태를 구분할 뿐 좋고 나쁨이 아니다 — 방향색(적/청)을 쓰지 않는다.
+ * 읽는 순서: 반원 게이지(현재 심리) → 5 factor bar(왜) → KEY TENSION → SUPPORT vs PRESSURE(무엇이 지지/압박) → 1M 히스토리(최근 변화) → READ(≤2문장).
+ * 숫자·문장은 서버(config/ai_regime.yaml `sentiment`)가 만들고 화면은 그리기만 한다. 색은 심리 상태 구분이지 좋고 나쁨이 아니다.
  */
 
 const BAND_COLOR: Record<string, string> = { EXTREME_FEAR: "var(--gf-xf)", FEAR: "var(--gf-f)", NEUTRAL: "var(--gf-n)", GREED: "var(--gf-g)", EXTREME_GREED: "var(--gf-xg)", UNKNOWN: "var(--faint)" };
 const BAND_SHORT: Record<string, string> = { EXTREME_FEAR: "EXTREME FEAR", FEAR: "FEAR", NEUTRAL: "NEUTRAL", GREED: "GREED", EXTREME_GREED: "EXTREME GREED" };
+const FACTOR_ORDER = ["fundamentals", "narrative", "price", "breadth", "macro"];
 const sg = (v: number | null, d = 0) => (v === null ? "–" : `${v > 0 ? "+" : ""}${v.toFixed(d)}`);
 const clamp = (s: number) => Math.max(0, Math.min(100, s));
 
@@ -32,19 +32,16 @@ function Gauge({ s }: { s: AiSentiment }) {
   useEffect(() => { const id = requestAnimationFrame(() => setDeg(score === null ? -90 : -90 + (score / 100) * 180)); return () => cancelAnimationFrame(id); }, [score]);
   const color = BAND_COLOR[s.state] ?? "var(--faint)";
   const h = s.history;
-  const basisNote = h.basis.length && h.basis.length < s.components.length ? ` (${h.basis.map((k) => s.components.find((c) => c.key === k)?.label ?? k).join(" · ")} 기준)` : "";
+  const basisNote = h.basis.length && h.basis.length < s.components.length ? `${h.basis.map((k) => s.components.find((c) => c.key === k)?.label ?? k).join(" · ")} 기준` : "";
   return (
     <div className="gf-gauge" data-testid="ai-gf-gauge" data-state={s.state}>
       <svg viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label={`AI SENTIMENT INDEX ${s.index === null ? "측정 불가" : `${s.index.toFixed(0)} ${s.state_label}`}`}>
-        {/* 밴드 5개 — 왼쪽 EXTREME FEAR → 오른쪽 EXTREME GREED */}
         {bands.map((b, i) => (
           <path key={b.key} d={bandPath(edges[i]![0], edges[i]![1])} fill={BAND_COLOR[b.key] ?? "var(--gf-n)"} opacity={s.state === b.key ? 1 : 0.55} data-testid="ai-gf-band" data-key={b.key}>
             <title>{b.label} · {edges[i]![0]}–{edges[i]![1]}</title>
           </path>
         ))}
-        {/* 눈금 0 · 20 · 40 · 60 · 80 · 100 — 최소만 */}
         {[0, 20, 40, 60, 80, 100].map((v) => { const [x, y] = pt(R_TICK, v); return <text key={v} x={x} y={y + 3} textAnchor="middle" className="gf-tick">{v}</text>; })}
-        {/* 큰 라벨 FEAR / NEUTRAL / GREED (양끝 EXTREME 은 눈금 tooltip 과 legend 로) */}
         {[[30, "FEAR"], [50, "NEUTRAL"], [70, "GREED"]].map(([v, l]) => { const [x, y] = pt((R_OUT + R_IN) / 2, Number(v)); return <text key={String(l)} x={x} y={y + 3} textAnchor="middle" className="gf-band-l">{l}</text>; })}
         {/* 바늘 — 띠를 가로지르는 얇은 포인터 + 바깥쪽 작은 삼각형. 각도 = −90° + s/100 × 180°. 중앙 글자를 가리지 않도록 축까지 긋지 않는다 */}
         {score !== null ? (
@@ -61,61 +58,85 @@ function Gauge({ s }: { s: AiSentiment }) {
           <tspan>1D {sg(h.change_1d)}</tspan><tspan dx="10">1W {sg(h.change_1w)}</tspan>{basisNote ? <tspan dx="4" className="gf-chg-note">†</tspan> : null}
         </text>
       </svg>
-      {/* 보조 상태 — 숫자 하나의 성격 */}
-      {s.secondary_key !== "none" ? (
-        <div className="gf-secondary" data-testid="ai-gf-secondary"><b className="mono">{s.secondary_label}</b><span>{s.secondary_ko}</span></div>
-      ) : <div className="gf-secondary muted" data-testid="ai-gf-secondary"><b className="mono">{s.secondary_label}</b><span>{s.secondary_ko}</span></div>}
-      {basisNote ? <div className="gf-basis mono" data-testid="ai-gf-basis">† 1D / 1W{basisNote}</div> : null}
+      {basisNote ? <div className="gf-basis mono" data-testid="ai-gf-basis" title={h.note}>† 1D / 1W 는 {basisNote}</div> : null}
     </div>
   );
 }
 
-function ComponentRow({ c }: { c: AiSentimentComponent }) {
+/** 5 FACTOR DECOMPOSITION — 가로 막대 하나로 점수를 읽는다. 순서: FUNDAMENTALS · NARRATIVE · PRICE · BREADTH · MACRO */
+function FactorBar({ c }: { c: AiSentimentComponent }) {
   const color = BAND_COLOR[c.state] ?? "var(--faint)";
   const missing = c.inputs.filter((i) => !i.available);
+  const tip = [c.desc_ko, ...c.inputs.map((i) => `${i.label} ${i.available ? `${i.display} → ${i.score!.toFixed(0)}` : `– (${i.note})`}`)].join("\n");
   return (
-    <div className="gf-comp" data-testid="ai-gf-component" data-key={c.key} data-state={c.state} title={c.inputs.map((i) => `${i.label} ${i.available ? `${i.display} → ${i.score!.toFixed(0)}` : `– (${i.note})`}`).join("\n")}>
-      <div className="gf-comp-h">
-        <span className="gf-comp-l"><b className="mono">{c.label}</b><small>{c.label_ko}</small></span>
-        <span className="gf-comp-s num" style={{ color }}>{c.score === null ? "–" : c.score.toFixed(0)}</span>
-      </div>
-      <div className="gf-track" aria-hidden="true">
-        {c.score !== null ? <i className="gf-mark" style={{ left: `${clamp(c.score)}%`, background: color }} /> : null}
-      </div>
-      <div className="gf-comp-b">
-        <b className="mono" style={{ color }}>{c.score === null ? "DATA MISSING" : BAND_SHORT[c.state] ?? c.state_label}</b>
-        <span>{c.read}</span>
-        {missing.length && c.score !== null ? <small className="mono">· {c.inputs.length - missing.length}/{c.inputs.length} 입력</small> : null}
+    <div className="gf-fb" data-testid="ai-gf-component" data-key={c.key} data-state={c.state} title={tip}>
+      <span className="gf-fb-l"><b className="mono">{c.label}</b><small>{c.desc_ko}</small></span>
+      <span className="gf-fb-s num" style={{ color }}>{c.score === null ? "–" : c.score.toFixed(0)}</span>
+      <span className="gf-fb-st mono" style={{ color }}>{c.score === null ? "DATA MISSING" : BAND_SHORT[c.state] ?? c.state_label}</span>
+      <span className="gf-fb-bar" aria-hidden="true">{c.score !== null ? <i style={{ width: `${clamp(c.score)}%`, background: color }} /> : null}</span>
+      <span className="gf-fb-r">{c.read}{missing.length && c.score !== null ? <small className="mono"> · {c.inputs.length - missing.length}/{c.inputs.length} 입력</small> : null}</span>
+    </div>
+  );
+}
+
+function Drivers({ s }: { s: AiSentiment }) {
+  const col = (title: string, arrow: string, items: AiSentimentFactor[], empty: string, testid: string) => (
+    <div className="gf-drv-col" data-testid={testid}>
+      <span className="ai-k mono">{title} <em>{arrow}</em></span>
+      {items.length ? <ul>{items.map((f) => <li key={f.id}><span>{f.label}</span><small className="mono">{f.display || f.score.toFixed(0)}</small></li>)}</ul> : <span className="gf-empty">{empty}</span>}
+    </div>
+  );
+  return (
+    <div className="gf-drv" data-testid="ai-gf-structure">
+      <span className="ai-k mono">Sentiment Drivers</span>
+      <div className="gf-drv-grid">
+        {col("Support", "↑", s.support, "지지 요인 없음", "ai-gf-support")}
+        {col("Pressure", "↓", s.pressure, "부담 요인 없음", "ai-gf-pressure")}
+        <div className="gf-net" data-testid="ai-gf-net">
+          <span className="ai-k mono">Net effect</span>
+          <b className="mono" style={{ color: BAND_COLOR[s.state] ?? "var(--faint)" }}>{s.state_label}{s.index !== null ? ` · ${s.index.toFixed(0)}` : ""}</b>
+          <span>{s.net_effect}</span>
+        </div>
       </div>
     </div>
   );
 }
 
-function Factors({ title, items, empty, testid }: { title: string; items: AiSentimentFactor[]; empty: string; testid: string }) {
-  return (
-    <div className="gf-fac" data-testid={testid}>
-      <span className="ai-k mono">{title}</span>
-      {items.length ? <ul>{items.map((f) => <li key={f.id}><span>{f.label}</span><small className="mono">{f.display || f.score.toFixed(0)}</small></li>)}</ul> : <span className="gf-fac-empty">{empty}</span>}
-    </div>
-  );
-}
-
-function Spark({ h }: { h: AiSentimentHistory }) {
+/** 1M SENTIMENT — 밴드 배경(연하게) 위의 스파크라인, 현재 점을 크게. 숫자 나열은 없다 */
+function History({ s }: { s: AiSentiment }) {
+  const h: AiSentimentHistory = s.history;
   const pts = h.points.filter((p) => p.index !== null);
-  if (pts.length < 2) return <span className="gf-fac-empty">{h.note || "1M 이력 없음"}</span>;
-  const W = 160, H = 34;
-  const xs = h.points.map((_, i) => (i / Math.max(1, h.points.length - 1)) * W);
-  const path = h.points.map((p, i) => (p.index === null ? null : `${xs[i]!.toFixed(1)},${(H - 2 - (clamp(p.index) / 100) * (H - 4)).toFixed(1)}`)).filter(Boolean);
-  const first = pts[0]!.index!; const last = pts[pts.length - 1]!.index!;
-  const sample = pts.length > 6 ? [pts[0], pts[Math.floor(pts.length / 5)], pts[Math.floor((2 * pts.length) / 5)], pts[Math.floor((3 * pts.length) / 5)], pts[Math.floor((4 * pts.length) / 5)], pts[pts.length - 1]] : pts;
+  const W = 320, H = 96, PL = 4, PR = 48, PT = 6, PB = 6;
+  const x = (i: number) => PL + (i / Math.max(1, h.points.length - 1)) * (W - PL - PR);
+  const y = (v: number) => PT + (1 - clamp(v) / 100) * (H - PT - PB);
+  const bands = [...s.bands].sort((a, b) => a.min - b.min);
+  const edges = bands.map((b, i) => [b.min, i + 1 < bands.length ? bands[i + 1]!.min : 100] as const);
+  const path = h.points.map((p, i) => (p.index === null ? null : `${x(i).toFixed(1)},${y(p.index).toFixed(1)}`)).filter(Boolean).join(" ");
+  const lastIdx = h.points.length - 1; const last = h.points[lastIdx];
+  const color = BAND_COLOR[s.state] ?? "var(--faint)";
   return (
-    <div className="gf-spark" data-testid="ai-gf-spark" title={h.note}>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-        <line x1={0} y1={H / 2} x2={W} y2={H / 2} className="gf-spark-mid" />
-        <polyline points={path.join(" ")} className="gf-spark-line" />
-      </svg>
-      <div className="gf-spark-v mono">{sample.map((p) => p!.index!.toFixed(0)).join(" → ")}</div>
-      <div className="gf-spark-r mono">Range {h.range_min?.toFixed(0)}–{h.range_max?.toFixed(0)} · {first.toFixed(0)} → {last.toFixed(0)}</div>
+    <div className="gf-hist" data-testid="ai-gf-history" title={h.note}>
+      <span className="ai-k mono">1M Sentiment</span>
+      {pts.length >= 2 ? (
+        <>
+          <svg viewBox={`0 0 ${W} ${H}`} className="gf-hist-svg" data-testid="ai-gf-spark" role="img" aria-label={`1M sentiment ${h.range_min?.toFixed(0)}–${h.range_max?.toFixed(0)}`}>
+            {bands.map((b, i) => <rect key={b.key} x={0} y={y(edges[i]![1])} width={W - PR + 2} height={y(edges[i]![0]) - y(edges[i]![1])} fill={BAND_COLOR[b.key]} className="gf-hist-band" data-key={b.key} />)}
+            {bands.map((b, i) => <text key={`t-${b.key}`} x={W - PR + 6} y={(y(edges[i]![0]) + y(edges[i]![1])) / 2 + 3} className="gf-hist-bl">{b.label.replace("EXTREME ", "X-")}</text>)}
+            <polyline points={path} className="gf-hist-line" />
+            {last && last.index !== null ? (<>
+              <circle cx={x(lastIdx)} cy={y(last.index)} r={5} fill={color} className="gf-hist-now" />
+              <circle cx={x(lastIdx)} cy={y(last.index)} r={2} className="gf-hist-now-in" />
+            </>) : null}
+          </svg>
+          <div className="gf-hist-kv mono" data-testid="ai-gf-hist-kv">
+            <span><i>NOW</i><b style={{ color }}>{s.index === null ? "–" : s.index.toFixed(0)}</b><em>{s.state_label}</em></span>
+            <span><i>1W</i><b>{sg(h.change_1w)}</b></span>
+            <span><i>1M RANGE</i><b>{h.range_min?.toFixed(0)}–{h.range_max?.toFixed(0)}</b></span>
+          </div>
+          {h.read ? <div className="gf-hist-read" data-testid="ai-gf-hist-read">{h.read}</div> : null}
+          <div className="gf-scale mono" aria-hidden="true"><span>FEAR ←</span><span>0</span><span className="gf-scale-line" /><span>50</span><span className="gf-scale-line" /><span>100</span><span>→ GREED</span></div>
+        </>
+      ) : <span className="gf-empty">{h.note || "1M 이력 없음"}</span>}
     </div>
   );
 }
@@ -123,31 +144,30 @@ function Spark({ h }: { h: AiSentimentHistory }) {
 export function AiSentimentSection({ regime }: { regime: AiRegime }) {
   const s = regime.sentiment;
   if (!s) return null;
+  const ordered = [...s.components].sort((a, b) => FACTOR_ORDER.indexOf(a.key) - FACTOR_ORDER.indexOf(b.key));
   return (
     <section className="panel span-3 gf" data-testid="ai-sentiment">
-      <header className="panel-head"><h2 className="panel-title">AI Sentiment · Greed &amp; Fear</h2><div className="panel-note mono">AI 테마 내부의 투자심리 + 시장 확인 강도 · 0~100 · Narrative + Price + Breadth + Fundamentals + Macro · 확률·전망 아님</div></header>
+      <header className="panel-head"><h2 className="panel-title">AI Sentiment · Greed &amp; Fear</h2><div className="panel-note mono">AI 테마 내부의 투자심리 + 시장 확인 강도 · 0~100 · 확률·전망 아님</div></header>
       <div className="panel-body">
         <div className="gf-top">
           <Gauge s={s} />
-          <div className="gf-comps" data-testid="ai-gf-components">
-            <span className="ai-k mono">Why {s.index === null ? "–" : s.index.toFixed(0)}? · component decomposition</span>
-            {s.components.map((c) => <ComponentRow key={c.key} c={c} />)}
+          <div className="gf-right">
+            <div className="gf-fbs" data-testid="ai-gf-components">
+              <span className="ai-k mono">Why {s.index === null ? "–" : s.index.toFixed(0)}? · 5 factors</span>
+              {ordered.map((c) => <FactorBar key={c.key} c={c} />)}
+            </div>
+            <div className={`gf-tension${s.secondary_key === "none" ? " muted" : ""}`} data-testid="ai-gf-secondary">
+              <span className="ai-k mono">Key tension</span>
+              <b className="mono">{s.secondary_label}</b>
+              <span className="gf-tension-ko">{s.secondary_ko}</span>
+              {s.gap_read ? <p data-testid="ai-gf-gap">{s.gap_read}</p> : null}
+            </div>
           </div>
         </div>
         <div className="gf-bottom">
+          <Drivers s={s} />
+          <History s={s} />
           <div className="gf-read" data-testid="ai-gf-read"><span className="ai-k mono">AI Sentiment Read</span><p>{s.read}</p></div>
-          <div className="gf-struct" data-testid="ai-gf-structure">
-            <span className="ai-k mono">Sentiment Structure</span>
-            <div className="gf-struct-cols">
-              <Factors title="Support" items={s.support} empty="지지 요인 없음" testid="ai-gf-support" />
-              <Factors title="Pressure" items={s.pressure} empty="부담 요인 없음" testid="ai-gf-pressure" />
-            </div>
-          </div>
-          <div className="gf-hist"><span className="ai-k mono">1M Sentiment</span><Spark h={s.history} /></div>
-        </div>
-        <div className="gf-legend mono" aria-label="색 범례">
-          {[...s.bands].sort((a, b) => a.min - b.min).map((b) => <span key={b.key}><i style={{ background: BAND_COLOR[b.key] }} />{b.label}</span>)}
-          <span className="gf-legend-note">색은 심리 상태 구분 — 투자 매력도가 아니다</span>
         </div>
       </div>
     </section>

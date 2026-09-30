@@ -16,9 +16,9 @@ const pc = (v: number | null) => (v === null ? "–" : `${v.toFixed(0)}%`);
 export const Arrow = ({ a, title }: { a: AiArrow; title?: string }) => <span className="ai-arrow mono" style={{ color: ARROW_COLOR[a] ?? "var(--faint)" }} title={title}>{a}</span>;
 const St = ({ s }: { s: string }) => <span className="mono" style={{ color: STATUS_COLOR[s] ?? "var(--muted)" }}>{s}</span>;
 
-/** 1. REGIME 카드 안에 붙는 상태 띠 + FUNDAMENTAL CONFIRMATION + SUMMARY */
+/** 1. REGIME 카드 안에 붙는 상태 띠 — ENGLISH CATEGORY / ENGLISH STATUS / 한 줄 한국어 의미 — 그 아래 AI REGIME READ(2~3문장) + KEY TENSION */
 export function StatusStrip({ regime }: { regime: AiRegime }) {
-  const fc = regime.fundamental_confirmation;
+  const t = regime.sentiment;
   return (
     <div className="ai-strip-wrap" data-testid="ai-status-strip">
       <div className="ai-strip">
@@ -26,9 +26,23 @@ export function StatusStrip({ regime }: { regime: AiRegime }) {
           <div key={s.key} className="ai-strip-item" title={s.detail} data-key={s.key}>
             <span className="ai-k mono">{s.label}</span>
             <b className="mono" style={{ color: TONE_COLOR[s.tone] }}>{s.value}</b>
+            <span className="ai-strip-m" data-testid="ai-strip-meaning">{s.meaning || s.detail}</span>
           </div>
         ))}
       </div>
+      <div className="ai-rread" data-testid="ai-regime-read"><span className="ai-k mono">AI Regime Read</span><p>{regime.regime_read || regime.summary}</p></div>
+      {t && t.secondary_key !== "none" ? (
+        <div className="ai-tension" data-testid="ai-key-tension"><span className="ai-k mono">Key tension</span><b className="mono">{t.secondary_label}</b><span>{t.secondary_ko}</span></div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Details 안으로 내린 장문 — FUNDAMENTAL CONFIRMATION 문장 · SUMMARY · Global market regime 맥락. 지우지 않고 접어 둔다 */
+export function RegimeLongText({ regime }: { regime: AiRegime }) {
+  const fc = regime.fundamental_confirmation;
+  return (
+    <div className="ai-longtext" data-testid="ai-regime-longtext">
       <p className="ai-fc" data-testid="ai-fundamental-confirmation"><span className="ai-k mono">FUNDAMENTAL CONFIRMATION</span> <b className="mono" style={{ color: STATUS_COLOR[fc.level] }}>{fc.level}</b> <span>{fc.sentence}</span></p>
       <p className="ai-summary" data-testid="ai-summary"><span className="ai-k mono">SUMMARY</span> {regime.summary}</p>
     </div>
