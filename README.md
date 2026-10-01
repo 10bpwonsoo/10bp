@@ -468,6 +468,23 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · AI CHAIN VIEW — Transmission · Leadership · Semi Confirmation 을 한 흐름으로 (2026-10-01)
+
+세 영역의 계산과 데이터는 그대로이고 표시만 바꿨다(`config/ai_regime.yaml chain_view`, `engines/ai_chain_view.py`, 프런트
+`AiChainSections.tsx`; AI 센티 기본 탭은 영향 없음). 읽는 순서: **AI CHAIN SNAPSHOT**(FUNDAMENTALS Selective Positive ·
+PRICE LEADERSHIP Equipment / Packaging · SEMI CONFIRMATION Advanced Packaging STRONG · Equipment LEADING · KEY GAP HBM
+fundamentals > HBM price + 한 줄) → **FUNDAMENTAL × PRICE ALIGNMENT**(밸류체인마다 전파 단계 상태·점수 | 가격 상태·순위 | VIEW;
+VIEW 는 펀더멘털 상태 × 가격 상태 조합 규칙 — CONFIRMED · DIVERGENCE · FUNDAMENTAL-LED · PRICE-LED · MIXED · WEAK, 영어 + 한글
+sublabel, 기본 6행 + View all 10, CONFIRMED 행이 맨 위) → **AI FUNDAMENTAL TRANSMISSION**(9단계를 한 줄씩: 라벨 · 점수 · 상태,
+subtitle 한 줄, 점수 뜻은 ⓘ tooltip, FUNDAMENTAL READ 한 줄, 기존 카드형은 View evidence) → **AI VALUE-CHAIN LEADERSHIP**
+(LEADERS / LAGGARDS 3+3, 행마다 1주 상대 %p · Breadth · 가격 상태, LEADERSHIP READ 한 줄, 1D/1W/1M/EPS 전체 표는 View all 10) →
+**SEMICONDUCTOR CONFIRMATION**(영역 6행: 상태 + 실제 column(PRICE · REL STRENGTH · BREADTH · NEWS / FUND · EPS)으로 만든 의미
+한 줄, Memory / HBM 은 Key evidence HBM3E · HBM4 계약가 앵커 변화, 화살표 matrix 와 계약가 세부는 View evidence matrix /
+View HBM details). 가격 상태는 세그먼트 role·순위·breadth 에서, 펀더멘털 상태는 전파 단계(없는 세그먼트는 expectation_gap
+fundamental 문턱)에서 읽는다. 긴 문장(전파 문장 · 리더십 문장 · 반도체 문장)은 기본 화면에서 빼고 한 줄 read 로 대신한다.
+9/29: Equipment · Packaging CONFIRMED, Foundry · HBM DIVERGENCE, Software MIXED, Networking · DC Infra · Power · GPU ·
+Hyperscalers WEAK. 테스트 +3(백엔드) +1(프런트).
+
 #### AI 센티2 · AI VS MARKET → WHAT IS DRIVING AI? (OBSERVATION → ATTRIBUTION) (2026-09-30)
 
 두 카드만 바꿨고 점수 계산은 그대로다(표시 층: `config/ai_regime.yaml vs_market · driver_view · driver_verdict`,

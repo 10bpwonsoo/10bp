@@ -336,3 +336,45 @@ class TestDriverView:
         snap, market, series, bk, by_id = _run("baseline")
         r = build_ai_regime(market, series, {}, snap.themes, snap.events, by_id, market_label="NEUTRAL", market_confidence=0.0, as_of=AS_OF)
         assert r.ai_vs_market.absolute_trend == "–" and r.driver_verdict.primary is None and r.driver_verdict.conclusion
+
+
+class TestChainView:
+    """AI CHAIN VIEW — 전파·리더십·반도체 확인을 잇는 표시 층. 새 계산 없음: 상태 조합 규칙과 정렬·문장뿐."""
+
+    def test_rows_combine_existing_stage_and_segment_values(self):
+        r = _build("baseline")
+        c = r.chain_view; cfg = load_ai_regime_config()["chain_view"]
+        assert len(c.rows) == len(cfg["rows"]) and c.main_rows == cfg["main_rows"]
+        stage_by = {s.key: s for s in r.transmission.stages}; seg_by = {s.key: s for s in r.value_chain.segments}
+        for row in c.rows:
+            if row.stage:
+                assert row.fund_status == stage_by[row.stage].status and row.fund_score == stage_by[row.stage].score
+            seg = seg_by[row.segment]
+            assert row.rank == seg.rank_1w and row.rel_5d == seg.rel_5d and row.breadth == seg.above_ma20_pct
+            assert row.price_status in ("LEADING", "STRONG", "MIXED", "LAGGING", "WEAK")
+            assert row.view in cfg["views"] and row.view_ko == cfg["views"][row.view]
+            fg = row.fund_status in cfg["fund_good"]; pg = row.price_status in cfg["price_good"]; pb = row.price_status in cfg["price_bad"]
+            if fg and pg: assert row.view == "CONFIRMED"
+            if fg and pb: assert row.view == "DIVERGENCE"
+        views = [row.view for row in c.rows]
+        assert views == sorted(views, key=lambda v: ["CONFIRMED", "DIVERGENCE", "FUNDAMENTAL-LED", "PRICE-LED", "MIXED", "WEAK"].index(v))  # 확인된 행이 먼저
+
+    def test_compact_blocks_and_reads(self):
+        r = _build("baseline")
+        c = r.chain_view
+        assert len(c.stages) == len(r.transmission.stages) and all(s.status for s in c.stages)
+        assert len(c.leaders) <= 3 and len(c.laggards) <= 3 and not {x.key for x in c.leaders} & {x.key for x in c.laggards}
+        assert [x.rank for x in c.leaders] == sorted(x.rank for x in c.leaders)
+        assert len(c.semi_areas) == len(r.semi_confirmation.areas) and all(a.meaning for a in c.semi_areas)
+        assert c.fundamental_read and c.leadership_read and c.snapshot.read and c.snapshot.fundamentals
+        assert c.subtitles["transmission"] and c.subtitles["leadership"] and c.subtitles["semi"] and c.score_tip
+        assert [x["key"] for x in c.semi_columns] == ["price_momentum", "relative_strength", "breadth", "news_evidence", "eps"]  # 실제 데이터 항목 이름
+        for w in ("확률", "매수", "매도"):
+            assert w not in c.snapshot.read and w not in c.fundamental_read and w not in c.leadership_read
+
+    def test_empty_basket_degrades_without_fabrication(self):
+        snap, market, series, bk, by_id = _run("baseline")
+        r = build_ai_regime(market, series, {}, snap.themes, snap.events, by_id, market_label="NEUTRAL", market_confidence=0.0, as_of=AS_OF)
+        c = r.chain_view
+        assert all(row.rank is None and row.price_status == "MIXED" for row in c.rows)
+        assert c.leaders == [] and c.laggards == [] and c.snapshot.price_leadership == "–"

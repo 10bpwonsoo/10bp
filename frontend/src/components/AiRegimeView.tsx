@@ -4,7 +4,8 @@ import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
 import { AiSentimentSection } from "./AiSentimentSection";
 import { DriversSection, VsMarketSection } from "./AiDriverSections";
-import { DataQualityBlock, GapSection, RegimeLongText, NewsImpactSection, RadarSection, SemiConfirmationSection, StatusStrip, StockImpactSection, TransmissionSection, ValueChainSection, WhatMattersSection } from "./AiValueChainSections";
+import { AiChainSections } from "./AiChainSections";
+import { DataQualityBlock, GapSection, RegimeLongText, NewsImpactSection, RadarSection, StatusStrip, StockImpactSection, WhatMattersSection } from "./AiValueChainSections";
 
 /**
  * AI 탭 — AI TRADE INTELLIGENCE.
@@ -190,14 +191,8 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
       </section>
       )}
 
-      {extended ? (<>
-        {/* 4. AI FUNDAMENTAL TRANSMISSION */}
-        <TransmissionSection regime={regime} />
-        {/* 5. AI / SEMI / INFRA / SOFTWARE LEADERSHIP */}
-        <ValueChainSection regime={regime} />
-        {/* 6. SEMICONDUCTOR FUNDAMENTAL CONFIRMATION */}
-        <SemiConfirmationSection regime={regime} />
-      </>) : null}
+      {/* 4~6. AI CHAIN VIEW — SNAPSHOT + FUNDAMENTAL × PRICE → TRANSMISSION → VALUE-CHAIN LEADERSHIP → SEMI CONFIRMATION (상세는 펼침) */}
+      {extended ? <AiChainSections regime={regime} /> : null}
 
       {/* AI LEADERSHIP — 바스켓 6그룹 (확장 화면에서는 'AI Basket Groups') */}
       <section className="panel span-2" data-testid="ai-leadership">

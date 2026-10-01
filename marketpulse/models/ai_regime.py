@@ -500,6 +500,68 @@ class AiSentiment(Base):
     note: str = ""
 
 
+class ChainRow(Base):
+    """FUNDAMENTAL × PRICE 한 행 — 전파 단계(펀더멘털)와 밸류체인 세그먼트(가격)를 잇는다."""
+
+    key: str
+    label: str
+    segment: str
+    segment_label: str = ""
+    stage: str | None = None
+    fund_status: str = "UNCONFIRMED"
+    fund_score: float | None = None
+    price_status: str = "MIXED"
+    rank: int | None = None
+    rel_5d: float | None = None
+    breadth: float | None = None
+    view: str = "MIXED"
+    view_ko: str = ""
+
+
+class ChainStage(Base):
+    key: str
+    label: str
+    status: str
+    score: float | None = None
+    evidence: str = ""
+
+
+class ChainSemiArea(Base):
+    key: str
+    label: str
+    status: str
+    meaning: str = ""
+    key_evidence: list[str] = Field(default_factory=list)
+    arrows: dict[str, str] = Field(default_factory=dict)
+
+
+class ChainSnapshot(Base):
+    fundamentals: str = ""
+    fundamentals_ko: str = ""
+    price_leadership: str = ""
+    semi_confirmation: str = ""
+    key_gap: str = ""
+    read: str = ""
+
+
+class ChainView(Base):
+    """AI CHAIN VIEW — SNAPSHOT → FUNDAMENTAL × PRICE → TRANSMISSION → LEADERSHIP → SEMI CONFIRMATION. 계산 없음, 재표현만."""
+
+    snapshot: ChainSnapshot = Field(default_factory=ChainSnapshot)
+    subtitles: dict[str, str] = Field(default_factory=dict)
+    score_tip: str = ""
+    rows: list[ChainRow] = Field(default_factory=list)
+    main_rows: int = 6
+    views: dict[str, str] = Field(default_factory=dict)
+    stages: list[ChainStage] = Field(default_factory=list)
+    fundamental_read: str = ""
+    leaders: list[ChainRow] = Field(default_factory=list)
+    laggards: list[ChainRow] = Field(default_factory=list)
+    leadership_read: str = ""
+    semi_areas: list[ChainSemiArea] = Field(default_factory=list)
+    semi_columns: list[dict[str, str]] = Field(default_factory=list)
+
+
 class DriverRef(Base):
     id: str
     label: str
@@ -568,3 +630,4 @@ class AiRegime(Base):
     sentiment: AiSentiment | None = None
     regime_read: str = Field(default="", description="AI REGIME READ — FUNDAMENTAL CONFIRMATION · SUMMARY · 맥락을 대신하는 2~3문장")
     driver_verdict: DriverVerdict = Field(default_factory=DriverVerdict)
+    chain_view: ChainView = Field(default_factory=ChainView)

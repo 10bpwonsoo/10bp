@@ -622,4 +622,8 @@ def build_ai_regime(
     from .ai_driver_view import annotate_driver_view
 
     annotate_driver_view(result, cfg)
+    # ── AI CHAIN VIEW (2026-10-01): 전파 · 리더십 · 반도체 확인을 한 흐름으로 — 재표현만 ──
+    from .ai_chain_view import build_chain_view
+
+    result.chain_view = build_chain_view(result, cfg)
     return result

@@ -32,7 +32,7 @@ describe("AiRegimeView", () => {
   it("섹션 순서가 지정된 대로이고 driver 5 · 그룹 7(바스켓 6 + 국내) · breadth 3 지표 · 2×2 · 내러티브 driver 7 · 매크로 행 · 전환 조건 3~5", () => {
     const { container, unmount } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
-    expect(titles).toEqual(["AI Trade Regime", "AI Sentiment · Greed & Fear", "AI vs Market", "What Is Driving AI?", "AI Fundamental Transmission", "AI / Semi / Infra / Software Leadership", "Semiconductor Fundamental Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
+    expect(titles).toEqual(["AI Trade Regime", "AI Sentiment · Greed & Fear", "AI vs Market", "What Is Driving AI?", "AI Chain Snapshot", "AI Fundamental Transmission", "AI Value-Chain Leadership", "Semiconductor Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
     unmount();
     // AI 센티(기본) 는 확장 블록 없이 원래 순서
     const basic = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
@@ -87,13 +87,22 @@ describe("AiRegimeView", () => {
     expect(diag.getByTestId("ai-summary").textContent?.length).toBeGreaterThan(20);
     expect(diag.getByTestId("ai-context").textContent).toMatch(/맥락 입력/);
     expect(screen.getByTestId("ai-regime-subtitle").textContent).toContain("FUNDAMENTALS");
-    expect(screen.getAllByTestId("ai-stage").length).toBe(9);
+    // AI CHAIN VIEW: 기본 화면은 압축(전파 9행 · 상하위 3 · 반도체 6행), 상세 표는 펼쳐야 보인다
+    const cv = regime.chain_view;
+    expect(screen.getAllByTestId("ai-chain-stage").length).toBe(9);
+    expect(screen.getAllByTestId("ai-chain-leader").length).toBe(cv.leaders.length + cv.laggards.length);
+    expect(screen.getAllByTestId("ai-chain-semi").length).toBe(6);
+    expect(screen.queryAllByTestId("ai-stage").length).toBe(0); expect(screen.queryAllByTestId("ai-segment").length).toBe(0); expect(screen.queryAllByTestId("ai-memory-row").length).toBe(0);
+    fireEvent.click(screen.getByTestId("ai-chain-view-segments"));
     expect(screen.getAllByTestId("ai-segment").length).toBe(10);
     expect(within(screen.getByTestId("ai-leadership-list")).getAllByRole("listitem").length).toBe(regime.value_chain.leadership.length);
+    fireEvent.click(screen.getByTestId("ai-chain-view-matrix"));
     expect(screen.getAllByTestId("ai-semi-area").length).toBe(6);
     const mem = screen.getAllByTestId("ai-memory-row");
     expect(mem.length).toBe(6);
     expect(mem.filter((m) => m.getAttribute("data-status") === "N/A").length).toBe(regime.semi_confirmation.memory.filter((m) => m.status === "N/A").length);
+    fireEvent.click(screen.getByTestId("ai-chain-full"));
+    expect(screen.getAllByTestId("ai-stage").length).toBe(9);
     const stocks = screen.getAllByTestId("ai-stock");
     expect(stocks.length).toBe(regime.stocks.filter((r) => r.available).length);
     expect(stocks[0]!.querySelectorAll(".ai-sim-ax").length).toBe(4);
@@ -208,5 +217,38 @@ describe("AiRegimeView", () => {
     // 9/29 실데이터: AI 약세의 primary 는 Macro / Rates(CONFIRMED), AI 고유 스트레스는 NOT YET CONFIRMED
     expect(v.primary!.id).toBe("macro_rates"); expect(v.unconfirmed.some((x) => x.id === "ai_fundamental_stress")).toBe(true);
     expect(v.conclusion).toMatch(/펀더멘털 훼손보다는/);
+  });
+
+  it("AI 센티2 AI CHAIN VIEW: SNAPSHOT 4 타일 + 한 줄 → FUNDAMENTAL × PRICE(기본 6행, View all 10, VIEW 범례) → 전파 한 줄씩 + FUNDAMENTAL READ → LEADERS/LAGGARDS 3+3 + LEADERSHIP READ → 반도체 상태 행 + 의미 + HBM key evidence; 긴 설명문·숫자 반복 없음", () => {
+    render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
+    const cv = regime.chain_view; const snap = screen.getByTestId("ai-chain-snapshot");
+    const tiles = within(snap).getByTestId("ai-chain-snap-tiles").textContent!;
+    for (const t of [cv.snapshot.fundamentals, cv.snapshot.price_leadership, cv.snapshot.semi_confirmation, cv.snapshot.key_gap]) expect(tiles).toContain(t);
+    expect(within(snap).getByTestId("ai-chain-snap-read").textContent).toBe(cv.snapshot.read);
+    let rows = within(snap).getAllByTestId("ai-chain-row");
+    expect(rows.length).toBe(Math.min(cv.main_rows, cv.rows.length));
+    expect(rows[0]!.getAttribute("data-view")).toBe("CONFIRMED"); // 확인된 행이 맨 위
+    fireEvent.click(within(snap).getByTestId("ai-chain-view-all"));
+    rows = within(snap).getAllByTestId("ai-chain-row"); expect(rows.length).toBe(cv.rows.length);
+    for (const r of cv.rows) { const el = rows.find((x) => x.getAttribute("data-key") === r.key)!; expect(el.textContent).toContain(r.fund_status); expect(el.textContent).toContain(r.price_status); expect(el.textContent).toContain(r.view); expect(el.textContent).toContain(r.view_ko); }
+    expect(new Set(cv.rows.map((r) => r.view))).toEqual(new Set([...new Set(cv.rows.map((r) => r.view))].filter((v) => ["CONFIRMED", "DIVERGENCE", "FUNDAMENTAL-LED", "PRICE-LED", "MIXED", "WEAK"].includes(v))));
+    expect(within(snap).getByTestId("ai-chain-view-legend").textContent).toContain("DIVERGENCE");
+    // 9/29: Equipment · Packaging CONFIRMED, HBM DIVERGENCE(펀더멘털 > 가격), key gap HBM
+    expect(cv.rows.find((r) => r.key === "equipment")!.view).toBe("CONFIRMED"); expect(cv.rows.find((r) => r.key === "hbm")!.view).toBe("DIVERGENCE"); expect(cv.snapshot.key_gap).toMatch(/HBM/);
+    const tr = screen.getByTestId("ai-transmission");
+    expect(within(tr).getByTestId("ai-chain-fund-read").textContent).toContain(cv.fundamental_read);
+    expect(tr.textContent).not.toContain(regime.transmission.sentence); // 긴 문장 반복 없음
+    expect(tr.querySelector(".panel-note")!.textContent).toContain(cv.subtitles.transmission);
+    const ld = screen.getByTestId("ai-value-chain");
+    expect(within(ld).getByTestId("ai-chain-lead-read").textContent).toContain(cv.leadership_read);
+    expect(ld.textContent).not.toContain("1주 상대 모멘텀 상위");
+    const leaders = within(ld).getAllByTestId("ai-chain-leader"); expect(leaders.length).toBeLessThanOrEqual(6);
+    expect(leaders[0]!.textContent).toContain("vs NDX"); expect(leaders[0]!.textContent).toContain("Breadth");
+    const sm = screen.getByTestId("ai-semi-confirmation");
+    const areas = within(sm).getAllByTestId("ai-chain-semi"); expect(areas.length).toBe(6);
+    for (const a of cv.semi_areas) { const el = areas.find((x) => x.textContent!.includes(a.label))!; expect(el.textContent).toContain(a.status); expect(el.textContent).toContain(a.meaning); }
+    expect(within(sm).getByTestId("ai-chain-hbm-ev").textContent).toMatch(/HBM3E.*HBM4/);
+    expect(sm.textContent).not.toContain(regime.semi_confirmation.sentence);
+    expect(within(sm).getByTestId("ai-chain-view-matrix").textContent).toMatch(/PRICE.*REL STRENGTH.*BREADTH.*NEWS \/ FUND.*EPS/);
   });
 });

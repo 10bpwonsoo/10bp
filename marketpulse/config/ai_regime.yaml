@@ -551,3 +551,54 @@ driver_verdict:
     dir_down: "하방"
     dir_up: "상방"
   method: "순위 = |evidence score| × 확인 가중(CONFIRMED 1.0 · UNCONFIRMED 0.6 · CONTRADICTED 0.3) × 데이터 확보율. 지속성은 driver 이력이 쌓이면 반영한다."
+
+#: AI CHAIN VIEW (2026-10-01) — TRANSMISSION · VALUE-CHAIN LEADERSHIP · SEMI CONFIRMATION 세 영역을 하나의 흐름으로 압축하는 표시 층.
+#: 계산은 그대로(transmission.stages · value_chain.segments · semi_confirmation.areas · expectation_gap). 여기는 라벨·정렬·VIEW 규칙·문장뿐이다.
+chain_view:
+  subtitles:
+    transmission: "AI 수요가 실제 산업 데이터로 어디까지 전달됐는가"
+    leadership: "현재 주가가 어느 AI 밸류체인을 선호하고 있는가"
+    semi: "반도체 실제 데이터가 AI 수요를 얼마나 확인하는가"
+    alignment: "펀더멘털과 주가가 어디에서 일치 / 괴리되는가"
+  score_tip: "Score: −100 = 강한 약화 / 0 = 중립 / +100 = 강한 개선"
+  #: FUNDAMENTAL × PRICE 행 — stage(전파 단계) 와 segment(밸류체인) 를 잇는다. stage 가 없으면 expectation_gap.fundamental(0~100) 로 펀더멘털 상태를 읽는다.
+  rows:
+    - {key: equipment,    label: "Equipment",        stage: equipment,  segment: equipment}
+    - {key: packaging,    label: "Packaging",        stage: foundry,    segment: packaging}
+    - {key: hbm,          label: "HBM",              stage: hbm,        segment: memory_hbm}
+    - {key: compute,      label: "GPU / Compute",    stage: compute,    segment: compute}
+    - {key: hyperscalers, label: "Hyperscalers",     stage: capex,      segment: hyperscalers}
+    - {key: dc_infra,     label: "DC Infra",         stage: dc_infra,   segment: dc_infra}
+    - {key: foundry,      label: "Foundry",          stage: foundry,    segment: foundry}
+    - {key: power,        label: "Power / Cooling",  stage: dc_infra,   segment: power}
+    - {key: networking,   label: "Networking",       stage: null,       segment: networking}
+    - {key: software,     label: "Software",         stage: null,       segment: software}
+  main_rows: 6                       # 기본 화면에 보이는 행 수 — 나머지는 View all
+  gap_fund_bands: {positive: 70, deteriorating: 40}   # stage 없는 행: expectation_gap.fundamental 문턱
+  price_weak_breadth: 50             # lagging 이면서 20일선 상회 비율이 이 아래면 WEAK
+  fund_good: [ACCELERATING, POSITIVE, STRONG, IMPROVING]
+  fund_bad: [DETERIORATING]
+  price_good: [LEADING, STRONG]
+  price_bad: [LAGGING, WEAK]
+  views:
+    CONFIRMED: "펀더멘털과 가격이 같은 강한 방향"
+    DIVERGENCE: "펀더멘털은 강하지만 가격은 아직 약함"
+    FUNDAMENTAL-LED: "펀더멘털이 가격보다 먼저 개선"
+    PRICE-LED: "가격이 펀더멘털보다 먼저 움직임"
+    MIXED: "신호가 혼재"
+    WEAK: "펀더멘털과 가격 모두 약하거나 확인 부족"
+  fundamentals_label: {STRONG: "Positive", PARTIAL: "Selective Positive", WEAK: "Weak", UNCONFIRMED: "Unconfirmed"}
+  fundamentals_ko: {STRONG: "전반 확산", PARTIAL: "선택적 확산", WEAK: "약화", UNCONFIRMED: "확인 데이터 부족"}
+  stage_short: {narrative: "AI Narrative", capex: "Hyperscaler Capex", compute: "GPU / Compute", hbm: "HBM", commodity_memory: "Commodity Memory", foundry: "Foundry / Packaging", equipment: "Semi Equipment", dc_infra: "Data Center Infra", eps: "EPS Revision"}
+  semi_columns: [{key: price_momentum, label: "PRICE"}, {key: relative_strength, label: "REL STRENGTH"}, {key: breadth, label: "BREADTH"}, {key: news_evidence, label: "NEWS / FUND"}, {key: eps, label: "EPS"}]
+  semi_meaning: {confirm: "{good} 확인", weak: "{bad} 약함", none: "잴 계열 없음", eps_na: "EPS 컨센서스 없음"}
+  hbm_area: hbm
+  read:
+    snapshot: "AI 펀더멘털은 {fund_ko}이고 현재 확인은 {confirmed}에 가장 집중"
+    snapshot_none: "AI 펀더멘털은 {fund_ko}이고 펀더멘털과 가격이 함께 확인되는 밸류체인은 아직 없음"
+    key_gap: "{label} fundamentals > {label} price"
+    key_gap_none: "뚜렷한 괴리 없음"
+    fundamental: "{good}에서 확인 강도가 높고, {mixed}는 아직 혼재."
+    fundamental_none: "확인 강도가 높은 단계가 아직 없음."
+    leadership: "{top} 중심의 강세. {bottom}는 상대적으로 약함."
+    leadership_none: "리더십이 뚜렷한 세그먼트 없음."

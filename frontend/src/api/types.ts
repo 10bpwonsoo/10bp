@@ -601,6 +601,11 @@ export type AiRegimeKey = "ai_specific_derisking" | "macro_dragged" | "leadershi
 export interface AiEvidenceItem { id: string; label: string; kind: "price" | "news"; layer: "market" | "alternative" | "theme" | "basket" | "narrative"; value: number | null; window: number | null; sign: number; weight: number; contribution: number; available: boolean; note: string }
 export interface AiPriceCheck { label: string; value: string }
 export interface AiDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: AiEvidenceItem[]; implication: string; band: string; band_ko: string; why: string; transmission: string[]; price_check: AiPriceCheck[]; status_ko: string; status_meaning: string; aux_label: string; aux_ko: string; top_evidence: string[] }
+export interface AiChainRow { key: string; label: string; segment: string; segment_label: string; stage: string | null; fund_status: string; fund_score: number | null; price_status: string; rank: number | null; rel_5d: number | null; breadth: number | null; view: string; view_ko: string }
+export interface AiChainStage { key: string; label: string; status: string; score: number | null; evidence: string }
+export interface AiChainSemiArea { key: string; label: string; status: string; meaning: string; key_evidence: string[]; arrows: Record<string, string> }
+export interface AiChainSnapshot { fundamentals: string; fundamentals_ko: string; price_leadership: string; semi_confirmation: string; key_gap: string; read: string }
+export interface AiChainView { snapshot: AiChainSnapshot; subtitles: Record<string, string>; score_tip: string; rows: AiChainRow[]; main_rows: number; views: Record<string, string>; stages: AiChainStage[]; fundamental_read: string; leaders: AiChainRow[]; laggards: AiChainRow[]; leadership_read: string; semi_areas: AiChainSemiArea[]; semi_columns: { key: string; label: string }[] }
 export interface AiDriverRef { id: string; label: string; score: number; status: string; role: string; rank_value: number }
 export interface AiDriverVerdict { gap_label: string; gap_value: string; gap_question: string; primary: AiDriverRef | null; secondary: AiDriverRef | null; offset: AiDriverRef[]; unconfirmed: AiDriverRef[]; conclusion: string; method: string; score_legend: Record<string, string>; status_meaning: Record<string, string> }
 export interface AiMemberRow { id: string; name: string; group: string; available: boolean; last_date: string | null; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_5d: number | null; above_ma5: boolean | null; above_ma20: boolean | null; advancing: boolean | null; note: string }
@@ -657,6 +662,7 @@ export interface AiRegime {
   sentiment?: AiSentiment | null;
   regime_read: string;
   driver_verdict: AiDriverVerdict;
+  chain_view: AiChainView;
 }
 
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */
