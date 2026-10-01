@@ -178,31 +178,50 @@ def extend_with_value_chain(result: AiRegime, cfg: dict, *, market: MarketSnapsh
     # ── 전파 체인 ──────────────────────────────────────────────────
     bands = tr.get("bands", {}); stages: list[TransmissionStage] = []
     news_tone = result.narrative.news_tone
+    # 세그먼트 '펀더멘털' 점수(seg_fund)가 무엇으로 만들어졌는지 — 근거 유형 태그용. 기사 톤이면 NEWS, 메모리 데이터·EPS 면 DATA
+    seg_fund_basis: dict[str, set[str]] = {}
+    for s in vc.get("segments", []):
+        k = str(s["key"]); b: set[str] = set()
+        if _drivers_tone([str(d) for d in s.get("drivers", [])]) is not None: b.add("NEWS")
+        if any(i in data_score for i in s.get("fundamentals", [])): b.add("DATA")
+        if seg_by.get(k) is not None and seg_by[k].eps is not None: b.add("DATA")
+        seg_fund_basis[k] = b
     for st in tr.get("stages", []):
-        src = str(st.get("source")); parts: list[float | None] = []; ev = []
+        src = str(st.get("source")); parts: list[float | None] = []; ev = []; basis: list[str] = []
+        def _tag(t: str) -> None:
+            if t not in basis: basis.append(t)
         if src == "news_tone":
             parts = [None if news_tone is None else _clip(news_tone / news_ref) * 100]; ev.append(f"AI 뉴스 톤 {'–' if news_tone is None else f'{news_tone:+.0f}'} ({result.narrative.news_count}건)")
+            if news_tone is not None: _tag("NEWS")
         elif src == "drivers":
             t = _drivers_tone([str(d) for d in st.get("drivers", [])]); parts.append(None if t is None else _clip(t / news_ref) * 100); ev.append(f"driver 톤 {'–' if t is None else f'{t:+.0f}'}")
+            if t is not None: _tag("NEWS")
             sg = seg_by.get(str(st.get("segment", ""))); parts.append(seg_mkt_ev.get(sg.key) if sg else None)
             if sg: ev.append(f"{sg.label} 상대 z {'–' if sg.rel_z_5d is None else f'{sg.rel_z_5d:+.1f}σ'}")
+            if sg and seg_mkt_ev.get(sg.key) is not None: _tag("PRICE")
         elif src == "segment":
             for k in (st.get("segment"), st.get("segment2")):
                 if k and k in seg_by:
                     parts += [seg_mkt_ev.get(k), seg_fund.get(k)]
                     ev.append(f"{seg_by[k].label} 상대 z {'–' if seg_by[k].rel_z_5d is None else f'{seg_by[k].rel_z_5d:+.1f}σ'} · 펀더멘털 {'–' if seg_fund.get(k) is None else f'{seg_fund[k]:+.0f}'}")
+                    if seg_mkt_ev.get(k) is not None: _tag("PRICE")
+                    if seg_fund.get(k) is not None:
+                        for b in sorted(seg_fund_basis.get(k, set())): _tag(b)
         elif src == "fundamentals":
             ds = [data_score[i] for i in st.get("ids", []) if i in data_score]; parts.append(_mean(ds) if ds else None)
             ev.append("메모리 데이터 " + (", ".join(f"{i} {next(r.status for r in memory_rows if r.id == i)}" for i in st.get("ids", []) if any(r.id == i for r in memory_rows)) or "없음"))
+            if ds: _tag("DATA")
             if st.get("drivers"):
                 t = _drivers_tone([str(d) for d in st["drivers"]]); parts.append(None if t is None else _clip(t / news_ref) * 100); ev.append(f"driver 톤 {'–' if t is None else f'{t:+.0f}'}")
+                if t is not None: _tag("NEWS")
         elif src == "eps":
             vals = list(eps_map.values()); parts.append(None if not vals else _clip(_mean(vals) / 5.0) * 100)  # type: ignore[arg-type]
             ev.append(f"컨센서스 {len(vals)}종목" if vals else "컨센서스 없음 — EPS revision 은 아직 못 잰다")
+            if vals: _tag("DATA")
         score = _mean(parts); status = _stage_status(score, bands, parts)
         if status == "STRONG" and st.get("accelerating_label"): status = "ACCELERATING"
         if src == "eps" and status in ("POSITIVE", "STRONG"): status = "IMPROVING"
-        stages.append(TransmissionStage(key=str(st["key"]), label=str(st["label"]), status=status, score=_r(score), evidence=" · ".join(ev)))  # type: ignore[arg-type]
+        stages.append(TransmissionStage(key=str(st["key"]), label=str(st["label"]), status=status, score=_r(score), evidence=" · ".join(ev), basis=basis))  # type: ignore[arg-type]
     good = [s.label for s in stages if s.status in ("ACCELERATING", "POSITIVE", "STRONG", "IMPROVING")]
     limited = [s.label for s in stages if s.status in ("MIXED", "UNCONFIRMED", "DETERIORATING", "STABLE")]
     tr_sent = (f"AI 투자 수요는 {' · '.join(good)} 까지 확인된다" if good else "AI 투자 수요가 확인되는 단계가 없다") + (f" — {' · '.join(limited)} 로의 전파는 아직 제한적이거나 미확인이다." if limited else ".")

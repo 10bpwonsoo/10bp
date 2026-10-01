@@ -238,6 +238,12 @@ describe("AiRegimeView", () => {
     const tr = screen.getByTestId("ai-transmission");
     expect(within(tr).getByTestId("ai-chain-fund-read").textContent).toContain(cv.fundamental_read);
     expect(tr.textContent).not.toContain(regime.transmission.sentence); // 긴 문장 반복 없음
+    // 근거 유형 태그 — 결측 입력은 빠진다 (9/29: HBM 은 DATA+NEWS, Equipment 는 PRICE+NEWS, Commodity Memory 는 NO DATA)
+    const basisEls = within(tr).getAllByTestId("ai-chain-basis"); expect(basisEls.length).toBe(9);
+    for (const st of cv.stages) { const el = basisEls[cv.stages.indexOf(st)]!; for (const b of st.basis) expect(el.textContent).toContain(b); if (!st.basis.length) expect(el.textContent).toContain("NO DATA"); }
+    expect(cv.stages.find((x) => x.key === "hbm")!.basis).toEqual(expect.arrayContaining(["DATA"]));
+    expect(cv.stages.find((x) => x.key === "commodity_memory")!.basis).toEqual([]);
+    expect(within(tr).getByTestId("ai-chain-basis-legend").textContent).toMatch(/NEWS.*PRICE.*DATA/);
     expect(tr.querySelector(".panel-note")!.textContent).toContain(cv.subtitles.transmission);
     const ld = screen.getByTestId("ai-value-chain");
     expect(within(ld).getByTestId("ai-chain-lead-read").textContent).toContain(cv.leadership_read);

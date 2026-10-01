@@ -70,12 +70,13 @@ export function AiChainSections({ regime }: { regime: AiRegime }) {
           <div className="ch-tr">
             {c.stages.map((s) => (
               <div key={s.key} className="ch-tr-row" data-testid="ai-chain-stage" data-status={s.status} title={s.evidence}>
-                <span className="ch-tr-l">{s.label}</span>
+                <span className="ch-tr-l">{s.label}<span className="ch-basis mono" data-testid="ai-chain-basis" title="점수에 실제로 들어간 근거 — NEWS 기사 톤 · PRICE 세그먼트 상대강도 · DATA 메모리 데이터·EPS">{s.basis.length ? s.basis.map((b) => <i key={b} data-b={b}>{b}</i>) : <i data-b="NONE">NO DATA</i>}</span></span>
                 <span className="num mono" style={{ color: s.score === null ? "var(--faint)" : s.score >= 0 ? "var(--up)" : "var(--down)" }}>{s.score === null ? "—" : sg(s.score, 0)}</span>
                 <St s={s.status} />
               </div>
             ))}
           </div>
+          <div className="ch-basis-legend mono" data-testid="ai-chain-basis-legend"><i data-b="NEWS">NEWS</i> 기사 톤 · <i data-b="PRICE">PRICE</i> 세그먼트 주가 상대강도 · <i data-b="DATA">DATA</i> 메모리 데이터 · EPS — 결측 입력은 태그에서 빠진다</div>
           <div className="ch-read" data-testid="ai-chain-fund-read"><span className="ai-k mono">Fundamental read</span><p>{c.fundamental_read}</p></div>
           <button type="button" className="ck-more" onClick={() => setFullChain((v) => !v)} data-testid="ai-chain-full">{fullChain ? "접기" : "View evidence"}</button>
           {fullChain ? <div className="ch-detail"><TransmissionSection regime={regime} /></div> : null}

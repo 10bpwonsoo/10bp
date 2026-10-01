@@ -378,3 +378,15 @@ class TestChainView:
         c = r.chain_view
         assert all(row.rank is None and row.price_status == "MIXED" for row in c.rows)
         assert c.leaders == [] and c.laggards == [] and c.snapshot.price_leadership == "–"
+
+    def test_stage_basis_tags_reflect_only_available_inputs(self):
+        r = _build("baseline")  # investment 없음 → 메모리 데이터·EPS 전부 결측
+        by = {s.key: s for s in r.transmission.stages}
+        for s in r.transmission.stages:
+            assert set(s.basis) <= {"NEWS", "PRICE", "DATA"} and len(s.basis) == len(set(s.basis))
+            if s.score is None:
+                assert s.basis == []  # 점수가 없으면 근거도 없다
+        assert "DATA" not in by["hbm"].basis and "DATA" not in by["commodity_memory"].basis and by["eps"].basis == []
+        assert "PRICE" in by["equipment"].basis
+        assert by["narrative"].basis in ([], ["NEWS"])
+        assert all(len(c.basis) == len(t.basis) for c, t in zip(r.chain_view.stages, r.transmission.stages))

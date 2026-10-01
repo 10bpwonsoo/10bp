@@ -65,7 +65,7 @@ def build_chain_view(r: AiRegime, cfg_all: Mapping) -> ChainView:
     out.rows.sort(key=lambda x: (order.get(x.view, 9), x.rank or 99))
     # ── TRANSMISSION 압축 ──
     short = cfg.get("stage_short", {}) or {}
-    out.stages = [ChainStage(key=s.key, label=str(short.get(s.key, s.label)), status=s.status, score=s.score, evidence=s.evidence) for s in r.transmission.stages]
+    out.stages = [ChainStage(key=s.key, label=str(short.get(s.key, s.label)), status=s.status, score=s.score, evidence=s.evidence, basis=list(s.basis)) for s in r.transmission.stages]
     rd = cfg.get("read", {}) or {}
     good = [str(short.get(s.key, s.label)) for s in r.transmission.stages if s.status in cfg.get("fund_good", [])]
     mixed = [str(short.get(s.key, s.label)) for s in r.transmission.stages if s.status not in cfg.get("fund_good", []) and s.score is not None]

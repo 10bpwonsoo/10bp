@@ -468,6 +468,19 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI FUNDAMENTAL TRANSMISSION 근거 유형 태그 + 메모리 가격 일일 수집 워크플로 (2026-10-01)
+
+전파 단계의 점수가 무엇으로 만들어졌는지 행마다 **NEWS / PRICE / DATA** 태그로 적는다(`TransmissionStage.basis`,
+`ChainStage.basis`; 범례 한 줄). NEWS = 기사 톤, PRICE = 세그먼트 주가의 Nasdaq 대비 상대강도, DATA = 메모리 데이터 · EPS
+revision. 결측 입력은 태그에서 빠지므로 "산업 데이터" 로 보이는 행이 실제로는 뉴스·주가 기반임이 드러난다. 9/29: HBM 만
+DATA(+NEWS), Equipment · Foundry/Packaging · DC Infra · GPU 는 PRICE+NEWS, Hyperscaler Capex 는 NEWS+PRICE, AI Narrative 는
+NEWS, Commodity Memory · EPS 는 NO DATA. 그리고 Commodity Memory 가 실제 데이터로 채워지도록
+`.github/workflows/collect-memory-prices.yml` 을 추가했다 — 평일 03:40 UTC(12:40 KST, DRAMeXchange 11:00 GMT+8 갱신 뒤)에
+`python -m marketpulse.scripts.collect_memory_prices` 를 돌려 `data/replay/alternative/*.csv` 에 그 날 줄을 붙이고 변경이
+있으면 커밋한다(키·비밀 없음, `workflow_dispatch` 로 수동 실행 가능; 기본 브랜치에 들어간 뒤부터 스케줄이 돈다). 이 세션에서
+수집기를 한 번 돌려 10/1 줄을 더했다(DRAM 46.321 · DDR5 57.90 · NAND 19.883 · DXI 1,112,072; Silicon Analysts 는 이
+환경에서 막혀 HBM 앵커는 그대로). 변화율은 2봉부터, z 는 20봉이 차면 나온다.
+
 #### AI 센티2 · AI CHAIN VIEW — Transmission · Leadership · Semi Confirmation 을 한 흐름으로 (2026-10-01)
 
 세 영역의 계산과 데이터는 그대로이고 표시만 바꿨다(`config/ai_regime.yaml chain_view`, `engines/ai_chain_view.py`, 프런트

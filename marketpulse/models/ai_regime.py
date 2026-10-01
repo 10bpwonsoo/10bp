@@ -278,6 +278,7 @@ class TransmissionStage(Base):
     status: StageStatus
     score: float | None = Field(default=None, description="−100…+100 증거 점수. 없으면 None")
     evidence: str = ""
+    basis: list[str] = Field(default_factory=list, description="실제로 점수에 들어간 근거 유형 — NEWS(기사 톤) · PRICE(세그먼트 상대강도) · DATA(메모리 데이터 · EPS). 결측 입력은 빼고 적는다")
 
 
 class Transmission(Base):
@@ -524,6 +525,7 @@ class ChainStage(Base):
     status: str
     score: float | None = None
     evidence: str = ""
+    basis: list[str] = Field(default_factory=list)
 
 
 class ChainSemiArea(Base):

@@ -602,7 +602,7 @@ export interface AiEvidenceItem { id: string; label: string; kind: "price" | "ne
 export interface AiPriceCheck { label: string; value: string }
 export interface AiDriverScore { id: string; label: string; label_ko: string; headline: string; score: number; strength: string; status: DriverStatus; status_reason: string; coverage: number; evidence: AiEvidenceItem[]; implication: string; band: string; band_ko: string; why: string; transmission: string[]; price_check: AiPriceCheck[]; status_ko: string; status_meaning: string; aux_label: string; aux_ko: string; top_evidence: string[] }
 export interface AiChainRow { key: string; label: string; segment: string; segment_label: string; stage: string | null; fund_status: string; fund_score: number | null; price_status: string; rank: number | null; rel_5d: number | null; breadth: number | null; view: string; view_ko: string }
-export interface AiChainStage { key: string; label: string; status: string; score: number | null; evidence: string }
+export interface AiChainStage { key: string; label: string; status: string; score: number | null; evidence: string; basis: string[] }
 export interface AiChainSemiArea { key: string; label: string; status: string; meaning: string; key_evidence: string[]; arrows: Record<string, string> }
 export interface AiChainSnapshot { fundamentals: string; fundamentals_ko: string; price_leadership: string; semi_confirmation: string; key_gap: string; read: string }
 export interface AiChainView { snapshot: AiChainSnapshot; subtitles: Record<string, string>; score_tip: string; rows: AiChainRow[]; main_rows: number; views: Record<string, string>; stages: AiChainStage[]; fundamental_read: string; leaders: AiChainRow[]; laggards: AiChainRow[]; leadership_read: string; semi_areas: AiChainSemiArea[]; semi_columns: { key: string; label: string }[] }
@@ -631,7 +631,7 @@ export interface AiGlobalContext { market_label: string; market_confidence: numb
 export type AiArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
 export interface AiStatusItem { key: string; label: string; value: string; tone: "good" | "warn" | "bad" | "muted"; detail: string; meaning: string }
 export interface AiFundamentalConfirmation { level: "STRONG" | "PARTIAL" | "WEAK" | "UNCONFIRMED"; confirming: string[]; lagging: string[]; sentence: string }
-export interface AiTransmissionStage { key: string; label: string; status: "ACCELERATING" | "POSITIVE" | "STRONG" | "IMPROVING" | "STABLE" | "MIXED" | "DETERIORATING" | "UNCONFIRMED"; score: number | null; evidence: string }
+export interface AiTransmissionStage { key: string; label: string; status: "ACCELERATING" | "POSITIVE" | "STRONG" | "IMPROVING" | "STABLE" | "MIXED" | "DETERIORATING" | "UNCONFIRMED"; score: number | null; evidence: string; basis: string[] }
 export interface AiTransmission { stages: AiTransmissionStage[]; sentence: string }
 export interface AiSegmentRow { key: string; label: string; label_ko: string; exposure: string; members: number; available: number; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_1d: number | null; rel_5d: number | null; rel_21d: number | null; rel_z_5d: number | null; above_ma20_pct: number | null; eps: number | null; eps_note: string; arrow_1w: AiArrow; arrow_rel: AiArrow; arrow_eps: AiArrow; rank_1w: number | null; role: "leading" | "neutral" | "lagging" | "unknown"; macro_score: number | null }
 export interface AiValueChain { segments: AiSegmentRow[]; leadership: string[]; lagging: string[]; sentence: string }
