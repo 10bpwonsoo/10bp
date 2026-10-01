@@ -626,4 +626,8 @@ def build_ai_regime(
     from .ai_chain_view import build_chain_view
 
     result.chain_view = build_chain_view(result, cfg)
+    # ── BASKET READ · BREADTH READ (2026-10-01): 숫자 → 구조 → 의미. 각 카드 자기 데이터만 ──
+    from .ai_reads import annotate_reads
+
+    annotate_reads(result, cfg)
     return result

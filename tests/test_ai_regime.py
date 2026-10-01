@@ -390,3 +390,41 @@ class TestChainView:
         assert "PRICE" in by["equipment"].basis
         assert by["narrative"].basis in ([], ["NEWS"])
         assert all(len(c.basis) == len(t.basis) for c, t in zip(r.chain_view.stages, r.transmission.stages))
+
+
+class TestReads:
+    """BASKET READ · BREADTH READ — 숫자 나열 없이 구조와 의미. 각 카드 자기 데이터만, 최대 3문장."""
+
+    def test_reads_exist_and_do_not_recite_numbers(self):
+        import re
+        r = _build("baseline")
+        for txt in (r.leadership.read, r.breadth.read):
+            assert txt and txt.count("다.") <= 3
+            assert not re.search(r"1주 리더|1개월 리더|1주 후미|바뀌었다|20일선 위 \d+%|5일선 위 \d+%|오늘 상승|%p|σ", txt)
+            for w in ("확률", "매수", "매도"):
+                assert w not in txt
+
+    def test_true_leadership_vs_relative_resilience(self):
+        cfg = load_ai_regime_config()["basket_read"]
+        r_up = _build("baseline", shock=0.012)       # 바스켓만 +6%: 그룹이 Nasdaq 을 실제로 outperform → TRUE LEADERSHIP
+        assert any((g.rel_5d or 0) >= cfg["true_lead_rel"] for g in r_up.leadership.groups if g.in_basket)
+        assert "실제로 outperform" in r_up.leadership.read and "뚜렷한 AI leadership 국면이 아닙니다" not in r_up.leadership.read
+        r_dn = _build("ai_sentiment", shock=-0.012)  # 바스켓만 −6%: 전 그룹이 Nasdaq 을 밑돎 → leadership 없음, 1위는 '덜 약한' 그룹
+        assert all((g.rel_5d or 0) < 0 for g in r_dn.leadership.groups if g.in_basket)
+        assert "뚜렷한 AI leadership" in r_dn.leadership.read
+        top = max((g for g in r_dn.leadership.groups if g.in_basket and g.rel_5d is not None), key=lambda g: g.rel_5d)
+        assert top.label in r_dn.leadership.read and ("선방" in r_dn.leadership.read)
+
+    def test_breadth_read_separates_short_and_medium_term(self):
+        cfg = load_ai_regime_config()["breadth_read"]
+        r = _build("baseline", shock=0.012)  # 전 종목 5일 상승 → 단기 참여 전면
+        b = r.breadth
+        assert b.above_ma5_pct == 100.0
+        assert "참여하고 있" in b.read
+        r2 = _build("ai_sentiment", shock=-0.012)
+        b2 = r2.breadth
+        if b2.advancing_pct is not None and b2.advancing_pct <= cfg["selloff_max"] and b2.above_ma5_pct <= cfg["selloff_max"]:
+            assert "전반으로 확산" in b2.read
+        if b2.change_1w_pts is not None and b2.change_1w_pts <= cfg["fast_drop"]:
+            assert "빠르게" in b2.read
+        assert "20DMA" in b2.read  # 다음 확인 포인트는 항상 20DMA

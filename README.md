@@ -468,6 +468,27 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · BASKET READ · BREADTH READ — 숫자 → 구조 → 의미 (2026-10-01)
+
+AI BASKET GROUPS 와 AI BREADTH 의 자동 코멘트를 바꿨다(`config/ai_regime.yaml basket_read · breadth_read`,
+`engines/ai_reads.py`, `Leadership.read` · `Breadth.read`; AI 센티 기본 탭의 예전 문장은 그대로). 두 코멘트는 합치지 않고 각자
+자기 카드의 데이터만 쓴다. "1주 리더는 … 1개월 리더는 … 회전 중" 이나 "20일선 위 59% · 5일선 위 12% …" 처럼 화면 숫자를
+다시 읽는 문장은 폐기했다. **BASKET READ**(최대 3문장): ① 큰 그림 — Nasdaq 을 실제로 outperform 하는 그룹이 있으면 TRUE
+LEADERSHIP, 전부 밑돌면 "뚜렷한 AI leadership 국면이 아니다"(1위라도 Nasdaq 대비 음수면 리더라 부르지 않는다); 1M·1W 1위가
+다를 때는 옛 리더 둔화 · 상대격차 ≥ 1%p · breadth · rel z · 1D 지속 다섯 조건 중 4개 이상이어야 rotation, 2개 이상이면
+"변화 가능성일 뿐 아직 rotation 으로 확인되지 않았다", 그 아래면 언급하지 않는다. ② 가장 중요한 강점 — 1위 그룹이 실제
+outperform 인지 방어적 상대강도인지, breadth 가 좁은지(<50%)로 질을 말하고, 가격은 약한데 20일선 위 비율 ≥ 70% 이고 1M 상대
+> 0 인 그룹은 "중기 구조가 훼손되지 않았다" 대비 절. ③ 가장 중요한 약점 — 1W ≤ −0.5%p · 1M ≤ 0 · breadth < 50% 가 겹치면
+구조적 laggard, 아니면 단기 약세. **BREADTH READ**(최대 3문장): ① 단기(5DMA · 상승 비율 ≤ 20% → BROAD SELL-OFF, ≥ 80% →
+BROAD ADVANCE)와 중기(20DMA ≥ 50% 과반 유지 / ≥ 75% 대부분)를 한 문장에서 분리 ② 그룹별 breadth 는 최대−최소 ≥ 20%p 일
+때만 가장 견조한 그룹과 가장 취약한 그룹의 contrast ③ 다음 확인 포인트 — 20DMA 1주 변화 ≤ −15%p 면 "빠르게 줄고 있어 추가
+하락 여부가 단기 조정과 구조적 약세를 구분할 핵심 신호", ≥ +10%p 면 확산 지속 여부, 그 외 과반 유지/회복 여부. 9/29 BASKET:
+"AI 그룹 전체가 Nasdaq 을 밑돌고 있어 뚜렷한 AI leadership 국면이 아니며, Memory → Software 순위 변동은 아직 rotation 으로
+확인되지 않았다. Software 는 peer 대비 가장 선방하지만 breadth 가 좁아 방어적 상대강도에 가깝고, Memory 는 단기 가격은 약하지만
+중기 구조가 훼손되지 않았다. Power / Data Center 는 가장 구조적인 laggard." BREADTH: "단기 매도 압력은 전반으로 확산됐지만
+20일선 기준 절반 이상이 추세를 유지해 중기 붕괴보다는 급격한 단기 deterioration. Semis · Memory 견조 vs Power · Software 약함.
+20DMA breadth 의 추가 하락 여부가 핵심 신호." 테스트 +3(백엔드) +1(프런트).
+
 #### AI FUNDAMENTAL TRANSMISSION 근거 유형 태그 + 메모리 가격 일일 수집 워크플로 (2026-10-01)
 
 전파 단계의 점수가 무엇으로 만들어졌는지 행마다 **NEWS / PRICE / DATA** 태그로 적는다(`TransmissionStage.basis`,

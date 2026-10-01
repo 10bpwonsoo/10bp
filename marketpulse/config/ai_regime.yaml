@@ -602,3 +602,66 @@ chain_view:
     fundamental_none: "확인 강도가 높은 단계가 아직 없음."
     leadership: "{top} 중심의 강세. {bottom}는 상대적으로 약함."
     leadership_none: "리더십이 뚜렷한 세그먼트 없음."
+
+#: BASKET READ · BREADTH READ (2026-10-01) — 숫자를 다시 읽지 않고 '숫자 → 시장 구조 → 투자자가 알아야 할 의미' 로. 두 화면은 각자 자기 데이터만 쓴다. 최대 3문장.
+basket_read:
+  true_lead_rel: 0.5          # 1주 Nasdaq 대비 %p 가 이 이상이면 TRUE LEADERSHIP(실제 outperform)
+  lag_rel: -0.5               # 이 이하면 LAGGING
+  broad_ma20: 60              # 20일선 상회 비율이 이 이상이면 breadth 견조
+  narrow_ma20: 50             # 이 아래면 breadth 좁음
+  structural_rel_1m: 0.0      # 구조적 laggard: 1주 ≤ lag_rel 이고 1개월 ≤ 이 값이고 breadth < narrow_ma20
+  divergence_ma20: 70         # 가격은 약한데 20일선 위 비율이 이 이상이고 1개월 상대 > 0 이면 '중기 구조 유지'
+  rotation_gap: 1.0           # rotation 조건: 새 리더 1주 상대 − 옛 리더 1주 상대 ≥ 이 값
+  rotation_min_conditions: 4  # 아래 5조건 중 이만큼 이상이면 rotation, 2 이상이면 '변화 가능성', 그 아래는 언급 안 함
+  rotation_possible_conditions: 2
+  text:
+    #: *_conj 는 뒤에 절이 이어질 때 쓰는 연결형 — 한 문장 안에 rotation·divergence 절을 넣어 전체를 3문장 안에 둔다
+    big_true: "{leaders}이(가) Nasdaq 을 실제로 outperform 해 AI 내부 leadership 은 {leaders}에 있습니다."
+    big_true_conj: "{leaders}이(가) Nasdaq 을 실제로 outperform 해 AI 내부 leadership 은 {leaders}에 있으며,"
+    big_none: "AI 그룹 전체가 Nasdaq 을 밑돌고 있어 현재는 뚜렷한 AI leadership 국면이 아닙니다."
+    big_none_conj: "AI 그룹 전체가 Nasdaq 을 밑돌고 있어 현재는 뚜렷한 AI leadership 국면이 아니며,"
+    big_mixed: "AI 그룹 대부분이 Nasdaq 과 같은 걸음이거나 약해 뚜렷한 AI leadership 은 없습니다."
+    big_mixed_conj: "AI 그룹 대부분이 Nasdaq 과 같은 걸음이거나 약해 뚜렷한 AI leadership 은 없으며,"
+    rot_confirmed: " 상대강도의 축은 {old}에서 {new}(으)로 옮겨가고 있습니다."
+    rot_possible: " {old} → {new} 순위 변동은 leadership 변화 가능성일 뿐 아직 rotation 으로 확인되지 않았습니다."
+    top_true_broad: "{top}은(는) 상대강도와 breadth 가 함께 강해 추세의 질이 좋습니다."
+    top_true_broad_conj: "{top}은(는) 상대강도와 breadth 가 함께 강해 추세의 질이 좋고,"
+    top_true_narrow: "{top}은(는) 실제로 outperform 하지만 breadth 가 좁아 소수 종목이 끄는 상대강도입니다."
+    top_true_narrow_conj: "{top}은(는) 실제로 outperform 하지만 breadth 가 좁아 소수 종목이 끄는 상대강도이고,"
+    top_resilient_narrow: "{top}은(는) peer 대비 가장 선방하지만 breadth 가 좁아 강한 추세라기보다 방어적 상대강도에 가깝습니다."
+    top_resilient_narrow_conj: "{top}은(는) peer 대비 가장 선방하지만 breadth 가 좁아 강한 추세라기보다 방어적 상대강도에 가깝고,"
+    top_resilient_broad: "{top}은(는) peer 대비 가장 선방하고 내부 참여도도 유지돼 상대강도의 질이 나쁘지 않습니다."
+    top_resilient_broad_conj: "{top}은(는) peer 대비 가장 선방하고 내부 참여도도 유지돼 상대강도의 질이 나쁘지 않으며,"
+    divergence_clause: " {div}은(는) 단기 가격은 약하지만 20일선 위 종목 비율이 높아 중기 구조가 완전히 훼손된 것은 아닙니다."
+    weak_structural: "{lag}은(는) 단기·중기 상대성과와 breadth 가 함께 약해 가장 구조적인 laggard 입니다."
+    weak_short: "{lag}이(가) 가장 약하지만 breadth 는 유지돼 구조적 약세보다 단기 약세에 가깝습니다."
+    weak_none: "구조적으로 약한 그룹은 아직 없습니다."
+    empty: "그룹 상대 모멘텀을 낼 계열이 부족합니다."
+
+breadth_read:
+  selloff_max: 20             # 상승 비율·5일선 위 비율이 둘 다 이 이하면 BROAD SELL-OFF
+  advance_min: 80             # 둘 다 이 이상이면 BROAD ADVANCE
+  short_weak_max: 50          # 5일선 위 비율이 이 아래면 단기 과반 약화
+  medium_intact_min: 50       # 20일선 위 비율이 이 이상이면 중기 과반 유지
+  medium_strong_min: 75
+  fast_drop: -15              # 1주 변화(%p)가 이 이하면 '이탈 속도가 빠르다'
+  fast_rise: 10
+  contrast_gap: 20            # 그룹 breadth 최대−최소가 이 이상일 때만 contrast 문장
+  text:
+    #: 단기 절은 연결형 — 중기 절과 한 문장으로 이어 "단기 … 지만, 중기 …" 꼴을 만든다
+    short_selloff: "단기 매도 압력은 AI 종목 전반으로 확산됐지만,"
+    short_advance: "단기 상승에 AI 종목 대부분이 참여하고 있고,"
+    short_weak: "단기 모멘텀은 과반의 AI 종목에서 약화됐지만,"
+    short_mixed: "단기 모멘텀은 종목별로 엇갈리고,"
+    medium_intact_after_weak: "20일선 기준으로는 아직 {share} 종목이 상승 추세를 유지해 현재는 중기 붕괴보다는 급격한 단기 deterioration 에 가깝습니다."
+    medium_broken_after_weak: "20일선 기준으로도 과반이 추세를 잃어 단기 충격이 중기 추세 훼손으로 번지고 있습니다."
+    medium_intact_after_strong: "20일선 기준으로도 {share} 종목이 추세를 유지해 참여가 넓은 건강한 상승입니다."
+    medium_broken_after_strong: "20일선 위 종목은 아직 과반에 못 미쳐 반등이 중기 추세로 확인되지 않았습니다."
+    share_majority: "절반 이상의"
+    share_most: "대부분의"
+    contrast: "{strong}은(는) 아직 중기 breadth 가 상대적으로 견조한 반면, {weak}은(는) 내부 참여도가 크게 약해져 있습니다."
+    next_fast_drop: "20DMA breadth 가 빠르게 줄고 있어 추가 하락이 이어지는지가 단기 조정과 구조적 약세를 구분할 핵심 신호입니다."
+    next_fast_rise: "20DMA breadth 가 빠르게 넓어지고 있어 이 확산이 이어지는지가 추세 확인의 핵심 신호입니다."
+    next_hold: "20DMA breadth 가 과반을 지키는지가 다음 핵심 확인 포인트입니다."
+    next_recover: "20DMA breadth 가 과반을 회복하는지가 다음 핵심 확인 포인트입니다."
+    empty: "breadth 를 낼 구성원이 부족합니다."

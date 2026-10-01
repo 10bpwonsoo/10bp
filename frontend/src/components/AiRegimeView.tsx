@@ -202,7 +202,8 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
             <div className="ai-grp ai-th mono"><span>segment</span><span>1D</span><span>1W</span><span>1M</span><span>rel z 5D</span><span>&gt;MA20</span><span>rank</span></div>
             {groups.map((g) => <GroupRow key={g.key} g={g} leader={g.key === regime.leadership.leader_1w} />)}
           </div>
-          <p className="ai-sent" data-testid="ai-rotation" data-rotation={regime.leadership.rotation}>{regime.leadership.sentence}</p>
+          {extended && regime.leadership.read ? <div className="ai-read2" data-testid="ai-basket-read" title={regime.leadership.sentence}><span className="ai-k mono">Basket read</span><p>{regime.leadership.read}</p></div>
+            : <p className="ai-sent" data-testid="ai-rotation" data-rotation={regime.leadership.rotation}>{regime.leadership.sentence}</p>}
         </div>
       </section>
 
@@ -221,7 +222,8 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
               return <div key={k} className="ai-bg-row"><span className="ai-bg-l">{g?.label_ko ?? k}</span><span className="ai-bg-bar"><i style={{ width: `${v ?? 0}%`, background: v !== null && v < 50 ? "var(--down)" : "var(--up)" }} /></span><span className="num">{pc(v)}</span></div>;
             })}
           </div>
-          <p className="ai-sent" data-testid="ai-breadth-sentence" data-narrowing={b.narrowing_with_index_up ? "1" : "0"}>{b.sentence}</p>
+          {extended && b.read ? <div className="ai-read2" data-testid="ai-breadth-read" title={b.sentence}><span className="ai-k mono">Breadth read</span><p>{b.read}</p></div>
+            : <p className="ai-sent" data-testid="ai-breadth-sentence" data-narrowing={b.narrowing_with_index_up ? "1" : "0"}>{b.sentence}</p>}
         </div>
       </section>
 

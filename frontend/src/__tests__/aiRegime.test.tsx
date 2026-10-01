@@ -257,4 +257,19 @@ describe("AiRegimeView", () => {
     expect(sm.textContent).not.toContain(regime.semi_confirmation.sentence);
     expect(within(sm).getByTestId("ai-chain-view-matrix").textContent).toMatch(/PRICE.*REL STRENGTH.*BREADTH.*NEWS \/ FUND.*EPS/);
   });
+
+  it("AI 센티2: AI BASKET GROUPS 와 AI BREADTH 는 각자 BASKET READ / BREADTH READ(최대 3문장, 숫자 나열·'1주 리더는' 식 문장 없음)를 보이고, 기본 탭은 예전 문장 그대로", () => {
+    render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
+    const br = screen.getByTestId("ai-basket-read").textContent!; const bd = screen.getByTestId("ai-breadth-read").textContent!;
+    expect(br).toContain(regime.leadership.read); expect(bd).toContain(regime.breadth.read);
+    for (const txt of [regime.leadership.read, regime.breadth.read]) {
+      expect((txt.match(/다\./g) ?? []).length).toBeLessThanOrEqual(3);
+      expect(txt).not.toMatch(/1주 리더|1개월 리더|1주 후미|바뀌었다|20일선 위 \d+%|5일선 위 \d+%|오늘 상승 \d+%|%p/);
+    }
+    expect(screen.queryByTestId("ai-rotation")).toBeNull(); expect(screen.queryByTestId("ai-breadth-sentence")).toBeNull();
+    // 9/29: 모든 그룹이 Nasdaq 을 밑돎 → 뚜렷한 leadership 없음, Software 는 방어적 상대강도, Power / Data Center 는 구조적 laggard; breadth 는 단기 sell-off · 중기 과반 유지 · 20DMA 빠른 하락
+    expect(regime.leadership.read).toMatch(/뚜렷한 AI leadership/); expect(regime.leadership.read).toMatch(/Software.*방어적 상대강도/); expect(regime.leadership.read).toMatch(/Power \/ Data Center.*구조적인 laggard/);
+    expect(regime.leadership.read).not.toMatch(/옮겨가고/); expect(regime.leadership.read).toMatch(/아직 rotation 으로 확인되지 않/);
+    expect(regime.breadth.read).toMatch(/전반으로 확산/); expect(regime.breadth.read).toMatch(/중기 붕괴보다는/); expect(regime.breadth.read).toMatch(/20DMA breadth 가 빠르게/);
+  });
 });

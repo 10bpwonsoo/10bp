@@ -110,6 +110,7 @@ class Leadership(Base):
     laggard_1w: str | None = None
     rotation: Literal["none", "rotating", "early", "unknown"] = "unknown"
     sentence: str = ""
+    read: str = Field(default="", description="BASKET READ — 진짜 leadership 인지 · 상대강도의 질 · 구조적 laggard. 최대 3문장, 숫자 나열 없음")
 
 
 class AiVsMarket(Base):
@@ -166,6 +167,7 @@ class Breadth(Base):
     narrowing_with_index_up: bool = False
     by_group: dict[str, float | None] = Field(default_factory=dict, description="그룹별 20일선 상회 비율")
     sentence: str = ""
+    read: str = Field(default="", description="BREADTH READ — 단기 확산 · 중기 추세 · 다음 확인 포인트. 최대 3문장, 숫자 나열 없음")
 
 
 class NarrativeDriver(Base):
