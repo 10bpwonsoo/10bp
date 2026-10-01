@@ -468,6 +468,30 @@ Full-width Detail Panel 로 열린다(아래 "Leadership Detail Panel" 항목). 
 DS투자증권 이수림 9/29 · Goldman Sachs Ryan Hammond 9/25 · Deutsche Bank 9/18 · JPMorgan Matthew Lofting 9/23)이고 기관 ·
 발행일 · URL · 요약이 없거나 30일을 넘으면 버린다. LLM 문장 생성은 쓰지 않았다 — 템플릿이 데이터만 설명한다.
 
+#### AI 센티2 · STOCK IMPACT MAP · STOCK RADAR · NEWS → VALUE CHAIN → STOCK — 스캔 / 클릭 분석 (2026-10-01)
+
+세 영역의 역할을 나누고 progressive disclosure 로 바꿨다(`config/ai_regime.yaml stock_view`, `engines/ai_stock_view.py`,
+`models StockSignal · RadarItem · RadarBucketView · NewsCard · StockView`, 프런트 `AiStockSections.tsx`; 네 축·레이더 버킷·뉴스
+체인 계산은 그대로, AI 센티 기본 탭은 영향 없음). **STOCK IMPACT MAP** = "개별 종목에서 지금 특이한 변화가 무엇인가":
+50종목 중 anomaly 가 있는 종목만 **TOP STOCK SIGNALS** 8~10 (같은 세그먼트·같은 라벨은 2개까지), 종목마다 대표 anomaly 라벨
+하나(CONFIRMED · FUNDAMENTAL LEADING · RELATIVE BREAKOUT / BREAKDOWN · NEWS > PRICE · MACRO RESILIENT · PRICE LEADING ·
+MACRO SENSITIVE · PRICE > NEWS · DIVERGENCE — 네 축과 1주 상대 %p 의 조합 규칙, 위에서부터 먼저 걸리는 것) + 신호 한 줄 +
+STOCK READ 한 문장(템플릿) + Fundamental / Macro 두 상태 + KEY TENSION("Price Strong / Fundamental Neutral", MIXED 인 이유).
+클릭하면 WHAT CHANGED · PRICE / RELATIVE · FUNDAMENTALS · NEWS & SENTIMENT · MACRO EXPOSURE · SYSTEM READ · WHAT TO WATCH(≤3).
+선별 순서는 수익률이 아니라 상대강도 크기 · 축 간 괴리 · 뉴스 언급 · 확인 여부로 만든 '특이성'. 네 축 전체 표(50행)는 View all.
+**STOCK RADAR** = "그중 다시 확인할 가치가 높은 종목": 버킷을 CONFIRMED LEADERS · IMPROVING SETUPS · DIVERGENCES / WATCH
+(narrative_ahead + fundamentals_ahead 합침) · MACRO SENSITIVE 로 바꾸고 버킷마다 설명 한 줄, 종목마다 Relative · Price ·
+Fundamental 세 지표 + WHY WATCH 한 줄, 버킷당 기본 3 + View all. 숫자 종합 점수는 만들지 않는다. **NEWS → VALUE CHAIN →
+STOCK** = "뉴스가 어디까지 번지는가": `news_impact.top_n` 5 → 12, 같은 catalyst(제목 토큰 Jaccard ≥ 0.3 또는 driver·핵심 종목이
+같고 토큰 2개 이상 겹침)는 하나로 묶어 ×n 표시, TOP IMPACT 3 + OTHER RELEVANT(기본 6, View more). 기본 row = 톤 + NEGATIVE /
+POSITIVE 라벨 · 제목 · 카테고리 · PRIMARY IMPACT · KEY STOCKS ≤3 · PRICE REACTION(CONFIRMED · CONFIRMED NEGATIVE · NOT PRICED
+· RESILIENT · UNCLEAR, 한글 설명). 클릭하면 WHY IT MATTERS(driver 별 템플릿) · PRIMARY / SECONDARY / TERTIARY · KEY STOCKS ·
+CURRENT PRICE REACTION · SYSTEM READ · SOURCE. NEWS IMPACT 범례(−100 / 0 / +100, 확률·전망 아님)와 뉴스 × 가격 관계 표를
+붙였다. 정렬은 |톤| + 전파 폭 + 가격 반응 확인 + divergence + 묶인 기사 수의 priority. 9/29 TOP STOCK SIGNALS: Tokyo
+Electron RELATIVE BREAKOUT(+16.1%p) · HD현대일렉트릭 · SK하이닉스 · 두산에너빌리티 FUNDAMENTAL LEADING · Oracle RELATIVE
+BREAKDOWN(−10.1%p) · Ciena · Datadog RELATIVE BREAKOUT · Arm · Digital Realty · AppLovin; NEWS TOP: 엔비디아 자사주(NOT PRICED)
+· 삼성 $1bn 투자 ×2(NOT PRICED) · OpenAI 모델 출시 취소(RESILIENT). 테스트 +3(백엔드) +1(프런트).
+
 #### AI 센티2 · BASKET READ · BREADTH READ — 숫자 → 구조 → 의미 (2026-10-01)
 
 AI BASKET GROUPS 와 AI BREADTH 의 자동 코멘트를 바꿨다(`config/ai_regime.yaml basket_read · breadth_read`,

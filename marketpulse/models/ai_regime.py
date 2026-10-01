@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from .common import Base
 
@@ -566,6 +566,92 @@ class ChainView(Base):
     semi_columns: list[dict[str, str]] = Field(default_factory=list)
 
 
+class StockSignal(Base):
+    """STOCK IMPACT MAP 한 행 — 왜 이 종목이 눈에 띄는가 하나만. 기본 화면용 압축 + 클릭 상세."""
+
+    id: str
+    name: str
+    segment: str
+    segment_ko: str = ""
+    region: str = "US"
+    ret_5d: float | None = None
+    rel_5d: float | None = None
+    ret_21d: float | None = None
+    label: str = "IN LINE"
+    label_ko: str = ""
+    signal: str = ""
+    signal_value: str = ""
+    fundamental: str = "N/A"
+    macro: str = "N/A"
+    news: str = ""
+    tension: str = ""
+    read: str = ""
+    what_changed: str = ""
+    price_relative: str = ""
+    fundamentals: str = ""
+    news_sentiment: str = ""
+    macro_exposure: str = ""
+    watch: list[str] = Field(default_factory=list)
+    rank_value: float = 0.0
+
+
+class RadarItem(Base):
+    id: str
+    name: str
+    segment: str
+    relative: str = "–"
+    price: str = "N/A"
+    fundamental: str = "N/A"
+    why_watch: str = ""
+    detail: str = ""
+
+
+class RadarBucketView(Base):
+    key: str
+    label: str
+    desc: str
+    items: list[RadarItem] = Field(default_factory=list)
+
+
+class NewsCard(Base):
+    event: str
+    source: str
+    url: str | None = None
+    tone: float
+    impact: str = "NEUTRAL"
+    category: str = ""
+    primary: list[str] = Field(default_factory=list)
+    secondary: list[str] = Field(default_factory=list)
+    tertiary: list[str] = Field(default_factory=list)
+    key_stocks: list[str] = Field(default_factory=list)
+    all_stocks: list[str] = Field(default_factory=list)
+    reaction: str = "UNCLEAR"
+    reaction_ko: str = ""
+    reaction_read: str = ""
+    why: str = ""
+    cluster_size: int = 1
+    priority: float = 0.0
+    _drivers: list[str] = PrivateAttr(default_factory=list)
+
+
+class StockView(Base):
+    """STOCK IMPACT MAP · STOCK RADAR · NEWS 의 표시 층 — 계산 없음, 선별·라벨·문장만."""
+
+    impact_subtitle: str = ""
+    signals: list[StockSignal] = Field(default_factory=list, description="TOP STOCK SIGNALS — anomaly 가 있는 종목, 강도 순")
+    all_signals: list[StockSignal] = Field(default_factory=list, description="전체 종목(계열 있는 것) — View all")
+    label_legend: dict[str, str] = Field(default_factory=dict)
+    radar_subtitle: str = ""
+    radar: list[RadarBucketView] = Field(default_factory=list)
+    radar_default: int = 3
+    news_subtitle: str = ""
+    news_top: list[NewsCard] = Field(default_factory=list)
+    news_others: list[NewsCard] = Field(default_factory=list)
+    news_others_default: int = 6
+    news_legend: dict[str, str] = Field(default_factory=dict)
+    note: str = ""
+
+
 class DriverRef(Base):
     id: str
     label: str
@@ -635,3 +721,4 @@ class AiRegime(Base):
     regime_read: str = Field(default="", description="AI REGIME READ — FUNDAMENTAL CONFIRMATION · SUMMARY · 맥락을 대신하는 2~3문장")
     driver_verdict: DriverVerdict = Field(default_factory=DriverVerdict)
     chain_view: ChainView = Field(default_factory=ChainView)
+    stock_view: StockView = Field(default_factory=StockView)

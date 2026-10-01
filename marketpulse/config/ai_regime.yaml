@@ -155,7 +155,7 @@ semi_confirmation:
 
 #: 뉴스 → 산업 driver → 밸류체인 → 종목. driver 별로 1차/2차/인프라 노출 세그먼트.
 news_impact:
-  top_n: 5
+  top_n: 12   # 뉴스 → 밸류체인 → 종목 기본 노출 확대 (2026-10-01): TOP IMPACT 3 + OTHER RELEVANT 까지
   chains:
     capex:                {primary: [compute, networking], secondary: [foundry, equipment, memory_hbm], infrastructure: [dc_infra, power]}
     hyperscaler_spending: {primary: [hyperscalers, compute], secondary: [networking, equipment], infrastructure: [dc_infra, power]}
@@ -665,3 +665,80 @@ breadth_read:
     next_hold: "20DMA breadth 가 과반을 지키는지가 다음 핵심 확인 포인트입니다."
     next_recover: "20DMA breadth 가 과반을 회복하는지가 다음 핵심 확인 포인트입니다."
     empty: "breadth 를 낼 구성원이 부족합니다."
+
+#: STOCK VIEW (2026-10-01) — STOCK IMPACT MAP · STOCK RADAR · NEWS → VALUE CHAIN → STOCK 의 표시 층. 계산(네 축 · 레이더 버킷 · 뉴스 체인)은 그대로.
+#: 기본 화면 = 스캔(핵심만), 클릭 = 분석. 숫자 점수(Radar Score 같은 것)는 만들지 않는다.
+stock_view:
+  impact:
+    subtitle: "현재 평소와 다른 움직임이 나타난 종목"
+    max_default: 10            # TOP STOCK SIGNALS 기본 노출
+    max_per_segment: 2         # 같은 세그먼트·같은 라벨은 기본 목록에 이만큼만 — 세그먼트 단위 펀더멘털이 같은 종목이 줄줄이 나오지 않게
+    breakout_rel: 4.0          # 1주 Nasdaq 대비 %p — 이 이상이면 RELATIVE BREAKOUT, 이하(음수)면 BREAKDOWN
+    axis_on: 0.5               # 축 값(−2…+2)이 이 이상이면 '확인', 이하(음수)면 '약함'
+    macro_strong: -1.0         # 매크로 축이 이 이하면 '불리한 매크로' — RESILIENT 판정에 쓴다
+    #: anomaly taxonomy — 위에서부터 먼저 걸리는 것. 종목마다 하나만 대표 라벨
+    labels:
+      CONFIRMED:           {ko: "Theme · Fundamental · Price 가 함께 확인", signal: "Theme ↑ · Fundamental ↑ · Price ↑"}
+      FUNDAMENTAL LEADING: {ko: "펀더멘털이 가격보다 먼저 개선", signal: "Fundamental ↑ / Price ↓"}
+      RELATIVE BREAKOUT:   {ko: "peer · benchmark 대비 상대강도 급개선", signal: "Relative Strength ↑"}
+      RELATIVE BREAKDOWN:  {ko: "상대강도 급악화", signal: "Relative Strength ↓"}
+      NEWS > PRICE:        {ko: "뉴스는 긍정적이나 가격 확인 부족", signal: "News ↑ / Price ↓"}
+      MACRO RESILIENT:     {ko: "불리한 macro 환경에도 상대가격 견조", signal: "Macro ↓ / Price ↑"}
+      PRICE LEADING:       {ko: "가격이 펀더멘털보다 먼저 강함", signal: "Price ↑ / Fundamental →"}
+      MACRO SENSITIVE:     {ko: "macro driver 와 가격이 강하게 동행", signal: "Macro ↓ / Price ↓"}
+      PRICE > NEWS:        {ko: "뉴스보다 가격이 먼저 움직임", signal: "Price ↑ / News →"}
+      DIVERGENCE:          {ko: "핵심 신호가 서로 불일치", signal: "Signals disagree"}
+      IN LINE:             {ko: "특이사항 없음", signal: "–"}
+    fundamental_label: {CONFIRMED: "CONFIRMED", MIXED: "PARTIAL", WEAK: "WEAK", "N/A": "N/A"}
+    macro_label: {NEGATIVE: "HEADWIND", POSITIVE: "TAILWIND", NEUTRAL: "NEUTRAL", "N/A": "N/A"}
+    macro_clause: "금리 환경은 valuation 부담"
+    read:
+      CONFIRMED:           "{seg} 수요·펀더멘털·가격이 같은 방향으로 확인되는 가장 온전한 형태{macro}."
+      FUNDAMENTAL LEADING: "{seg} 데이터는 견조하지만 가격이 이를 아직 반영하지 못하는 상태{macro}."
+      RELATIVE BREAKOUT:   "{seg} leadership 을 실제 주가가 강하게 확인{macro}."
+      RELATIVE BREAKDOWN:  "{seg} 안에서도 상대가격이 급격히 약해져 시장이 이 종목을 따로 떼어 내고 있는 모습{macro}."
+      NEWS > PRICE:        "뉴스는 긍정적이지만 가격이 따라오지 않아 호재의 marginal impact 가 낮은 상태{macro}."
+      MACRO RESILIENT:     "불리한 금리·위험회피 환경에서도 상대가격이 버티고 있어 수요가 매크로보다 강한 모습."
+      PRICE LEADING:       "{seg} peer 대비 상대강도는 강하지만 펀더멘털 confirmation 은 아직 부족{macro}."
+      MACRO SENSITIVE:     "가격이 금리·위험회피와 같은 방향으로 눌리고 있어 매크로가 풀려야 되돌아오는 종목{macro}."
+      PRICE > NEWS:        "뉴스 없이 가격이 먼저 움직이고 있어 시장이 아는 것이 더 많을 가능성{macro}."
+      DIVERGENCE:          "핵심 신호가 서로 다른 이야기를 해 한 방향으로 읽기 어려운 상태{macro}."
+      IN LINE:             "{seg} 노출 종목으로 현재 특이한 변화는 없음."
+    watch:
+      CONFIRMED:           ["Nasdaq 대비 상대강도 유지 여부", "{seg} 펀더멘털 데이터 지속 확인", "금리·HY OAS 변화"]
+      FUNDAMENTAL LEADING: ["가격이 펀더멘털을 따라오는지(상대강도 전환)", "{seg} 데이터 추가 개선 여부", "뉴스·수급 catalyst"]
+      RELATIVE BREAKOUT:   ["상대강도 급개선의 지속 여부", "{seg} 펀더멘털 확산 여부", "금리 환경 변화"]
+      RELATIVE BREAKDOWN:  ["상대약세가 멈추는지", "종목 고유 악재 여부", "{seg} 전체 약세와의 분리"]
+      NEWS > PRICE:        ["가격이 뉴스를 따라오는지", "추가 catalyst 유무", "{seg} 상대강도"]
+      MACRO RESILIENT:     ["매크로 악화 시에도 상대강도 유지 여부", "{seg} 펀더멘털 확인", "거래 참여 폭"]
+      PRICE LEADING:       ["펀더멘털·EPS 확인 여부", "상대강도 유지 여부", "뉴스 톤 변화"]
+      MACRO SENSITIVE:     ["금리·HY OAS 방향", "상대강도 회복 여부", "{seg} 펀더멘털"]
+      PRICE > NEWS:        ["뉴스·공시 catalyst 출현", "상대강도 지속", "{seg} 펀더멘털"]
+      DIVERGENCE:          ["가격과 펀더멘털 중 어느 쪽이 먼저 바뀌는지", "뉴스 톤", "상대강도"]
+      IN LINE:             ["상대강도", "{seg} 펀더멘털", "뉴스"]
+    tension: {strong: "Strong", weak: "Weak", neutral: "Neutral"}
+  radar:
+    subtitle: "현재 데이터 변화가 커서 다시 확인할 가치가 높은 종목만 추립니다."
+    max_default: 3
+    buckets:
+      - {key: confirmed_leaders, from: [strongest], label: "CONFIRMED LEADERS", desc: "가격 · 상대강도 · 펀더멘털이 함께 확인되는 종목", why: "{seg} 강세가 가격과 펀더멘털에서 동시에 확인"}
+      - {key: improving_setups, from: [improving], label: "IMPROVING SETUPS", desc: "최근 상대강도 또는 산업 데이터가 개선되는 종목", why: "{seg} leadership 은 강하지만 펀더멘털 확산 여부를 추가 확인"}
+      - {key: divergences, from: [narrative_ahead, fundamentals_ahead], label: "DIVERGENCES / WATCH", desc: "가격 · 뉴스 · 펀더멘털이 서로 다른 이야기를 하는 종목", why: "{seg} 데이터·뉴스와 실제 주가가 서로 다른 방향"}
+      - {key: macro_sensitive, from: [macro_pressure], label: "MACRO SENSITIVE", desc: "금리 · 위험회피와 같은 방향으로 눌리는 종목", why: "{seg} 가격이 매크로 역풍과 동행 — 매크로가 풀려야 되돌아옴"}
+    price_label: {up: "CONFIRMED", flat: "PARTIAL", down: "WEAK", none: "N/A"}
+  news:
+    subtitle: "중요 뉴스가 어느 AI 밸류체인과 종목으로 전파되는지 봅니다."
+    top_impact: 3
+    others_default: 6
+    dedupe_jaccard: 0.3        # 제목 토큰 Jaccard 가 이 이상이거나, driver·핵심 종목이 같고 토큰 2개 이상 겹치면 같은 catalyst 로 묶는다
+    tone_label: {pos: 10, neg: -10}       # |톤| 이 이 이상이면 POSITIVE / NEGATIVE, 아니면 NEUTRAL
+    legend: {neg: "강한 부정 영향", zero: "중립", pos: "강한 긍정 영향", note: "가격 전망이나 확률이 아니라 뉴스가 AI value chain 에 미치는 방향과 강도"}
+    category: {regulation: "REGULATION", gpu_demand: "GPU DEMAND", capex: "CAPEX", hyperscaler_spending: "HYPERSCALER", monetization: "MONETIZATION", competition: "COMPETITION", valuation: "VALUATION / CAPITAL"}
+    why: {regulation: "규제·안전 이슈는 단기 GPU 수요보다 AI 서비스 monetization 기대에 우선 영향", gpu_demand: "GPU 수요 신호는 컴퓨트·메모리 매출로 가장 먼저 전달", capex: "하이퍼스케일러 투자 규모는 컴퓨트·네트워킹·인프라 수요의 상단을 정함", hyperscaler_spending: "클라우드 지출 변화는 하이퍼스케일러 자체와 그 공급망에 순서대로 전달", monetization: "수익화 증거는 소프트웨어·클라우드의 밸류에이션 근거", competition: "경쟁 구도 변화는 소프트웨어·컴퓨트의 점유율 기대를 바꿈", valuation: "자본 환원·조달 뉴스는 밸류에이션 심리와 수급에 먼저 영향", none: "driver 미분류 — 밸류체인 연결 없음"}
+    reaction:
+      CONFIRMED:          {ko: "뉴스와 관련 종목 가격이 같은 방향", read: "긍정적 뉴스를 가격이 함께 확인하고 있어 시장이 이 이슈를 실제로 반영하는 모습."}
+      CONFIRMED NEGATIVE: {ko: "부정적 뉴스를 가격도 같은 방향으로 반영", read: "부정적 뉴스와 가격 약세가 같이 나타나 시장이 이 이슈를 악재로 반영하는 모습."}
+      NOT PRICED:         {ko: "긍정적 뉴스에도 관련 종목 가격 반응 부족", read: "긍정적 뉴스에도 가격이 반응하지 않아 호재의 marginal impact 가 낮을 가능성."}
+      RESILIENT:          {ko: "부정적 뉴스에도 관련 종목 가격은 크게 약해지지 않음", read: "부정적 뉴스에도 가격 반응이 제한적이어서 현재 시장이 해당 이슈를 큰 악재로 반영하지 않는 모습."}
+      UNCLEAR:            {ko: "가격 반응을 판단할 데이터 부족", read: "관련 종목 가격 데이터가 없거나 driver 가 분류되지 않아 전파를 판단하지 못함."}
+    priority: {impact_w: 1.0, spread_w: 6.0, reaction_w: 8.0, divergence_w: 10.0, cluster_w: 4.0}

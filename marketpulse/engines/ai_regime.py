@@ -630,4 +630,8 @@ def build_ai_regime(
     from .ai_reads import annotate_reads
 
     annotate_reads(result, cfg)
+    # ── STOCK VIEW (2026-10-01): STOCK IMPACT MAP · RADAR · NEWS 의 스캔/분석 분리 — 재표현만 ──
+    from .ai_stock_view import build_stock_view
+
+    result.stock_view = build_stock_view(result, cfg)
     return result

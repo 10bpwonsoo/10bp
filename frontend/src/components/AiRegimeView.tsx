@@ -5,7 +5,8 @@ import { strengthColor } from "./OilRegimeView";
 import { AiSentimentSection } from "./AiSentimentSection";
 import { DriversSection, VsMarketSection } from "./AiDriverSections";
 import { AiChainSections } from "./AiChainSections";
-import { DataQualityBlock, GapSection, RegimeLongText, NewsImpactSection, RadarSection, StatusStrip, StockImpactSection, WhatMattersSection } from "./AiValueChainSections";
+import { NewsSection2, RadarSection2, StockImpactSection2 } from "./AiStockSections";
+import { DataQualityBlock, GapSection, RegimeLongText, StatusStrip, WhatMattersSection } from "./AiValueChainSections";
 
 /**
  * AI 탭 — AI TRADE INTELLIGENCE.
@@ -256,9 +257,9 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
 
       {extended ? (<>
         {/* 9. STOCK IMPACT MAP · 10. STOCK RADAR · 11. NEWS → VALUE CHAIN → STOCK · 12. EXPECTATIONS vs FUNDAMENTALS */}
-        <StockImpactSection regime={regime} />
-        <RadarSection regime={regime} />
-        <NewsImpactSection regime={regime} />
+        <StockImpactSection2 regime={regime} />
+        <RadarSection2 regime={regime} />
+        <NewsSection2 regime={regime} />
         <GapSection regime={regime} />
       </>) : null}
 

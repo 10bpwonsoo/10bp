@@ -606,6 +606,11 @@ export interface AiChainStage { key: string; label: string; status: string; scor
 export interface AiChainSemiArea { key: string; label: string; status: string; meaning: string; key_evidence: string[]; arrows: Record<string, string> }
 export interface AiChainSnapshot { fundamentals: string; fundamentals_ko: string; price_leadership: string; semi_confirmation: string; key_gap: string; read: string }
 export interface AiChainView { snapshot: AiChainSnapshot; subtitles: Record<string, string>; score_tip: string; rows: AiChainRow[]; main_rows: number; views: Record<string, string>; stages: AiChainStage[]; fundamental_read: string; leaders: AiChainRow[]; laggards: AiChainRow[]; leadership_read: string; semi_areas: AiChainSemiArea[]; semi_columns: { key: string; label: string }[] }
+export interface AiStockSignal { id: string; name: string; segment: string; segment_ko: string; region: string; ret_5d: number | null; rel_5d: number | null; ret_21d: number | null; label: string; label_ko: string; signal: string; signal_value: string; fundamental: string; macro: string; news: string; tension: string; read: string; what_changed: string; price_relative: string; fundamentals: string; news_sentiment: string; macro_exposure: string; watch: string[]; rank_value: number }
+export interface AiRadarItem { id: string; name: string; segment: string; relative: string; price: string; fundamental: string; why_watch: string; detail: string }
+export interface AiRadarBucketView { key: string; label: string; desc: string; items: AiRadarItem[] }
+export interface AiNewsCard { event: string; source: string; url: string | null; tone: number; impact: string; category: string; primary: string[]; secondary: string[]; tertiary: string[]; key_stocks: string[]; all_stocks: string[]; reaction: string; reaction_ko: string; reaction_read: string; why: string; cluster_size: number; priority: number }
+export interface AiStockView { impact_subtitle: string; signals: AiStockSignal[]; all_signals: AiStockSignal[]; label_legend: Record<string, string>; radar_subtitle: string; radar: AiRadarBucketView[]; radar_default: number; news_subtitle: string; news_top: AiNewsCard[]; news_others: AiNewsCard[]; news_others_default: number; news_legend: Record<string, string>; note: string }
 export interface AiDriverRef { id: string; label: string; score: number; status: string; role: string; rank_value: number }
 export interface AiDriverVerdict { gap_label: string; gap_value: string; gap_question: string; primary: AiDriverRef | null; secondary: AiDriverRef | null; offset: AiDriverRef[]; unconfirmed: AiDriverRef[]; conclusion: string; method: string; score_legend: Record<string, string>; status_meaning: Record<string, string> }
 export interface AiMemberRow { id: string; name: string; group: string; available: boolean; last_date: string | null; ret_1d: number | null; ret_5d: number | null; ret_21d: number | null; rel_5d: number | null; above_ma5: boolean | null; above_ma20: boolean | null; advancing: boolean | null; note: string }
@@ -663,6 +668,7 @@ export interface AiRegime {
   regime_read: string;
   driver_verdict: AiDriverVerdict;
   chain_view: AiChainView;
+  stock_view: AiStockView;
 }
 
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */

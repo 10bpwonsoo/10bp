@@ -103,12 +103,17 @@ describe("AiRegimeView", () => {
     expect(mem.filter((m) => m.getAttribute("data-status") === "N/A").length).toBe(regime.semi_confirmation.memory.filter((m) => m.status === "N/A").length);
     fireEvent.click(screen.getByTestId("ai-chain-full"));
     expect(screen.getAllByTestId("ai-stage").length).toBe(9);
+    // STOCK IMPACT MAP: 기본은 TOP STOCK SIGNALS 만, View all 로 네 축 전체 표
+    const sv = regime.stock_view;
+    expect(screen.getAllByTestId("ai-stock-signal").length).toBe(sv.signals.length);
+    expect(screen.queryAllByTestId("ai-stock").length).toBe(0);
+    fireEvent.click(screen.getByTestId("ai-stock-view-all"));
     const stocks = screen.getAllByTestId("ai-stock");
     expect(stocks.length).toBe(regime.stocks.filter((r) => r.available).length);
     expect(stocks[0]!.querySelectorAll(".ai-sim-ax").length).toBe(4);
-    expect(screen.getAllByTestId("ai-radar-bucket").length).toBe(5);
-    for (const it of screen.getAllByTestId("ai-radar-item")) expect(it.querySelector(".ai-radar-r")?.textContent?.length).toBeGreaterThan(3);
-    expect(screen.getAllByTestId("ai-news-row").length).toBe(regime.news_impact.length);
+    expect(screen.getAllByTestId("ai-radar-bucket").length).toBe(sv.radar.length);
+    for (const it of screen.getAllByTestId("ai-radar-item")) expect(within(it).getByTestId("ai-radar-why").textContent?.length).toBeGreaterThan(3);
+    expect(screen.getAllByTestId("ai-news-card").length).toBe(sv.news_top.length + Math.min(sv.news_others_default, sv.news_others.length));
     expect(screen.getAllByTestId("ai-gap-row").length).toBe(10);
     expect(screen.getAllByTestId("ai-matters-item").length).toBeLessThanOrEqual(5);
     // 업사이클 판정·신호 n/4·서명 일치도는 핵심 화면에 없다
@@ -271,5 +276,54 @@ describe("AiRegimeView", () => {
     expect(regime.leadership.read).toMatch(/뚜렷한 AI leadership/); expect(regime.leadership.read).toMatch(/Software.*방어적 상대강도/); expect(regime.leadership.read).toMatch(/Power \/ Data Center.*구조적인 laggard/);
     expect(regime.leadership.read).not.toMatch(/옮겨가고/); expect(regime.leadership.read).toMatch(/아직 rotation 으로 확인되지 않/);
     expect(regime.breadth.read).toMatch(/전반으로 확산/); expect(regime.breadth.read).toMatch(/중기 붕괴보다는/); expect(regime.breadth.read).toMatch(/20DMA breadth 가 빠르게/);
+  });
+
+  it("AI 센티2 STOCK VIEW: IMPACT MAP 은 anomaly 라벨 하나 + 한 줄 read + Fundamental/Macro 만 보이고 클릭하면 상세, RADAR 는 버킷 설명 + Relative/Price/Fundamental + WHY WATCH(버킷당 기본 3), NEWS 는 TOP IMPACT 3 + OTHER + 범례 + 뉴스×가격 관계, 클릭하면 전파 경로", () => {
+    render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
+    const sv = regime.stock_view;
+    expect(sv.signals.length).toBeLessThanOrEqual(10); expect(sv.signals.length).toBeGreaterThanOrEqual(8);
+    expect(sv.all_signals.length).toBe(regime.stocks.filter((r) => r.available).length);
+    const rows = screen.getAllByTestId("ai-stock-signal");
+    for (const s of sv.signals) {
+      const el = rows.find((x) => x.getAttribute("data-id") === s.id)!;
+      expect(within(el).getByTestId("ai-stock-label").textContent).toBe(s.label);
+      expect(within(el).getByTestId("ai-stock-read").textContent).toBe(s.read);
+      expect(within(el).queryByTestId("ai-stock-more")).toBeNull();
+      expect(el.textContent).not.toContain("THEME"); // 네 축 나열 없음
+      expect(["CONFIRMED", "FUNDAMENTAL LEADING", "RELATIVE BREAKOUT", "RELATIVE BREAKDOWN", "NEWS > PRICE", "MACRO RESILIENT", "PRICE LEADING", "MACRO SENSITIVE", "PRICE > NEWS", "DIVERGENCE"]).toContain(s.label);
+      expect((s.read.match(/다\./g) ?? []).length).toBeLessThanOrEqual(2);
+    }
+    // 같은 세그먼트·같은 라벨은 기본 목록에 2개까지
+    const counts = new Map<string, number>(); for (const s of sv.signals) counts.set(`${s.segment}|${s.label}`, (counts.get(`${s.segment}|${s.label}`) ?? 0) + 1);
+    for (const n of counts.values()) expect(n).toBeLessThanOrEqual(2);
+    fireEvent.click(rows[0]!);
+    const more = within(rows[0]!).getByTestId("ai-stock-more").textContent!;
+    for (const k of ["What changed", "Price / Relative", "Fundamentals", "News & Sentiment", "Macro exposure", "What to watch"]) expect(more).toContain(k);
+    expect(within(rows[0]!).getByTestId("ai-stock-more").querySelectorAll(".sv-watch li").length).toBeLessThanOrEqual(3);
+    // 9/29: Tokyo Electron RELATIVE BREAKOUT, SK하이닉스 FUNDAMENTAL LEADING
+    expect(sv.signals.find((s) => s.id === "TEL")!.label).toBe("RELATIVE BREAKOUT"); expect(sv.all_signals.find((s) => s.id === "SKHYNIX")!.label).toBe("FUNDAMENTAL LEADING");
+    // RADAR
+    const radar = screen.getByTestId("ai-radar");
+    expect(radar.textContent).toContain(sv.radar_subtitle);
+    const buckets = within(radar).getAllByTestId("ai-radar-bucket");
+    expect(buckets.map((b) => b.getAttribute("data-key"))).toEqual(["confirmed_leaders", "improving_setups", "divergences", "macro_sensitive"]);
+    for (const b of sv.radar) { const el = buckets.find((x) => x.getAttribute("data-key") === b.key)!; expect(el.textContent).toContain(b.desc); expect(within(el).queryAllByTestId("ai-radar-item").length).toBe(Math.min(b.items.length, sv.radar_default)); }
+    expect(radar.textContent).not.toMatch(/Radar Score|Conviction/);
+    const item = within(radar).getAllByTestId("ai-radar-item")[0]!; expect(item.textContent).toMatch(/Relative.*Price.*Fundamental.*Why watch/s);
+    // NEWS
+    const news = screen.getByTestId("ai-news-impact");
+    expect(within(news).getByTestId("ai-news-legend").textContent).toContain("확률이 아니라");
+    expect(within(news).getByTestId("ai-news-top").querySelectorAll('[data-testid="ai-news-card"]').length).toBe(sv.news_top.length);
+    expect(sv.news_top.length + sv.news_others.length).toBeGreaterThanOrEqual(8);
+    const card = within(news).getAllByTestId("ai-news-card")[0]!;
+    expect(card.textContent).toMatch(/Primary impact.*Key stocks.*Price reaction/s);
+    expect(within(card).queryByTestId("ai-news-more")).toBeNull();
+    fireEvent.click(card);
+    const nm = within(card).getByTestId("ai-news-more").textContent!;
+    for (const k of ["Why it matters", "Primary", "Secondary", "Tertiary", "Key stocks", "Current price reaction", "System read", "Source"]) expect(nm).toContain(k);
+    expect(within(news).getByTestId("ai-news-relation").textContent).toMatch(/CONFIRMED.*CONFIRMED NEGATIVE.*NOT PRICED.*RESILIENT/);
+    for (const c of [...sv.news_top, ...sv.news_others]) expect(["CONFIRMED", "CONFIRMED NEGATIVE", "NOT PRICED", "RESILIENT", "UNCLEAR"]).toContain(c.reaction);
+    // 우선순위: 단순 최신순·톤 절대값 순이 아니다 — divergence(NOT PRICED/RESILIENT)와 전파 폭이 반영된 priority 내림차순
+    const pr = [...sv.news_top, ...sv.news_others].map((c) => c.priority); expect(pr).toEqual([...pr].sort((a, b) => b - a));
   });
 });

@@ -428,3 +428,48 @@ class TestReads:
         if b2.change_1w_pts is not None and b2.change_1w_pts <= cfg["fast_drop"]:
             assert "빠르게" in b2.read
         assert "20DMA" in b2.read  # 다음 확인 포인트는 항상 20DMA
+
+
+class TestStockView:
+    """STOCK IMPACT MAP · RADAR · NEWS 표시 층 — anomaly 하나, 수익률 순 아님, 숫자 점수 없음, 뉴스 × 가격 관계."""
+
+    def test_signals_have_one_label_and_are_not_return_ranked(self):
+        r = _build("ai_sentiment", shock=-0.012)
+        v = r.stock_view; cfg = load_ai_regime_config()["stock_view"]["impact"]
+        assert 1 <= len(v.signals) <= cfg["max_default"] and len(v.all_signals) == len([s for s in r.stocks if s.available])
+        for s in v.all_signals:
+            assert s.label in cfg["labels"] and s.read and s.label_ko and len(s.watch) <= 3
+            assert s.fundamental in ("CONFIRMED", "PARTIAL", "WEAK", "N/A") and s.macro in ("HEADWIND", "TAILWIND", "NEUTRAL", "N/A")
+            for w in ("확률", "매수", "매도", "목표"):
+                assert w not in s.read
+        assert all(s.label != "IN LINE" for s in v.signals)
+        rv = [s.rank_value for s in v.signals]
+        assert rv == sorted(rv, reverse=True)  # 특이성(rank_value) 순
+        rets = [s.ret_5d or 0 for s in v.signals]
+        if len(set(rets)) > 2:
+            assert rets != sorted(rets, reverse=True)  # 수익률 순이 아니다 (모의 충격처럼 전 종목 수익이 같으면 비교 불가)
+        from collections import Counter
+        assert max(Counter((s.segment, s.label) for s in v.signals).values()) <= cfg["max_per_segment"]
+
+    def test_radar_buckets_are_renamed_with_descriptions_and_why_watch(self):
+        r = _build("baseline")
+        v = r.stock_view
+        assert [b.key for b in v.radar] == ["confirmed_leaders", "improving_setups", "divergences", "macro_sensitive"]
+        old = {b.key: {i["id"] for i in b.items} for b in r.radar}
+        assert {i.id for i in v.radar[2].items} == old["narrative_ahead"] | old["fundamentals_ahead"]  # 두 버킷을 합쳤을 뿐 종목은 그대로
+        for b in v.radar:
+            assert b.desc
+            for i in b.items:
+                assert i.why_watch and i.price in ("CONFIRMED", "PARTIAL", "WEAK", "N/A") and i.relative
+
+    def test_news_cards_reaction_dedupe_and_priority(self):
+        r = _build("ai_sentiment")
+        v = r.stock_view
+        cards = v.news_top + v.news_others
+        assert len(cards) <= len(r.news_impact) and len(v.news_top) <= 3
+        for c in cards:
+            assert c.reaction in ("CONFIRMED", "CONFIRMED NEGATIVE", "NOT PRICED", "RESILIENT", "UNCLEAR") and c.reaction_ko and c.impact in ("POSITIVE", "NEGATIVE", "NEUTRAL")
+            assert len(c.key_stocks) <= 3 and c.why
+        pr = [c.priority for c in cards]
+        assert pr == sorted(pr, reverse=True)
+        assert sum(c.cluster_size for c in cards) == len(r.news_impact)  # 묶인 기사는 세어서 보존
