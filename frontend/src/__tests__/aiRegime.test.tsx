@@ -21,9 +21,9 @@ describe("AiRegimeView", () => {
     expect(screen.getByTestId("ai-regime-label").textContent).toBe(regime.regime_label);
     expect(screen.getByTestId("ai-rel-summary").textContent).toMatch(/AI vs NASDAQ 100/);
     expect(screen.getByTestId("ai-rel-summary").textContent).toContain(regime.ai_vs_market.rel_verdict.toUpperCase());
-    // 9/29 실데이터: 매크로에 눌린 AI 약세 — 절대 하락, Nasdaq 대비 −0.7σ (AI-specific 문턱 −1 은 아님), 매크로 6/6 설명
-    expect(regime.regime).toBe("macro_dragged");
-    expect(regime.macro.verdict).toBe("macro_driven");
+    // 10/6 실데이터: AI 위험선호 확인 — 바스켓 절대 상승(+0.6σ·5일), Nasdaq 과 같은 걸음, breadth 81% widening, 매크로는 약세를 설명할 필요가 없다
+    expect(regime.regime).toBe("confirmed_risk_on");
+    expect(regime.macro.verdict).toBe("not_weak");
     const mainText = Array.from(container.querySelectorAll(".panel:not(details)")).map((e) => e.textContent).join(" ");
     expect(mainText).not.toMatch(/시장 온도|냉각\(공포\)|공포·탐욕|확률/);
     expect(screen.getByTestId("ai-context").textContent).toMatch(/맥락 입력/);
@@ -219,9 +219,10 @@ describe("AiRegimeView", () => {
     const first = cards.find((c) => c.getAttribute("data-id") === "macro_rates")!;
     fireEvent.click(first);
     expect(within(first).getByTestId("ai-driver-more").textContent).toContain(regime.drivers.find((d) => d.id === "macro_rates")!.transmission[0]);
-    // 9/29 실데이터: AI 약세의 primary 는 Macro / Rates(CONFIRMED), AI 고유 스트레스는 NOT YET CONFIRMED
-    expect(v.primary!.id).toBe("macro_rates"); expect(v.unconfirmed.some((x) => x.id === "ai_fundamental_stress")).toBe(true);
-    expect(v.conclusion).toMatch(/펀더멘털 훼손보다는/);
+    // 10/6 실데이터: AI 강세의 primary 는 Broad Risk-Off(CONFIRMED), secondary 는 AI Narrative, Macro / Rates 는 상쇄 압력, 반도체 사이클은 NOT YET CONFIRMED
+    expect(v.primary!.id).toBe("broad_risk_off"); expect(v.secondary!.id).toBe("ai_narrative");
+    expect(v.offset.some((x) => x.id === "macro_rates")).toBe(true); expect(v.unconfirmed.some((x) => x.id === "semi_cycle")).toBe(true);
+    expect(v.conclusion).toMatch(/주로 설명합니다/);
   });
 
   it("AI 센티2 AI CHAIN VIEW: SNAPSHOT 4 타일 + 한 줄 → FUNDAMENTAL × PRICE(기본 6행, View all 10, VIEW 범례) → 전파 한 줄씩 + FUNDAMENTAL READ → LEADERS/LAGGARDS 3+3 + LEADERSHIP READ → 반도체 상태 행 + 의미 + HBM key evidence; 긴 설명문·숫자 반복 없음", () => {
@@ -272,10 +273,10 @@ describe("AiRegimeView", () => {
       expect(txt).not.toMatch(/1주 리더|1개월 리더|1주 후미|바뀌었다|20일선 위 \d+%|5일선 위 \d+%|오늘 상승 \d+%|%p/);
     }
     expect(screen.queryByTestId("ai-rotation")).toBeNull(); expect(screen.queryByTestId("ai-breadth-sentence")).toBeNull();
-    // 9/29: 모든 그룹이 Nasdaq 을 밑돎 → 뚜렷한 leadership 없음, Software 는 방어적 상대강도, Power / Data Center 는 구조적 laggard; breadth 는 단기 sell-off · 중기 과반 유지 · 20DMA 빠른 하락
-    expect(regime.leadership.read).toMatch(/뚜렷한 AI leadership/); expect(regime.leadership.read).toMatch(/Software.*방어적 상대강도/); expect(regime.leadership.read).toMatch(/Power \/ Data Center.*구조적인 laggard/);
-    expect(regime.leadership.read).not.toMatch(/옮겨가고/); expect(regime.leadership.read).toMatch(/아직 rotation 으로 확인되지 않/);
-    expect(regime.breadth.read).toMatch(/전반으로 확산/); expect(regime.breadth.read).toMatch(/중기 붕괴보다는/); expect(regime.breadth.read).toMatch(/20DMA breadth 가 빠르게/);
+    // 10/6: Semis / Networking 이 Nasdaq 을 실제로 outperform → AI 내부 leadership, Software 는 breadth 유지된 단기 약세; breadth 는 단기 엇갈림 · 중기 넓은 참여 · 20DMA 빠른 확산
+    expect(regime.leadership.read).toMatch(/AI 내부 leadership 은 Semiconductors \/ Compute/); expect(regime.leadership.read).toMatch(/Software \/ Application.*단기 약세/);
+    expect(regime.leadership.read).not.toMatch(/옮겨가고|뚜렷한 AI leadership/);
+    expect(regime.breadth.read).toMatch(/참여가 넓은 건강한 상승/); expect(regime.breadth.read).toMatch(/Memory.*내부 참여도가 크게 약해/); expect(regime.breadth.read).toMatch(/20DMA breadth 가 빠르게/);
   });
 
   it("AI 센티2 STOCK VIEW: IMPACT MAP 은 anomaly 라벨 하나 + 한 줄 read + Fundamental/Macro 만 보이고 클릭하면 상세, RADAR 는 버킷 설명 + Relative/Price/Fundamental + WHY WATCH(버킷당 기본 3), NEWS 는 TOP IMPACT 3 + OTHER + 범례 + 뉴스×가격 관계, 클릭하면 전파 경로", () => {
@@ -300,8 +301,8 @@ describe("AiRegimeView", () => {
     const more = within(rows[0]!).getByTestId("ai-stock-more").textContent!;
     for (const k of ["What changed", "Price / Relative", "Fundamentals", "News & Sentiment", "Macro exposure", "What to watch"]) expect(more).toContain(k);
     expect(within(rows[0]!).getByTestId("ai-stock-more").querySelectorAll(".sv-watch li").length).toBeLessThanOrEqual(3);
-    // 9/29: Tokyo Electron RELATIVE BREAKOUT, SK하이닉스 FUNDAMENTAL LEADING
-    expect(sv.signals.find((s) => s.id === "TEL")!.label).toBe("RELATIVE BREAKOUT"); expect(sv.all_signals.find((s) => s.id === "SKHYNIX")!.label).toBe("FUNDAMENTAL LEADING");
+    // 10/6: 한미반도체 RELATIVE BREAKOUT, Sandisk FUNDAMENTAL LEADING, Micron 은 전체 목록에서 CONFIRMED
+    expect(sv.signals.find((s) => s.id === "HANMI_SEMI")!.label).toBe("RELATIVE BREAKOUT"); expect(sv.signals.find((s) => s.id === "SNDK")!.label).toBe("FUNDAMENTAL LEADING"); expect(sv.all_signals.find((s) => s.id === "MU")!.label).toBe("CONFIRMED");
     // RADAR
     const radar = screen.getByTestId("ai-radar");
     expect(radar.textContent).toContain(sv.radar_subtitle);
