@@ -766,6 +766,29 @@ MARKET REGIME HISTORY · 1M 과 TODAY'S MARKET DRIVERS 사이에 붙은 카드. 
 `config/cockpit.yaml tone`: 상태 taxonomy · 재료별 의미 · 1W 변화 읽기 · PRICE vs NEWS · REGIME CONFIRMATION · 2문장 READ)도 API 로 준다 —
 화면은 온도계 그대로를 쓰고 이 값은 API 소비자용이다. 실시간 탭의 온도계 UI·계산은 그대로다.
 
+### 실시간 2 · CURRENT REGIME 단일 출처 — OFFICIAL vs RAW (2026-10-07)
+
+MARKET REGIME HISTORY 의 CURRENT 와 MARKET NOW 의 판정이 서로 달랐던 문제(History: Risk-On · Now: NO REGIME)를 고쳤다.
+이제 **공식(confirmed) regime 하나**만 현재 판정이고, 두 카드와 drivers · cross-asset · tone · what-matters 의 regime 참조가 모두
+그 값을 쓴다. 공식 regime 은 `engines/regime_history.py` `stabilize()` 가 **인과적(causal)** 으로 만든다: 날짜 D 의 공식 regime 은 D 까지의
+raw 만 보고(미래를 보지 않으므로 과거 값은 뒤에 날이 붙어도 바뀌지 않는다), 새 regime 으로 바뀌는 조건은 `config/cockpit.yaml`
+`history.display` 의 두 가지 — 오늘까지 연속 `min_dwell_days`(2) 거래일 같은 raw, 또는 오늘 확신 ≥ `strong_evidence`(80). 그 외의 날은
+직전 공식 regime 이 이어진다. 오늘 룰이 가리키는 판정(`market_state.primary_label`)은 **RAW SIGNAL** 로 따로 보인다 — MARKET NOW 의
+RAW SIGNAL 상자(raw 판정 · RAW PERSISTENCE nD · STATUS)와 HISTORY 컨텍스트의 Raw signal 줄. STATUS 는 `history.transition` 템플릿의
+CONFIRMED(raw = 공식) · UNCONFIRMED TRANSITION(raw ≠ 공식, 아직 1D 미만의 확인) · TRANSITION WATCH(한 거래일만 더 이어지면 전환) · CHANGED(오늘
+공식 전환) · NO HISTORY(저장된 sequence 없음 → raw 를 그대로 공식으로). **NO REGIME 은 더 이상 "오늘 아무 룰도 안 걸렸다 = 현재 판정" 이 아니라**
+raw 후보일 뿐이고, 2거래일 이어져 확정될 때까지 직전 공식 regime 이 유지된다. "Change" 줄은 공식 전환이 일어난 날(`changed_today`)에만 쓰고
+그 외에는 "Transition watch / Potential change RISK-ON → NO REGIME" 으로 쓴다. 이름도 갈랐다: **REGIME DURATION** = 공식 regime 이 이어진
+거래일(`duration_days`), **RAW SIGNAL PERSISTENCE** = 오늘까지 같은 raw 가 이어진 거래일(`raw_run()`). Conviction 은 regime 이 아니라 그 안의
+증거 강도라 "41% · MEDIUM · WEAKENING"(직전 거래일 대비 `conviction_trend.delta`=10 이상 하락) 처럼 공식 Risk-On 과 같이 보일 수 있다.
+MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "RISK-ON은 유지되고 있지만 raw signal 이 NO REGIME 쪽으로 1거래일째 이어지고
+있습니다. 다음 거래일에도 같으면 공식 regime 이 전환됩니다." 처럼 쓴다. History 띠의 오늘 셀은 LIVE 로 공식 regime 을 따라가고(raw 는 툴팁·상세),
+장중에는 RECORDED/LOCK 하지 않는다 — Daily Finalization(16:10 KST) 뒤에만 고정된다. 과거 날짜는 저장된 snapshot 그대로다. API: `market_now.raw_label
+· raw_text · raw_persistence_days · transition_status(_ko) · potential_change_text · required_days · conviction_trend · read`,
+`history.official_state_label · raw_regime · raw_label · raw_persistence_days · required_days · transition_status(_ko) · pending_regime · changed_today`.
+회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
+raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
+
 ### Daily snapshot history — 모든 History 는 저장 후 고정 (2026-10-07)
 
 대시보드의 모든 History(실시간 Market State 띠, 실시간 2 MARKET REGIME HISTORY · 1M 과 MARKET NOW

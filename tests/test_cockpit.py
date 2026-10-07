@@ -103,8 +103,9 @@ class TestRegimeHistory:
         keys = ["neutral", "risk_on", "neutral", "neutral", "liquidity_stress", "liquidity_stress", "policy", "liquidity_stress"]
         strengths = [30, 60, 30, 30, 50, 50, 90, 50]
         out = stabilize(keys, strengths, [None] * len(keys), cfg)
-        # 하루짜리 risk_on(60%) 은 이어지고, 이틀 연속 liquidity 는 바뀌고, 하루짜리 policy 는 강한 증거(90 ≥ 80)라 바뀐다
-        assert out == ["neutral", "neutral", "neutral", "neutral", "liquidity_stress", "liquidity_stress", "policy", "policy"]
+        # 인과적(causal): 하루짜리 risk_on(60%) 은 확인 전이라 neutral 유지, liquidity 는 2일째(idx 5)에 확정, 하루짜리 policy 는
+        # 강한 증거(90 ≥ 80)라 즉시 확정, 마지막 날 liquidity(1D·50%) 는 미확인 → policy 유지. 과거 값은 뒤에 날이 붙어도 바뀌지 않는다.
+        assert out == ["neutral", "neutral", "neutral", "neutral", "neutral", "liquidity_stress", "policy", "policy"]
         # 장중 dwell 이 짧은 날은 확인으로 세지 않는다
         out2 = stabilize(["neutral", "risk_on", "risk_on", "neutral"], [30, 50, 50, 30], [None, 0.2, 0.9, None], cfg)
         assert out2 == ["neutral", "neutral", "neutral", "neutral"]
@@ -370,3 +371,81 @@ class TestMarketTone:
             assert t.week_ago_source == "history" and t.composite_week_ago == pytest.approx(c.history.composite[-6], abs=0.051) and "daily snapshot" in t.week_ago_basis
         snap2, c2 = self._tone(history=False)
         assert c2.tone is not None and c2.tone.regime_key in ("neutral", "risk_on", "liquidity_stress", "growth", "inflation", "policy", "geopolitical")
+
+
+class TestCanonicalRegime:
+    """공식 CURRENT REGIME 은 하나다 (2026-10-07): HISTORY 의 CURRENT = MARKET NOW. raw 는 후보 신호, 확정은 인과적 전환 규칙."""
+
+    def _cfg(self):
+        return load_cockpit_config()["history"]
+
+    def test_stabilize_is_causal_and_hysteretic(self):
+        from marketpulse.engines.regime_history import raw_run, stabilize
+        cfg = self._cfg()
+        keys = ["risk_on", "risk_on", "neutral", "neutral", "neutral", "liquidity_stress", "risk_on", "risk_on"]
+        strengths = [70, 70, 41, 45, 50, 90, 60, 60]
+        out = stabilize(keys, strengths, [None] * len(keys), cfg)
+        # 하루짜리 neutral 은 공식이 되지 않고(후보), 이틀째 확정 · 강한 하루(90)는 바로 · 다시 risk_on 은 이틀째
+        assert out == ["risk_on", "risk_on", "risk_on", "neutral", "neutral", "liquidity_stress", "liquidity_stress", "risk_on"]
+        # 인과성: 뒤에 날이 붙어도 앞의 공식 값은 그대로
+        assert stabilize(keys[:3], strengths[:3], [None] * 3, cfg) == out[:3]
+        assert stabilize(keys[:4], strengths[:4], [None] * 4, cfg) == out[:4]
+        assert raw_run(["a", "b", "b"]) == 2 and raw_run(["a"]) == 1 and raw_run([]) == 0
+
+    def test_spec_case_previous_risk_on_raw_neutral_one_day(self):
+        """요구서 14: 직전 확정 Risk-On · 오늘 raw Neutral/No Regime 1D · 확인 미충족 → HISTORY CURRENT = MARKET NOW = Risk-On, raw 는 보조, 상태 WATCH/UNCONFIRMED."""
+        from datetime import timedelta
+        from marketpulse.models.state import StateLabel
+        from marketpulse.models.state_history import StateHistoryPoint
+        from marketpulse.engines.regime_history import build_regime_history
+        base = AS_OF - timedelta(days=4)
+        seq = [("RISK_ON", 88.0), ("RISK_ON", 91.0), ("NEUTRAL", 41.0)]
+        pts = [StateHistoryPoint(date=(base + timedelta(days=i)).date(), as_of=base + timedelta(days=i), label=StateLabel(l), confidence=c, coverage=0.8, composite=10.0, band="neutral", band_label="중립",
+                                 factors={"RiskAppetite": 0.5}, drivers=["SPX +1.0σ"], source="RECORDED" if i < 2 else "LIVE") for i, (l, c) in enumerate(seq)]
+        class H:  # MarketStateHistory 흉내 — build_regime_history 는 points 만 읽는다
+            points = pts; history_mode = "stored"; footnote = "f"
+        h = build_regime_history(H(), self._cfg())
+        assert h.current_regime == "risk_on" and h.official_state_label == "RISK_ON" and h.raw_regime == "neutral" and h.raw_persistence_days == 1
+        assert h.transition_status in ("TRANSITION_WATCH", "UNCONFIRMED_TRANSITION") and h.pending_regime == "neutral" and not h.changed_today and h.required_days == 2
+        assert h.days[-1].display_regime == "risk_on" and h.days[-1].raw_state == "NEUTRAL"
+        # MARKET NOW 도 같은 공식 판정을 쓴다 — 두 공식 판정이 동시에 존재하지 않는다
+        # (baseline 시나리오의 오늘 raw = NEUTRAL — history 의 마지막 LIVE 점과 같은 raw 신호를 가진다)
+        snap, market, by_id = _run("baseline")
+        from marketpulse.models.state_history import MarketStateHistory
+        hist = MarketStateHistory(as_of=AS_OF, days_requested=3, points=pts, history_mode="stored", current_streak=1, previous_label=StateLabel.RISK_ON)
+        c = build_cockpit(snap, market, by_id, history=hist)
+        assert c.market_now.label == "RISK_ON" == c.history.official_state_label and c.history.current_regime == "risk_on"
+        assert c.market_now.raw_label == "NEUTRAL" and c.market_now.raw_text == "NO REGIME" and c.market_now.raw_persistence_days == 1
+        assert c.market_now.change_text == "" and c.market_now.potential_change_text == "RISK-ON → NO REGIME"
+        assert c.market_now.transition_status == c.history.transition_status and c.market_now.persistence_days == c.history.duration_days
+        assert "RISK-ON" in c.market_now.read and "NO REGIME" in c.market_now.read and "확률" not in c.market_now.read
+        assert c.market_now.conviction_trend == "WEAKENING"
+        assert c.tone is not None and c.tone.regime_key == "risk_on"  # 다른 component 의 regime 참조도 공식 판정
+        # 공식 label 이 cross-asset 기대 방향·문장에 쓰인다
+        assert "RISK-ON" in c.cross_asset.sentence
+        # 다음 날도 Neutral 이면 공식 전환 → CHANGED, change_text 사용
+        pts2 = pts + [pts[-1].model_copy(update={"date": pts[-1].date + timedelta(days=1), "as_of": pts[-1].as_of + timedelta(days=1), "label": StateLabel.NEUTRAL, "confidence": 40.0})]
+        H2 = type("H2", (), {"points": pts2, "history_mode": "stored", "footnote": "f"})
+        h2 = build_regime_history(H2(), self._cfg())
+        assert h2.current_regime == "neutral" and h2.changed_today and h2.transition_status == "CHANGED" and h2.previous_regime == "risk_on" and h2.duration_days == 1
+        hist2 = hist.model_copy(update={"points": pts2})
+        c2 = build_cockpit(snap, market, by_id, history=hist2)
+        assert c2.market_now.label == "NEUTRAL" and c2.market_now.change_text == "RISK-ON → NO REGIME" and c2.market_now.potential_change_text == ""
+
+    def test_without_history_official_equals_raw(self):
+        snap, market, by_id = _run("baseline")
+        c = build_cockpit(snap, market, by_id)
+        assert c.market_now.label == snap.market_state.primary_label.value and c.market_now.transition_status == "NO_HISTORY" and c.market_now.raw_label == c.market_now.label
+
+    def test_today_stays_live_before_finalization(self, tmp_path):
+        """요구서 9: Daily Finalization(16:10 KST) 전의 오늘 snapshot 은 LIVE 다 — RECORDED/LOCK 되지 않는다."""
+        from datetime import datetime, timezone
+        from marketpulse.history import DailySnapshotManager, JsonDirStore
+        from marketpulse.history.calculators import market_snapshot_from_intelligence
+        snap, _m, _b = _run("baseline")
+        intraday = snap.as_of.replace(hour=4, minute=23, tzinfo=timezone.utc)  # 13:23 KST
+        m = DailySnapshotManager(JsonDirStore(tmp_path / "h"), clock=lambda: intraday)
+        s = m.record(market_snapshot_from_intelligence(snap.model_copy(update={"as_of": intraday})), as_of=intraday)
+        assert s.history_source == "LIVE" and not s.is_locked and not s.is_final
+        s2 = m.record(market_snapshot_from_intelligence(snap.model_copy(update={"as_of": intraday.replace(hour=7, minute=30)})), as_of=intraday.replace(hour=7, minute=30))  # 16:30 KST
+        assert s2.history_source == "RECORDED" and s2.is_locked

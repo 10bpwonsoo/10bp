@@ -361,3 +361,38 @@ describe("MARKET TONE SNAPSHOT — HISTORY 와 TODAY'S DRIVERS 사이, 실시간
     expect(screen.queryByTestId("ck-tone")).toBeNull(); expect(container.querySelector(".ck")!.className).not.toContain("ck-tone");
   });
 });
+
+
+describe("CANONICAL CURRENT REGIME — HISTORY 의 CURRENT 와 MARKET NOW 는 같은 공식 판정", () => {
+  it("MARKET NOW 상단 = REGIME HISTORY CURRENT, raw 는 RAW SIGNAL 줄에 Raw persistence · Status 로, Change 는 공식 전환 때만", () => {
+    render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} />);
+    const h = cockpit.history!; const n = cockpit.market_now;
+    expect(screen.getByTestId("ck-now-label").textContent).toBe(n.label_text);
+    expect(n.label).toBe(h.official_state_label);  // 두 공식 판정이 동시에 존재하지 않는다
+    expect(screen.getByTestId("ck-h-current").textContent).toBe(h.current_label);
+    const raw = screen.getByTestId("ck-now-raw");
+    expect(raw.textContent).toContain("RAW SIGNAL"); expect(raw.textContent).toContain(n.raw_text); expect(raw.textContent).toContain(`${n.raw_persistence_days}D`);
+    expect(screen.getByTestId("ck-now-status").textContent).toBe(n.transition_status.replace(/_/g, " "));
+    expect(screen.getByTestId("ck-now-duration").textContent).toBe(`${n.persistence_days}D`);
+    expect(screen.getByTestId("ck-now").textContent).toContain("Regime Duration"); expect(screen.getByTestId("ck-now").textContent).not.toMatch(/Persistence\s+\d/);
+    if (n.change_text) expect(screen.getByTestId("ck-now-change").textContent).toBe(n.change_text);
+    else if (n.potential_change_text) expect(screen.getByTestId("ck-now-potential").textContent).toBe(n.potential_change_text);
+    expect(screen.getByTestId("ck-now-read").textContent).toContain(n.read);
+    const hr = screen.getByTestId("ck-h-raw");
+    expect(hr.textContent).toContain("Raw signal"); expect(hr.textContent).toContain("Transition"); expect(hr.getAttribute("data-status")).toBe(h.transition_status);
+    expect(screen.getByTestId("ck-h-ctx").textContent).toContain("Regime Duration");
+  });
+
+  it("요구서 14: 공식 Risk-On · raw No Regime 1D 미확정이면 상단은 둘 다 Risk-On, raw 는 보조, Change 대신 Transition watch", () => {
+    const h = { ...cockpit.history!, current_regime: "risk_on", current_label: "Risk-On", official_state_label: "RISK_ON", raw_regime: "neutral", raw_label: "Neutral / Mixed", raw_persistence_days: 1, required_days: 2,
+      transition_status: "TRANSITION_WATCH", transition_status_ko: "Neutral / Mixed 신호 1D — 다음 거래일에도 이어지면 공식 regime 이 전환된다 (필요 2D)", pending_regime: "neutral", pending_label: "Neutral / Mixed", changed_today: false, duration_days: 2 };
+    const n = { ...cockpit.market_now, label: "RISK_ON" as const, label_text: "RISK-ON", raw_label: "NEUTRAL", raw_text: "NO REGIME", raw_persistence_days: 1, transition_status: "TRANSITION_WATCH" as const, transition_status_ko: h.transition_status_ko,
+      change_text: "", potential_change_text: "RISK-ON → NO REGIME", persistence_days: 2, read: "RISK-ON은 유지되고 있지만 raw signal 이 NO REGIME 쪽으로 1거래일째 이어지고 있습니다." };
+    render(<CockpitView cockpit={{ ...cockpit, history: h, market_now: n }} snapshot={snapshot} history={history} />);
+    expect(screen.getByTestId("ck-now-label").textContent).toBe("RISK-ON"); expect(screen.getByTestId("ck-h-current").textContent).toBe("Risk-On");
+    expect(screen.queryByTestId("ck-now-change")).toBeNull(); expect(screen.getByTestId("ck-now-potential").textContent).toBe("RISK-ON → NO REGIME");
+    expect(screen.getByTestId("ck-now").textContent).toContain("Transition watch"); expect(screen.getByTestId("ck-now-status").textContent).toBe("TRANSITION WATCH");
+    expect(screen.getByTestId("ck-now-raw").textContent).toContain("NO REGIME"); expect(screen.getByTestId("ck-h-raw").textContent).toContain("Neutral / Mixed");
+    expect(screen.getByTestId("ck-now").textContent).not.toMatch(/RISK-ON → NO REGIME\s*$/m);
+  });
+});

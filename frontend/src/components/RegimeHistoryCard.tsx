@@ -26,14 +26,19 @@ function Context({ h }: { h: CkRegimeHistory }) {
       <div className="ck-h-ctx-main">
         <span className="ck-k mono">Current</span>
         <b className="ck-h-cur" style={{ color: color(h.current_regime) }} data-testid="ck-h-current">{h.current_label}</b>
-        {h.raw_today ? <span className="mono ck-h-raw" title="오늘 raw 판정이 아직 display regime 으로 확인되지 않았다">RAW {h.raw_today} · unconfirmed</span> : null}
       </div>
       <dl className="ck-h-ctx-grid mono">
-        <div><dt>Duration</dt><dd className="num">{h.duration_days}D</dd></div>
+        <div><dt title="공식 regime 이 이어진 거래일 수">Regime Duration</dt><dd className="num">{h.duration_days}D</dd></div>
         <div><dt>Previous</dt><dd>{h.previous_label ? short(h.previous_label) : "–"}</dd></div>
         <div><dt>1M Transitions</dt><dd className="num">{h.transitions_1m}</dd></div>
         <div><dt>1M Share</dt><dd className="num">{h.share_pct.toFixed(0)}%</dd></div>
       </dl>
+      {/* RAW SIGNAL — 오늘 룰이 가리키는 후보. 공식 CURRENT 와 다르면 전환 상태를 적는다 */}
+      <div className="ck-h-rawbox mono" data-testid="ck-h-raw" data-status={h.transition_status}>
+        <span className="ck-k">Raw signal</span><b style={{ color: h.pending_regime ? color(h.raw_regime) : "var(--muted)" }}>{short(h.raw_label || h.current_label)}</b><span className="num">{h.raw_persistence_days}D</span>
+        <span className="ck-k">Transition</span><b style={{ color: h.transition_status === "CONFIRMED" ? "var(--ok)" : h.transition_status === "CHANGED" ? "var(--accent)" : "var(--warn)" }}>{(h.transition_status || "").replace(/_/g, " ")}</b>
+        {h.transition_status_ko ? <span className="ck-h-raw-ko">{h.transition_status_ko}</span> : null}
+      </div>
     </div>
   );
 }

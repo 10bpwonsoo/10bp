@@ -44,6 +44,17 @@ class MarketNow(Base):
     key_variables: list[KeyVariable] = Field(default_factory=list)
     sentence: str
     interpretation: str = Field(default="", description="2~3문장 — 판정 엔진의 템플릿 서술")
+    #: ── OFFICIAL vs RAW (2026-10-07) — label 은 대시보드의 공식(confirmed) regime 이고, raw 는 오늘 룰이 가리키는 후보 상태다. 둘은 다를 수 있다 ──
+    raw_label: str = Field(default="", description="오늘 raw 판정(StateLabel) — 룰 엔진 결과")
+    raw_text: str = ""
+    raw_secondary: str | None = None
+    raw_persistence_days: int = Field(default=0, description="같은 raw 신호가 이어진 거래일 수 — 후보 신호의 지속 기간(공식 regime 의 duration 과 다르다)")
+    transition_status: str = Field(default="CONFIRMED", description="CONFIRMED · UNCONFIRMED_TRANSITION · TRANSITION_WATCH · CHANGED · NO_HISTORY")
+    transition_status_ko: str = ""
+    potential_change_text: str = Field(default="", description="raw 가 공식과 다를 때 'RISK-ON → NO REGIME' — 확정 전")
+    required_days: int = Field(default=0, description="전환 확정에 필요한 연속 거래일")
+    conviction_trend: str = Field(default="STABLE", description="WEAKENING · STRENGTHENING · STABLE — 전일 대비 확신 변화")
+    read: str = Field(default="", description="MARKET READ — 공식 regime 과 raw 신호의 관계 1~2문장")
     spark: list[SparkPoint] = Field(default_factory=list)
     last_update: datetime
     coverage: str = ""
@@ -492,6 +503,17 @@ class RegimeHistory(Base):
     transitions_1m: int = 0
     share_pct: float = Field(default=0.0, description="현재 display regime 의 기간 내 비중 %")
     raw_today: str | None = Field(default=None, description="오늘 raw 판정이 display 와 다를 때 그 라벨")
+    #: ── CANONICAL CURRENT REGIME (2026-10-07) — current_regime 이 대시보드의 유일한 공식 판정이다. MARKET NOW 도 이것을 쓴다 ──
+    official_state_label: str = Field(default="", description="current_regime 의 StateLabel 표기(RISK_ON …) — 색·규칙 참조용")
+    raw_regime: str = Field(default="", description="오늘 raw 판정의 taxonomy key")
+    raw_label: str = ""
+    raw_persistence_days: int = 0
+    required_days: int = 0
+    transition_status: str = "CONFIRMED"
+    transition_status_ko: str = ""
+    pending_regime: str | None = None
+    pending_label: str | None = None
+    changed_today: bool = False
     days: list[RegimeDay] = Field(default_factory=list)
     blocks: list[RegimeBlock] = Field(default_factory=list)
     composite: list[float | None] = Field(default_factory=list, description="날짜순 대표 composite(온도계 종합, 없으면 가격 온도)")

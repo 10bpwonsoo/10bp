@@ -289,6 +289,11 @@
 - MARKET REGIME HISTORY 와 TODAY'S MARKET DRIVERS 사이. 화면은 실시간 탭의 시장 온도(`SentimentGauge`)를 같은 `snapshot.thermometer` 로 그대로 보인다(폭만 560px 제한) — 두 탭의 숫자·눈금·재료 스트립·문장이 동일. `MarketToneCard`, 그리드 `.ck-tone` 템플릿 3단계.
 - 백엔드 `Cockpit.tone: MarketTone`(`engines/market_tone.py` + `config/cockpit.yaml tone`): 온도계를 regime 과 대조한 상태 taxonomy·재료 의미·1W 변화·PRICE vs NEWS·REGIME CONFIRMATION·2문장 READ. API 소비자용(화면은 온도계 그대로). 테스트 백엔드 +3 · 프런트 +2(79/79).
 
+### 2026-10-07 — 실시간 2 CURRENT REGIME 단일 출처 (OFFICIAL vs RAW)
+- History CURRENT 와 MARKET NOW 가 다르게 보이던 문제 수정. 공식 regime 은 `stabilize()` 의 인과적 확인 규칙(연속 2거래일 같은 raw 또는 확신 ≥ 80)으로 하나만 정하고, 두 카드와 drivers·cross-asset·tone·what-matters 가 같은 값을 쓴다. 오늘 룰의 판정은 RAW SIGNAL(raw · RAW PERSISTENCE · STATUS CONFIRMED/UNCONFIRMED TRANSITION/TRANSITION WATCH/CHANGED/NO HISTORY)로 분리.
+- NO REGIME 은 raw 후보일 뿐 확정 전까지 직전 공식 regime 유지. "Change" 는 공식 전환일에만, 그 외 "Transition watch RISK-ON → NO REGIME". REGIME DURATION(공식) vs RAW SIGNAL PERSISTENCE(raw) 이름 분리, Conviction 은 regime 과 별개(41% · MEDIUM · WEAKENING). MARKET READ 문장 템플릿(`cockpit.yaml now_read`). 오늘 셀은 LIVE 로 공식 regime 을 따라가고 장중 LOCK 없음.
+- MARKET NOW 핵심 변수 문장의 조사("진정가" → "진정이")를 `fix_particles` 로 고침.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

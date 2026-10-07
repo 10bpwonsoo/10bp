@@ -25,6 +25,15 @@ clauses:
   WTI: ["유가 상승", "유가 하락"]
   COPPER: ["구리 상승", "구리 하락"]
 #: clauses 는 [양수 z 문장, 음수 z 문장]. 문장 = "A·B에 C까지 {tail}" / "A·B가 {tail}"
+#: MARKET NOW 의 MARKET READ (2026-10-07) — 공식 regime 과 raw 신호의 관계. 숫자를 다시 읽지 않는다
+now_read:
+  confirmed: "{official}은(는) 유지되고 있고 현재 raw signal 도 같은 방향입니다."
+  unconfirmed: "{official}은(는) 유지되고 있지만 현재 raw signal 은 {raw} 방향으로 약화되고 있습니다. 추가 확인 시 regime 전환 가능성이 있습니다."
+  watch: "{official}은(는) 유지되고 있지만 raw signal 이 {raw} 쪽으로 {n}거래일째 이어지고 있습니다. 다음 거래일에도 같으면 공식 regime 이 전환됩니다."
+  changed: "공식 regime 이 {prev}에서 {official}(으)로 전환됐습니다. raw signal 이 전환 조건을 충족했습니다."
+  no_history: "저장된 판정 sequence 가 없어 오늘 raw 판정을 그대로 공식 regime 으로 씁니다."
+conviction_trend: {delta: 10}
+
 regime_tail:
   LIQUIDITY_STRESS: "겹친 유동성 경색 · broad risk-off 환경이다."
   RISK_OFF: "겹친 위험회피 환경이다."
@@ -676,6 +685,12 @@ history:
     min_dwell_days: 2
     strong_evidence: 80
     min_dwell_share: 0.5
+  #: OFFICIAL vs RAW 전환 상태 문구 (2026-10-07). {cur}=공식 regime, {raw}=오늘 raw 후보, {n}=raw 지속 일수, {need}=확정에 필요한 연속 일수
+  transition:
+    confirmed: "raw 신호가 공식 regime {cur}과(와) 같은 방향"
+    unconfirmed: "{raw} 신호가 나타났지만 아직 전환 조건 미충족 (raw {n}D / 필요 {need}D)"
+    watch: "{raw} 신호 {n}D — 다음 거래일에도 이어지면 공식 regime 이 전환된다 (필요 {need}D)"
+    changed: "공식 regime 이 {prev}에서 {cur}(으)로 전환 확정"
   #: DRIVER HEAT STRIP — 판정 엔진 factor 점수(z 단위) 다섯 개. heat_ref 에서 색이 포화한다. 화살표 문턱은 factor z 기준.
   #: factor 점수의 부호를 그대로 번역하지 않는다 — 각 factor 의 경제적 의미로 현재 상태를 말한다. horizon 은 대표 계열의 1D / 5D z(부호 = factor 방향).
   drivers:

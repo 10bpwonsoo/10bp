@@ -689,7 +689,11 @@ export interface AiRegime {
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */
 export type CkArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
 export interface CkKeyVariable { id: string; label: string; z: number; arrow: CkArrow; change_display: string }
-export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string }
+export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
+  /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */
+  raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: "CONFIRMED" | "UNCONFIRMED_TRANSITION" | "TRANSITION_WATCH" | "CHANGED" | "NO_HISTORY";
+  transition_status_ko: string; potential_change_text: string; required_days: number; conviction_trend: "WEAKENING" | "STRENGTHENING" | "STABLE"; read: string;
+}
 export interface CkEvidence { id: string; label: string; z: number | null; display: string; context: boolean; available: boolean }
 export interface CkDriver { key: string; label: string; label_ko: string; direction: "up" | "down"; arrow: CkArrow; strength: number; importance: number; coverage: number; confirmed_by_regime: boolean; persistent: boolean; news_tone: number | null; evidence: CkEvidence[]; why: string; source: "market" | "alternative" }
 export interface CkCrossAssetRow { key: string; label: string; instrument: string; z: number | null; arrow: CkArrow; status: "CONFIRM" | "DIVERGE" | "HEADWIND" | "FLAT" | "NEUTRAL" | "MISSING"; note: string; instrument_label: string; group: "RISK" | "MACRO" | "COMMODITY"; meaning: string }
@@ -734,6 +738,9 @@ export interface CkRegimeHistory {
   transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
   composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;
   history_mode: "stored" | "recomputed"; recorded_days: number; backfilled_days: number; footnote: string;
+  /** CANONICAL CURRENT REGIME: current_regime 이 유일한 공식 판정. raw 는 후보 신호 */
+  official_state_label: string; raw_regime: string; raw_label: string; raw_persistence_days: number; required_days: number; transition_status: string; transition_status_ko: string;
+  pending_regime: string | null; pending_label: string | null; changed_today: boolean;
 }
 export interface CkToneComponent { key: string; label: string; label_ko: string; value: number | null; week_ago: number | null; change_1w: number | null; state: string; meaning: string }
 export interface CkToneChange { key: string; label: string; from_value: number; to_value: number; meaning: string }

@@ -75,14 +75,14 @@ def _day_from_observations(obs: Sequence[StateObservation], day_end: datetime, c
 
 def stabilize(keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[float | None], cfg: Mapping) -> list[str]:
     """
-    Display Regime. 새 regime K 로 바뀌는 조건(둘 중 하나):
-      (a) 연속 min_dwell_days 거래일이 K (dwell 이 있으면 min_dwell_share 이상인 날만 센다)
-      (b) 하루라도 확신 ≥ strong_evidence
-    그 외의 날은 직전 display 가 이어진다. 첫날은 raw 그대로.
+    OFFICIAL (confirmed) regime — 인과적(causal) 상태 기계. 날짜 i 의 공식 regime 은 i 까지의 raw 만 본다(미래를 보지 않는다 → 과거 값은 뒤에 날이
+    붙어도 바뀌지 않는다). 새 regime K 로 바뀌는 조건(둘 중 하나):
+      (a) 오늘까지 연속 min_dwell_days 거래일이 raw K (dwell 이 있으면 min_dwell_share 이상인 날만 센다)
+      (b) 오늘 확신 ≥ strong_evidence
+    그 외의 날은 직전 공식 regime 이 이어진다(raw 는 '후보 신호' 로만 남는다). 첫날은 raw 그대로.
     """
     d = cfg.get("display") or {}
     min_days = int(d.get("min_dwell_days", 2)); strong = float(d.get("strong_evidence", 80)); min_share = float(d.get("min_dwell_share", 0.5))
-    n = len(keys)
     out: list[str] = []
     cur: str | None = None
 
@@ -96,12 +96,25 @@ def stabilize(keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[
         elif k != cur:
             run = 0
             j = i
-            while j < n and counts(j, k):
-                run += 1; j += 1
+            while j >= 0 and counts(j, k):
+                run += 1; j -= 1
             if run >= min_days or (strengths[i] >= strong and counts(i, k)):
                 cur = k
         out.append(cur)
     return out
+
+
+def raw_run(keys: Sequence[str]) -> int:
+    """오늘까지 같은 raw 가 이어진 거래일 수 (RAW SIGNAL PERSISTENCE)."""
+    if not keys:
+        return 0
+    n = 1
+    for a, b in zip(reversed(keys[:-1]), reversed(keys[1:])):
+        if a == b:
+            n += 1
+        else:
+            break
+    return n
 
 
 def build_regime_history(
@@ -243,6 +256,19 @@ def build_regime_history(
     cur = blocks[-1]; prev_b = blocks[-2] if len(blocks) >= 2 else None
     last = days[-1]
     raw_today = None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime)
+    # ── CANONICAL CURRENT REGIME: 공식 = display(확정) · raw = 오늘 후보 · 전환 상태 ──
+    dcfg = hcfg.get("display") or {}; need_days = int(dcfg.get("min_dwell_days", 2))
+    rrun = raw_run(raw_keys)
+    inv_tax = {str(v["key"]): str(k) for k, v in (hcfg.get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
+    tcfg = hcfg.get("transition") or {}
+    if last.is_transition:
+        t_status, t_ko = "CHANGED", str(tcfg.get("changed", "")).format(prev=prev_b.label if prev_b else "", cur=cur.label)
+    elif last.dominant_regime == last.display_regime:
+        t_status, t_ko = "CONFIRMED", str(tcfg.get("confirmed", "")).format(cur=cur.label)
+    elif rrun >= need_days - 1:
+        t_status, t_ko = "TRANSITION_WATCH", str(tcfg.get("watch", "")).format(raw=labels.get(last.dominant_regime, last.dominant_regime), n=rrun, need=need_days)
+    else:
+        t_status, t_ko = "UNCONFIRMED_TRANSITION", str(tcfg.get("unconfirmed", "")).format(raw=labels.get(last.dominant_regime, last.dominant_regime), n=rrun, need=need_days)
     ranges = []
     for r in hcfg.get("ranges") or []:
         need = int(r["days"]); key = str(r["key"])
@@ -253,12 +279,16 @@ def build_regime_history(
         range="1M", ranges=ranges, current_regime=cur.regime, current_label=cur.label, duration_days=cur.days,
         previous_regime=prev_b.regime if prev_b else None, previous_label=prev_b.label if prev_b else None, transitions_1m=total_tr,
         share_pct=next((s.share for s in share if s.regime == cur.regime), 0.0), raw_today=raw_today, days=days, blocks=blocks,
+        official_state_label=inv_tax.get(cur.regime, last.raw_state), raw_regime=last.dominant_regime, raw_label=labels.get(last.dominant_regime, last.dominant_regime),
+        raw_persistence_days=rrun, required_days=need_days, transition_status=t_status, transition_status_ko=t_ko,
+        pending_regime=None if last.dominant_regime == last.display_regime else last.dominant_regime,
+        pending_label=None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime), changed_today=bool(last.is_transition),
         composite=comp, composite_current=comp[-1] if comp and comp[-1] is not None else next((c for c in reversed(comp) if c is not None), None),
         composite_slope=slope, composite_slope_days=sd, drivers=heat, share=share, transitions=transitions, total_transitions=total_tr,
         palette=labels,
         history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"), footnote=str(getattr(history, "footnote", "") or ""),
         recorded_days=sum(1 for d in days if d.source == "RECORDED"), backfilled_days=sum(1 for d in days if d.source == "BACKFILLED"),
-        note=("Display Regime 은 화면용 안정화다 — 연속 일수·강한 증거·장중 dwell 규칙(config/cockpit.yaml history.display)으로 하루짜리 flip 을 직전 regime 에 잇는다. "
+        note=("current_regime 은 대시보드의 유일한 공식(confirmed) regime 이다 — 연속 일수·강한 증거·장중 dwell 규칙(config/cockpit.yaml history.display)을 통과해야 바뀌고, 그 전까지 raw 판정은 후보 신호다. 과거 날짜의 공식 regime 은 그날까지의 raw 만으로 정해져 뒤에 날이 붙어도 바뀌지 않는다. "
               "Raw State 는 days[].raw_state 에 그대로 있다. dominant/end 는 장중 관측이 2회 이상인 날만 갈린다(관측 1회면 dwell None). "
               "비중 % 는 기간 중 일수이지 확률이 아니다. 3M/6M 은 일별 스냅샷이 쌓여야 켜진다."),
     )
