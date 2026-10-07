@@ -268,6 +268,16 @@
 - 메모리 가격 수집기를 이 세션에서 한 번 더 돌려 10/6 줄 추가(DRAM 46.321 · DDR5 58.167 · NAND 19.396 · DXI 1,114,235 — 3봉). HBM4 계약가 추정은 10/1 행 36.11 $/GB. 애널리스트 뷰는 새 확인 건이 없어 9/28 MU·AMAT 2건(8D)만 — 새로 만들지 않았다.
 - 정적 배포본 `build_dash.py` 의 CAP 을 10/6 캡처로 바꾸고 상단 안내문을 "장 마감 후 기준·FRED 10/2·항셍/니케이/코스피200 결측" 으로 고쳤다. 8개 탭 모두 1440/390 에서 가로 스크롤·페이지 오류 없음.
 
+### 2026-10-07 갱신 (9차 수기 캡처, `data/captures/2026-10-07-manual/`)
+- 기준 시각 10/7 04:23 UTC(13:23 KST 장중). 한국 봉은 장중값, 미국 지수·VIX·MOVE·섹터 ETF 는 10/6 종가. FRED DGS 계열은 10/5 가 마지막(배지 "2거래일 전"), BE10Y·BE5Y 는 10/6. 시장 41/54 — 코스피200·항셍·니케이 결측. 파이프라인은 10/6 과 같은 순서(`fetch_1007.py` → 금리 병합 → `rebuild_snap_1007.py` → `manual_tags_v9.py` + `build_manual_snapshot_v9.py` → investment(이전 = 10/6) → scenario/oil/rates → history(모든 캡처 이벤트 병합) → ai_regime(`--fetch` 52/52) → cockpit). 키 값은 어디에도 출력·저장하지 않았다.
+- 뉴스: RSS 80건 중 34건 + 웹검색으로 확인한 해외 기사 2건(Yahoo 10/6 마감, Investing.com 삼성·하이닉스 하락) 수기 태깅. 본문을 못 읽은 기사는 넣지 않았다.
+- 판정 **판정 없음 41%**(Risk-On 3일 뒤 해제) — 미국 지수는 사상 최고(S&P 7,818.93 +0.58%, 나스닥 27,599.79)지만 하루 z 가 Utilities +3.6σ·USD/CNH −2.2σ·MOVE −1.7σ 로 위험선호 축이 흐려졌다. 온도계 +8(중립), 가격 +13 / 뉴스 +1. 괴리 1(상관 체제 98), 알림 5. 재생 이력: 판정 없음 9 · Liquidity Stress 6 · Risk-On 4 · Policy Driven 2 · Growth Shock 1, 전환 13회.
+- 국내는 삼성전자 10/8 잠정실적(컨센서스 105.5~106조, 8월 114조에서 원화 강세로 하향)과 15조 자사주 매입 종료(10/6), 반도체 ETF 리밸런싱이 겹친 경계 국면 — 코스피 6,882(−0.85%), 외국인 8,838억 순매도(10:40), SK하이닉스 −1.8%, LG전자는 3분기 잠정 영업이익 7,818억(추정 −17%)에 −7.7%. 미국은 AMD +2.8%·브로드컴 +3.7%·마벨 +5.8% vs 마이크론 −1.7%·하이닉스 ADR −6.4% 로 AI 가속기와 메모리가 갈렸다. 콘스텔레이션–구글 3,590MW 원전 전력 계약 +12.3%.
+- 시나리오 점검: 평시 79% · AI 센티 76% · 메모리 업사이클 4%(MU −0.4σ·하이닉스 반대). 유가 탭 공급 +18 UNCONFIRMED. 물가 탭: 2년물 −1.3σ·2s10s +2.1σ 로 연준 정책 경로 driver 우세(−46).
+- AI 센티2: **CONFIRMED AI RISK-ON** — 바스켓 +0.9σ(5일 +4.8%), Nasdaq 대비 +1.9%p OUTPERFORM(상대 z +0.7σ), breadth 20일선 88%(1주 +26%p), 뉴스×가격 CONFIRMED, 스트레스 LOW. DRIVER VERDICT: primary AI Narrative +28 · secondary Broad Risk-Off +25, 반도체 사이클·AI 고유 스트레스는 NOT YET CONFIRMED, 상쇄 압력 없음(Macro/Rates −5). 리더십 Networking(+7.0%p)·Power/DC(+5.9%p), 후미 Memory(−4.8%p) — BASKET READ 가 처음으로 rotation 을 확정했다(Semis → Networking, 5조건 중 4개 이상). 전파: HBM +49 STRONG, DC Infra +30, Narrative +32, Compute +25, Equipment +20, Foundry +12 MIXED. 게이지 68 GREED. TOP STOCK SIGNALS: Ciena·Credo·AMD CONFIRMED, Sandisk FUNDAMENTAL LEADING, Constellation·Vistra RELATIVE BREAKOUT, AppLovin·UMC·효성중공업·HD현대일렉트릭 RELATIVE BREAKDOWN. 프런트 fixture 교체에 맞춰 실데이터 단언 4곳을 10/7 값으로(70/70).
+- 메모리 가격 수집기 10/7 행 추가(DRAM 46.357 · DXI 1,115,853 — 4봉). 애널리스트 뷰는 레이더 종목 중 PWR(Bernstein 9/24, 13D) 1건만 — 새로 만들지 않았다.
+- 정적 배포본 CAP → 10/7, 안내문 "장중 기준·미국 10/6 종가·FRED 10/5". 8개 탭 1440/390 확인.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.
