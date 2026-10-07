@@ -64,7 +64,8 @@ describe("CockpitView — MARKET REGIME HISTORY · 1M (실시간 2 전용)", () 
     const { container } = render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles.indexOf("Market Regime History · 1M")).toBe(titles.indexOf("Market Now") + 1);
-    expect(titles.indexOf("Today's Market Drivers")).toBe(titles.indexOf("Market Regime History · 1M") + 1);
+    expect(titles.indexOf("Market Tone Snapshot")).toBe(titles.indexOf("Market Regime History · 1M") + 1); // 사이에 MARKET TONE SNAPSHOT
+    expect(titles.indexOf("Today's Market Drivers")).toBe(titles.indexOf("Market Regime History · 1M") + 2);
     const h = cockpit.history!;
     expect(screen.getByTestId("ck-h-current").textContent).toBe(h.current_label);
     expect(screen.getByTestId("ck-h-ctx").textContent).toMatch(/Duration.*Previous.*1M Transitions.*1M Share/s);
@@ -336,50 +337,27 @@ describe("CockpitView — TRANSMISSION read · WATCHLIST checkpoints", () => {
   });
 });
 
-describe("MARKET TONE SNAPSHOT — HISTORY 와 TODAY'S DRIVERS 사이, 온도계와 같은 source", () => {
-  it("순서가 MARKET NOW → REGIME HISTORY → MARKET TONE SNAPSHOT → TODAY'S MARKET DRIVERS 이고, 결론(상태·숫자·1W·변화 읽기) → 가격/뉴스 → 눈금 → 재료(값+의미) → REGIME CONFIRMATION → READ(≤2문장) 순이다", async () => {
-    const toneFx = (await import("../__fixtures__/cockpit_tone.json")).default as unknown as import("../api/types").CkMarketTone;
-    const c = { ...(ckFx as unknown as Cockpit), tone: toneFx };
-    const { container } = render(<CockpitView cockpit={c} snapshot={snapshot} history={history} analystViews={null} />);
+describe("MARKET TONE SNAPSHOT — HISTORY 와 TODAY'S DRIVERS 사이, 실시간 탭의 온도계 화면 그대로", () => {
+  it("순서가 MARKET NOW → REGIME HISTORY → MARKET TONE SNAPSHOT → TODAY'S MARKET DRIVERS 이고, 카드 안은 실시간 탭의 SentimentGauge(점수·밴드·눈금·가격/뉴스·재료 스트립·템플릿 문장) 그대로다", () => {
+    const { container } = render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles.indexOf("Market Tone Snapshot")).toBe(titles.indexOf("Market Regime History · 1M") + 1);
     expect(titles.indexOf("Market Tone Snapshot")).toBe(titles.findIndex((t) => /Today/i.test(t ?? "")) - 1);
     expect(container.querySelector(".ck")!.className).toContain("ck-tone");
     const sec = screen.getByTestId("ck-tone");
-    expect(sec.getAttribute("data-state")).toBe(toneFx.state);
-    expect(screen.getByTestId("ck-tone-state").textContent).toBe(toneFx.state_label);
-    expect(sec.textContent).toContain(toneFx.state_ko);
-    expect(screen.getByTestId("ck-tone-composite").textContent).toBe(`${toneFx.composite! > 0 ? "+" : ""}${toneFx.composite!.toFixed(0)}`);
-    expect(screen.getByTestId("ck-tone-change-read").textContent).toContain(toneFx.change_read);
-    expect(sec.textContent).toContain("현재 시장의 가격·위험선호·변동성·신용·성장 신호");
-    // 가격·뉴스는 숫자 + 해석, 둘의 관계 한 줄
-    expect(screen.getByTestId("ck-tone-price").textContent).toContain(toneFx.price_read);
-    expect(screen.getByTestId("ck-tone-news").textContent).toContain(toneFx.news_read);
-    expect(screen.getByTestId("ck-tone-gap").textContent).toContain(toneFx.gap_label);
-    // compact 눈금: 종합 큰 점 + P/N 작은 점
-    const scale = screen.getByTestId("ck-tone-scale");
-    expect(scale.textContent).toMatch(/RISK-OFF.*NEUTRAL.*RISK-ON/); expect(within(scale).getByTestId("ck-tone-c")).toBeTruthy(); expect(within(scale).getByTestId("ck-tone-p").textContent).toMatch(/^P /); expect(within(scale).getByTestId("ck-tone-n").textContent).toMatch(/^N /);
-    // 재료: 값 + 상태 + 의미(숫자만 나열 금지), 결측은 DATA MISSING
-    const rows = screen.getAllByTestId("ck-tone-comp");
-    expect(rows.length).toBe(toneFx.components.length);
-    rows.forEach((r, i) => { expect(r.textContent).toContain(toneFx.components[i]!.meaning); expect(r.textContent).toContain(toneFx.components[i]!.state); });
-    const miss = toneFx.components.find((x) => x.value === null);
-    if (miss) expect(rows.find((r) => r.getAttribute("data-key") === miss.key)!.textContent).toContain("DATA MISSING");
-    const conf = screen.getByTestId("ck-tone-confirmation");
-    expect(conf.getAttribute("data-value")).toBe(toneFx.confirmation); expect(conf.textContent).toContain(toneFx.confirmation_read);
-    const read = screen.getByTestId("ck-tone-read").textContent!;
-    expect(read).toContain(toneFx.read); expect((toneFx.read.match(/다\./g) ?? []).length).toBeLessThanOrEqual(2); expect(toneFx.read).not.toMatch(/[+-]\d+/);
-    expect(sec.textContent).not.toMatch(/확률/);
-    // 세부(1W 변화 전체)는 View details 뒤에만
-    expect(screen.queryByTestId("ck-tone-details")).toBeNull();
-    fireEvent.click(screen.getByTestId("ck-tone-more"));
-    const det = screen.getByTestId("ck-tone-details");
-    expect(det.textContent).toContain("WHAT CHANGED · 1W"); expect(within(det).getAllByTestId("ck-tone-changed").length).toBe(Math.min(3, toneFx.changed.length));
+    const gauge = sec.querySelector(".gauge")!;
+    expect(gauge).not.toBeNull();
+    const t = snapshot.thermometer!;
+    expect(gauge.querySelector(".gauge-value")!.textContent).toBe(`${t.composite! > 0 ? "+" : ""}${t.composite!.toFixed(0)}`);
+    expect(gauge.querySelector(".gauge-band")!.textContent).toBe(t.band_label);
+    expect(gauge.textContent).toContain("△ 가격"); expect(gauge.textContent).toContain("▽ 뉴스");
+    for (const c of t.components) expect(gauge.textContent).toContain(c.label);
+    expect(gauge.querySelector(".gauge-note")!.textContent).toBe(t.note);
+    expect(sec.textContent).toContain("실시간 탭과 같은 온도계");
   });
 
-  it("tone 이 없으면 카드와 ck-tone 그리드 클래스가 없다", () => {
-    const c = { ...(ckFx as unknown as Cockpit), tone: null };
-    const { container } = render(<CockpitView cockpit={c} snapshot={snapshot} history={history} analystViews={null} />);
+  it("온도계가 없으면 카드와 ck-tone 그리드 클래스가 없다", () => {
+    const { container } = render(<CockpitView cockpit={cockpit} snapshot={{ ...snapshot, thermometer: null }} history={history} />);
     expect(screen.queryByTestId("ck-tone")).toBeNull(); expect(container.querySelector(".ck")!.className).not.toContain("ck-tone");
   });
 });

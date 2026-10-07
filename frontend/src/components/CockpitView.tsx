@@ -506,15 +506,15 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
   const views = analystViews === undefined ? fetched : analystViews;
   const goIssue = (id: string) => { setOpenIssue(id); const el = typeof document !== "undefined" ? document.getElementById(`ck-next-${id}`) : null; el?.scrollIntoView?.({ behavior: "smooth", block: "center" }); };
   const goStock = (id: string) => { setFocusStock(id); const el = typeof document !== "undefined" ? document.getElementById(`ck-rd-${id}`) : null; el?.scrollIntoView?.({ behavior: "smooth", block: "center" }); };
-  void snapshot; void history;
+  void history;
   const ds = cockpit.data_status;
   const leadRow = leadOpen ? [...cockpit.leadership.leaders, ...cockpit.leadership.laggards].find((x) => x.key === leadOpen && x.detail) ?? null : null;
   return (
-    <div className={`ck${cockpit.history ? " ck-hist" : ""}${cockpit.history && cockpit.tone ? " ck-tone" : ""}${leadRow ? " ck-ldopen" : ""}`} data-testid="cockpit">
+    <div className={`ck${cockpit.history ? " ck-hist" : ""}${cockpit.history && snapshot.thermometer ? " ck-tone" : ""}${leadRow ? " ck-ldopen" : ""}`} data-testid="cockpit">
       <MarketNow c={cockpit} />
       {cockpit.history ? <RegimeHistoryCard h={cockpit.history} /> : null}
-      {/* MARKET TONE SNAPSHOT — HISTORY(한 달의 regime) → 현재 tone(왜 이 regime 인가) → TODAY'S DRIVERS 의 다리. 온도계와 같은 source */}
-      {cockpit.history && cockpit.tone ? <MarketToneCard t={cockpit.tone} /> : null}
+      {/* MARKET TONE SNAPSHOT — 실시간 탭의 시장 온도 화면 그대로(같은 컴포넌트·같은 데이터). HISTORY → 현재 tone → TODAY'S DRIVERS 의 다리 */}
+      {cockpit.history && snapshot.thermometer ? <MarketToneCard thermo={snapshot.thermometer} /> : null}
       <Drivers c={cockpit} mobileTop={3} />
       <CrossAssetCard c={cockpit} />
       <LeadershipCard c={cockpit} open={leadOpen} setOpen={setLeadOpen} />
