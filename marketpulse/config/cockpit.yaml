@@ -704,3 +704,82 @@ history:
   composite_slope_days: 5
   transitions_max: 3
   top_evidence: 2
+
+# ── MARKET TONE SNAPSHOT (2026-10-07) — 실시간 2 의 MARKET REGIME HISTORY 와 TODAY'S MARKET DRIVERS 사이 ──
+# 실시간 탭의 온도계(snapshot.thermometer) 를 그대로 쓴다 — 다시 계산하지 않는다. 여기 있는 것은 상태 taxonomy·의미·문장 템플릿뿐이다.
+# 모든 값은 온도계와 같은 눈금(-100~+100, 뜨거운=위험선호 쪽이 +). 확률 표현 없음.
+tone:
+  subtitle: "현재 시장의 가격·위험선호·변동성·신용·성장 신호"
+  states:                                   # composite → MARKET TONE 상태 (위에서부터 첫 min 이상)
+    - {min: 50,   key: STRONG_RISK_ON,  label: "STRONG RISK-ON",  ko: "강한 위험선호", dir: 1}
+    - {min: 20,   key: RISK_ON,         label: "RISK-ON",         ko: "위험선호",      dir: 1}
+    - {min: -20,  key: NEUTRAL,         label: "NEUTRAL",         ko: "중립",          dir: 0}
+    - {min: -50,  key: RISK_OFF,        label: "RISK-OFF",        ko: "위험회피",      dir: -1}
+    - {min: -101, key: STRONG_RISK_OFF, label: "STRONG RISK-OFF", ko: "강한 위험회피", dir: -1}
+  component_bands: {strong: 30, mild: 10}   # |값| ≥ strong → up/down · ≥ mild → mild_up/mild_down · 그 아래 flat
+  state_words: {up: SUPPORT, mild_up: "NEUTRAL+", flat: NEUTRAL, mild_down: "NEUTRAL−", down: PRESSURE, missing: "DATA MISSING"}
+  components:                                # key = 온도계 재료 키. 의미는 '뜨거운 쪽 +' 눈금 기준의 경제적 뜻
+    RiskAppetite: {label: "Risk Appetite", ko: "위험선호", up: "위험선호 강화", mild_up: "위험선호 완만한 회복", flat: "위험선호 중립권", mild_down: "위험선호 소폭 약화", down: "위험선호 약화"}
+    Volatility:   {label: "Volatility",    ko: "변동성",   up: "변동성 진정(위험선호 지지)", mild_up: "변동성 완만한 진정", flat: "변동성 중립권", mild_down: "변동성 압력 소폭 확대", down: "변동성 압력 확대"}
+    Growth:       {label: "Growth",        ko: "성장",     up: "성장 신호 긍정", mild_up: "성장 신호 중립권 상단", flat: "성장 신호 중립권", mild_down: "성장 신호 중립권 하단", down: "성장 둔화 신호"}
+    Credit:       {label: "Credit",        ko: "신용",     up: "신용 환경 개선", mild_up: "신용 환경 완만한 개선", flat: "신용 환경 중립권", mild_down: "신용 환경 소폭 부담", down: "신용 환경 부담"}
+    KoreaFlow:    {label: "Korea Flow",    ko: "국내 수급", up: "국내 수급 유입", mild_up: "국내 수급 완만한 유입", flat: "국내 수급 중립", mild_down: "국내 수급 소폭 이탈", down: "국내 수급 이탈"}
+    news:         {label: "News Sentiment", ko: "뉴스 감성", up: "뉴스 흐름 긍정", mild_up: "뉴스 흐름 다소 긍정", flat: "뉴스 흐름 사실상 중립", mild_down: "뉴스 흐름 다소 부정", down: "뉴스 흐름 부정"}
+  missing_meaning: "데이터 없음 — 0 으로 채우지 않았다"
+  price_read: {up: "가격이 뚜렷한 위험선호를 말한다", mild_up: "가격은 중립보다 다소 긍정적", flat: "가격은 사실상 중립", mild_down: "가격은 중립보다 다소 부정적", down: "가격이 뚜렷한 위험회피를 말한다", missing: "가격 온도 없음"}
+  news_read:  {up: "뉴스 흐름이 뚜렷하게 긍정적", mild_up: "뉴스 흐름은 다소 긍정적", flat: "뉴스 흐름은 사실상 중립", mild_down: "뉴스 흐름은 다소 부정적", down: "뉴스 흐름이 뚜렷하게 부정적", missing: "뉴스 온도 없음(기사 부족)"}
+  gap:
+    threshold: 10                            # |price − news| 가 이 이상이면 한쪽이 앞선다
+    price_lead_up:   {label: "PRICE > NEWS", read: "가격이 뉴스보다 먼저 회복 중"}
+    price_lead_down: {label: "PRICE < NEWS", read: "가격이 뉴스보다 먼저 약해지는 중"}
+    news_lead_up:    {label: "NEWS > PRICE", read: "뉴스 개선에 비해 가격 확인이 부족"}
+    news_lead_down:  {label: "NEWS < PRICE", read: "뉴스 악화에 비해 가격은 아직 버팀"}
+    aligned:         {label: "ALIGNED",      read: "가격과 뉴스가 같은 방향"}
+    missing:         {label: "—",            read: "가격·뉴스 비교 불가"}
+  change:                                   # composite 1W 변화 읽기
+    fast: 20
+    small: 8
+    fast_up: "지난주 {from}에서 {to}으로 빠르게 회복"
+    fast_up_same: "지난주보다 톤이 빠르게 회복, {to} 유지"
+    fast_down_same: "지난주보다 톤이 빠르게 악화, {to} 유지"
+    up: "지난주보다 톤 개선, {to} 유지"
+    flat: "지난주와 비슷한 {to} 톤 유지"
+    down: "지난주보다 톤 악화, {to}으로"
+    fast_down: "지난주 {from}에서 {to}으로 빠르게 악화"
+    none: "1주 전 비교 자료 없음"
+    #: composite 의 1주 전 — 온도계에 저장 스냅샷 기준 값이 있으면 그것, 없으면 저장된 daily snapshot sequence(위 REGIME HISTORY 와 같은 source)의 5거래일 전 composite
+    basis_thermometer: "온도계 1주 전(저장 스냅샷)"
+    basis_history: "저장된 daily snapshot 5거래일 전"
+    cross_up: "지난주 {from}에서 {to}으로 전환"
+    cross_down: "지난주 {from}에서 {to}으로 후퇴"
+  changed: {max: 3, min_abs: 10, up: "회복", up_strong: "강한 회복", down: "악화", down_strong: "압력 확대", flip_up: "부담 → 지지로 전환", flip_down: "지지 → 부담으로 전환"}
+  confirmation:                             # regime(taxonomy key) 이 기대하는 tone 방향 (+1 · 0 · −1)
+    expected: {risk_on: 1, growth: -1, inflation: -1, liquidity_stress: -1, geopolitical: -1, policy: 0, neutral: 0}
+    confirmed: "Regime은 {regime}, 현재 시장 tone도 {tone_ko}권으로 일치."
+    partial_regime_ahead: "Regime은 {regime}이지만 단기 market tone은 아직 완전히 확인하지 못함."
+    partial_tone_ahead: "Regime은 {regime}이지만 단기 market tone은 이미 {tone_ko} 쪽으로 기울어 있음."
+    diverging: "Regime은 {regime}, 현재 market tone은 {tone_ko} — 판정과 반대 방향."
+    unknown: "tone 을 잴 수 없어 확인 불가."
+  read:                                     # MARKET TONE READ — 최대 2문장. 숫자를 다시 읽지 않는다
+    support_pressure_neutral: "{support}은(는) {changed_support}, {pressure}이(가) 아직 완전한 Risk-On 전환을 제한하고 있습니다."
+    support_only_neutral: "{support}은(는) {changed_support} 나머지 신호는 중립권에 머물러 있습니다."
+    pressure_only_neutral: "{pressure}이(가) 부담으로 작용하고 있지만 나머지 신호는 아직 중립권을 지키고 있습니다."
+    none_neutral: "어느 신호도 뚜렷한 방향을 내지 않는 중립 구간입니다."
+    risk_on: "{support}이(가) 시장을 위험선호 쪽으로 끌고 있고{pressure_tail}."
+    risk_on_pressure_tail: ", {pressure}만 부담으로 남아 있습니다"
+    risk_on_no_pressure_tail: " 뚜렷한 부담 요인은 없습니다"
+    risk_off: "{pressure}이(가) 시장을 위험회피로 누르고 있고{support_tail}."
+    risk_off_support_tail: ", {support}만 버티고 있습니다"
+    risk_off_no_support_tail: " 버티는 신호가 없습니다"
+    changed_up: "지난주 대비 회복했지만"
+    changed_flat: "긍정적이지만"
+    changed_down: "지난주보다 약해졌고"
+    second_neutral_up: "현재는 공격적인 Risk-On보다 중립에서 회복을 확인하는 단계에 가깝습니다."
+    second_neutral_down: "현재는 위험회피로 기우는 초기 단계로, 추가 악화 여부를 확인하는 구간입니다."
+    second_neutral_flat: "현재는 방향이 정해지지 않은 중립 구간으로, 어느 쪽 신호가 먼저 굳어지는지가 관건입니다."
+    second_risk_on_up: "지난주보다 톤이 개선돼 위험선호가 굳어지는 단계입니다."
+    second_risk_on_down: "다만 지난주보다 톤이 식어 위험선호의 강도는 확인이 더 필요합니다."
+    second_risk_on_flat: "위험선호 톤이 유지되고 있어 추세 지속 여부가 관건입니다."
+    second_risk_off_up: "지난주보다는 완화됐지만 아직 위험회피 구간을 벗어나지 못했습니다."
+    second_risk_off_down: "지난주보다 톤이 더 악화돼 위험회피가 깊어지는 단계입니다."
+    second_risk_off_flat: "위험회피 톤이 이어지고 있어 완화 신호가 먼저 나와야 합니다."

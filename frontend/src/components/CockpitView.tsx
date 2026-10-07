@@ -5,6 +5,7 @@ import { IssuePathView } from "./IssuePath";
 import { COLOR_LEGEND, MATCH_COLOR, STATUS_KO, STATUS_KO_SHORT, glossaryFor } from "./ko";
 import { LABEL_KO } from "./StateHistoryStrip";
 import { RegimeHistoryCard } from "./RegimeHistoryCard";
+import { MarketToneCard } from "./MarketToneCard";
 
 /**
  * 실시간 메인 탭 — decision cockpit.
@@ -509,9 +510,11 @@ export function CockpitView({ cockpit, snapshot, history, details, scenario, ana
   const ds = cockpit.data_status;
   const leadRow = leadOpen ? [...cockpit.leadership.leaders, ...cockpit.leadership.laggards].find((x) => x.key === leadOpen && x.detail) ?? null : null;
   return (
-    <div className={`ck${cockpit.history ? " ck-hist" : ""}${leadRow ? " ck-ldopen" : ""}`} data-testid="cockpit">
+    <div className={`ck${cockpit.history ? " ck-hist" : ""}${cockpit.history && cockpit.tone ? " ck-tone" : ""}${leadRow ? " ck-ldopen" : ""}`} data-testid="cockpit">
       <MarketNow c={cockpit} />
       {cockpit.history ? <RegimeHistoryCard h={cockpit.history} /> : null}
+      {/* MARKET TONE SNAPSHOT — HISTORY(한 달의 regime) → 현재 tone(왜 이 regime 인가) → TODAY'S DRIVERS 의 다리. 온도계와 같은 source */}
+      {cockpit.history && cockpit.tone ? <MarketToneCard t={cockpit.tone} /> : null}
       <Drivers c={cockpit} mobileTop={3} />
       <CrossAssetCard c={cockpit} />
       <LeadershipCard c={cockpit} open={leadOpen} setOpen={setLeadOpen} />

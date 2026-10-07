@@ -285,6 +285,10 @@
 - 캡처: `capture_daily_history.py --market`(migration + 시장 sync → state_history.json) → investment(메모리) → rates/oil → ai_regime(센티먼트·AI 판정) → `--assemble`(daily_history.json). 저장소 `data/history/*.json` 커밋. 10/7: RECORDED 10 캡처일 + BACKFILLED 로 22일 창 완성.
 - 프런트: `DailyHistoryStrip`/`DailyHistoryPanel`(AI 센티2 AI TRADE REGIME HISTORY, 물가·유가 STATE HISTORY, 메모리 MEMORY CYCLE HISTORY), 기존 띠·REGIME HISTORY·1M SENTIMENT 에 출처 툴팁·각주 "각 거래일 최종 snapshot 기준 · 저장 후 고정". 테스트: 백엔드 +14(RT1~7 포함) · 프런트 +7(77/77).
 
+### 2026-10-07 — 실시간 2 MARKET TONE SNAPSHOT
+- MARKET REGIME HISTORY 와 TODAY'S MARKET DRIVERS 사이. 실시간 탭 온도계(`snapshot.thermometer`)와 같은 source — 재계산 없음. `engines/market_tone.py` + `config/cockpit.yaml tone`(상태 taxonomy ±20/±50, 재료별 의미, PRICE/NEWS 읽기, gap, 1W 변화 템플릿, REGIME CONFIRMATION 기대 방향, READ 템플릿). `Cockpit.tone: MarketTone`. composite 1주 전은 온도계 저장 스냅샷 값 → 없으면 저장된 daily snapshot 5거래일 전(REGIME HISTORY 와 같은 source).
+- 프런트 `MarketToneCard`(gridArea tone, `.ck-tone` 템플릿 3단계): 결론(상태·숫자·1W·변화 읽기) → PRICE/NEWS TONE + 관계 → compact 눈금(종합 큰 점 + P/N) → MARKET COMPONENTS(값·상태·의미, DATA MISSING) → REGIME CONFIRMATION(CONFIRMED/PARTIAL/DIVERGING + 한 줄) → MARKET TONE READ(≤2문장, 숫자 재낭독 없음) → View details(WHAT CHANGED · 1W ≤3, 전체 1W). 10/7: NEUTRAL +8, 1W −12 → +20, PRICE > NEWS, Regime Risk-On(display) vs tone 중립 → PARTIAL. 테스트 백엔드 +3 · 프런트 +2(79/79).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

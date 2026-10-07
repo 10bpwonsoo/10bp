@@ -52,6 +52,12 @@ def _clip(v: float) -> float:
     return max(-1.0, min(1.0, v))
 
 
+def _tax_key(cfg: Mapping, label: str) -> str:
+    """StateLabel → history taxonomy key (risk_on · neutral · liquidity_stress …). 히스토리가 없을 때 tone 확인에 쓴다."""
+    t = ((cfg.get("history") or {}).get("taxonomy") or {}).get(label)
+    return str(t["key"]) if t else label.lower()
+
+
 def _r(v, d: int = 2):
     return None if v is None or (isinstance(v, float) and math.isnan(v)) else round(float(v), d)
 
@@ -176,6 +182,12 @@ def build_cockpit(
     hz_ids = [str((d.get("horizon") or {}).get("id")) for d in (cfg.get("history", {}).get("drivers") or []) if d.get("horizon")]
     regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days,
                                           horizon_z={i: (Z.z1(i), Z.z5(i)) for i in hz_ids}) if history is not None else None
+
+    # ── 1c. MARKET TONE SNAPSHOT (2026-10-07) — 온도계를 그대로, regime 과 대조 ──
+    from .market_tone import build_market_tone
+    _rk = regime_history.current_regime if regime_history is not None else _tax_key(cfg, label)
+    _rl = regime_history.current_label if regime_history is not None else LABEL_TEXT.get(label, label)
+    market_tone = build_market_tone(snapshot.thermometer, cfg.get("tone", {}) or {}, regime_key=_rk, regime_label=_rl, history_points=list(getattr(history, "points", []) or []))
 
     # ── 2. TODAY'S MARKET DRIVERS ────────────────────────────
     dc = cfg.get("drivers", {}); w = dc.get("weights", {}); news_ref = float(dc.get("news_ref", 40))
@@ -705,5 +717,5 @@ def build_cockpit(
 
     note = ("메인 탭은 기존 층(판정·테마·괴리·뉴스·Investment·AI/금리/유가 판별)의 값을 config/cockpit.yaml 규칙으로 고른 것이다. driver 는 |z| 순이 아니라 "
             "증거 강도 × 확보 + 크로스에셋 확인 + 지속성 + 뉴스 촉매 점수로 뽑는다. 확인 n/m 은 확률이 아니다. 데이터가 없는 카드는 숨긴다. 전체 표·진단은 Details / Diagnostics 에 있다.")
-    return Cockpit(as_of=snapshot.as_of, market_now=now, history=regime_history, drivers=drivers, cross_asset=ca, leadership=leadership, transmission=chains, radar=radar, catalysts=items,
+    return Cockpit(as_of=snapshot.as_of, market_now=now, history=regime_history, tone=market_tone, drivers=drivers, cross_asset=ca, leadership=leadership, transmission=chains, radar=radar, catalysts=items,
                    earnings=earnings, what_matters_next=nxt, upcoming=upcoming, watchlist=wl, data_status=status, note=note)

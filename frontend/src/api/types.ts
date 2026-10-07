@@ -735,8 +735,17 @@ export interface CkRegimeHistory {
   composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;
   history_mode: "stored" | "recomputed"; recorded_days: number; backfilled_days: number; footnote: string;
 }
+export interface CkToneComponent { key: string; label: string; label_ko: string; value: number | null; week_ago: number | null; change_1w: number | null; state: string; meaning: string }
+export interface CkToneChange { key: string; label: string; from_value: number; to_value: number; meaning: string }
+/** MARKET TONE SNAPSHOT — 실시간 탭 온도계와 같은 source. 값은 -100~+100, 위험선호 쪽이 +. 확률 아님 */
+export interface CkMarketTone {
+  composite: number | null; state: string; state_label: string; state_ko: string; band: string; band_label: string; composite_week_ago: number | null; change_1w: number | null; change_read: string;
+  week_ago_source: string; week_ago_as_of: string | null; week_ago_basis: string; price: number | null; price_read: string; news: number | null; news_read: string; news_events: number; gap_label: string; gap_read: string;
+  confidence: number; components: CkToneComponent[]; changed: CkToneChange[]; regime_key: string; regime_label: string; confirmation: "CONFIRMED" | "PARTIAL" | "DIVERGING" | "UNKNOWN"; confirmation_read: string;
+  read: string; subtitle: string; note: string;
+}
 export interface Cockpit {
-  as_of: string; market_now: CkMarketNow; history: CkRegimeHistory | null; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
+  as_of: string; market_now: CkMarketNow; history: CkRegimeHistory | null; tone: CkMarketTone | null; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
   catalysts: CkCatalyst[]; earnings: CkEarnings | null; what_matters_next: CkNextItem[]; upcoming: CkUpcoming[]; watchlist: CkWatchRow[]; data_status: CkDataStatus; note: string;
 }
 

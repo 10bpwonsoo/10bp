@@ -306,3 +306,67 @@ class TestTransmissionReadAndWatchlist:
             for l in w.transmission: assert any(t.driver_key == l.key for t in c.transmission)
             for l in w.issues: assert any(n.id == l.key for n in c.what_matters_next)
             assert set(w.reasons) <= {"NEWS", "THEME", "MACRO", "FUNDAMENTAL", "DIVERGENCE", "ALT DATA", "TRANSMISSION"}
+
+
+class TestMarketTone:
+    """MARKET TONE SNAPSHOT (2026-10-07) — 실시간 탭 온도계와 같은 source, taxonomy·의미·2문장 읽기·REGIME CONFIRMATION 은 config 템플릿. 확률 없음."""
+
+    def _tone(self, scenario="inflation_shock", history=True):
+        from marketpulse.engines.state_history import replay_market_state
+        settings = Settings(data_mode="MOCK", scenario=scenario, llm_enabled=False)
+        r = run_pipeline_detailed(settings, as_of=AS_OF)
+        ins = get_instruments().instruments
+        hist = replay_market_state(ins, r.series_by_id, as_of=AS_OF, days=10, mode=r.snapshot.mode, zscore_window=settings.zscore_window) if history else None
+        market = build_snapshot(ins, r.series_by_id, mode=r.snapshot.mode, as_of=AS_OF, correlations=False)
+        return r.snapshot, build_cockpit(r.snapshot, market, {i.id: i for i in ins}, history=hist)
+
+    def test_same_source_as_thermometer(self):
+        snap, c = self._tone()
+        t = c.tone; th = snap.thermometer
+        assert t is not None and t.composite == pytest.approx(th.composite, abs=0.051) and t.price == pytest.approx(th.price, abs=0.051) and t.news == pytest.approx(th.news, abs=0.051)
+        assert [x.key for x in t.components] == [x.key for x in th.components]
+        for a, b in zip(t.components, th.components):
+            assert (a.value is None) == (b.value is None) and (a.value is None or a.value == pytest.approx(b.value, abs=0.051))
+            assert a.meaning and a.state in ("SUPPORT", "NEUTRAL+", "NEUTRAL", "NEUTRAL−", "PRESSURE", "DATA MISSING")
+            assert (a.state == "DATA MISSING") == (a.value is None)
+        assert t.state in ("STRONG_RISK_OFF", "RISK_OFF", "NEUTRAL", "RISK_ON", "STRONG_RISK_ON") and t.state_label and t.state_ko
+        assert t.price_read and t.news_read and t.gap_label in ("PRICE > NEWS", "PRICE < NEWS", "NEWS > PRICE", "NEWS < PRICE", "ALIGNED", "—")
+        assert t.subtitle == "현재 시장의 가격·위험선호·변동성·신용·성장 신호"
+
+    def test_taxonomy_confirmation_and_read(self):
+        from marketpulse.engines.market_tone import build_market_tone
+        from marketpulse.models.thermometer import SentimentThermometer, ThermoComponent
+        cfg = load_cockpit_config()["tone"]
+        def th(comp, price, news, comps, week=None):
+            return SentimentThermometer(as_of=AS_OF, composite=comp, price=price, news=news, band="neutral", band_label="중립", confidence=80.0, composite_week_ago=week,
+                                        week_ago_source="snapshot" if week is not None else "none",
+                                        components=[ThermoComponent(key=k, label=k, kind="news" if k == "news" else "factor", value=v, week_ago=w) for k, v, w in comps])
+        base = [("RiskAppetite", 8, -22), ("Volatility", 37, -5), ("Growth", 7, -1), ("Credit", -14, 12), ("KoreaFlow", None, None), ("news", 1, None)]
+        t = build_market_tone(th(8, 13, 1, base, week=-34), cfg, regime_key="neutral", regime_label="Neutral / Mixed")
+        assert t.state == "NEUTRAL" and t.change_1w == 42 and "빠르게 회복" in t.change_read and "위험회피" in t.change_read
+        assert t.gap_label == "PRICE > NEWS" and "먼저 회복" in t.gap_read and t.confirmation == "CONFIRMED"
+        assert [c.label for c in t.changed] == ["Volatility", "Risk Appetite", "Credit"] and t.changed[2].meaning == "지지 → 부담으로 전환"  # |1W 변화| 큰 순
+        assert t.components[4].state == "DATA MISSING" and "0 으로" in t.components[4].meaning
+        assert t.components[1].meaning.startswith("변동성 진정") and t.components[3].meaning == "신용 환경 소폭 부담"
+        assert 1 <= t.read.count("다.") <= 2 and "+8" not in t.read and "+13" not in t.read and "확률" not in t.read
+        assert "변동성은" in t.read and "신용이" in t.read  # 조사 처리
+        # regime 이 방향을 기대하는데 tone 이 중립 → PARTIAL · 반대 방향 → DIVERGING · 같은 방향 → CONFIRMED
+        assert build_market_tone(th(5, 5, 0, base), cfg, regime_key="risk_on", regime_label="Risk-On").confirmation == "PARTIAL"
+        assert build_market_tone(th(-35, -30, -20, base), cfg, regime_key="risk_on", regime_label="Risk-On").confirmation == "DIVERGING"
+        assert build_market_tone(th(55, 40, 30, base), cfg, regime_key="risk_on", regime_label="Risk-On").state == "STRONG_RISK_ON"
+        r = build_market_tone(th(30, 30, 20, base), cfg, regime_key="risk_on", regime_label="Risk-On")
+        assert r.confirmation == "CONFIRMED" and r.state == "RISK_ON" and "위험선호 쪽으로" in r.read
+        off = build_market_tone(th(-60, -50, -40, [("RiskAppetite", -40, -10), ("Credit", -50, -20), ("news", -40, None)], week=-20), cfg, regime_key="liquidity_stress", regime_label="Liquidity Stress")
+        assert off.state == "STRONG_RISK_OFF" and off.confirmation == "CONFIRMED" and "위험회피로 누르고" in off.read and "악화" in off.change_read
+        none = build_market_tone(th(None, None, None, []), cfg, regime_key="neutral", regime_label="Neutral")
+        assert none.state == "UNKNOWN" and none.confirmation == "UNKNOWN" and none.change_read == "1주 전 비교 자료 없음"
+        assert build_market_tone(None, cfg, regime_key="neutral", regime_label="Neutral") is None
+
+    def test_week_ago_from_stored_history_when_thermometer_has_none(self):
+        """온도계에 composite 1주 전이 없으면 저장된 daily snapshot sequence(5거래일 전)를 쓴다 — 재계산이 아니다."""
+        snap, c = self._tone()
+        t = c.tone
+        if snap.thermometer.composite_week_ago is None and c.history is not None and len(c.history.days) >= 6:
+            assert t.week_ago_source == "history" and t.composite_week_ago == pytest.approx(c.history.composite[-6], abs=0.051) and "daily snapshot" in t.week_ago_basis
+        snap2, c2 = self._tone(history=False)
+        assert c2.tone is not None and c2.tone.regime_key in ("neutral", "risk_on", "liquidity_stress", "growth", "inflation", "policy", "geopolitical")

@@ -510,10 +510,69 @@ class RegimeHistory(Base):
     note: str = ""
 
 
+class ToneComponent(Base):
+    """온도계 재료 한 줄 — 현재값 + 1주 전 + 투자적 의미. 값은 온도계와 같은 눈금(-100~+100, 위험선호 쪽이 +)."""
+
+    key: str
+    label: str
+    label_ko: str = ""
+    value: float | None = None
+    week_ago: float | None = None
+    change_1w: float | None = None
+    state: str = Field(description="SUPPORT · NEUTRAL+ · NEUTRAL · NEUTRAL− · PRESSURE · DATA MISSING")
+    meaning: str = Field(default="", description="숫자의 투자적 의미 한 줄 — '변동성 압력 확대'")
+
+
+class ToneChange(Base):
+    key: str
+    label: str
+    from_value: float
+    to_value: float
+    meaning: str
+
+
+class MarketTone(Base):
+    """
+    MARKET TONE SNAPSHOT (2026-10-07) — 실시간 탭의 온도계(snapshot.thermometer)를 그대로 받아 '지금 시장이 왜 이 regime 에 있는가' 로 읽는다.
+    다시 계산하지 않는다 — composite · price · news · 재료 값은 온도계와 같은 source 다. 확률 표현 없음.
+    """
+
+    composite: float | None = None
+    state: str = Field(description="STRONG_RISK_OFF · RISK_OFF · NEUTRAL · RISK_ON · STRONG_RISK_ON · UNKNOWN")
+    state_label: str = ""
+    state_ko: str = ""
+    band: str = "unknown"
+    band_label: str = ""
+    composite_week_ago: float | None = None
+    change_1w: float | None = None
+    change_read: str = Field(default="", description="'지난주 위험회피에서 중립으로 빠르게 회복'")
+    week_ago_source: str = Field(default="none", description="snapshot: 온도계의 저장 스냅샷 1주 전 · history: 저장된 daily snapshot 5거래일 전 · series/none")
+    week_ago_as_of: datetime | None = None
+    week_ago_basis: str = Field(default="", description="1W AGO 의 출처 설명 한 줄")
+    price: float | None = None
+    price_read: str = ""
+    news: float | None = None
+    news_read: str = ""
+    news_events: int = 0
+    gap_label: str = Field(default="", description="PRICE > NEWS · NEWS > PRICE · ALIGNED")
+    gap_read: str = ""
+    confidence: float = 0.0
+    components: list[ToneComponent] = Field(default_factory=list)
+    changed: list[ToneChange] = Field(default_factory=list, description="1주 변화가 큰 재료 ≤3")
+    regime_key: str = ""
+    regime_label: str = ""
+    confirmation: str = Field(default="UNKNOWN", description="CONFIRMED · PARTIAL · DIVERGING · UNKNOWN — regime 방향과 현재 tone 의 일치. 확률 아님")
+    confirmation_read: str = ""
+    read: str = Field(default="", description="MARKET TONE READ — 최대 2문장")
+    subtitle: str = ""
+    note: str = ""
+
+
 class Cockpit(Base):
     as_of: datetime
     market_now: MarketNow
     history: RegimeHistory | None = Field(default=None, description="MARKET REGIME HISTORY · 1M — 히스토리 재생이 없으면 None(카드 숨김)")
+    tone: MarketTone | None = Field(default=None, description="MARKET TONE SNAPSHOT — 온도계가 없으면 None(카드 숨김)")
     drivers: list[Driver] = Field(default_factory=list)
     cross_asset: CrossAsset
     leadership: Leadership

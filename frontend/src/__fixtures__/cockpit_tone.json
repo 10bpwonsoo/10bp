@@ -1,0 +1,114 @@
+{
+ "composite": 7.9,
+ "state": "NEUTRAL",
+ "state_label": "NEUTRAL",
+ "state_ko": "중립",
+ "band": "neutral",
+ "band_label": "중립",
+ "composite_week_ago": -12.2,
+ "change_1w": 20.0,
+ "change_read": "지난주보다 톤이 빠르게 회복, 중립 유지",
+ "week_ago_source": "history",
+ "week_ago_as_of": "2026-09-30T23:59:59Z",
+ "week_ago_basis": "저장된 daily snapshot 5거래일 전",
+ "price": 12.6,
+ "price_read": "가격은 중립보다 다소 긍정적",
+ "news": 0.9,
+ "news_read": "뉴스 흐름은 사실상 중립",
+ "news_events": 36,
+ "gap_label": "PRICE > NEWS",
+ "gap_read": "가격이 뉴스보다 먼저 회복 중",
+ "confidence": 93.8,
+ "components": [
+  {
+   "key": "RiskAppetite",
+   "label": "Risk Appetite",
+   "label_ko": "위험선호",
+   "value": 7.8,
+   "week_ago": -24.6,
+   "change_1w": 32.4,
+   "state": "NEUTRAL",
+   "meaning": "위험선호 중립권"
+  },
+  {
+   "key": "Volatility",
+   "label": "Volatility",
+   "label_ko": "변동성",
+   "value": 37.2,
+   "week_ago": -8.3,
+   "change_1w": 45.5,
+   "state": "SUPPORT",
+   "meaning": "변동성 진정(위험선호 지지)"
+  },
+  {
+   "key": "Growth",
+   "label": "Growth",
+   "label_ko": "성장",
+   "value": 6.8,
+   "week_ago": -20.8,
+   "change_1w": 27.6,
+   "state": "NEUTRAL",
+   "meaning": "성장 신호 중립권"
+  },
+  {
+   "key": "Credit",
+   "label": "Credit",
+   "label_ko": "신용",
+   "value": -14.3,
+   "week_ago": -82.3,
+   "change_1w": 68.0,
+   "state": "NEUTRAL−",
+   "meaning": "신용 환경 소폭 부담"
+  },
+  {
+   "key": "KoreaFlow",
+   "label": "Korea Flow",
+   "label_ko": "국내 수급",
+   "value": null,
+   "week_ago": null,
+   "change_1w": null,
+   "state": "DATA MISSING",
+   "meaning": "데이터 없음 — 0 으로 채우지 않았다"
+  },
+  {
+   "key": "news",
+   "label": "News Sentiment",
+   "label_ko": "뉴스 감성",
+   "value": 0.9,
+   "week_ago": null,
+   "change_1w": null,
+   "state": "NEUTRAL",
+   "meaning": "뉴스 흐름 사실상 중립"
+  }
+ ],
+ "changed": [
+  {
+   "key": "Credit",
+   "label": "Credit",
+   "from_value": -82.3,
+   "to_value": -14.3,
+   "meaning": "강한 회복"
+  },
+  {
+   "key": "Volatility",
+   "label": "Volatility",
+   "from_value": -8.3,
+   "to_value": 37.2,
+   "meaning": "부담 → 지지로 전환"
+  },
+  {
+   "key": "RiskAppetite",
+   "label": "Risk Appetite",
+   "from_value": -24.6,
+   "to_value": 7.8,
+   "meaning": "강한 회복"
+  }
+ ],
+ "regime_key": "risk_on",
+ "regime_label": "Risk-On",
+ "confirmation": "PARTIAL",
+ "confirmation_read": "Regime은 Risk-On이지만 단기 market tone은 아직 완전히 확인하지 못함.",
+ "read": "변동성은 지난주 대비 회복했지만, 신용이 아직 완전한 Risk-On 전환을 제한하고 있습니다. 현재는 공격적인 Risk-On보다 중립에서 회복을 확인하는 단계에 가깝습니다.",
+ "subtitle": "현재 시장의 가격·위험선호·변동성·신용·성장 신호",
+ "note": "실시간 탭의 온도계와 같은 source 다 — 종합·가격·뉴스·재료 값과 1주 전은 다시 계산하지 않았다. 모든 값은 -100~+100 눈금이고 위험선호(뜨거운) 쪽이 + 다. REGIME CONFIRMATION 은 regime 이 기대하는 방향과 현재 tone 방향의 일치 여부이지 확률이 아니다."
+}

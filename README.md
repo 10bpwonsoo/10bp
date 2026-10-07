@@ -756,6 +756,24 @@ HBM 은 현물 시장이 없으므로 추정치이며 화면에 '분기 추정' 
 각 시장의 휴장일은 알 수 없어 반영하지 않으므로 이 값은 **상한**이다 — note 에
 그렇게 적혀 있다.
 
+### 실시간 2 · MARKET TONE SNAPSHOT (2026-10-07)
+
+MARKET REGIME HISTORY · 1M 과 TODAY'S MARKET DRIVERS 사이에 붙은 카드. HISTORY 가 "한 달 동안 regime 이 어떻게 변했는가" 라면
+이 카드는 "현재 시장이 왜 이 regime 에 있는지, 가격·뉴스·주요 risk factor 가 어떤 방향인지" 를 5초 안에 읽게 한다 —
+HISTORY → CURRENT CONDITION → TODAY'S DRIVERS 의 흐름이다. 재료는 **실시간 탭의 온도계(`snapshot.thermometer`) 그대로**다:
+종합·가격·뉴스·재료 값과 1주 전은 다시 계산하지 않아 두 탭의 숫자가 다를 수 없다. `engines/market_tone.py` 는 `config/cockpit.yaml tone`
+의 taxonomy·의미·템플릿을 입힐 뿐이다. 위에서부터 ① 결론 — MARKET TONE 상태(STRONG RISK-OFF · RISK-OFF · NEUTRAL · RISK-ON · STRONG RISK-ON,
+composite ±20/±50 경계) + 숫자 + 1W AGO / CHANGE + 변화 읽기 한 줄("지난주 위험회피에서 중립으로 빠르게 회복"). composite 의 1주 전은
+온도계의 저장 스냅샷 값이 있으면 그것, 없으면 저장된 daily snapshot sequence(바로 위 REGIME HISTORY 와 같은 source)의 5거래일 전 값이다.
+② PRICE TONE / NEWS TONE — 숫자 + 해석("가격은 중립보다 다소 긍정적") 과 둘의 관계(PRICE > NEWS "가격이 뉴스보다 먼저 회복 중" 등, 차이 ≥ 10).
+③ compact 눈금 — RISK-OFF −100 … NEUTRAL 0 … RISK-ON +100 위에 종합(큰 점)과 P/N(작은 점). ④ MARKET COMPONENTS — 재료마다 현재값 ·
+상태(SUPPORT · NEUTRAL+ · NEUTRAL · NEUTRAL− · PRESSURE · DATA MISSING) · 투자적 의미("변동성 진정(위험선호 지지)", "신용 환경 소폭 부담").
+모든 값은 온도계 눈금 그대로 위험선호(뜨거운) 쪽이 + 다. 결측은 DATA MISSING. ⑤ REGIME CONFIRMATION — regime(taxonomy key)이 기대하는
+방향과 현재 tone 방향의 일치: 같은 방향 CONFIRMED, regime 은 방향인데 tone 은 중립(또는 그 반대) PARTIAL, 반대 방향 DIVERGING. 확률 아님.
+⑥ MARKET TONE READ — 최대 2문장, 숫자를 다시 읽지 않는다(지지 재료·부담 재료·1주 변화로 템플릿 선택). View details 에 WHAT CHANGED · 1W
+(1주 변화가 큰 재료 ≤3) 와 전체 재료의 1주 전 값. 데스크톱은 왼쪽(tone·1W·가격 vs 뉴스·눈금) / 오른쪽(재료·확인) / 아래 READ, 모바일은 한 열.
+실시간 탭의 온도계 UI·계산은 그대로다. 테스트 `tests/test_cockpit.py::TestMarketTone`, 프런트 `cockpit.test.tsx`.
+
 ### Daily snapshot history — 모든 History 는 저장 후 고정 (2026-10-07)
 
 대시보드의 모든 History(실시간 Market State 띠, 실시간 2 MARKET REGIME HISTORY · 1M 과 MARKET NOW
