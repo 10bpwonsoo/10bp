@@ -51,6 +51,9 @@ def load_ai_regime_config(config_dir: Path | None = None) -> dict:
     return _load((config_dir or CONFIG_DIR) / "ai_regime.yaml")
 
 
+ENGINE_VERSION = "0.1.0"
+
+
 def basket_instruments(config_dir: Path | None = None) -> list[dict]:
     """설정의 종목 universe(instruments). 바스켓·밸류체인·종목 영향도가 전부 이 목록을 참조하고, 서비스가 이 목록으로 계열을 받는다."""
     cfg = load_ai_regime_config(config_dir)

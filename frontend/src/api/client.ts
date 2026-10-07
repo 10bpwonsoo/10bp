@@ -1,5 +1,8 @@
 import type {
-  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime, RatesRegime, AiRegime, Cockpit, AnalystViews } from "./types";
+  MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime, RatesRegime, AiRegime, Cockpit, AnalystViews,
+  DailyHistory,
+  HistoryTab,
+} from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -101,6 +104,12 @@ export const fetchRatesRegime = (scenario?: string, signal?: AbortSignal) => {
 export const fetchAiRegime = (scenario?: string, signal?: AbortSignal) => {
   const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
   return get<AiRegime>(`/api/v1/ai-regime${q}`, signal);
+};
+
+/** Daily snapshot history — 탭 하나. 과거 날짜는 저장 snapshot 그대로(고정), 오늘만 LIVE. */
+export const fetchDailyHistory = (tab: HistoryTab, scenario?: string, signal?: AbortSignal) => {
+  const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
+  return get<DailyHistory>(`/api/v1/history/${tab}${q}`, signal);
 };
 
 export const fetchCockpit = (scenario?: string, signal?: AbortSignal) => {

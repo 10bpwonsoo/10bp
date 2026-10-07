@@ -59,6 +59,19 @@ def run_once(
     )
     repo.save(key, result.snapshot, result.pending)
     repo.prune(key, keep)
+    # Daily snapshot history — 오늘은 LIVE 로 갱신되다가 finalize_time(KST) 이후 틱에서 RECORDED 로 잠긴다. 과거 날짜는 건드리지 않는다.
+    try:
+        from ..config.registry import get_instruments
+        from ..history import DailySnapshotManager, JsonDirStore, SqliteDailyStore
+        from ..history.calculators import MarketInputs
+        from ..history.integrate import sync_market
+        store = SqliteDailyStore(settings.history_db) if settings.history_db else JsonDirStore(settings.history_dir)
+        manager = DailySnapshotManager(store, namespace="" if settings.data_mode is not DataMode.MOCK else f"mock-{settings.scenario}-", config_dir=settings.config_dir)
+        sync_market(manager, inputs=MarketInputs(instruments=get_instruments().instruments, series_by_id=result.series_by_id, events=result.snapshot.events, mode=result.snapshot.mode,
+                                                 zscore_window=settings.zscore_window, config_dir=settings.config_dir), snapshot=result.snapshot, as_of=result.snapshot.as_of)
+        store.close()
+    except Exception:
+        logger.exception("daily snapshot 기록 실패 — 틱은 저장됐다")
 
     snap = result.snapshot
     return (

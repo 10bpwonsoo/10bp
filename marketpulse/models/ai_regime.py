@@ -465,6 +465,13 @@ class SentimentPoint(Base):
     date: str
     index: float | None = None
     components: dict[str, float | None] = Field(default_factory=dict)
+    #: Daily snapshot 출처 (2026-10-07): RECORDED · BACKFILLED · LIVE, 또는 RECOMPUTED(엔진 내부 재생 — 저장 sequence 로 대체되기 전)
+    source: str = "RECOMPUTED"
+    state: str = ""
+    calculated_at: str = ""
+    model_version: str = ""
+    coverage: float | None = None
+    missing: list[str] = Field(default_factory=list)
 
 
 class SentimentHistory(Base):
@@ -479,11 +486,17 @@ class SentimentHistory(Base):
     note: str = ""
     state_1w: str = ""
     read: str = Field(default="", description="1주 변화의 뜻 한 줄")
+    history_mode: str = Field(default="recomputed", description="stored = 저장된 daily snapshot sequence · recomputed = 같은 공식을 하루씩 되돌린 값")
+    recorded_days: int = 0
+    backfilled_days: int = 0
+    footnote: str = ""
 
 
 class AiSentiment(Base):
     """AI SENTIMENT · GREED & FEAR — AI 테마 내부의 투자심리 + 시장 확인 강도. 확률·전망이 아니라 현재 상태(0~100)."""
 
+    #: daily snapshot backfill 이 쓰는 날짜별 입력 계산기(DayValues). 직렬화되지 않는다.
+    _day_values: object = PrivateAttr(default=None)
     index: float | None = Field(default=None, ge=0.0, le=100.0)
     state: str = "UNKNOWN"
     state_label: str = "–"

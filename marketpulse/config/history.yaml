@@ -1,0 +1,110 @@
+# Daily snapshot history (2026-10-07).
+#
+# History 는 "오늘의 모델이 과거를 다시 평가한 화면" 이 아니라 "각 날짜의 시스템 판단을 한 번 저장한 뒤 고정한 기록" 이다.
+#   PAST + SNAPSHOT EXISTS  → 그대로 읽는다 (LOCKED)
+#   PAST + SNAPSHOT MISSING → 그 날짜까지의 데이터와 현재 모델로 1회 계산 → BACKFILLED 저장 → 즉시 LOCKED
+#   TODAY                   → LIVE (장중 재계산 가능) → Daily Finalization 뒤 RECORDED → LOCKED
+# 모델·룰이 바뀌어도, 데이터가 수정돼도 과거 snapshot 은 바뀌지 않는다. 현재 모델로 과거를 다시 보는 것은 별도의 RECOMPUTED HISTORY 다.
+window_days: 22            # 1M history window (거래일)
+backfill_days: 22          # 처음 켤 때 / 매일 채우는 과거 날짜 수 (snapshot 이 없는 날만)
+finalize_time: "16:10"     # Daily Finalization 시각 (KST). 이 시각 이후 계산된 오늘 값이 RECORDED 가 된다
+timezone: "Asia/Seoul"
+ranges:
+  - {key: 1M, days: 22}
+  - {key: 3M, days: 63}
+  - {key: 6M, days: 126}
+footnote: "각 거래일 최종 snapshot 기준 · 저장 후 고정"
+footnote_en: "Daily recorded history · past states locked"
+insufficient:
+  state: INSUFFICIENT_DATA
+  label: "Insufficient data"
+  label_ko: "데이터 부족"
+#: snapshot 의 logic_version 은 이 설정 파일들의 내용 해시다 — 룰이 바뀌면 버전이 바뀐다(과거 snapshot 은 그대로).
+logic_files:
+  market_regime: [scoring.yaml, state_rules.yaml, factors.yaml, calendar.yaml]
+  ai_sentiment: [ai_regime.yaml]
+  ai_regime: [ai_regime.yaml, stock_exposures.yaml]
+  rates_regime: [rates_regime.yaml, themes.yaml, scoring.yaml]
+  oil_regime: [oil_regime.yaml, themes.yaml, scoring.yaml]
+  memory_cycle: [intelligence.yaml]
+tabs:
+  market_regime:
+    label: "Market Regime"
+    label_ko: "시장 판정"
+    kind: label
+    score_label: "Market Composite"
+    score_range: [-100, 100]
+    states:
+      RISK_ON:           {label: "Risk-On",           color: "--lbl-risk-on"}
+      RISK_OFF:          {label: "Risk-Off",          color: "--lbl-risk-off"}
+      GROWTH_SHOCK:      {label: "Growth Shock",      color: "--lbl-growth"}
+      INFLATION_SHOCK:   {label: "Inflation Shock",   color: "--lbl-inflation"}
+      LIQUIDITY_STRESS:  {label: "Liquidity Stress",  color: "--lbl-liquidity"}
+      POLICY_DRIVEN:     {label: "Policy Driven",     color: "--lbl-policy"}
+      GEOPOLITICAL_RISK: {label: "Geopolitical Risk", color: "--lbl-geopolitical"}
+      NEUTRAL:           {label: "Neutral / Mixed",   color: "--lbl-neutral"}
+  ai_sentiment:
+    label: "AI Sentiment"
+    label_ko: "AI 센티먼트"
+    kind: band
+    score_label: "AI Sentiment"
+    score_range: [0, 100]
+    states:
+      EXTREME_FEAR:  {label: "Extreme Fear",  color: "--gf-xf"}
+      FEAR:          {label: "Fear",          color: "--gf-f"}
+      NEUTRAL:       {label: "Neutral",       color: "--gf-n"}
+      GREED:         {label: "Greed",         color: "--gf-g"}
+      EXTREME_GREED: {label: "Extreme Greed", color: "--gf-xg"}
+      UNKNOWN:       {label: "Unknown",       color: "--lbl-neutral"}
+  ai_regime:
+    label: "AI Trade Regime"
+    label_ko: "AI 트레이드 판정"
+    kind: label
+    score_label: "Signal strength"
+    score_range: [0, 100]
+    states:
+      confirmed_risk_on:   {label: "Confirmed AI Risk-On",   color: "--lbl-risk-on"}
+      price_resilience:    {label: "Price Resilience",       color: "--lbl-growth"}
+      narrative_ahead:     {label: "Narrative Ahead",        color: "--lbl-policy"}
+      macro_dragged:       {label: "Macro-Dragged Weakness", color: "--lbl-inflation"}
+      ai_specific_derisking: {label: "AI-specific De-risking", color: "--lbl-liquidity"}
+      leadership_narrowing: {label: "Leadership Narrowing",  color: "--lbl-geopolitical"}
+      confirmed_risk_off:  {label: "Confirmed AI Risk-Off",  color: "--lbl-risk-off"}
+      mixed:               {label: "Mixed",                  color: "--lbl-neutral"}
+      unknown:             {label: "Unknown",                color: "--lbl-neutral"}
+  rates_regime:
+    label: "Inflation & Rates"
+    label_ko: "금리·물가 판정"
+    kind: label
+    score_label: "Dominant driver score"
+    score_range: [-100, 100]
+    states:
+      term_premium:        {label: "Term Premium / Supply",  color: "--lbl-inflation"}
+      inflation_repricing: {label: "Inflation Repricing",    color: "--lbl-risk-off"}
+      growth:              {label: "Growth",                 color: "--lbl-growth"}
+      fed_policy:          {label: "Fed Policy Path",        color: "--lbl-policy"}
+      risk_liquidity:      {label: "Risk / Liquidity",       color: "--lbl-liquidity"}
+      none:                {label: "No dominant driver",     color: "--lbl-neutral"}
+  oil_regime:
+    label: "Oil Regime"
+    label_ko: "유가 판정"
+    kind: label
+    score_label: "Dominant driver score"
+    score_range: [-100, 100]
+    states:
+      geopolitical:    {label: "Geopolitical",          color: "--lbl-geopolitical"}
+      supply:          {label: "Supply",                color: "--lbl-inflation"}
+      demand:          {label: "Demand",                color: "--lbl-growth"}
+      macro_liquidity: {label: "Macro / Liquidity",     color: "--lbl-liquidity"}
+      none:            {label: "No dominant driver",    color: "--lbl-neutral"}
+  memory_cycle:
+    label: "Memory Cycle"
+    label_ko: "메모리 사이클"
+    kind: label
+    score_label: "Signal consensus"
+    score_range: [-100, 100]
+    states:
+      UPCYCLE:           {label: "Upcycle signals",   color: "--lbl-risk-on"}
+      DOWNCYCLE:         {label: "Downcycle signals", color: "--lbl-risk-off"}
+      MIXED:             {label: "Mixed",             color: "--lbl-policy"}
+      INSUFFICIENT_DATA: {label: "Insufficient data", color: "--lbl-neutral"}

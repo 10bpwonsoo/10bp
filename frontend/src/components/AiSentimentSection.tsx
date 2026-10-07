@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AiRegime, AiSentiment, AiSentimentComponent, AiSentimentFactor, AiSentimentHistory } from "../api/types";
+import { sourceLine } from "./DailyHistoryStrip";
 
 /**
  * AI SENTIMENT · GREED & FEAR (AI 센티2 전용) — AI 투자 테마 내부의 투자심리 + 실제 시장 확인 강도(0~100).
@@ -123,6 +124,11 @@ function History({ s }: { s: AiSentiment }) {
             {bands.map((b, i) => <rect key={b.key} x={0} y={y(edges[i]![1])} width={W - PR + 2} height={y(edges[i]![0]) - y(edges[i]![1])} fill={BAND_COLOR[b.key]} className="gf-hist-band" data-key={b.key} />)}
             {bands.map((b, i) => <text key={`t-${b.key}`} x={W - PR + 6} y={(y(edges[i]![0]) + y(edges[i]![1])) / 2 + 3} className="gf-hist-bl">{b.label.replace("EXTREME ", "X-")}</text>)}
             <polyline points={path} className="gf-hist-line" />
+            {h.points.map((p, i) => (p.index === null || i === lastIdx ? null : (
+              <circle key={p.date} cx={x(i)} cy={y(p.index)} r={p.source === "BACKFILLED" ? 2.2 : 1.8} className={`gf-hist-dot${p.source === "BACKFILLED" ? " gf-hist-dot-backfilled" : ""}`} data-testid="ai-gf-point" data-source={p.source}>
+                <title>{`${p.date} · ${p.index.toFixed(0)} ${p.state}\n${sourceLine(p.source, p.calculated_at, p.model_version, "", p.source !== "LIVE")}${p.missing.length ? `\n결측: ${p.missing.join(", ")} (확보 구성요소로 재정규화)` : ""}`}</title>
+              </circle>
+            )))}
             {last && last.index !== null ? (<>
               <circle cx={x(lastIdx)} cy={y(last.index)} r={5} fill={color} className="gf-hist-now" />
               <circle cx={x(lastIdx)} cy={y(last.index)} r={2} className="gf-hist-now-in" />
@@ -134,6 +140,7 @@ function History({ s }: { s: AiSentiment }) {
             <span><i>1M RANGE</i><b>{h.range_min?.toFixed(0)}–{h.range_max?.toFixed(0)}</b></span>
           </div>
           {h.read ? <div className="gf-hist-read" data-testid="ai-gf-hist-read">{h.read}</div> : null}
+          {h.footnote ? <div className="gf-foot mono" data-testid="ai-gf-footnote" data-mode={h.history_mode}>{h.footnote} · Recorded {h.recorded_days} · Backfilled {h.backfilled_days}</div> : null}
           <div className="gf-scale mono" aria-hidden="true"><span>FEAR ←</span><span>0</span><span className="gf-scale-line" /><span>50</span><span className="gf-scale-line" /><span>100</span><span>→ GREED</span></div>
         </>
       ) : <span className="gf-empty">{h.note || "1M 이력 없음"}</span>}

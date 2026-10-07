@@ -439,8 +439,10 @@ def run_investment(
 
     # 수기 해설은 실데이터에 대한 것이다. MOCK 시나리오에 실제 날짜의 해설을 붙이면 거짓이 된다.
     commentary = [] if settings.data_mode is DataMode.MOCK else load_commentary(COMMENTARY_DIR, as_of, config_dir=settings.config_dir)
-    return build_investment(
+    inv = build_investment(
         base, series, as_of=as_of, mode=adapter.mode, scenario=scenario, analyst_specs=analyst_specs,
         replay_dir=settings.replay_dir, commentary=commentary, previous=previous,
         warnings=warnings, timings_ms=timings, config_dir=settings.config_dir,
     )
+    inv._series_by_id = dict(series)
+    return inv

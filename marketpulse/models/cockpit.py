@@ -424,6 +424,11 @@ class RegimeDay(Base):
     composite: float | None = None
     factors: dict[str, float | None] = Field(default_factory=dict, description="heat strip driver → factor z")
     bridged: bool = Field(default=False, description="raw 가 display 와 달라 직전 display 가 이어진 날")
+    source: str = Field(default="RECOMPUTED", description="daily snapshot 출처 — RECORDED · BACKFILLED · LIVE (RECOMPUTED 는 저장 sequence 가 없을 때)")
+    calculated_at: str = ""
+    model_version: str = ""
+    logic_version: str = ""
+    locked: bool = False
     is_transition: bool = Field(default=False, description="display regime 이 이날 바뀌었다")
 
 
@@ -498,6 +503,10 @@ class RegimeHistory(Base):
     transitions: list[RegimeTransition] = Field(default_factory=list, description="최근 것부터 max 개")
     total_transitions: int = 0
     palette: dict[str, str] = Field(default_factory=dict, description="taxonomy key → 라벨 (화면 순서)")
+    history_mode: str = Field(default="recomputed", description="stored = 저장된 daily snapshot sequence · recomputed = 재생")
+    recorded_days: int = 0
+    backfilled_days: int = 0
+    footnote: str = ""
     note: str = ""
 
 

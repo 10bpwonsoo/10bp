@@ -31,7 +31,7 @@ describe("RatesRegimeView", () => {
   it("섹션이 정해진 순서로 놓이고 driver 5개·물가 구성 5개(결측 표시)·테너 4개·분해·확인표·괴리·전이·전환 조건이 있다", () => {
     const { container } = render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
-    expect(titles).toEqual(["Inflation & Rates Regime", "What Is Driving Rates?", "Inflation Pressure", "Treasury Curve", "Nominal Yield Decomposition", "Market Confirmation", "Key Divergence", "Market Implication", "What Changes The View", "Diagnostics"]);
+    expect(titles).toEqual(["Inflation & Rates Regime", "Inflation & Rates State History · 1M", "What Is Driving Rates?", "Inflation Pressure", "Treasury Curve", "Nominal Yield Decomposition", "Market Confirmation", "Key Divergence", "Market Implication", "What Changes The View", "Diagnostics"]);
     expect(screen.getAllByTestId("rates-driver").length).toBe(5);
     const comps = screen.getAllByTestId("inflation-component");
     expect(comps.length).toBe(5);

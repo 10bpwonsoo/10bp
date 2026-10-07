@@ -461,9 +461,18 @@ export interface ApiInfo {
 }
 
 // ── Market State 히스토리 (2026-09-23) ─────────────────────────────
+/** Daily snapshot 출처 (2026-10-07). RECORDED = 그날 당시 저장한 판정 · BACKFILLED = 기록이 없어 그 날짜까지의 데이터로 1회 복원 · LIVE = 오늘, 확정 전 · RECOMPUTED = 현재 모델로 다시 계산한 별도 뷰 */
+export type HistorySource = "RECORDED" | "BACKFILLED" | "LIVE" | "RECOMPUTED";
+
 export interface StateHistoryPoint {
   date: string;
   as_of: string;
+  /** 저장 snapshot 출처 · 계산 시각 · 모델/룰 버전 · 잠김 — 과거 날짜는 저장 후 고정 */
+  source: HistorySource;
+  calculated_at: string | null;
+  model_version: string;
+  logic_version: string;
+  locked: boolean;
   label: StateLabel;
   secondary_label: StateLabel | null;
   confidence: number;
@@ -511,6 +520,12 @@ export interface MarketStateHistory {
   /** 같은 요약을 공포·탐욕(온도 밴드) 기준으로 */
   band_summary: string;
   note: string;
+  /** stored = 저장된 daily snapshot 의 sequence(기본) · recomputed = 현재 모델로 과거를 다시 계산한 별도 뷰 */
+  history_mode: "stored" | "recomputed";
+  recorded_days: number;
+  backfilled_days: number;
+  live_today: boolean;
+  footnote: string;
 }
 
 /** 시나리오 점검 — 모의 시나리오의 충격 서명을 실데이터에 대어 본 결과 (모의 탭을 실데이터로 바꾼 것) */
@@ -652,8 +667,8 @@ export interface AiMattersItem { key: string; text: string; status: "CONFIRMING"
 export interface AiSentimentInput { id: string; label: string; label_ko: string; component: string; value: number | null; display: string; score: number | null; weight: number; available: boolean; note: string }
 export interface AiSentimentComponent { key: string; label: string; label_ko: string; score: number | null; state: string; state_label: string; read: string; weight: number; coverage: number; inputs: AiSentimentInput[]; desc_ko: string }
 export interface AiSentimentFactor { id: string; label: string; label_ko: string; component: string; score: number; display: string }
-export interface AiSentimentPoint { date: string; index: number | null; components: Record<string, number | null> }
-export interface AiSentimentHistory { points: AiSentimentPoint[]; basis: string[]; excluded: Record<string, string>; days: number; range_min: number | null; range_max: number | null; change_1d: number | null; change_1w: number | null; note: string; state_1w: string; read: string }
+export interface AiSentimentPoint { date: string; index: number | null; components: Record<string, number | null>; source: HistorySource; state: string; calculated_at: string; model_version: string; coverage: number | null; missing: string[] }
+export interface AiSentimentHistory { points: AiSentimentPoint[]; basis: string[]; excluded: Record<string, string>; days: number; range_min: number | null; range_max: number | null; change_1d: number | null; change_1w: number | null; note: string; state_1w: string; read: string; history_mode: "stored" | "recomputed"; recorded_days: number; backfilled_days: number; footnote: string }
 /** AI SENTIMENT · GREED & FEAR — AI 테마 내부의 투자심리 + 시장 확인 강도(0~100). 확률·전망이 아니라 현재 상태 */
 export interface AiSentiment { index: number | null; state: string; state_label: string; state_ko: string; coverage: number; components: AiSentimentComponent[]; secondary_key: string; secondary_label: string; secondary_ko: string; read: string; gap_read: string; net_effect: string; support: AiSentimentFactor[]; pressure: AiSentimentFactor[]; history: AiSentimentHistory; bands: { key: string; label: string; min: number }[]; note: string }
 export interface AiRegime {
@@ -708,7 +723,7 @@ export interface CkUpcoming { date: string; label: string; days_until: number | 
 export interface CkWatchLink { key: string; label: string }
 export interface CkWatchRow { id: string; name: string; change_1d: number | null; watch: string; indicators: string[]; theme: string; why: string; key_drivers: string[]; trigger: string; reasons: string[]; priority: "HIGH" | "MEDIUM"; transmission: CkWatchLink[]; issues: CkWatchLink[]; commentary: string; eps_revision: number | null }
 export interface CkDataStatus { line: string; warnings: string[]; coverage: number; available: number; expected: number; stale: number; max_lag_days: number; news_judgment: string }
-export interface CkRegimeDay { date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean }
+export interface CkRegimeDay { date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean; source: HistorySource; calculated_at: string; model_version: string; logic_version: string; locked: boolean }
 export interface CkRegimeBlock { regime: string; label: string; start: string; end: string; days: number; current: boolean }
 export interface CkRegimeTransition { date: string; from_regime: string; from_label: string; to_regime: string; to_label: string; primary_driver: string; confirmation: string; evidence: string[]; evidence_strength: number }
 export interface CkDriverHeat { key: string; label: string; values: (number | null)[]; current: number | null; arrow: CkArrow; label_ui: string; label_ko: string; meaning: string; horizon_label: string; horizons: CkHorizon[]; horizon_read: string }
@@ -718,8 +733,26 @@ export interface CkRegimeHistory {
   range: string; ranges: CkHistoryRange[]; current_regime: string; current_label: string; duration_days: number; previous_regime: string | null; previous_label: string | null;
   transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
   composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;
+  history_mode: "stored" | "recomputed"; recorded_days: number; backfilled_days: number; footnote: string;
 }
 export interface Cockpit {
   as_of: string; market_now: CkMarketNow; history: CkRegimeHistory | null; drivers: CkDriver[]; cross_asset: CkCrossAsset; leadership: CkLeadership; transmission: CkTransmissionChain[]; radar: CkRadarStock[];
   catalysts: CkCatalyst[]; earnings: CkEarnings | null; what_matters_next: CkNextItem[]; upcoming: CkUpcoming[]; watchlist: CkWatchRow[]; data_status: CkDataStatus; note: string;
+}
+
+// ── Daily snapshot history (2026-10-07) — 모든 탭 공통. 날짜별 판단을 한 번 저장한 뒤 고정한 기록 ──
+export type HistoryTab = "market_regime" | "ai_sentiment" | "ai_regime" | "rates_regime" | "oil_regime" | "memory_cycle";
+export interface DailyHistoryPoint {
+  date: string; state: string; label: string; label_ko: string; score: number | null; confidence: number | null; source: HistorySource; calculated_at: string;
+  model_version: string; logic_version: string; locked: boolean; coverage: number | null; components: Record<string, number | null>; drivers: string[]; missing: string[]; summary: string;
+  detail: Record<string, unknown>;
+}
+export interface DailyHistorySegment { state: string; label: string; start: string; end: string; days: number }
+export interface DailyHistoryShare { state: string; label: string; days: number; share: number }
+export interface DailyHistoryTransition { date: string; from_state: string; from_label: string; to_state: string; to_label: string }
+export interface DailyHistory {
+  tab_id: HistoryTab; label: string; label_ko: string; as_of: string; window_days: number; points: DailyHistoryPoint[]; segments: DailyHistorySegment[]; share: DailyHistoryShare[];
+  transitions: DailyHistoryTransition[]; current_state: string | null; current_label: string | null; current_streak: number; previous_state: string | null; previous_label: string | null;
+  changes: number; share_pct: number; score_label: string; score_range: number[]; score_current: number | null; score_change_1w: number | null; palette: Record<string, string>;
+  labels: Record<string, string>; recorded_days: number; backfilled_days: number; live_today: boolean; footnote: string; note: string;
 }

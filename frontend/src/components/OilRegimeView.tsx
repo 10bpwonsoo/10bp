@@ -2,6 +2,7 @@ import type { OilRegime, OilDriverScore, OilConfirmationRow, IntelligenceSnapsho
 import { RuleTrace } from "./RuleTrace";
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { hypothesisFor } from "./ScenarioView";
+import { DailyHistoryPanel } from "./DailyHistoryStrip";
 
 /**
  * 유가 탭 — 시장 원인 판별 화면.
@@ -101,6 +102,9 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
           </div>
         </div>
       </section>
+
+      {/* 1a. STATE HISTORY · 1M — 저장된 daily snapshot 의 sequence (지배 driver · 점수 · 확신). 과거 고정, 오늘 LIVE */}
+      <DailyHistoryPanel tab="oil_regime" title="Oil State History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} />
 
       {/* 2. WHAT IS DRIVING OIL? */}
       <section className="panel span-2">

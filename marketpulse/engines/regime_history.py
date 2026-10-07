@@ -153,6 +153,8 @@ def build_regime_history(
             dominant_regime_dwell=None if dwell is None else round(dwell, 2), observations=n_obs, transition_count=n_tr, key_change=key_change,
             data_quality=(f"확보 {p.coverage * 100:.0f}% · " + (f"장중 관측 {n_obs}회" if n_obs > 1 else "재생 1회")), coverage=float(p.coverage), composite=None if comp is None else round(float(comp), 1),
             factors={k: (None if p.factors.get(k) is None else round(float(p.factors[k]), 2)) for k in driver_keys},
+            source=str(getattr(p, "source", "RECOMPUTED") or "RECOMPUTED"), calculated_at=(getattr(p, "calculated_at", None).isoformat() if getattr(p, "calculated_at", None) else ""),
+            model_version=str(getattr(p, "model_version", "") or ""), logic_version=str(getattr(p, "logic_version", "") or ""), locked=bool(getattr(p, "locked", False)),
         ))
     disp = stabilize(raw_keys, strengths, dwells, hcfg)
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
@@ -254,6 +256,8 @@ def build_regime_history(
         composite=comp, composite_current=comp[-1] if comp and comp[-1] is not None else next((c for c in reversed(comp) if c is not None), None),
         composite_slope=slope, composite_slope_days=sd, drivers=heat, share=share, transitions=transitions, total_transitions=total_tr,
         palette=labels,
+        history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"), footnote=str(getattr(history, "footnote", "") or ""),
+        recorded_days=sum(1 for d in days if d.source == "RECORDED"), backfilled_days=sum(1 for d in days if d.source == "BACKFILLED"),
         note=("Display Regime 은 화면용 안정화다 — 연속 일수·강한 증거·장중 dwell 규칙(config/cockpit.yaml history.display)으로 하루짜리 flip 을 직전 regime 에 잇는다. "
               "Raw State 는 days[].raw_state 에 그대로 있다. dominant/end 는 장중 관측이 2회 이상인 날만 갈린다(관측 1회면 dwell None). "
               "비중 % 는 기간 중 일수이지 확률이 아니다. 3M/6M 은 일별 스냅샷이 쌓여야 켜진다."),

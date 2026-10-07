@@ -31,6 +31,19 @@ else:
 r = build_ai_regime(market, series, basket, live.themes, live.events, {i.id: i for i in ins}, market_label=live.market_state.primary_label.value, market_confidence=live.market_state.confidence,
                     thermometer=live.thermometer.composite if live.thermometer else None, band=live.thermometer.band if live.thermometer else None,
                     extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative}, investment=inv, as_of=live.as_of)
+# ── Daily snapshot history (2026-10-07): 1M 센티먼트 이력 = 저장 sequence, AI 판정 daily snapshot 기록·backfill ──
+from marketpulse.config.settings import get_settings
+from marketpulse.history import DailySnapshotManager, JsonDirStore
+from marketpulse.history.calculators import AiInputs
+from marketpulse.history.integrate import sync_ai_regime, sync_sentiment
+from marketpulse.engines.ai_regime import load_ai_regime_config
+_m = DailySnapshotManager(JsonDirStore(get_settings().history_dir))
+_dv = r.sentiment._day_values if r.sentiment is not None else None
+if _dv is not None:
+    _sh = sync_sentiment(_m, r, cfg_all=load_ai_regime_config(None), dv=_dv, bench_dates=_dv.cal, as_of=live.as_of)
+    print("SENT HIST", _sh.history_mode, "rec", _sh.recorded_days, "bf", _sh.backfilled_days, [(p.date[5:], p.source[0], None if p.index is None else round(p.index)) for p in _sh.points])
+_ah = sync_ai_regime(_m, r, inputs=AiInputs(instruments=ins, series_by_id=series, basket_series=basket, events=live.events, mode=live.mode, zscore_window=Settings().zscore_window), as_of=live.as_of)
+print("AI HIST", "rec", _ah.recorded_days, "bf", _ah.backfilled_days, _ah.current_label, _ah.current_streak, "prev", _ah.previous_label)
 (CAP / "ai_regime.json").write_text(r.model_dump_json(), encoding="utf-8")
 print(r.regime_label, "|", r.regime_label_ko); print(r.headline); print("missing", r.missing)
 a = r.ai_vs_market; print("AVM", a.members_used, a.last_date, "abs", a.basket_ret_1d, a.basket_ret_5d, a.basket_ret_21d, "z", a.basket_z_1d, a.basket_z_5d, "| ndx", a.ndx_ret_5d, "rel", a.rel_ndx_1d, a.rel_ndx_5d, a.rel_ndx_21d, "relz", a.rel_ndx_z_1d, a.rel_ndx_z_5d, "| spx rel", a.rel_spx_5d, a.rel_spx_z_5d, a.abs_direction, a.rel_verdict)

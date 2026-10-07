@@ -13,6 +13,13 @@ market = pickle.load(open("/tmp/snap/market_snapshot.pkl", "rb"))
 ins = get_instruments().instruments
 r = build_rates_regime(market, live.themes, {i.id: i for i in ins}, extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative})
 (CAP / "rates_regime.json").write_text(r.model_dump_json(), encoding="utf-8")
+from marketpulse.config.settings import get_settings
+from marketpulse.history import DailySnapshotManager, JsonDirStore
+from marketpulse.history.calculators import RegimeInputs
+from marketpulse.history.integrate import sync_rates
+_series = pickle.load(open("/tmp/snap/series_live.pkl", "rb"))
+_h = sync_rates(DailySnapshotManager(JsonDirStore(get_settings().history_dir)), r, inputs=RegimeInputs(instruments=ins, series_by_id=_series, events=live.events, mode=live.mode), as_of=live.as_of)
+print("HIST", "rec", _h.recorded_days, "bf", _h.backfilled_days, _h.current_label, _h.current_streak, "prev", _h.previous_label, [(p.date.isoformat()[5:], p.source[0], p.state) for p in _h.points[-6:]])
 print(r.regime_label, "|", r.signal_strength_label, r.margin, "| infl", r.inflation_status)
 print("rate_move", r.rate_move)
 for d in r.drivers: print(" ", d.id, d.score, d.status, d.coverage, [(e.label, e.value, e.available) for e in d.evidence])

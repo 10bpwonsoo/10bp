@@ -278,6 +278,13 @@
 - 메모리 가격 수집기 10/7 행 추가(DRAM 46.357 · DXI 1,115,853 — 4봉). 애널리스트 뷰는 레이더 종목 중 PWR(Bernstein 9/24, 13D) 1건만 — 새로 만들지 않았다.
 - 정적 배포본 CAP → 10/7, 안내문 "장중 기준·미국 10/6 종가·FRED 10/5". 8개 탭 1440/390 확인.
 
+### 2026-10-07 — 모든 History 를 저장 후 고정(Daily snapshot history)
+- 원칙: PAST + SNAPSHOT EXISTS → 유지·LOCKED / PAST + SNAPSHOT MISSING → 그 날짜까지의 데이터와 현재 모델로 1회 계산 → BACKFILLED·LOCKED / TODAY → LIVE → Daily Finalization(16:10 KST) → RECORDED·LOCKED. 모델·룰·데이터가 바뀌어도 과거 불변. silent overwrite 금지(`LockedSnapshotError`), 수정은 `correct()` 의 audit trail 로만.
+- 구현 `marketpulse/history/`(store JSON dir/SQLite · manager · calculators · assemble · integrate · migrate · CLI), `config/history.yaml`(탭 6개 taxonomy·finalize_time·footnote·logic_files), `models/daily_history.py`. 기존 `state_history.replay_market_state` 는 `replay_point` + `summarize_points` 로 나눠 backfill 과 RECOMPUTED HISTORY(`?mode=recomputed`)가 같이 쓴다. `ai_sentiment.DayValues` 로 날짜별 입력을 분리. `StateHistoryPoint`/`SentimentPoint`/`RegimeDay` 에 source·calculated_at·model_version·logic_version·locked.
+- API `HistoryService`: `/history/{tab}`, `/history`, stored 기본의 `/market-state/history`, cockpit·ai-regime 의 history 도 stored. producer 서비스는 오늘 값만 즉시 기록하고 과거 backfill 은 `/history/{tab}` 첫 요청 때 1회(AI 판정 22일 ≈ 11초). MOCK 은 메모리 저장소 + `mock-{scenario}-` 접두. 주기 실행기도 틱마다 기록.
+- 캡처: `capture_daily_history.py --market`(migration + 시장 sync → state_history.json) → investment(메모리) → rates/oil → ai_regime(센티먼트·AI 판정) → `--assemble`(daily_history.json). 저장소 `data/history/*.json` 커밋. 10/7: RECORDED 10 캡처일 + BACKFILLED 로 22일 창 완성.
+- 프런트: `DailyHistoryStrip`/`DailyHistoryPanel`(AI 센티2 AI TRADE REGIME HISTORY, 물가·유가 STATE HISTORY, 메모리 MEMORY CYCLE HISTORY), 기존 띠·REGIME HISTORY·1M SENTIMENT 에 출처 툴팁·각주 "각 거래일 최종 snapshot 기준 · 저장 후 고정". 테스트: 백엔드 +14(RT1~7 포함) · 프런트 +7(77/77).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

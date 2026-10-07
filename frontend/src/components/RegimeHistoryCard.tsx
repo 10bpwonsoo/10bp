@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CkRegimeDay, CkRegimeHistory } from "../api/types";
+import { sourceLine } from "./DailyHistoryStrip";
 
 /**
  * MARKET REGIME HISTORY · 1M — 실시간 2 탭 전용. "최근 한 달 시장의 색이 어떻게 변해 왔는가" 를 3초에 읽게 한다.
@@ -46,6 +47,7 @@ function DayTip({ d, palette }: { d: CkRegimeDay; palette: Record<string, string
       {d.dominant_driver ? <span>Driver {d.dominant_driver}</span> : null}
       {d.top_evidence.length > 1 ? <span>{d.top_evidence.slice(0, 2).join(" · ")}</span> : null}
       {d.bridged ? <span className="ck-h-note">raw {d.raw_state} — 하루짜리라 직전 regime 에 이어짐</span> : null}
+      <span className="ck-h-src" data-testid="ck-h-tip-source">{sourceLine(d.source, d.calculated_at, d.model_version, "", d.locked)}</span>
     </div>
   );
 }
@@ -65,6 +67,7 @@ function DayDetail({ d, h, onClose }: { d: CkRegimeDay; h: CkRegimeHistory; onCl
         <span>Daily dwell <b className="num">{d.dominant_regime_dwell === null ? "–" : `${(d.dominant_regime_dwell * 100).toFixed(0)}%`}</b> · 관측 {d.observations}회 · 장중 전환 {d.transition_count}회</span>
         <span>Composite <b className="num">{d.composite === null ? "–" : sg(d.composite, 0)}</b></span>
         <span>{d.data_quality}</span>
+        <span data-testid="ck-h-detail-source" data-source={d.source}>{sourceLine(d.source, d.calculated_at, d.model_version, d.logic_version, d.locked)}</span>
       </div>
       {d.top_evidence.length ? <div className="mono ck-h-detail-ev">주도 변수 {d.top_evidence.join(" · ")}</div> : null}
       <div className="ck-h-detail-f mono">{fs.map((f) => <span key={f.label}>{f.label} <b className="num">{f.v === null ? "–" : sg(f.v, 1)}</b></span>)}</div>
@@ -230,6 +233,7 @@ export function RegimeHistoryCard({ h }: { h: CkRegimeHistory }) {
         <div className="ck-h-sharewrap"><Fold label="Show regime share" open={!mobile} testid="ck-h-fold-share"><Share h={h} /></Fold></div>
         <div className="ck-h-foot">
           <Fold label="Show transitions" open={!mobile} testid="ck-h-fold-trans"><Transitions h={h} /></Fold>
+          {h.footnote ? <div className="ck-h-footnote mono" data-testid="ck-h-footnote" data-mode={h.history_mode}>{h.footnote} · Recorded {h.recorded_days} · Backfilled {h.backfilled_days}</div> : null}
         </div>
       </div>
     </section>

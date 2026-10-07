@@ -756,6 +756,53 @@ HBM 은 현물 시장이 없으므로 추정치이며 화면에 '분기 추정' 
 각 시장의 휴장일은 알 수 없어 반영하지 않으므로 이 값은 **상한**이다 — note 에
 그렇게 적혀 있다.
 
+### Daily snapshot history — 모든 History 는 저장 후 고정 (2026-10-07)
+
+대시보드의 모든 History(실시간 Market State 띠, 실시간 2 MARKET REGIME HISTORY · 1M 과 MARKET NOW
+sparkline, AI 센티2 의 1M SENTIMENT 와 새 AI TRADE REGIME HISTORY, 물가·유가 탭의 STATE HISTORY,
+메모리 업사이클 탭의 MEMORY CYCLE HISTORY, 평시 탭의 띠)가 한 원칙을 따른다:
+
+> History 는 오늘의 모델이 과거를 계속 다시 평가하는 화면이 아니라, **각 날짜의 시스템 판단을 한 번
+> 저장한 뒤 고정해서 보여주는 기록**이다.
+
+| 상황 | 처리 | source |
+|---|---|---|
+| 과거 + snapshot 있음 | 그대로 읽는다. 재계산 없음 | RECORDED / BACKFILLED · locked |
+| 과거 + snapshot 없음 | 그 날짜 **이하**의 데이터와 현재 모델로 1회 계산 → 저장 → 즉시 고정 | BACKFILLED · locked |
+| 오늘 | LIVE (장중 재계산·교체 가능) → Daily Finalization(`config/history.yaml finalize_time`, 16:10 KST) 이후 RECORDED → 고정 | LIVE → RECORDED |
+| 날이 바뀜 | 어제가 아직 LIVE 면 그날 마지막 관측을 RECORDED(last_observation) 로 승격·고정 | RECORDED |
+
+모델·룰이 바뀌어도(model_version · logic_version 이 snapshot 마다 남는다), 데이터가 수정돼도 과거 snapshot 은
+바뀌지 않는다. 자동 갱신이 잠긴 snapshot 을 건드리면 `LockedSnapshotError` 로 거부된다. 예외적 수정은
+`DailySnapshotManager.correct()` 만 — original / corrected / reason / when / who 의 audit trail 을 남긴다.
+
+구현: `marketpulse/history/` — `store.py`(`JsonDirStore` = `data/history/{tab}.json` 커밋되는 append-only 파일,
+`SqliteDailyStore` = `daily_snapshots` 테이블), `manager.py`(`DailySnapshotManager`: get/save/record/finalize/
+promote_stale_live/backfill_missing/correct), `calculators.py`(탭별 live→snapshot 변환과 D 이하 데이터만 쓰는
+backfill 계산기), `assemble.py`(저장 sequence → `MarketStateHistory` / `SentimentHistory` / `DailyHistory`;
+Duration · Previous · Transitions · Share · 1W 변화 전부 sequence 에서), `integrate.py`(탭별 `sync_*`),
+`migrate.py`(기존 `data/captures/*/` 의 판정을 RECORDED 로 — 당시 재계산했던 state_history.json 은 옮기지 않는다).
+탭 id 는 `market_regime · ai_sentiment · ai_regime · rates_regime · oil_regime · memory_cycle`; 상태 taxonomy·색·
+점수 라벨은 `config/history.yaml`. 모든 snapshot 은 snapshot_date · tab_id · state · score · confidence ·
+component_scores · key_drivers · data_coverage · data_asof · missing_components · history_source · calculated_at ·
+model_version · logic_version · is_final · is_locked · is_backfilled 를 가진다 — label 만 저장하지 않으므로 과거
+화면의 색·점수·driver·구성요소는 같은 snapshot 에서 나온다. 결측 입력은 0 이 아니라 결측으로 남고 coverage 에
+적힌다; 핵심 데이터가 없는 날은 `INSUFFICIENT_DATA` 로 저장한다(값을 지어내지 않는다).
+
+API: `GET /api/v1/history/{tab}`(`DailyHistory`), `GET /api/v1/history`, 기존 `/market-state/history` 는 stored
+sequence 를 돌려주고 `?mode=recomputed` 가 현재 모델로 다시 계산한 별도 뷰다. `/cockpit` 의 history 와 `/ai-regime` 의
+`sentiment.history` 도 stored 다(`history_mode`, `recorded_days`, `backfilled_days`, `footnote`). MOCK 시나리오는
+프로세스 메모리 저장소에 `mock-{scenario}-` 접두로 분리돼 실데이터 기록과 섞이지 않는다. 저장소 위치는
+`MARKETPULSE_HISTORY_DIR`(JSON) 또는 `MARKETPULSE_HISTORY_DB`(SQLite). 주기 실행기(`scheduler.runner`)는 틱마다
+시장 판정을 기록한다(LIVE → finalize 뒤 RECORDED). CLI: `python -m marketpulse.history show|migrate|finalize|correct|tabs`.
+
+화면: 각 History 아래 짧은 각주 "각 거래일 최종 snapshot 기준 · 저장 후 고정" 과 Recorded / Backfilled 일수.
+BACKFILLED 는 기본 화면에서 크게 표시하지 않고 날짜 툴팁·클릭 상세에서 `Backfilled · calculated 10/07 ·
+market_regime_v0.1.0 · rules_f647efd0 · locked` 로 보인다(RECORDED 는 `Recorded`). 공통 컴포넌트
+`DailyHistoryStrip`(띠 · score 선 · 범례 · 상세) 이 AI 판정·물가·유가·메모리 탭에 붙는다.
+10/7 첫 적용: 캡처 10일치가 RECORDED, 창 안의 나머지 거래일은 BACKFILLED 로 채웠다(시장 7+14, AI 센티 2+18,
+AI 판정 2+19, 금리·유가 2+19, 메모리 6+15). 테스트 `tests/test_daily_history.py`(요구서의 Regression Test 1~7).
+
 ### Market State 한 달 히스토리 (2026-09-23)
 
 Market State 패널 안, 주도 변수 아래에 최근 22거래일 차트가 붙었다. 한 달을
@@ -770,15 +817,12 @@ Inflation Shock · Geopolitical Risk …), **AI 센티멘트 뷰만 시장 공�
 옅은 기둥으로 깔아 보조지표로 읽는다. ② 온도계 재료 스트립 항목을 날짜별
 히트맵으로(기간 내내 결측인 항목은 뺐다고 적는다).
 
-저장된 스냅샷을 꺼내는 것이 아니다. `engines/state_history.py` 가 **같은
-시계열을 날짜별로 잘라 같은 엔진**(`build_snapshot` → `compute_market_state`
-→ `compute_thermometer`)을 다시 돌린다. 그래서 오늘 판정과 같은 잣대이고
-저장소 없는 정적 배포본에서도 나온다. 마지막 점은 언제나 화면과 같은
-절단(as_of)이다. 뉴스 온도는 그 시점까지 이번 캡처에 남은 기사로만 재므로
-앞쪽 날들은 결측이다.
+**2026-10-07 부터 이 띠는 저장된 daily snapshot 의 sequence 다**(아래 "Daily snapshot history" 절).
+과거 날짜는 다시 계산하지 않는다. `engines/state_history.py` 의 재생(같은 시계열을 날짜별로 잘라
+같은 엔진을 다시 돌리는 것)은 `?mode=recomputed` 의 별도 RECOMPUTED HISTORY 로만 남아 있고,
+backfill(기록이 없는 날짜를 그 날짜까지의 데이터로 1회 계산)에도 같은 `replay_point` 를 쓴다.
 
-엔드포인트는 `GET /api/v1/market-state/history?days=22` — 스냅샷에 넣지 않고
-따로 두었다(22일 재생은 몇 초라 as_of 별로 캐시한다). 기본 일수는
+엔드포인트는 `GET /api/v1/market-state/history?days=22[&mode=stored|recomputed]`. 기본 일수는
 `MARKETPULSE_STATE_HISTORY_DAYS`.
 
 ### Investment Intelligence (2026-09-16)

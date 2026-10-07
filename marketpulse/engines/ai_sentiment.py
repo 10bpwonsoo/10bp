@@ -295,74 +295,99 @@ def _series_feature(ins: Instrument, rows: Sequence[tuple[date, float]], as_of: 
         return None
 
 
-def replay_history(cfg: Mapping, r: AiRegime, *, closes: Mapping[str, list[tuple[date, float]]], basket_ids: Sequence[str], bench: Sequence[tuple[date, float]],
-                   market_series: Mapping[str, MarketSeries], instruments_by_id: Mapping[str, Instrument], ai_events: Sequence[NewsEvent], as_of: datetime, zwin: int,
-                   ma_s: int, ma_l: int, config_dir=None) -> SentimentHistory:
-    h_cfg = cfg.get("history", {}) or {}; days = int(h_cfg.get("days", 21)); min_days = int(h_cfg.get("min_days", 10)); min_events = int(cfg.get("min_events", 3))
-    hist = SentimentHistory(days=days)
-    cal = [d for d, _ in bench]
-    if len(cal) < days + 1 or not basket_ids:
-        hist.note = "벤치마크 달력이 짧거나 바스켓이 없어 1M 이력을 만들지 못한다."
-        return hist
-    b_dates, b_vals, _u = _equal_weight_index({m: closes.get(m, []) for m in basket_ids}, cal)
-    if _u == 0:
-        hist.note = "바스켓 구성원 계열이 없어 1M 이력을 만들지 못한다."
-        return hist
-    r_dates, r_vals = _ratio(b_dates, b_vals, cal, [v for _, v in bench])
-    macro_specs = {str(m.key): m for m in r.macro.rows}
-    narr_specs = {str(d.key): d for d in r.narrative.drivers}
-    narr_kw = {str(s["key"]): [str(k) for k in s.get("keywords", [])] for s in (cfg.get("_narrative_drivers") or [])}
-    from .ai_regime import _closes as _series_closes
-    macro_closes = {}
-    for c in cfg.get("components", []):
-        for spec in c.get("inputs", []):
-            if spec.get("source") == "macro_row":
-                m = macro_specs.get(str(spec.get("key")))
-                if m and m.instrument in market_series:
-                    macro_closes[str(spec["id"])] = (m, _series_closes(market_series[m.instrument]))
-    window_days = cal[-days:]
-    points: list[SentimentPoint] = []; per_comp: dict[str, list[float | None]] = {}
-    for d in window_days:
-        as_of_d = datetime.combine(d, time(23, 59), tzinfo=as_of.tzinfo)
-        if d >= as_of.date():
-            as_of_d = as_of
+class DayValues:
+    """
+    날짜별 입력값 계산기 — 1M 이력(RECOMPUTED 재생)과 daily snapshot backfill 이 같이 쓴다.
+    values(d) 는 d 이하의 봉·기사만 쓴다(look-ahead 금지). 날짜별 계열이 없는 구성요소(펀더멘털 데이터·EPS)는 결측으로 남는다.
+    """
+
+    def __init__(self, cfg: Mapping, r: AiRegime, *, closes: Mapping[str, list[tuple[date, float]]], basket_ids: Sequence[str], bench: Sequence[tuple[date, float]],
+                 market_series: Mapping[str, MarketSeries], instruments_by_id: Mapping[str, Instrument], ai_events: Sequence[NewsEvent], as_of: datetime, zwin: int,
+                 ma_s: int, ma_l: int, config_dir=None) -> None:
+        self.cfg = cfg; self.as_of = as_of; self.zwin = zwin; self.ma_s = ma_s; self.ma_l = ma_l; self.config_dir = config_dir
+        self.closes = closes; self.basket_ids = list(basket_ids); self.ai_events = list(ai_events); self.instruments_by_id = instruments_by_id
+        self.min_events = int(cfg.get("min_events", 3))
+        self.cal = [d for d, _ in bench]
+        self.ready = bool(self.basket_ids) and len(self.cal) >= 2
+        self.note = ""
+        if not self.ready:
+            self.note = "벤치마크 달력이 짧거나 바스켓이 없어 날짜별 입력을 만들지 못한다."
+            return
+        self.b_dates, self.b_vals, _u = _equal_weight_index({m: closes.get(m, []) for m in self.basket_ids}, self.cal)
+        if _u == 0:
+            self.ready = False; self.note = "바스켓 구성원 계열이 없어 날짜별 입력을 만들지 못한다."; return
+        self.r_dates, self.r_vals = _ratio(self.b_dates, self.b_vals, self.cal, [v for _, v in bench])
+        macro_specs = {str(m.key): m for m in r.macro.rows}
+        self.narr_kw = {str(s["key"]): [str(k) for k in s.get("keywords", [])] for s in (cfg.get("_narrative_drivers") or [])}
+        from .ai_regime import _closes as _series_closes
+        self.macro_closes = {}
+        for c in cfg.get("components", []):
+            for spec in c.get("inputs", []):
+                if spec.get("source") == "macro_row":
+                    m = macro_specs.get(str(spec.get("key")))
+                    if m and m.instrument in market_series:
+                        self.macro_closes[str(spec["id"])] = (m, _series_closes(market_series[m.instrument]))
+
+    def values(self, d: date) -> Values:
+        as_of_d = datetime.combine(d, time(23, 59), tzinfo=self.as_of.tzinfo)
+        if d >= self.as_of.date():
+            as_of_d = self.as_of
         vals: dict[str, tuple[float | None, str, str]] = {}
+        if not self.ready:
+            return vals
         # PRICE
-        i = next((k for k, dd in enumerate(b_dates) if dd == d), None)
+        i = next((k for k, dd in enumerate(self.b_dates) if dd == d), None)
         if i is not None:
-            bf = _feature("AI_BASKET", b_dates[: i + 1], b_vals[: i + 1], as_of_d, zwin); z, _w = _zmax(bf)
+            bf = _feature("AI_BASKET", self.b_dates[: i + 1], self.b_vals[: i + 1], as_of_d, self.zwin); z, _w = _zmax(bf)
             vals["basket_price"] = (z, _fmt(z, "σ"), "" if z is not None else "이력 부족")
-            vals["basket_1m"] = (_pct(b_vals[: i + 1], 21), "", "")
-        j = next((k for k, dd in enumerate(r_dates) if dd == d), None)
+            vals["basket_1m"] = (_pct(self.b_vals[: i + 1], 21), "", "")
+        j = next((k for k, dd in enumerate(self.r_dates) if dd == d), None)
         if j is not None:
-            rf = _feature("AI_REL_NDX", r_dates[: j + 1], r_vals[: j + 1], as_of_d, zwin)
+            rf = _feature("AI_REL_NDX", self.r_dates[: j + 1], self.r_vals[: j + 1], as_of_d, self.zwin)
             rz = (rf.z_5d if rf and rf.z_5d is not None else (rf.z_1d if rf else None))
             vals["relative_strength"] = (rz, _fmt(rz, "σ"), "" if rz is not None else "이력 부족")
         # BREADTH
         flags: dict[str, list[bool]] = {"above_ma20": [], "above_ma5": [], "advancing": []}
-        for mid in basket_ids:
-            rows = [(dd, v) for dd, v in closes.get(mid, []) if dd <= d]
+        for mid in self.basket_ids:
+            rows = [(dd, v) for dd, v in self.closes.get(mid, []) if dd <= d]
             if len(rows) < 2:
                 continue
-            st = _member_stats(rows, ma_s, ma_l)
+            st = _member_stats(rows, self.ma_s, self.ma_l)
             for k in flags:
                 if st.get(k) is not None:
                     flags[k].append(bool(st[k]))
         for k in flags:
             f = flags[k]; vals[k] = ((100.0 * sum(f) / len(f)) if f else None, "", "" if f else "구성원 없음")
         # MACRO
-        for iid, (m, rows) in macro_closes.items():
-            sub = [(dd, v) for dd, v in rows if dd <= d]; ins = instruments_by_id.get(m.instrument)
-            f = _series_feature(ins, sub, as_of_d, zwin) if ins is not None else None
+        for iid, (m, rows) in self.macro_closes.items():
+            sub = [(dd, v) for dd, v in rows if dd <= d]; ins = self.instruments_by_id.get(m.instrument)
+            f = _series_feature(ins, sub, as_of_d, self.zwin) if ins is not None else None
             z, _w = _zmax(f)
             vals[iid] = (None if z is None else z * m.expected_sign, _fmt(z, "σ"), "" if z is not None else "이력 부족")
         # NARRATIVE (그 날 끝 기준 감쇠 가중 — 오늘과 같은 함수)
-        tone, n = ai_tone(ai_events, as_of_d, config_dir=config_dir)
-        vals["ai_news_tone"] = (tone if n >= min_events else None, "", "" if n >= min_events else "기사 부족")
-        for key, kws in narr_kw.items():
-            t, _n = _driver_tone(ai_events, kws, as_of_d, config_dir=config_dir)
+        tone, n = ai_tone(self.ai_events, as_of_d, config_dir=self.config_dir)
+        vals["ai_news_tone"] = (tone if n >= self.min_events else None, "", "" if n >= self.min_events else "기사 부족")
+        for key, kws in self.narr_kw.items():
+            t, _n = _driver_tone(self.ai_events, kws, as_of_d, config_dir=self.config_dir)
             vals[key] = (t, "", "" if t is not None else "기사 없음")
-        comps = score_components(cfg, vals)
+        return vals
+
+
+def replay_history(cfg: Mapping, r: AiRegime, *, closes: Mapping[str, list[tuple[date, float]]], basket_ids: Sequence[str], bench: Sequence[tuple[date, float]],
+                   market_series: Mapping[str, MarketSeries], instruments_by_id: Mapping[str, Instrument], ai_events: Sequence[NewsEvent], as_of: datetime, zwin: int,
+                   ma_s: int, ma_l: int, config_dir=None, day_values: "DayValues | None" = None) -> SentimentHistory:
+    """RECOMPUTED — 같은 공식을 하루씩 되돌린 값. 화면의 기본 1M 이력은 저장된 daily snapshot sequence 로 대체된다(history/integrate)."""
+    h_cfg = cfg.get("history", {}) or {}; days = int(h_cfg.get("days", 21)); min_days = int(h_cfg.get("min_days", 10))
+    hist = SentimentHistory(days=days)
+    dv = day_values or DayValues(cfg, r, closes=closes, basket_ids=basket_ids, bench=bench, market_series=market_series, instruments_by_id=instruments_by_id, ai_events=ai_events,
+                                 as_of=as_of, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
+    if not dv.ready or len(dv.cal) < days + 1:
+        hist.note = dv.note or "벤치마크 달력이 짧거나 바스켓이 없어 1M 이력을 만들지 못한다."
+        return hist
+    window_days = dv.cal[-days:]
+    points: list[SentimentPoint] = []; per_comp: dict[str, list[float | None]] = {}
+    for d in window_days:
+        comps = score_components(cfg, dv.values(d))
         for c in comps:
             per_comp.setdefault(c.key, []).append(c.score)
         points.append(SentimentPoint(date=d.isoformat(), components={c.key: c.score for c in comps}))
@@ -376,17 +401,20 @@ def replay_history(cfg: Mapping, r: AiRegime, *, closes: Mapping[str, list[tuple
         use = [(p.components.get(k), float(next(c.get("weight", 1.0) for c in comp_specs if c["key"] == k))) for k in basis]
         p.index = None if not basis or any(v is None for v, _ in use) else _wmean(use)[0]
     hist.points = points; hist.basis = basis
-    idx = [p.index for p in points if p.index is not None]
-    if idx:
-        hist.range_min, hist.range_max = min(idx), max(idx)
-    if len(points) >= 2 and points[-1].index is not None and points[-2].index is not None:
-        hist.change_1d = round(points[-1].index - points[-2].index, 1)
-    if len(points) >= 6 and points[-1].index is not None and points[-6].index is not None:
-        hist.change_1w = round(points[-1].index - points[-6].index, 1)
+    finish_history(cfg, hist)
     labels = {str(c["key"]): str(c.get("label", c["key"])) for c in comp_specs}
     hist.note = ("1M 이력과 1D/1W 변화는 " + " · ".join(labels.get(k, k) for k in basis) + " 로만 만든 값이다(같은 공식을 하루씩 되돌림)"
                  + (" — " + ", ".join(f"{labels.get(k, k)}: {v}" for k, v in hist.excluded.items()) if hist.excluded else "") + ".") if basis else "이력을 만들 구성요소가 없다."
     return hist
+
+
+def finish_history(cfg: Mapping, hist: SentimentHistory) -> None:
+    """범위 · 1D/1W 변화 — 점 sequence 에서만 계산한다(저장 snapshot 이든 재생이든)."""
+    points = hist.points
+    idx = [p.index for p in points if p.index is not None]
+    hist.range_min, hist.range_max = (min(idx), max(idx)) if idx else (None, None)
+    hist.change_1d = round(points[-1].index - points[-2].index, 1) if len(points) >= 2 and points[-1].index is not None and points[-2].index is not None else None
+    hist.change_1w = round(points[-1].index - points[-6].index, 1) if len(points) >= 6 and points[-1].index is not None and points[-6].index is not None else None
 
 
 # ── 본체 ─────────────────────────────────────────────────
@@ -411,8 +439,11 @@ def build_ai_sentiment(r: AiRegime, cfg_all: Mapping, *, ai_events: Sequence[New
     out.net_effect = net_effect(cfg, index, comps)
     r.sentiment = out
     try:
+        dv = DayValues(cfg, r, closes=closes, basket_ids=basket_ids, bench=bench, market_series=market_series, instruments_by_id=instruments_by_id, ai_events=ai_events,
+                       as_of=as_of, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
+        out._day_values = dv
         out.history = replay_history(cfg, r, closes=closes, basket_ids=basket_ids, bench=bench, market_series=market_series, instruments_by_id=instruments_by_id, ai_events=ai_events,
-                                     as_of=as_of, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir)
+                                     as_of=as_of, zwin=zwin, ma_s=ma_s, ma_l=ma_l, config_dir=config_dir, day_values=dv)
         history_read(cfg, out.history)
     except Exception as exc:  # 이력은 보조 층 — 실패해도 지수는 뜬다
         out.history = SentimentHistory(days=int((cfg.get("history") or {}).get("days", 21)), note=f"1M 이력 계산 실패: {exc}")

@@ -51,8 +51,11 @@ class Settings(BaseSettings):
     http_timeout_sec: float = 8.0
     #: 실데이터에서 뉴스를 몇 건까지 받을지.
     news_limit: int = 60
-    #: Market State 히스토리(같은 엔진을 날짜별로 재생)를 몇 거래일 보여줄지. 한 달 ≈ 22.
+    #: Market State 히스토리 창(거래일). 한 달 ≈ 22. 값은 저장된 daily snapshot 의 sequence 다 — 재생이 아니다.
     state_history_days: int = 22
+    #: Daily snapshot 저장소 (2026-10-07). 기본은 패키지 안의 JSON 디렉터리(커밋되어 기록이 남는다). history_db 를 주면 그 SQLite 파일을 쓴다.
+    history_dir: Path = Field(default=PACKAGE_ROOT / "data" / "history")
+    history_db: str | None = None
 
     #: Anthropic API 키. 보통은 SDK 가 ANTHROPIC_API_KEY 에서 직접 읽는다.
     #: 이 필드(MARKETPULSE_ANTHROPIC_API_KEY)는 실행 환경이 ANTHROPIC_API_KEY

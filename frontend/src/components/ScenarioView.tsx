@@ -12,6 +12,15 @@ import { CommodityImpact } from "./CommodityImpact";
 import { SemiconductorIntelligence } from "./SemiconductorIntelligence";
 import { LABEL_KO, StateHistoryStrip, bandName } from "./StateHistoryStrip";
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
+import { DailyHistoryStrip } from "./DailyHistoryStrip";
+import { useDailyHistory } from "../api/useDailyHistory";
+
+/** 메모리 사이클 daily snapshot history — 네 신호 합의(UPCYCLE · DOWNCYCLE · MIXED)를 날짜별로 저장한 sequence */
+function MemoryHistory({ scenario, asOf }: { scenario: string | undefined; asOf: string }) {
+  const { history, error } = useDailyHistory("memory_cycle", scenario, asOf, true);
+  if (error) return <div className="dh dh-empty mono" data-testid="dh-error">{error}</div>;
+  return <DailyHistoryStrip history={history} compact />;
+}
 
 /**
  * 시나리오 탭의 화면 — 실데이터 화면을 복제하지 않고, 그 탭에 어울리는 판정만 앞세운다.
@@ -173,6 +182,7 @@ export function ScenarioView({ check, snapshot, history, investment, oilRegime =
           <span className="sv-detail mono">{s?.interpretation ?? "Investment Intelligence 응답이 아직 없다"}</span>
         </div>
         {s ? <SemiconductorIntelligence s={s} /> : null}
+        <div style={{ marginTop: 10 }}><span className="sv-muted mono" style={{ display: "block", marginBottom: 4 }}>MEMORY CYCLE HISTORY · 1M</span><MemoryHistory scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} /></div>
       </Panel>
     );
   } else {

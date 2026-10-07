@@ -3,6 +3,7 @@ import { RuleTrace } from "./RuleTrace";
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { FactorBreakdown, hypothesisFor } from "./ScenarioView";
 import { strengthColor } from "./OilRegimeView";
+import { DailyHistoryPanel } from "./DailyHistoryStrip";
 
 /**
  * 물가 탭 — Inflation & Rates Intelligence.
@@ -144,6 +145,9 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
           </div>
         </div>
       </section>
+
+      {/* 1a. STATE HISTORY · 1M — 저장된 daily snapshot 의 sequence (지배 driver · 점수 · 확신). 과거 고정, 오늘 LIVE */}
+      <DailyHistoryPanel tab="rates_regime" title="Inflation & Rates State History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} />
 
       {/* 2. WHAT IS DRIVING RATES? */}
       <section className="panel span-2">

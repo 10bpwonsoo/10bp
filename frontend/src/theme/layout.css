@@ -2182,3 +2182,42 @@
   .sv-grid, .sv-rd-grid { grid-template-columns: minmax(0, 1fr); }
   .sv-nw-kv { padding-left: 0; }
 }
+
+/* ── Daily snapshot history strip (2026-10-07) — 모든 탭 공통. 과거 날짜 = 저장 snapshot 고정, 오늘 = LIVE ── */
+.dh { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); min-width: 0; }
+.dh-empty { color: var(--faint); font-size: 11px; }
+.dh-ctx { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 10.5px; color: var(--muted); align-items: baseline; }
+.dh-ctx b { color: var(--ink); font-weight: 600; }
+.dh-cur b { font-size: 12.5px; letter-spacing: .02em; }
+.dh-1w { color: var(--faint); }
+.dh-counts { margin-left: auto; color: var(--faint); letter-spacing: .06em; }
+.dh-band { display: flex; gap: 2px; height: 16px; }
+.dh-cell { flex: 1 1 0; min-width: 0; border-radius: 2px; opacity: .88; cursor: pointer; transition: opacity .12s, transform .12s; }
+.dh-cell:hover, .dh-sel { opacity: 1; transform: scaleY(1.18); }
+.dh-live { outline: 1.5px dashed var(--ink); outline-offset: -1.5px; }
+.dh-spark { width: 100%; height: 34px; display: block; }
+.dh-line { fill: none; stroke: var(--ink); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.dh-zero { stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.dh-dot { fill: var(--ink); }
+.dh-dot-backfilled { fill: var(--surface); stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.dh-dot-live { fill: var(--accent); }
+.dh-axis { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--faint); }
+.dh-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10px; color: var(--muted); }
+.dh-leg i { display: inline-block; width: 8px; height: 8px; border-radius: 1px; margin-right: 4px; vertical-align: -1px; }
+.dh-foot { font-size: 10px; color: var(--faint); letter-spacing: .03em; }
+.dh-detail { display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface); font-size: 11px; }
+.dh-detail-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.dh-detail-head em { font-style: normal; font-weight: 600; }
+.dh-ko { color: var(--muted); }
+.dh-src { color: var(--faint); font-size: 10px; letter-spacing: .03em; }
+.dh-detail-head .ck-more { margin-left: auto; }
+.dh-detail-grid, .dh-comps { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--ink-2); }
+.dh-comps { font-size: 10.5px; color: var(--muted); }
+.dh-drv, .dh-sum { font-size: 11px; color: var(--ink-2); overflow-wrap: anywhere; }
+.dh-miss { font-size: 10.5px; color: var(--warn); }
+.dh-panel .panel-body { padding-top: 8px; }
+@media (max-width: 760px) { .dh-ctx { gap: 4px 10px; } .dh-counts { margin-left: 0; } }
+/* 기존 History 의 출처 각주 */
+.sh-foot, .gf-foot, .ck-h-footnote { font-size: 10px; color: var(--faint); letter-spacing: .03em; margin-top: 2px; }
+.gf-hist-dot { fill: var(--ink); opacity: .55; cursor: default; }
+.gf-hist-dot-backfilled { fill: var(--surface); stroke: var(--ink); stroke-width: 1; opacity: .8; }

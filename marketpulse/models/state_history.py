@@ -11,6 +11,7 @@ Market State 히스토리 (2026-09-23 신설).
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import Field
 
@@ -39,6 +40,13 @@ class StateHistoryPoint(Base):
     factors: dict[str, float] = Field(default_factory=dict, description="factor → z 단위 점수")
     hypotheses: dict[str, float] = Field(default_factory=dict, description="라벨 → 가설 점수 (0 초과만)")
     drivers: list[str] = Field(default_factory=list, description="그날 주도 변수 상위 3 — '라벨 +1.2σ'")
+    #: Daily snapshot 출처 (2026-10-07). RECORDED = 그날 당시 저장한 판정 · BACKFILLED = snapshot 이 없어 나중에 그 날짜를 1회 복원 · LIVE = 오늘, 확정 전.
+    #: RECOMPUTED = 현재 모델로 과거를 다시 계산한 값(별도 RECOMPUTED HISTORY 에서만). 저장 후 고정된 값은 locked.
+    source: Literal["RECORDED", "BACKFILLED", "LIVE", "RECOMPUTED"] = "RECOMPUTED"
+    calculated_at: datetime | None = None
+    model_version: str = ""
+    logic_version: str = ""
+    locked: bool = False
 
 
 class BandSegment(Base):
@@ -89,3 +97,9 @@ class MarketStateHistory(Base):
     summary: str = ""
     band_summary: str = Field(default="", description="같은 요약을 공포·탐욕(온도 밴드) 기준으로")
     note: str = Field(default="", description="계산 방식·한계")
+    #: "stored" = 저장된 daily snapshot 의 sequence(기본) · "recomputed" = 현재 모델로 과거를 다시 계산한 별도 뷰
+    history_mode: Literal["stored", "recomputed"] = "recomputed"
+    recorded_days: int = 0
+    backfilled_days: int = 0
+    live_today: bool = False
+    footnote: str = ""

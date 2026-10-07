@@ -1,4 +1,5 @@
 import type { MarketStateHistory, StateHistoryPoint, StateLabel } from "../api/types";
+import { sourceLine } from "./DailyHistoryStrip";
 
 /**
  * Market State · 온도계 한 달 히스토리 (2026-09-23).
@@ -82,7 +83,8 @@ function cellTitle(p: StateHistoryPoint, labels: Record<string, string>, bands: 
   const temps = `종합 ${fmt(p.composite)} · 가격 ${fmt(p.price_temperature)} · 뉴스 ${fmt(p.news_temperature)}${p.news_events ? ` (${p.news_events}건)` : ""} · 온도계 신뢰도 ${p.thermo_confidence.toFixed(0)}%`;
   const comps = Object.entries(p.components).map(([k, v]) => `${labels[k] ?? k} ${fmt(v)}`).join(" · ");
   const drv = p.drivers.length ? `주도: ${p.drivers.join(" · ")}` : "주도 변수 없음";
-  return `${head}\n${temps}\n${comps}\n${drv} · 확보 ${(p.coverage * 100).toFixed(0)}%`;
+  const src = sourceLine(p.source, p.calculated_at, p.model_version, p.logic_version, p.locked);
+  return `${head}\n${temps}\n${comps}\n${drv} · 확보 ${(p.coverage * 100).toFixed(0)}%\n${src}`;
 }
 
 /** 값(-100~+100)을 발산형 셀 배경으로. 0 근처는 거의 투명. */
@@ -300,6 +302,7 @@ export function StateHistoryStrip({ history, primary = "label" }: { history: Mar
           </span>
         )}
       </div>
+      {history.footnote ? <div className="sh-foot mono" data-testid="sh-footnote" data-mode={history.history_mode}>{history.footnote} · Recorded {history.recorded_days} · Backfilled {history.backfilled_days}{history.live_today ? " · Live 1" : ""}</div> : null}
       <div className="sh-note">{history.note}</div>
     </div>
   );

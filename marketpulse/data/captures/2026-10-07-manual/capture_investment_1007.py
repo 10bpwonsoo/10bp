@@ -31,4 +31,11 @@ print("semi", inv.semiconductor.model_dump().get("interpretation", "")[:300])
 print("leadlag", [(l.lead_id, l.lag_id, l.best_lag_days, l.corr_at_best, l.verdict) for l in inv.lead_lag][:10])
 print("watch", [(w.name, w.badges) for w in inv.watchlist][:20])
 (CAP / "investment.json").write_text(inv.model_dump_json(), encoding="utf-8")
+from marketpulse.config.registry import get_instruments, get_universe
+from marketpulse.history import DailySnapshotManager, JsonDirStore
+from marketpulse.history.calculators import MemoryInputs
+from marketpulse.history.integrate import sync_memory
+_u = get_universe(); _by = {s.id: s.as_instrument() for s in _u.stocks}; _by.update({a.id: a.as_instrument() for a in _u.alternative}); _by.update(get_instruments().by_id())
+_h = sync_memory(DailySnapshotManager(JsonDirStore(settings.history_dir)), inv, inputs=MemoryInputs(series_by_id=inv._series_by_id, instruments_by_id=_by, zscore_window=settings.zscore_window), as_of=as_of)
+print("MEM HIST", "rec", _h.recorded_days, "bf", _h.backfilled_days, _h.current_label, _h.current_streak, [(p.date.isoformat()[5:], p.source[0], p.state) for p in _h.points[-6:]])
 print("wrote", CAP / "investment.json", (CAP / "investment.json").stat().st_size)

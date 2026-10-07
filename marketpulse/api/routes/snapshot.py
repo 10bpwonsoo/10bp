@@ -8,7 +8,7 @@ Theme 은 10:01 기준" 인 상태가 생긴다. 시장 분석 도구에서 이�
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
 
@@ -17,13 +17,14 @@ from ...models.snapshot import IntelligenceSnapshot, MovingItem
 from ...models.state import MarketState
 from ...models.theme import ThemeState
 from ...models.state_history import MarketStateHistory
+from ...models.daily_history import DailyHistory
 from ...models.scenario_check import ScenarioCheck
 from ...models.oil_regime import OilRegime
 from ...models.rates_regime import RatesRegime
 from ...models.ai_regime import AiRegime
 from ...models.cockpit import Cockpit
 from ...models.analyst_view import AnalystViews
-from ..deps import get_ai_regime_service, get_analyst_view_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+from ..deps import get_ai_regime_service, get_analyst_view_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_history_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
 
 router = APIRouter(prefix="/api/v1", tags=["snapshot"])
 
@@ -51,10 +52,24 @@ def get_market_state(settings: SettingsDep) -> MarketState:
 @router.get("/market-state/history", response_model=MarketStateHistory)
 def get_market_state_history(
     settings: SettingsDep,
-    days: Annotated[int | None, Query(ge=5, le=120, description="재생할 거래일 수. 기본은 설정(22 ≈ 한 달)")] = None,
+    days: Annotated[int | None, Query(ge=5, le=120, description="거래일 수. 기본은 설정(22 ≈ 한 달)")] = None,
+    mode: Annotated[Literal["stored", "recomputed"], Query(description="stored = 저장된 daily snapshot 의 sequence(기본, 과거 고정) · recomputed = 현재 모델로 과거를 다시 계산한 별도 뷰")] = "stored",
 ) -> MarketStateHistory:
-    """최근 한 달의 Market State 흐름. 같은 시계열을 날짜별로 잘라 같은 엔진으로 다시 판정한 값."""
-    return get_state_history_service().get(settings, days=days)
+    """최근 한 달의 Market State 흐름 — 각 거래일 최종 snapshot 기준, 저장 후 고정. 빠진 과거 날짜는 그 날짜까지의 데이터로 1회 복원(BACKFILLED)한다."""
+    return get_state_history_service().get(settings, days=days, mode=mode)
+
+
+@router.get("/history", response_model=list[DailyHistory])
+def get_histories(settings: SettingsDep) -> list[DailyHistory]:
+    """모든 탭의 daily snapshot history."""
+    svc = get_history_service()
+    return [svc.get(settings, tab) for tab in svc.PRODUCERS]
+
+
+@router.get("/history/{tab_id}", response_model=DailyHistory)
+def get_history(settings: SettingsDep, tab_id: str) -> DailyHistory:
+    """한 탭의 daily snapshot history — market_regime · ai_sentiment · ai_regime · rates_regime · oil_regime · memory_cycle. 과거 날짜는 저장 snapshot 그대로(LOCKED)."""
+    return get_history_service().get(settings, tab_id)
 
 
 @router.get("/scenario-check", response_model=list[ScenarioCheck])

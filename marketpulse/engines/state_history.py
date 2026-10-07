@@ -76,6 +76,49 @@ def _end_of(d: date) -> datetime:
     return datetime.combine(d, time(23, 59, 59), tzinfo=timezone.utc)
 
 
+def replay_point(
+    instruments: Sequence[Instrument],
+    series_by_id: Mapping[str, MarketSeries],
+    d: date,
+    *,
+    as_of: datetime,
+    mode: DataMode,
+    events: Sequence[NewsEvent] = (),
+    zscore_window: int = 60,
+    config_dir: Path | None = None,
+    prev_label: StateLabel | None = None,
+) -> tuple[StateHistoryPoint, dict[str, str]] | None:
+    """
+    날짜 D 하나의 판정 — D 이하의 봉·기사만 쓴다(look-ahead 금지). Daily snapshot backfill 과 RECOMPUTED 재생이 같이 쓴다.
+    prev_label 은 지속성 항의 '직전 판정' — 저장 sequence 를 잇는 쪽이 넘긴다. 돌려주는 둘째 값은 온도계 재료 키 → 라벨.
+    """
+    cutoff = min(_end_of(d), as_of)
+    sliced = {}
+    for iid, s in series_by_id.items():
+        cut = slice_series(s, cutoff)
+        if cut is not None:
+            sliced[iid] = cut
+    if not sliced:
+        return None
+    snap = build_snapshot(instruments, sliced, mode=mode, as_of=cutoff, zscore_window=zscore_window, correlations=False)
+    cal = event_window(cutoff, config_dir=config_dir)
+    state = compute_market_state(snap, {i.id: i for i in instruments}, previous_label=prev_label,
+                                 persistence_scale=cal.persistence_scale, config_dir=config_dir)
+    # 온도계도 같은 식으로. 뉴스는 그 시점(cutoff)까지 나온 기사만 — 없는 날의 뉴스 온도는 None 으로 남는다.
+    past_events = [e for e in events if e.timestamp <= cutoff]
+    thermo = compute_thermometer(state, past_events, cutoff, config_dir=config_dir)
+    point = StateHistoryPoint(
+        date=d, as_of=snap.as_of, label=state.primary_label, secondary_label=state.secondary_label,
+        confidence=state.confidence, price_temperature=thermo.price, news_temperature=thermo.news,
+        composite=thermo.composite, news_events=thermo.news_events, thermo_confidence=thermo.confidence,
+        components={c.key: c.value for c in thermo.components}, band=thermo.band, band_label=thermo.band_label, coverage=snap.coverage,
+        factors={k: round(v.score, 3) for k, v in state.factors.items()},
+        hypotheses={h.label.value: round(h.score, 3) for h in state.hypotheses if h.score > 0},
+        drivers=[f"{dr.label} {dr.z:+.1f}σ" for dr in state.main_drivers[:3]],
+    )
+    return point, {c.key: c.label for c in thermo.components}
+
+
 def replay_market_state(
     instruments: Sequence[Instrument],
     series_by_id: Mapping[str, MarketSeries],
@@ -87,6 +130,10 @@ def replay_market_state(
     zscore_window: int = 60,
     config_dir: Path | None = None,
 ) -> MarketStateHistory:
+    """
+    RECOMPUTED HISTORY — 현재 모델로 과거 전체를 다시 계산한다. 화면의 기본 History 가 아니다(그쪽은 저장된 daily snapshot 의 sequence).
+    모델 백테스트·재평가 용도로만 쓴다.
+    """
     dates = trading_dates(series_by_id, as_of, days)
     # 마지막 점은 언제나 '지금'(as_of) 이다 — 화면의 판정과 같은 절단이어야 띠의 끝 칸이
     # 판정과 일치한다. 일부 시장만 봉을 준 날(한쪽 시장 휴일·공급자 누락)도 이렇게 들어온다.
@@ -96,36 +143,41 @@ def replay_market_state(
     prev_label: StateLabel | None = None
     component_labels: dict[str, str] = {}
     for d in dates:
-        cutoff = min(_end_of(d), as_of)
-        sliced = {}
-        for iid, s in series_by_id.items():
-            cut = slice_series(s, cutoff)
-            if cut is not None:
-                sliced[iid] = cut
         try:
-            snap = build_snapshot(instruments, sliced, mode=mode, as_of=cutoff, zscore_window=zscore_window, correlations=False)
-            cal = event_window(cutoff, config_dir=config_dir)
-            state = compute_market_state(snap, {i.id: i for i in instruments}, previous_label=prev_label,
-                                         persistence_scale=cal.persistence_scale, config_dir=config_dir)
-            # 온도계도 같은 식으로. 뉴스는 그 시점(cutoff)까지 나온 기사만 — 이번 캡처에 없는
-            # 과거 기사는 재현할 수 없으므로 앞쪽 날들의 뉴스 온도는 None 으로 남는다.
-            past_events = [e for e in events if e.timestamp <= cutoff]
-            thermo = compute_thermometer(state, past_events, cutoff, config_dir=config_dir)
+            got = replay_point(instruments, series_by_id, d, as_of=as_of, mode=mode, events=events, zscore_window=zscore_window, config_dir=config_dir, prev_label=prev_label)
         except Exception:
             logger.exception("%s 재생 실패 — 그날은 비운다", d)
             continue
-        points.append(StateHistoryPoint(
-            date=d, as_of=snap.as_of, label=state.primary_label, secondary_label=state.secondary_label,
-            confidence=state.confidence, price_temperature=thermo.price, news_temperature=thermo.news,
-            composite=thermo.composite, news_events=thermo.news_events, thermo_confidence=thermo.confidence,
-            components={c.key: c.value for c in thermo.components}, band=thermo.band, band_label=thermo.band_label, coverage=snap.coverage,
-            factors={k: round(v.score, 3) for k, v in state.factors.items()},
-            hypotheses={h.label.value: round(h.score, 3) for h in state.hypotheses if h.score > 0},
-            drivers=[f"{dr.label} {dr.z:+.1f}σ" for dr in state.main_drivers[:3]],
-        ))
-        prev_label = state.primary_label
-        component_labels = {c.key: c.label for c in thermo.components}
+        if got is None:
+            continue
+        point, component_labels = got
+        points.append(point)
+        prev_label = point.label
+    return summarize_points(points, as_of=as_of, days=days, component_labels=component_labels, config_dir=config_dir, history_mode="recomputed",
+                            note=("현재 모델로 과거를 다시 계산한 RECOMPUTED HISTORY 다 — 같은 시계열을 날짜별로 잘라 같은 엔진(판정 → 온도계)으로 다시 돌린 값. "
+                                  "화면의 기본 History(저장된 daily snapshot) 와 섞지 않는다. 판정 라벨과 온도계 밴드(공포·탐욕) 두 기준을 모두 담는다. "
+                                  "뉴스 온도는 그 시점까지 이번 캡처에 남아 있는 기사로만 재므로 앞쪽 날들은 결측이고, 상관·지배 축은 계산하지 않았다. "
+                                  "그날 확보되지 않은 계열은 그날 판정에서도 빠진다. 마지막 점은 화면과 같은 절단(as_of)이다."))
 
+
+def summarize_points(
+    points: list[StateHistoryPoint],
+    *,
+    as_of: datetime,
+    days: int,
+    component_labels: Mapping[str, str] | None = None,
+    config_dir: Path | None = None,
+    history_mode: str = "stored",
+    note: str = "",
+    footnote: str = "",
+) -> MarketStateHistory:
+    """점들(저장 snapshot 이든 재생이든)에서 구간·비중·요약을 만든다 — 파생값은 전부 이 sequence 에서 나온다."""
+    points = list(points)
+    component_labels = dict(component_labels or {})
+    if not component_labels:
+        for p in points:
+            for k in p.components:
+                component_labels.setdefault(k, k)
     # 기간 내내 결측인 재료(예: 신용·한국 수급 — 공급자가 없다)는 표에서 빼되, 뺐다는 사실을 남긴다.
     excluded = {k: lbl for k, lbl in component_labels.items() if all(p.components.get(k) is None for p in points)}
     component_labels = {k: lbl for k, lbl in component_labels.items() if k not in excluded}
@@ -195,7 +247,11 @@ def replay_market_state(
         if t1 is not None and t2 is not None:
             summary += f". 온도 전반 {t1:+.0f} → 후반 {t2:+.0f}"
             band_summary += f". 온도 전반 {t1:+.0f} → 후반 {t2:+.0f}"
+    today = as_of.date()
     return MarketStateHistory(
+        history_mode=history_mode, footnote=footnote,  # type: ignore[arg-type]
+        recorded_days=sum(1 for p in points if p.source == "RECORDED"), backfilled_days=sum(1 for p in points if p.source == "BACKFILLED"),
+        live_today=any(p.source == "LIVE" and p.date == today for p in points),
         as_of=as_of, days_requested=days, points=points, segments=segments, changes=max(0, len(segments) - 1),
         days_by_label=days_by_label, current_streak=segments[-1].days if segments else 0,
         previous_label=segments[-2].label if len(segments) >= 2 else None,
@@ -204,9 +260,5 @@ def replay_market_state(
         band_changes=max(0, len(band_segments) - 1), current_band_streak=band_segments[-1].days if band_segments else 0,
         previous_band=band_segments[-2].band if len(band_segments) >= 2 else None,
         component_labels=component_labels, excluded_components=excluded, summary=summary, band_summary=band_summary,
-        note=("같은 시계열을 날짜별로 잘라 같은 엔진(판정 → 온도계)으로 다시 계산한 값이다 — 오늘 화면과 같은 잣대. "
-              "판정 라벨(require 룰이 걸린 날에만 붙는다)과 온도계 밴드(공포·탐욕: 결빙·냉각·중립·온기·과열) 두 기준을 모두 담고, 화면이 뷰에 따라 1차를 고른다. "
-              "뉴스 온도는 그 시점까지 이번 캡처에 남아 있는 기사로만 재므로 앞쪽 날들은 결측이고, 상관·지배 축은 계산하지 않았다. "
-              "그날 확보되지 않은 계열은 그날 판정에서도 빠진다. 확신의 지속성 항은 전날 재생값을 직전 판정으로 넣어 계산하므로 "
-              "화면 판정(저장 이력 기준)과 몇 점 다를 수 있다. 마지막 점은 화면과 같은 절단(as_of)이다."),
+        note=note,
     )

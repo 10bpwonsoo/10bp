@@ -17,7 +17,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from .common import Base, DataMeta, DataMode, Direction, ScoreBreakdown
 from .market import AssetClass, Instrument, MarketFeature, SeriesKind, Unit
@@ -518,6 +518,8 @@ class IntelligenceHealth(Base):
 
 
 class InvestmentIntelligence(Base):
+    #: 어댑터가 받은 종목·대체데이터 계열 — 메모리 사이클 daily snapshot backfill 입력. 직렬화되지 않는다.
+    _series_by_id: dict = PrivateAttr(default_factory=dict)
     as_of: datetime
     mode: DataMode
     scenario: str | None = None

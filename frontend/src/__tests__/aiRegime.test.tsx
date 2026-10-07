@@ -32,7 +32,7 @@ describe("AiRegimeView", () => {
   it("섹션 순서가 지정된 대로이고 driver 5 · 그룹 7(바스켓 6 + 국내) · breadth 3 지표 · 2×2 · 내러티브 driver 7 · 매크로 행 · 전환 조건 3~5", () => {
     const { container, unmount } = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check2} history={history} extended />);
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
-    expect(titles).toEqual(["AI Trade Regime", "AI Sentiment · Greed & Fear", "AI vs Market", "What Is Driving AI?", "AI Chain Snapshot", "AI Fundamental Transmission", "AI Value-Chain Leadership", "Semiconductor Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
+    expect(titles).toEqual(["AI Trade Regime", "AI Sentiment · Greed & Fear", "AI Trade Regime History · 1M", "AI vs Market", "What Is Driving AI?", "AI Chain Snapshot", "AI Fundamental Transmission", "AI Value-Chain Leadership", "Semiconductor Confirmation", "AI Basket Groups", "AI Breadth", "Narrative × Price", "AI Stock Impact Map", "Stock Radar", "News → Value Chain → Stock", "Expectations vs Fundamentals", "Macro Confirmation", "AI-specific Stress", "What Matters Now", "What Changes The View?", "Details / Data Quality"]);
     unmount();
     // AI 센티(기본) 는 확장 블록 없이 원래 순서
     const basic = render(<AiRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
@@ -139,7 +139,8 @@ describe("AiRegimeView", () => {
     const s = regime.sentiment!;
     const titles = Array.from(container.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles.indexOf("AI Sentiment · Greed & Fear")).toBe(titles.indexOf("AI Trade Regime") + 1);
-    expect(titles.indexOf("AI vs Market")).toBe(titles.indexOf("AI Sentiment · Greed & Fear") + 1);
+    expect(titles.indexOf("AI Trade Regime History · 1M")).toBe(titles.indexOf("AI Sentiment · Greed & Fear") + 1); // 저장 sequence 의 AI 판정 이력이 센티먼트 바로 아래
+    expect(titles.indexOf("AI vs Market")).toBe(titles.indexOf("AI Sentiment · Greed & Fear") + 2);
     const sec = screen.getByTestId("ai-sentiment");
     expect(within(sec).getByTestId("ai-gf-index").textContent).toBe(s.index!.toFixed(0));
     expect(within(sec).getByTestId("ai-gf-state").textContent).toBe(s.state_label);

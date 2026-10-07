@@ -265,6 +265,10 @@ class InvestmentService:
         with self._lock:
             self._cache[key] = (result, time.monotonic())
             self._previous[key] = result
+        try:
+            get_history_service().attach_memory(settings, result, base)
+        except Exception:
+            logger.exception("메모리 사이클 daily snapshot 기록 실패 — 화면은 그대로 진행한다")
         return result
 
     def clear(self) -> None:
@@ -290,31 +294,34 @@ def load_investment(settings: Settings, *, force: bool = False):
 # ── Market State 히스토리 (2026-09-23) ─────────────────────────────
 class StateHistoryService:
     """
-    같은 틱의 시계열로 Market State 를 날짜별로 재생한다. 스냅샷 as_of 가
-    같으면 다시 계산하지 않는다 — 22일 재생은 몇 초라 스냅샷 캐시보다 비싸다.
+    Market State 히스토리 — 저장된 daily snapshot 의 sequence (2026-10-07). 과거 날짜는 다시 계산하지 않는다.
+    같은 as_of 면 조립도 캐시한다. mode="recomputed" 는 현재 모델로 과거를 다시 계산한 별도 뷰(RECOMPUTED HISTORY)다.
     """
 
     def __init__(self, base: SnapshotService) -> None:
         self._base = base
-        self._cache: dict[tuple[str, int], tuple[datetime, object]] = {}
+        self._cache: dict[tuple[str, int, str], tuple[datetime, object]] = {}
         self._lock = threading.Lock()
 
-    def get(self, settings: Settings, *, days: int | None = None):
+    def get(self, settings: Settings, *, days: int | None = None, mode: str = "stored"):
         from ..config.registry import get_instruments
         from ..engines.state_history import replay_market_state
 
         snapshot = self._base.get(settings)
         n = int(days or settings.state_history_days)
-        key = (f"{settings.data_mode.value}:{settings.scenario}", n)
+        key = (f"{settings.data_mode.value}:{settings.scenario}", n, mode)
         with self._lock:
             hit = self._cache.get(key)
             if hit and hit[0] == snapshot.as_of:
                 return hit[1]
         series = self._base.series(settings)
-        result = replay_market_state(
-            get_instruments().instruments, series, as_of=snapshot.as_of, days=n,
-            mode=snapshot.mode, events=snapshot.events, zscore_window=settings.zscore_window, config_dir=settings.config_dir,
-        )
+        if mode == "recomputed":
+            result = replay_market_state(
+                get_instruments().instruments, series, as_of=snapshot.as_of, days=n,
+                mode=snapshot.mode, events=snapshot.events, zscore_window=settings.zscore_window, config_dir=settings.config_dir,
+            )
+        else:
+            result = get_history_service().market(settings, snapshot, series, days=n)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result
@@ -329,6 +336,136 @@ _state_history_service = StateHistoryService(_service)
 
 def get_state_history_service() -> StateHistoryService:
     return _state_history_service
+
+
+# ── Daily snapshot history (2026-10-07) ───────────────────────────
+class HistoryService:
+    """
+    모든 탭의 History 저장·backfill·조립을 한 곳에서. 저장소는 settings.history_db(SQLite) 또는 settings.history_dir(JSON, 기본).
+    MOCK 시나리오는 프로세스 메모리 저장소에 'mock-{scenario}-' 접두로 분리한다 — 실데이터 기록과 섞이지 않는다.
+    탭의 live 값은 각 서비스(스냅샷·AI·금리·유가·Investment)가 만들고 여기로 넘긴다; 이 서비스는 과거를 다시 계산하지 않는다.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.RLock()
+        self._persistent = None
+        self._mock = None
+        self._override = None
+        #: 탭별로 '마지막 live 값으로 backfill 까지 돌리는' 작업. attach_* 는 오늘 값만 기록하고(빠름), /history/{tab} 요청 때 비로소 빈 과거를 채운다.
+        self._pending: dict[tuple[str, str], object] = {}
+
+    def use(self, manager) -> None:
+        """테스트·스크립트가 저장소를 바꿔 끼운다."""
+        with self._lock:
+            self._override = manager
+
+    def manager(self, settings: Settings):
+        from ..history import DailySnapshotManager, JsonDirStore, SqliteDailyStore
+        with self._lock:
+            if self._override is not None:
+                return self._override
+            if settings.data_mode is DataMode.MOCK:
+                if self._mock is None:
+                    self._mock = SqliteDailyStore(":memory:")
+                return DailySnapshotManager(self._mock, namespace=f"mock-{settings.scenario}-", config_dir=settings.config_dir)
+            if self._persistent is None:
+                self._persistent = SqliteDailyStore(settings.history_db) if settings.history_db else JsonDirStore(settings.history_dir)
+            return DailySnapshotManager(self._persistent, config_dir=settings.config_dir)
+
+    def market(self, settings: Settings, snapshot, series: dict, *, days: int | None = None):
+        from ..config.registry import get_instruments
+        from ..history.calculators import MarketInputs
+        from ..history.integrate import sync_market
+        with self._lock:
+            return sync_market(self.manager(settings), inputs=MarketInputs(instruments=get_instruments().instruments, series_by_id=series, events=snapshot.events, mode=snapshot.mode,
+                                                                           zscore_window=settings.zscore_window, config_dir=settings.config_dir), snapshot=snapshot, as_of=snapshot.as_of, days=days)
+
+    def attach_ai(self, settings: Settings, regime, snapshot, series: dict, basket: dict) -> None:
+        """AI 센티먼트 1M 이력을 저장 sequence 로 바꿔 끼우고, AI 트레이드 판정 daily snapshot 을 기록·backfill 한다."""
+        from ..config.registry import get_instruments
+        from ..engines.ai_regime import load_ai_regime_config
+        from ..history.calculators import AiInputs
+        from ..history.integrate import sync_ai_regime, sync_sentiment
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            m = self.manager(settings)
+            dv = getattr(regime.sentiment, "_day_values", None) if regime.sentiment is not None else None
+            if dv is not None:  # 센티먼트 backfill 은 가볍다(날짜당 입력 재계산) — 응답에 들어가야 하므로 바로 채운다
+                sync_sentiment(m, regime, cfg_all=load_ai_regime_config(settings.config_dir), dv=dv, bench_dates=dv.cal, as_of=snapshot.as_of, config_dir=settings.config_dir)
+            inputs = AiInputs(instruments=get_instruments().instruments, series_by_id=series, basket_series=basket, events=snapshot.events, mode=snapshot.mode,
+                              zscore_window=settings.zscore_window, config_dir=settings.config_dir)
+            sync_ai_regime(m, regime, inputs=inputs, as_of=snapshot.as_of, backfill=False)  # 오늘 값 기록만 — 과거 backfill(날짜당 AI 엔진 1회)은 /history/ai_regime 때
+            self._pending[(key, "ai_regime")] = lambda: sync_ai_regime(m, regime, inputs=inputs, as_of=snapshot.as_of)
+
+    def attach_regime(self, settings: Settings, kind: str, regime, snapshot, series: dict) -> None:
+        from ..config.registry import get_instruments
+        from ..history.calculators import RegimeInputs
+        from ..history.integrate import sync_oil, sync_rates
+        inputs = RegimeInputs(instruments=get_instruments().instruments, series_by_id=series, events=snapshot.events, mode=snapshot.mode, zscore_window=settings.zscore_window, config_dir=settings.config_dir)
+        key = f"{settings.data_mode.value}:{settings.scenario}"; tab = f"{kind}_regime"; fn = sync_rates if kind == "rates" else sync_oil
+        with self._lock:
+            m = self.manager(settings)
+            fn(m, regime, inputs=inputs, as_of=snapshot.as_of, backfill=False)
+            self._pending[(key, tab)] = lambda: fn(m, regime, inputs=inputs, as_of=snapshot.as_of)
+
+    def attach_memory(self, settings: Settings, investment, snapshot) -> None:
+        from ..config.registry import get_instruments, get_universe
+        from ..history.calculators import MemoryInputs
+        from ..history.integrate import sync_memory
+        u = get_universe(settings.config_dir)
+        by_id = {s.id: s.as_instrument() for s in u.stocks}; by_id.update({a.id: a.as_instrument() for a in u.alternative}); by_id.update(get_instruments().by_id())
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        inputs = MemoryInputs(series_by_id=dict(getattr(investment, "_series_by_id", {}) or {}), instruments_by_id=by_id, zscore_window=settings.zscore_window, config_dir=settings.config_dir)
+        with self._lock:
+            m = self.manager(settings)
+            sync_memory(m, investment, inputs=inputs, as_of=snapshot.as_of, backfill=False)
+            self._pending[(key, "memory_cycle")] = lambda: sync_memory(m, investment, inputs=inputs, as_of=snapshot.as_of)
+
+    PRODUCERS = {"market_regime": "market", "ai_sentiment": "ai", "ai_regime": "ai", "rates_regime": "rates", "oil_regime": "oil", "memory_cycle": "memory"}
+
+    def get(self, settings: Settings, tab_id: str):
+        """저장된 sequence 만 조립한다. 그 탭의 오늘 값을 만드는 서비스를 먼저 한 번 돌려 LIVE/RECORDED 가 들어 있게 한다."""
+        from ..history.integrate import history_of
+        if tab_id not in self.PRODUCERS:
+            raise HTTPException(status_code=404, detail=f"알 수 없는 history tab '{tab_id}'. 사용 가능: {sorted(self.PRODUCERS)}")
+        snapshot = _service.get(settings)
+        producer = self.PRODUCERS[tab_id]
+        try:
+            if producer == "market":
+                _state_history_service.get(settings)
+            elif producer == "ai":
+                _ai_regime_service.get(settings)
+            elif producer == "rates":
+                _rates_regime_service.get(settings)
+            elif producer == "oil":
+                _oil_regime_service.get(settings)
+            elif producer == "memory":
+                _investment.get(settings)
+        except Exception:
+            logger.exception("%s 의 오늘 값을 만들지 못했다 — 저장된 기록만 돌려준다", tab_id)
+        key = f"{settings.data_mode.value}:{settings.scenario}"
+        with self._lock:
+            job = self._pending.pop((key, tab_id), None)
+            if job is not None:
+                try:
+                    job()  # 빈 과거 날짜만 1회 계산(BACKFILLED). 이미 있는 날짜는 건드리지 않는다
+                except Exception:
+                    logger.exception("%s backfill 실패 — 저장된 기록만 돌려준다", tab_id)
+            return history_of(self.manager(settings), tab_id, as_of=snapshot.as_of, config_dir=settings.config_dir)
+
+    def clear(self) -> None:
+        with self._lock:
+            self._mock = None
+            self._override = None
+            self._persistent = None
+            self._pending.clear()
+
+
+_history_service = HistoryService()
+
+
+def get_history_service() -> HistoryService:
+    return _history_service
 
 
 class ScenarioCheckService:
@@ -419,6 +556,10 @@ class OilRegimeService:
         result = build_oil_regime(market, snapshot.themes, snapshot.divergences, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
+        try:
+            get_history_service().attach_regime(settings, "oil", result, snapshot, self._checks._base.series(settings))
+        except Exception:
+            logger.exception("유가 daily snapshot 기록 실패 — 화면은 그대로 진행한다")
         return result
 
     def clear(self) -> None:
@@ -453,6 +594,10 @@ class RatesRegimeService:
         result = build_rates_regime(market, snapshot.themes, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
+        try:
+            get_history_service().attach_regime(settings, "rates", result, snapshot, self._checks._base.series(settings))
+        except Exception:
+            logger.exception("금리·물가 daily snapshot 기록 실패 — 화면은 그대로 진행한다")
         return result
 
     def clear(self) -> None:
@@ -515,6 +660,10 @@ class AiRegimeService:
                                  market_label=snapshot.market_state.primary_label.value, market_confidence=snapshot.market_state.confidence,
                                  thermometer=None if t is None else t.composite, band=None if t is None else t.band,
                                  extra_z=extra, extra_names=names, investment=inv, as_of=snapshot.as_of, config_dir=settings.config_dir)
+        try:
+            get_history_service().attach_ai(settings, result, snapshot, series, basket)  # 1M 센티먼트 이력 = 저장 sequence · AI 판정 daily snapshot 기록
+        except Exception:
+            logger.exception("AI daily snapshot 기록 실패 — 화면은 그대로 진행한다")
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result

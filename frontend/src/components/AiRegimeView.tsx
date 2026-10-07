@@ -3,6 +3,7 @@ import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
 import { AiSentimentSection } from "./AiSentimentSection";
+import { DailyHistoryPanel } from "./DailyHistoryStrip";
 import { DriversSection, VsMarketSection } from "./AiDriverSections";
 import { AiChainSections } from "./AiChainSections";
 import { NewsSection2, RadarSection2, StockImpactSection2 } from "./AiStockSections";
@@ -152,8 +153,11 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
         </div>
       </section>
 
-      {/* 1b. AI SENTIMENT · GREED & FEAR — AI 센티2 에만. AI 테마 내부의 투자심리 + 시장 확인 강도(0~100) */}
+      {/* 1b. AI SENTIMENT · GREED & FEAR — AI 센티2 에만. AI 테마 내부의 투자심리 + 시장 확인 강도(0~100). 1M 이력은 저장된 daily snapshot */}
       {extended ? <AiSentimentSection regime={regime} /> : null}
+
+      {/* 1c. AI TRADE REGIME HISTORY · 1M — 저장된 daily snapshot 의 sequence. 과거 판정은 고정, 오늘만 LIVE */}
+      {extended ? <DailyHistoryPanel tab="ai_regime" title="AI Trade Regime History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} /> : null}
 
       {/* 2. AI vs MARKET — AI 센티2: OBSERVATION 카드(4개 핵심 판단 + compact 표 + read + 연결 문구) */}
       {extended ? <VsMarketSection regime={regime} /> : (
