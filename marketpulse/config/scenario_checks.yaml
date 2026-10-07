@@ -4,11 +4,23 @@
 # 화면은 만들지 않는다.
 checks:
   # tab: false 면 점검은 설정에 남지만 탭 목록(/scenario-check)에서 빠진다 — 2026-10-07 AI 센티·메모리 업사이클 탭 제거. 엔진·화면 코드는 지우지 않는다.
+  # 순서가 탭 순서다 — 2026-10-07: AI 센티 → 금리 → 유가 → 평시 (실시간 탭은 프런트가 맨 앞에 둔다). title 은 탭 이름(시나리오 파일 제목을 덮어쓴다).
   # focus: 그 탭이 앞세우는 판정 — rule(가정 라벨의 require 룰) · oil_regime(유가 원인 판별) · rates_regime(금리·물가 원인 판별) · ai_regime(AI 트레이드 판별) · ai_regime_full(AI 트레이드 판별 + 펀더멘털 확인·밸류체인·종목 확장) · fear_greed(온도계 공포·탐욕) · semiconductor(반도체 합의) · calm(평시 여부)
   # theme_conditions: 가격 z 로는 못 잡는 서명 — 테마 뉴스 톤·가격 점수(−100~+100) 조건.
   #   expected 가 0 이면 '조용해야 한다' 조건이고 tolerance(같은 단위) 안이면 일치.
   #   weight 는 z 서명(|기대 z|)과 같은 저울에 올리기 위한 값이다.
+  ai_sentiment2:                     # 같은 ai_sentiment 시나리오를 확장 화면으로 한 번 더 — scenario 가 기준 시나리오, title 이 탭 이름
+    scenario: ai_sentiment
+    title: "AI 센티 — AI 트레이드 + 펀더멘털 확인·밸류체인·종목 영향도"   # 탭 이름(2026-10-07: 기본 AI 센티 탭을 지워 '2' 를 뗐다)
+    label: null
+    focus: ai_regime_full
+    themes: [ai, semiconductor]
+    theme_conditions:
+      - {theme: ai, field: news_sentiment, expected: 35, weight: 2.0}
+      - {theme: ai, field: theme_score, expected: 0, tolerance: 15, weight: 1.5}
+      - {theme: semiconductor, field: theme_score, expected: 0, tolerance: 15, weight: 1.0}
   inflation_shock:
+    title: "금리 — 유가 급등이 금리를 밀어올림"   # 탭 이름(2026-10-07: 물가 충격 → 금리). 시나리오 파일 제목은 그대로
     label: INFLATION_SHOCK          # 이 시나리오가 가정하는 판정 라벨. null 이면 라벨 없는 시나리오
     focus: rates_regime             # 물가 탭 — Inflation & Rates Intelligence 화면 (판정 룰은 Diagnostics 로)
     factor: Inflation               # 룰 탭이 펼쳐 보이는 팩터
@@ -16,6 +28,7 @@ checks:
     theme_conditions:
       - {theme: inflation, field: news_sentiment, expected: 30, weight: 1.5}
   oil_spike:
+    title: "유가 — 브렌트 +2.8σ, 항공 역풍 / 정유 순풍"   # 탭 이름(2026-10-07: 유가 급등 → 유가)
     label: GEOPOLITICAL_RISK
     focus: oil_regime               # 유가 탭 — 시장 원인 판별 화면 (판정 룰은 Diagnostics 로)
     commodities: [BRENT, WTI]       # 룰 탭이 붙이는 원자재 → 산업 → 종목 경로
@@ -30,16 +43,6 @@ checks:
     theme_conditions:
       - {theme: ai, field: news_sentiment, expected: 35, weight: 2.0}   # 뉴스는 뜨겁고
       - {theme: ai, field: theme_score, expected: 0, tolerance: 15, weight: 1.5}   # 가격은 제자리
-      - {theme: semiconductor, field: theme_score, expected: 0, tolerance: 15, weight: 1.0}
-  ai_sentiment2:                     # 같은 ai_sentiment 시나리오를 확장 화면으로 한 번 더 — scenario 가 기준 시나리오, title 이 탭 이름
-    scenario: ai_sentiment
-    title: "AI 센티2 — AI 트레이드 + 펀더멘털 확인·밸류체인·종목 영향도"
-    label: null
-    focus: ai_regime_full
-    themes: [ai, semiconductor]
-    theme_conditions:
-      - {theme: ai, field: news_sentiment, expected: 35, weight: 2.0}
-      - {theme: ai, field: theme_score, expected: 0, tolerance: 15, weight: 1.5}
       - {theme: semiconductor, field: theme_score, expected: 0, tolerance: 15, weight: 1.0}
   memory_upcycle:
     tab: false                      # 탭에서 뺌(2026-10-07) — 반도체 합의 엔진·MEMORY CYCLE HISTORY 저장은 그대로

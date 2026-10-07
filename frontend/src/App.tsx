@@ -36,7 +36,7 @@ export default function App() {
   const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
   const [checkName, setCheckName] = useState<string | null>(null);
   const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
-  // 실시간 탭은 '실시간 2'(decision cockpit) 하나다 — 2026-10-07 에 기존 그리드 탭('실시간')을 지웠다.
+  // 실시간 탭은 하나(decision cockpit)다 — 2026-10-07 에 기존 그리드 탭을 지우고 이 탭을 '실시간' 으로 불렀다.
   // 기존 대시보드 그리드(Market State → 히트맵 → … → Investment)는 cockpit 의 Details 안에, 그리고 집계를 못 받을 때의 대체 화면으로 남는다.
   const liveLabel = mode === "MOCK" ? "판정만" : "실시간";
   // 시나리오 탭의 반도체·원자재 패널용. 실데이터 탭의 Investment 영역은 자기 훅을 그대로 쓴다.
@@ -88,7 +88,7 @@ export default function App() {
         {mode !== null ? (
           <div className="sc-tabs" role="group" aria-label="시나리오 점검" data-testid="scenario-tabs">
             <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
-              {liveLabel} 2
+              {liveLabel}
             </button>
             {checks.map((c) => (
               <button key={c.name} type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>

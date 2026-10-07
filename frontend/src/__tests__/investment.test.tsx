@@ -197,15 +197,15 @@ describe("InvestmentSection", () => {
   });
 });
 
-describe("App — 실시간 탭은 '실시간 2'(cockpit) 하나 (2026-10-07: 기존 그리드 탭 '실시간' 제거)", () => {
-  it("첫 탭이 '판정만 2' 이고 처음부터 눌려 있어 cockpit 을 받아 MARKET NOW 가 맨 위에 온다; '판정만' 탭은 없고 기존 그리드는 Details 안에 있다", async () => {
+describe("App — 실시간 탭은 cockpit 하나 (2026-10-07: 기존 그리드 탭 제거, 이름은 '실시간'/'판정만')", () => {
+  it("첫 탭이 '판정만' 이고 처음부터 눌려 있어 cockpit 을 받아 MARKET NOW 가 맨 위에 온다; 기존 그리드는 Details 안에 있다", async () => {
     const fetchMock = mockApi({ cockpit: ckFx });
     render(<App />);
     await waitFor(() => expect(screen.getByTestId("ck-now")).toBeInTheDocument(), { timeout: 5000 });
     const tabs = screen.getByTestId("scenario-tabs");
-    expect(within(tabs).queryByRole("button", { name: "판정만" })).toBeNull();
-    expect(within(tabs).getAllByRole("button")[0]!.textContent).toBe("판정만 2");
-    expect(within(tabs).getByRole("button", { name: "판정만 2" }).getAttribute("aria-pressed")).toBe("true");
+    expect(within(tabs).queryByRole("button", { name: "판정만 2" })).toBeNull();
+    expect(within(tabs).getAllByRole("button")[0]!.textContent).toBe("판정만");
+    expect(within(tabs).getByRole("button", { name: "판정만" }).getAttribute("aria-pressed")).toBe("true");
     expect(fetchMock.mock.calls.some(([u]) => String(u).includes("/api/v1/cockpit"))).toBe(true);
     const titles = Array.from(document.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles[0]).toBe("Market Now");

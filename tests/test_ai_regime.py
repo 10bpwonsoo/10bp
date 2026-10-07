@@ -166,10 +166,11 @@ class TestApi:
         names = [c["name"] for c in checks]
         # 2026-10-07: AI 센티(기본)·메모리 업사이클 탭은 tab:false 로 목록에서 빠진다 — 설정·엔진은 남는다
         assert "ai_sentiment" not in names and "memory_upcycle" not in names
-        assert names == ["inflation_shock", "oil_spike", "ai_sentiment2", "baseline"]
+        assert names == ["ai_sentiment2", "inflation_shock", "oil_spike", "baseline"]  # 탭 순서: AI 센티 → 금리 → 유가 → 평시
         # AI 센티2 — ai_sentiment 시나리오의 확장 화면. 같은 서명으로 일치도를 낸다
         c2 = next(c for c in checks if c["name"] == "ai_sentiment2")
-        assert c2["focus"] == "ai_regime_full" and c2["title"].startswith("AI 센티2")
+        assert c2["focus"] == "ai_regime_full" and c2["title"].startswith("AI 센티 —")
+        assert next(c["title"] for c in checks if c["name"] == "inflation_shock").startswith("금리 —") and next(c["title"] for c in checks if c["name"] == "oil_spike").startswith("유가 —")
         from marketpulse.engines.scenario_check import load_scenario_checks
         cfg = load_scenario_checks()["checks"]
         assert cfg["ai_sentiment"]["tab"] is False and cfg["memory_upcycle"]["tab"] is False and cfg["ai_sentiment2"].get("tab", True) is True
