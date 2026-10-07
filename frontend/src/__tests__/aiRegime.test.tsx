@@ -114,7 +114,20 @@ describe("AiRegimeView", () => {
     expect(screen.getAllByTestId("ai-radar-bucket").length).toBe(sv.radar.length);
     for (const it of screen.getAllByTestId("ai-radar-item")) expect(within(it).getByTestId("ai-radar-why").textContent?.length).toBeGreaterThan(3);
     expect(screen.getAllByTestId("ai-news-card").length).toBe(sv.news_top.length + Math.min(sv.news_others_default, sv.news_others.length));
-    expect(screen.getAllByTestId("ai-gap-row").length).toBe(10);
+    const gapRows = screen.getAllByTestId("ai-gap-row");
+    expect(gapRows.length).toBe(10);
+    // 기대 vs 펀더멘털: 줄마다 어느 쪽이 시장 기대·펀더멘털인지 이름과 숫자가 붙는다
+    for (const r of gapRows) {
+      const lines = r.querySelectorAll(".ai-gap-line");
+      expect(lines.length).toBe(2);
+      expect(lines[0]!.getAttribute("data-k")).toBe("market"); expect(lines[0]!.textContent).toMatch(/^시장 기대\s*(\d+|–)$/);
+      expect(lines[1]!.getAttribute("data-k")).toBe("fund"); expect(lines[1]!.textContent).toMatch(/^펀더멘털\s*(\d+|–)$/);
+    }
+    // 상대 %p 막대: 숫자는 막대 반대쪽 절반에 둔다 (+ 는 왼쪽, − 는 오른쪽) — 막대가 길어도 숫자가 가려지지 않는다
+    for (const cell of container.querySelectorAll(".ai-grp-cell .ai-bar")) {
+      const b = cell.querySelector("b")!; const t = b.textContent ?? "";
+      expect(b.getAttribute("data-side")).toBe(t.startsWith("-") ? "right" : "left");
+    }
     expect(screen.getAllByTestId("ai-matters-item").length).toBeLessThanOrEqual(5);
     // 업사이클 판정·신호 n/4·서명 일치도는 핵심 화면에 없다
     const mainText = Array.from(container.querySelectorAll(".panel:not(details)")).map((e) => e.textContent).join(" ");

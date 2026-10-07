@@ -294,6 +294,10 @@
 - NO REGIME 은 raw 후보일 뿐 확정 전까지 직전 공식 regime 유지. "Change" 는 공식 전환일에만, 그 외 "Transition watch RISK-ON → NO REGIME". REGIME DURATION(공식) vs RAW SIGNAL PERSISTENCE(raw) 이름 분리, Conviction 은 regime 과 별개(41% · MEDIUM · WEAKENING). MARKET READ 문장 템플릿(`cockpit.yaml now_read`). 오늘 셀은 LIVE 로 공식 regime 을 따라가고 장중 LOCK 없음.
 - MARKET NOW 핵심 변수 문장의 조사("진정가" → "진정이")를 `fix_particles` 로 고침.
 
+### 2026-10-07 — AI 센티2 표시 수정
+- AI BASKET GROUPS 상대 %p 막대: 숫자를 막대가 없는 반대쪽 절반에 둔다(+ 는 왼쪽, − 는 오른쪽). 막대가 길어져도 숫자가 가려지지 않는다.
+- EXPECTATIONS VS FUNDAMENTALS: 줄마다 "시장 기대 94 / 펀더멘털 64" 로 이름·숫자를 붙이고 gap 에 라벨, 범례에 각 축의 재료(가격: 상대 z·1개월·breadth / 뉴스 driver 톤·메모리·EPS)를 적었다. 계산은 그대로.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

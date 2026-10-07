@@ -47,7 +47,8 @@ function ScoreBar({ score, scale = 100, unit = "" }: { score: number | null; sca
     <div className="ai-bar" aria-label={sg(score, unit ? 1 : 0, unit)}>
       <i className="ai-zero" />
       <i className="ai-fill" style={{ width: `${w / 2}%`, [v >= 0 ? "left" : "right"]: "50%", background: col(score) } as React.CSSProperties} />
-      <b className="num" style={{ color: col(score) }}>{sg(score, unit ? 1 : 0, unit)}</b>
+      {/* 숫자는 막대가 없는 반대쪽 절반에 둔다 — 막대가 길어져도 숫자를 가리지 않는다 (+ 는 왼쪽, − 는 오른쪽) */}
+      <b className="num" data-side={v >= 0 ? "left" : "right"} style={{ color: col(score) }}>{sg(score, unit ? 1 : 0, unit)}</b>
     </div>
   );
 }

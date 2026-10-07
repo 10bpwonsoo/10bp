@@ -228,16 +228,24 @@ export function GapSection({ regime }: { regime: AiRegime }) {
             <div key={g.key} className="ai-gap-row" data-testid="ai-gap-row" title={g.note}>
               <span className="ai-gap-l">{g.label}</span>
               <span className="ai-gap-bars">
-                <i className="ai-gap-bar"><b style={{ width: `${g.market_pricing ?? 0}%`, background: "var(--accent)" }} /></i>
-                <i className="ai-gap-bar"><b style={{ width: `${g.fundamental ?? 0}%`, background: "var(--muted)" }} /></i>
+                {/* 어느 줄이 시장 기대(가격 반영)이고 어느 줄이 펀더멘털인지 줄마다 이름·숫자를 붙인다 */}
+                <span className="ai-gap-line" data-k="market" title="Market Pricing — 상대 z · 1개월 수익 · breadth 로 만든 0~100">
+                  <em className="mono" style={{ color: "var(--accent)" }}>시장 기대</em>
+                  <i className="ai-gap-bar"><b style={{ width: `${g.market_pricing ?? 0}%`, background: "var(--accent)" }} /></i>
+                  <b className="num mono" style={{ color: "var(--accent)" }}>{g.market_pricing === null ? "–" : g.market_pricing.toFixed(0)}</b>
+                </span>
+                <span className="ai-gap-line" data-k="fund" title="Fundamental — driver 뉴스 톤 · 메모리 데이터 · EPS 로 만든 0~100">
+                  <em className="mono" style={{ color: "var(--muted)" }}>펀더멘털</em>
+                  <i className="ai-gap-bar"><b style={{ width: `${g.fundamental ?? 0}%`, background: "var(--muted)" }} /></i>
+                  <b className="num mono" style={{ color: "var(--ink-2)" }}>{g.fundamental === null ? "–" : g.fundamental.toFixed(0)}</b>
+                </span>
               </span>
-              <span className="num mono">{g.market_pricing === null ? "–" : g.market_pricing.toFixed(0)} / {g.fundamental === null ? "–" : g.fundamental.toFixed(0)}</span>
-              <span className="num mono ai-gap-g" style={{ color: g.gap === null ? "var(--faint)" : g.gap >= 15 ? "var(--warn)" : g.gap <= -15 ? "var(--info)" : "var(--muted)" }}>{g.gap === null ? "–" : sg(g.gap, 0)}</span>
+              <span className="num mono ai-gap-g" style={{ color: g.gap === null ? "var(--faint)" : g.gap >= 15 ? "var(--warn)" : g.gap <= -15 ? "var(--info)" : "var(--muted)" }}><small>gap</small> {g.gap === null ? "–" : sg(g.gap, 0)}</span>
               <span className="ai-gap-n">{g.note}</span>
             </div>
           ))}
         </div>
-        <div className="ai-ev mono" style={{ marginTop: 6 }}><span style={{ color: "var(--accent)" }}>■</span> Market Pricing <span style={{ color: "var(--muted)" }}>■</span> Fundamental · gap + 는 기대가 앞섬, − 는 가격 반영이 제한적</div>
+        <div className="ai-ev mono" style={{ marginTop: 6 }}><span style={{ color: "var(--accent)" }}>■</span> 시장 기대 = Market Pricing(가격: 상대 z · 1개월 · breadth) <span style={{ color: "var(--muted)" }}>■</span> 펀더멘털 = Fundamental(뉴스 driver 톤 · 메모리 데이터 · EPS) · gap = 시장 기대 − 펀더멘털, + 는 기대가 앞섬, − 는 가격 반영이 제한적</div>
       </div>
     </section>
   );
