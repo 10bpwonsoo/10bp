@@ -82,7 +82,10 @@ class TestEngine:
         from marketpulse.adapters.market.scenario import available_scenarios
         scs = [load_scenario(MOCK_DIR, n) for n in available_scenarios(MOCK_DIR)]
         out = check_scenarios(scs, market, snap.market_state, snap.themes, by_id)
-        assert [c.name for c in out] == list(load_scenario_checks()["checks"].keys())
+        # tab:false 인 점검(AI 센티·메모리 업사이클, 2026-10-07)은 설정에 남지만 목록에서 빠진다
+        cfg = load_scenario_checks()["checks"]
+        assert [c.name for c in out] == [k for k, v in cfg.items() if (v or {}).get("tab", True) is not False]
+        assert "ai_sentiment" not in [c.name for c in out] and "memory_upcycle" not in [c.name for c in out]
         base = next(c for c in out if c.name == "baseline")
         assert base.current_label.value == "NEUTRAL" and base.label is not None and base.label.value == "NEUTRAL"
         for c in out:
@@ -100,7 +103,8 @@ class TestApi:
         a = client.get("/api/v1/scenario-check?scenario=baseline")
         assert a.status_code == 200
         rows = a.json()
-        assert [r["name"] for r in rows] == list(load_scenario_checks()["checks"].keys())
+        cfg = load_scenario_checks()["checks"]
+        assert [r["name"] for r in rows] == [k for k, v in cfg.items() if (v or {}).get("tab", True) is not False]
         r0 = rows[0]
         for k in ("match_score", "match_label", "rows", "verdict", "note", "current_label", "as_of"):
             assert k in r0

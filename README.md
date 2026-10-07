@@ -342,8 +342,10 @@ GS 의 주간 크로스에셋 리포트 *GOAL Kickstart* 의 표·차트 관례 
 
 ### 실시간 2 탭 — decision cockpit (2026-09-29)
 
-실시간 탭은 둘이다. `실시간` 은 기존 화면(Market State → 히트맵 → What's Moving →
-… → Investment Intelligence) 그대로이고, `실시간 2` 가 아래의 decision cockpit 이다.
+실시간 탭은 `실시간 2` 하나다(2026-10-07 에 기존 화면 탭 `실시간` 을 지웠다 — 아래
+"탭 정리" 절). 기존 화면(Market State → 히트맵 → What's Moving → … → Investment
+Intelligence)은 cockpit 아래 Details 안에, 그리고 cockpit 집계를 못 받을 때의 대체
+화면으로 그대로 남아 있다. `실시간 2` 가 아래의 decision cockpit 이다.
 `실시간 2` 는 22일 히스토리·히트맵·What's Moving·해설·알림 타임라인을 앞에 늘어놓지
 않는다. `engines/cockpit.py` 가 `config/cockpit.yaml` 로 스냅샷·Investment·히스토리·
 AI/금리/유가 판별 결과를 한 화면으로 고른다. 순서는 MARKET NOW(판정·확신 HIGH/MEDIUM/LOW·
@@ -735,8 +737,8 @@ HBM 은 현물 시장이 없으므로 추정치이며 화면에 '분기 추정' 
 
 ### 시나리오 점검 — 모의 탭을 실데이터로 (2026-09-29)
 
-화면의 물가 충격·AI 센티·평시·유가 급등·메모리 업사이클 탭은 더는 모의 데이터를
-보여주지 않는다. 헤더의 **시나리오 점검 탭**을 누르면 같은 실데이터 위에 패널이
+화면의 물가 충격·유가 급등·AI 센티2·평시 탭(2026-10-07 까지는 AI 센티·메모리 업사이클도)은
+더는 모의 데이터를 보여주지 않는다. 헤더의 **시나리오 점검 탭**을 누르면 같은 실데이터 위에 패널이
 하나 붙고, 그 시나리오의 **충격 서명**(`data/mock/scenario_*.json` 의 `shocks`,
 마지막 봉 목표 z)을 지금 실데이터의 하루·5일 z 에 대어 본다. 일치도는
 |기대 z| 를 가중치로 한 비율의 평균(0~100)이고 결측은 분모에서 뺀다. 그 시나리오가
@@ -788,6 +790,14 @@ MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "
 `history.official_state_label · raw_regime · raw_label · raw_persistence_days · required_days · transition_status(_ko) · pending_regime · changed_today`.
 회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
 raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
+
+### 탭 정리 — 실시간 · AI 센티 · 메모리 업사이클 탭 제거 (2026-10-07)
+
+헤더 탭은 `실시간 2` · 물가 충격 · 유가 급등 · AI 센티2 · 평시 다섯 개다. 지운 것은 세 탭이고 **코드·엔진·저장은 지우지 않았다**.
+`실시간`(기존 대시보드 그리드)은 `App.tsx` 에서 버튼만 뺐다 — 그리드는 cockpit 의 Details 안에, 그리고 cockpit 집계를 못 받을 때의 대체 화면으로
+그대로 있다. `AI 센티`(기본 AI 화면)·`메모리 업사이클`(반도체 합의)은 `config/scenario_checks.yaml` 의 해당 점검에 `tab: false` 를 달아
+`check_scenarios()` 가 목록에서 건너뛴다 — 설정·서명·엔진(`ai_regime`, `semiconductor` 합의, MEMORY CYCLE HISTORY 저장)은 남는다. 다시 보이게
+하려면 그 줄을 지우면 된다. API `/scenario-check` 와 캡처 `scenario_check.json` 도 네 점검만 돌려준다.
 
 ### Daily snapshot history — 모든 History 는 저장 후 고정 (2026-10-07)
 

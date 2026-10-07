@@ -197,22 +197,20 @@ describe("InvestmentSection", () => {
   });
 });
 
-describe("App — 실시간 탭 둘: '실시간' 은 기존 화면, '실시간 2' 는 cockpit", () => {
-  it("첫 탭은 기존 그리드고 cockpit 을 요청하지 않는다; 둘째 탭을 누르면 cockpit 을 받아 MARKET NOW 가 맨 위에 온다", async () => {
+describe("App — 실시간 탭은 '실시간 2'(cockpit) 하나 (2026-10-07: 기존 그리드 탭 '실시간' 제거)", () => {
+  it("첫 탭이 '판정만 2' 이고 처음부터 눌려 있어 cockpit 을 받아 MARKET NOW 가 맨 위에 온다; '판정만' 탭은 없고 기존 그리드는 Details 안에 있다", async () => {
     const fetchMock = mockApi({ cockpit: ckFx });
     render(<App />);
-    await waitFor(() => expect(screen.getByText(/1 · Today's Market Drivers/)).toBeInTheDocument(), { timeout: 5000 });
-    const tabs = screen.getByTestId("scenario-tabs");
-    expect(within(tabs).getByRole("button", { name: "판정만" }).getAttribute("aria-pressed")).toBe("true");
-    expect(fetchMock.mock.calls.some(([u]) => String(u).includes("/api/v1/cockpit"))).toBe(false);
-    expect(screen.queryByTestId("ck-now")).toBeNull();
-    fireEvent.click(within(tabs).getByRole("button", { name: "판정만 2" }));
     await waitFor(() => expect(screen.getByTestId("ck-now")).toBeInTheDocument(), { timeout: 5000 });
+    const tabs = screen.getByTestId("scenario-tabs");
+    expect(within(tabs).queryByRole("button", { name: "판정만" })).toBeNull();
+    expect(within(tabs).getAllByRole("button")[0]!.textContent).toBe("판정만 2");
+    expect(within(tabs).getByRole("button", { name: "판정만 2" }).getAttribute("aria-pressed")).toBe("true");
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes("/api/v1/cockpit"))).toBe(true);
     const titles = Array.from(document.querySelectorAll(".panel-title")).map((e) => e.textContent);
     expect(titles[0]).toBe("Market Now");
-    fireEvent.click(within(tabs).getByRole("button", { name: "판정만" }));
-    await waitFor(() => expect(screen.queryByTestId("ck-now")).toBeNull());
-    expect(screen.getByText(/1 · Today's Market Drivers/)).toBeInTheDocument();
+    // 기존 대시보드 그리드는 지우지 않았다 — cockpit 의 Details(접힘) 안에 그대로
+    expect(document.querySelector(".ck-details, details")).not.toBeNull();
   });
 });
 

@@ -3,6 +3,7 @@
 # 실데이터가 그 시나리오와 얼마나 닮았는지를 보여준다. 숫자는 전부 여기 규칙으로 계산되고
 # 화면은 만들지 않는다.
 checks:
+  # tab: false 면 점검은 설정에 남지만 탭 목록(/scenario-check)에서 빠진다 — 2026-10-07 AI 센티·메모리 업사이클 탭 제거. 엔진·화면 코드는 지우지 않는다.
   # focus: 그 탭이 앞세우는 판정 — rule(가정 라벨의 require 룰) · oil_regime(유가 원인 판별) · rates_regime(금리·물가 원인 판별) · ai_regime(AI 트레이드 판별) · ai_regime_full(AI 트레이드 판별 + 펀더멘털 확인·밸류체인·종목 확장) · fear_greed(온도계 공포·탐욕) · semiconductor(반도체 합의) · calm(평시 여부)
   # theme_conditions: 가격 z 로는 못 잡는 서명 — 테마 뉴스 톤·가격 점수(−100~+100) 조건.
   #   expected 가 0 이면 '조용해야 한다' 조건이고 tolerance(같은 단위) 안이면 일치.
@@ -22,6 +23,7 @@ checks:
     theme_conditions:
       - {theme: oil, field: news_sentiment, expected: 30, weight: 1.5}
   ai_sentiment:
+    tab: false                      # 탭에서 뺌(2026-10-07) — AI 센티2 가 같은 시나리오의 확장 화면
     label: null
     focus: ai_regime               # AI 탭 — AI Trade Intelligence 화면 (온도계·서명 대조는 Diagnostics 로)
     themes: [ai, semiconductor]
@@ -40,6 +42,7 @@ checks:
       - {theme: ai, field: theme_score, expected: 0, tolerance: 15, weight: 1.5}
       - {theme: semiconductor, field: theme_score, expected: 0, tolerance: 15, weight: 1.0}
   memory_upcycle:
+    tab: false                      # 탭에서 뺌(2026-10-07) — 반도체 합의 엔진·MEMORY CYCLE HISTORY 저장은 그대로
     label: null
     focus: semiconductor
     themes: [semiconductor, ai]

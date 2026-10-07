@@ -163,11 +163,16 @@ class TestApi:
 
     def test_ai_tab_focus_is_ai_regime(self, client):
         checks = client.get("/api/v1/scenario-check?scenario=ai_sentiment").json()
-        assert next(c for c in checks if c["name"] == "ai_sentiment")["focus"] == "ai_regime"
-        # AI 센티2 — 같은 시나리오를 확장 화면으로 한 번 더. 서명·일치도는 같고 탭 이름·focus 만 다르다
+        names = [c["name"] for c in checks]
+        # 2026-10-07: AI 센티(기본)·메모리 업사이클 탭은 tab:false 로 목록에서 빠진다 — 설정·엔진은 남는다
+        assert "ai_sentiment" not in names and "memory_upcycle" not in names
+        assert names == ["inflation_shock", "oil_spike", "ai_sentiment2", "baseline"]
+        # AI 센티2 — ai_sentiment 시나리오의 확장 화면. 같은 서명으로 일치도를 낸다
         c2 = next(c for c in checks if c["name"] == "ai_sentiment2")
         assert c2["focus"] == "ai_regime_full" and c2["title"].startswith("AI 센티2")
-        assert c2["match_score"] == next(c for c in checks if c["name"] == "ai_sentiment")["match_score"]
+        from marketpulse.engines.scenario_check import load_scenario_checks
+        cfg = load_scenario_checks()["checks"]
+        assert cfg["ai_sentiment"]["tab"] is False and cfg["memory_upcycle"]["tab"] is False and cfg["ai_sentiment2"].get("tab", True) is True
 
 
 class TestValueChain:

@@ -36,8 +36,8 @@ export default function App() {
   const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
   const [checkName, setCheckName] = useState<string | null>(null);
   const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
-  // 실시간 탭은 둘이다 — '실시간' 은 기존 대시보드 그리드(Market State → 히트맵 → … → Investment), '실시간 2' 는 decision cockpit.
-  const [liveView, setLiveView] = useState<"classic" | "cockpit">("classic");
+  // 실시간 탭은 '실시간 2'(decision cockpit) 하나다 — 2026-10-07 에 기존 그리드 탭('실시간')을 지웠다.
+  // 기존 대시보드 그리드(Market State → 히트맵 → … → Investment)는 cockpit 의 Details 안에, 그리고 집계를 못 받을 때의 대체 화면으로 남는다.
   const liveLabel = mode === "MOCK" ? "판정만" : "실시간";
   // 시나리오 탭의 반도체·원자재 패널용. 실데이터 탭의 Investment 영역은 자기 훅을 그대로 쓴다.
   const { data: investmentForView } = useInvestment(scenario, mode !== null && activeCheck !== null);
@@ -45,7 +45,7 @@ export default function App() {
   const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
   const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
   // '실시간 2' 탭 — decision cockpit. 집계를 못 받으면 기존 대시보드 그리드로 떨어진다(기능 삭제 아님, 기존 화면은 Details 로도 열린다).
-  const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null && liveView === "cockpit");
+  const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null);
 
   useEffect(() => {
     const c = new AbortController();
@@ -87,10 +87,7 @@ export default function App() {
         ) : null}
         {mode !== null ? (
           <div className="sc-tabs" role="group" aria-label="시나리오 점검" data-testid="scenario-tabs">
-            <button type="button" className="sc-tab mono" aria-pressed={checkName === null && liveView === "classic"} onClick={() => { setCheckName(null); setLiveView("classic"); }} title="기존 대시보드 화면">
-              {liveLabel}
-            </button>
-            <button type="button" className="sc-tab mono" aria-pressed={checkName === null && liveView === "cockpit"} onClick={() => { setCheckName(null); setLiveView("cockpit"); }} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면">
+            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
               {liveLabel} 2
             </button>
             {checks.map((c) => (
@@ -131,7 +128,7 @@ export default function App() {
             /* 시나리오 탭 — 실데이터 화면을 복제하지 않는다. 그 탭에 어울리는 판정만. */
             <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} ratesRegime={ratesRegime} aiRegime={aiRegime} />
           ) : (
-            liveView === "cockpit" && cockpit ? (
+            cockpit ? (
               <CockpitView cockpit={cockpit} snapshot={snapshot} history={stateHistory} scenario={scenario} details={
                 <>
                   <DashboardGrid snapshot={snapshot} history={stateHistory} />

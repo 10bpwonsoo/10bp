@@ -236,7 +236,10 @@ def check_scenarios(
     by_name = {s.name: s for s in scenarios}
     out: list[ScenarioCheck] = []
     for name in order:
-        base = str(((cfg.get("checks") or {}).get(name) or {}).get("scenario") or name)  # 같은 시나리오를 다른 탭으로 다시 쓸 수 있다
+        spec = (cfg.get("checks") or {}).get(name) or {}
+        if spec.get("tab", True) is False:  # 탭에서 뺀 점검 — 설정·엔진은 남고 목록에서만 빠진다
+            continue
+        base = str(spec.get("scenario") or name)  # 같은 시나리오를 다른 탭으로 다시 쓸 수 있다
         sc = by_name.get(base)
         if sc is None:
             logger.warning("scenario_checks.yaml 의 %s 시나리오 파일이 없다", base)
