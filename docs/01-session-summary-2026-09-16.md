@@ -301,6 +301,13 @@
 ### 2026-10-07 — 탭 정리
 - `실시간`(기존 그리드)·`AI 센티`·`메모리 업사이클` 탭 제거. 남은 탭(순서·이름 변경 후): 실시간 · AI 센티 · 금리 · 유가 · 평시 (실시간 2 → 실시간, AI 센티2 → AI 센티, 물가 충격 → 금리, 유가 급등 → 유가; `scenario_checks.yaml` title·키 순서). 기존 그리드는 cockpit Details 와 대체 화면으로, AI 기본 화면·반도체 합의 엔진은 `scenario_checks.yaml tab: false` 뒤에 그대로 남는다.
 
+### 2026-10-12 — 10차 캡처 (연휴 뒤 첫 거래일, 15:09 KST 장중)
+- 새 캡처 `data/captures/2026-10-12-manual/`. 수집·태깅·스냅샷 스크립트가 이제 이 폴더 안의 `build_manual_snapshot.py`(9/15 원본의 `run_tick` 을 옮긴 것)와 `manual_tags_v10.py` 만 읽는다 — 컨테이너 재시작으로 scratchpad 가 지워져도 다시 돌릴 수 있다. RSS 29건 + 웹검색 확인 미국 기사 2건 수기 태깅(LLM 없음).
+- 실시간: 공식 regime RISK-ON → NO REGIME 전환(raw NEUTRAL 10/9 · 10/12 연속 2일). 코스피 −3.17%(13:00), 외국인 1.56조 순매도, OpenAI 매출 보도·후티/호르무즈. AI 센티 CONFIRMED AI RISK-ON / FUNDAMENTALS WEAK, 게이지 61. 금리 Term Premium, 유가 Geopolitical Premium.
+- History: 10/7 LIVE → RECORDED(payload 동일), 10/8 · 10/9 BACKFILLED, 10/12 LIVE — 6개 탭 모두 과거 날짜 변경 없음을 HEAD 대비로 확인.
+- ANALYST VIEW 수기 파일 `data/analyst_views/manual/2026-10-12.json`(SK하이닉스 메리츠 김선우, 삼성전자 KB 김동원 — 원문에서 확인된 것만).
+- `cockpit.yaml` 의 전환 문장 두 개(`now_read.changed`, `history.transition.changed`)를 "(으)로" 대신 화살표로 — 영문 라벨 뒤 조사를 정할 수 없어 "NO REGIME(으)로" 가 그대로 보이던 것.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

@@ -1378,14 +1378,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-07T04:23:51.509390Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-07T05:27:39.413682Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-07T04:23:51.509390Z",
    "model_version": "ai_sentiment_v0.1.0",
    "logic_version": "rules_db9f30c3",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "GREED 68",
    "payload": {
     "components": {
@@ -1455,6 +1455,233 @@
       "component": "macro",
       "score": 37.8,
       "display": "+0.5σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-08",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 50.1,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 42.8,
+    "breadth": 48.5,
+    "fundamentals": null,
+    "macro": 60.7
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-08T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:16:11.666906Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 50",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 42.8,
+     "breadth": 48.5,
+     "fundamentals": null,
+     "macro": 60.7
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-09",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 65.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 68.9,
+    "breadth": 63.3,
+    "fundamentals": null,
+    "macro": 63.5
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-09T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:16:11.682201Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 66",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 68.9,
+     "breadth": 63.3,
+     "fundamentals": null,
+     "macro": 63.5
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-12",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 60.6,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 49.8,
+    "price": 68.9,
+    "breadth": 63.2,
+    "fundamentals": 52.9,
+    "macro": 64.4
+   },
+   "key_drivers": [
+    "AI Basket 1M",
+    "Long-End Rates",
+    "Real Yield",
+    "−Credit Stress",
+    "−Semi Fundamental Confirmation",
+    "−AI News Tone"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-12T06:09:54.750991Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-12T06:16:11.652408Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "GREED 61",
+   "payload": {
+    "components": {
+     "narrative": 49.8,
+     "price": 68.9,
+     "breadth": 63.2,
+     "fundamentals": 52.9,
+     "macro": 64.4
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "NEUTRAL",
+     "macro": "GREED"
+    },
+    "key_tension": "가격 · 확산도 · 매크로가 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "AI Basket 1M · Long-End Rates는 여전히 지지적입니다. 그러나 Credit Stress · Semi Fundamental Confirmation이 sentiment 를 압박하고 있습니다.",
+    "secondary": "PRICE AHEAD OF NARRATIVE",
+    "support": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 92.5,
+      "display": "+8.5%"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 88.8,
+      "display": "-1.6σ"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 86.8,
+      "display": "-1.5σ"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 22.0,
+      "display": "+1.1σ"
+     },
+     {
+      "id": "semi_confirmation",
+      "label": "Semi Fundamental Confirmation",
+      "label_ko": "반도체 펀더멘털 확인",
+      "component": "fundamentals",
+      "score": 30.0,
+      "display": "WEAK"
+     },
+     {
+      "id": "ai_news_tone",
+      "label": "AI News Tone",
+      "label_ko": "AI 뉴스 톤",
+      "component": "narrative",
+      "score": 39.7,
+      "display": "-8 · 12건"
      }
     ],
     "basis": [

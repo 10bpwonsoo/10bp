@@ -1954,14 +1954,14 @@
    "missing_components": [
     "KoreaFlow"
    ],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-07T05:27:29.556659Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-07T04:23:51.509390Z",
    "model_version": "market_regime_v0.1.0",
    "logic_version": "rules_f647efd0",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "NEUTRAL 41% · 온도 +8",
    "payload": {
     "date": "2026-10-07",
@@ -2001,6 +2001,266 @@
      "Utilities +3.6σ",
      "USD/CNH -2.2σ",
      "MOVE 채권변동성 -1.7σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-08",
+   "tab_id": "market_regime",
+   "state": "GEOPOLITICAL_RISK",
+   "state_label": "Geopolitical Risk",
+   "state_label_ko": "",
+   "state_score": -28.387913371268954,
+   "confidence": 73.31168831168831,
+   "component_scores": {
+    "RiskAppetite": -32.04649945171496,
+    "Volatility": -6.550599581088915,
+    "Growth": -33.903991185857926,
+    "Credit": -50.93185607614913,
+    "KoreaFlow": null,
+    "news": -27.291149179644535,
+    "factor:Growth": -0.706,
+    "factor:Inflation": 0.396,
+    "factor:Rates": -1.125,
+    "factor:USD": 0.049,
+    "factor:Liquidity": -0.528,
+    "factor:RiskAppetite": -0.664,
+    "factor:Credit": 1.124,
+    "factor:Volatility": 0.131,
+    "factor:China": -0.63
+   },
+   "key_drivers": [
+    "브렌트 원유 +1.2σ",
+    "WTI 원유 +1.1σ",
+    "Aerospace & Defense +0.7σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-08T23:59:59Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:14:33.534756Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GEOPOLITICAL_RISK 73% · 온도 -28",
+   "payload": {
+    "date": "2026-10-08",
+    "as_of": "2026-10-08T23:59:59Z",
+    "label": "GEOPOLITICAL_RISK",
+    "secondary_label": null,
+    "confidence": 73.31168831168831,
+    "price_temperature": -29.119089499018568,
+    "news_temperature": -27.291149179644535,
+    "composite": -28.387913371268954,
+    "news_events": 419,
+    "thermo_confidence": 94.8172059680626,
+    "components": {
+     "RiskAppetite": -32.04649945171496,
+     "Volatility": -6.550599581088915,
+     "Growth": -33.903991185857926,
+     "Credit": -50.93185607614913,
+     "KoreaFlow": null,
+     "news": -27.291149179644535
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.706,
+     "Inflation": 0.396,
+     "Rates": -1.125,
+     "USD": 0.049,
+     "Liquidity": -0.528,
+     "RiskAppetite": -0.664,
+     "Credit": 1.124,
+     "Volatility": 0.131,
+     "China": -0.63
+    },
+    "hypotheses": {
+     "GEOPOLITICAL_RISK": 0.625
+    },
+    "drivers": [
+     "브렌트 원유 +1.2σ",
+     "WTI 원유 +1.1σ",
+     "Aerospace & Defense +0.7σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-09",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 5.311840463442778,
+   "confidence": 20.606060606060602,
+   "component_scores": {
+    "RiskAppetite": 13.135479514183675,
+    "Volatility": 25.880229858666198,
+    "Growth": -6.365134963793782,
+    "Credit": -50.93185607614913,
+    "KoreaFlow": null,
+    "news": 10.177472089495353,
+    "factor:Growth": -0.127,
+    "factor:Inflation": 0.08,
+    "factor:Rates": -1.125,
+    "factor:USD": 0.365,
+    "factor:Liquidity": -0.482,
+    "factor:RiskAppetite": 0.264,
+    "factor:Credit": 1.124,
+    "factor:Volatility": -0.53,
+    "factor:China": 1.281
+   },
+   "key_drivers": [
+    "US 30Y Yield -1.9σ",
+    "Hang Seng China +1.6σ",
+    "US 10Y Yield -1.5σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-09T23:59:59Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:14:33.595041Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 21% · 온도 +5",
+   "payload": {
+    "date": "2026-10-09",
+    "as_of": "2026-10-09T23:59:59Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 20.606060606060602,
+    "price_temperature": 2.0680860460743937,
+    "news_temperature": 10.177472089495353,
+    "composite": 5.311840463442778,
+    "news_events": 420,
+    "thermo_confidence": 94.1890613956579,
+    "components": {
+     "RiskAppetite": 13.135479514183675,
+     "Volatility": 25.880229858666198,
+     "Growth": -6.365134963793782,
+     "Credit": -50.93185607614913,
+     "KoreaFlow": null,
+     "news": 10.177472089495353
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.127,
+     "Inflation": 0.08,
+     "Rates": -1.125,
+     "USD": 0.365,
+     "Liquidity": -0.482,
+     "RiskAppetite": 0.264,
+     "Credit": 1.124,
+     "Volatility": -0.53,
+     "China": 1.281
+    },
+    "hypotheses": {},
+    "drivers": [
+     "US 30Y Yield -1.9σ",
+     "Hang Seng China +1.6σ",
+     "US 10Y Yield -1.5σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-12",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": -1.281745773688212,
+   "confidence": 40.6060606060606,
+   "component_scores": {
+    "RiskAppetite": 13.135479514183675,
+    "Volatility": 25.880229858666198,
+    "Growth": 3.127897057411459,
+    "Credit": -50.93185607614913,
+    "KoreaFlow": null,
+    "news": -8.680168941087828,
+    "factor:Growth": 0.063,
+    "factor:Inflation": -0.238,
+    "factor:Rates": -1.125,
+    "factor:USD": 0.261,
+    "factor:Liquidity": -0.482,
+    "factor:RiskAppetite": 0.264,
+    "factor:Credit": 1.124,
+    "factor:Volatility": -0.53,
+    "factor:China": 0.444
+   },
+   "key_drivers": [
+    "US 30Y Yield -1.9σ",
+    "US 10Y Yield -1.5σ",
+    "KOSDAQ -1.5σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-12T06:09:54.750991Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-12T06:14:33.436166Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "NEUTRAL 41% · 온도 -1",
+   "payload": {
+    "date": "2026-10-12",
+    "as_of": "2026-10-12T06:09:54.750991Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 40.6060606060606,
+    "price_temperature": 3.6505363379115328,
+    "news_temperature": -8.680168941087828,
+    "composite": -1.281745773688212,
+    "news_events": 31,
+    "thermo_confidence": 93.76692947210007,
+    "components": {
+     "RiskAppetite": 13.135479514183675,
+     "Volatility": 25.880229858666198,
+     "Growth": 3.127897057411459,
+     "Credit": -50.93185607614913,
+     "KoreaFlow": null,
+     "news": -8.680168941087828
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 0.063,
+     "Inflation": -0.238,
+     "Rates": -1.125,
+     "USD": 0.261,
+     "Liquidity": -0.482,
+     "RiskAppetite": 0.264,
+     "Credit": 1.124,
+     "Volatility": -0.53,
+     "China": 0.444
+    },
+    "hypotheses": {},
+    "drivers": [
+     "US 30Y Yield -1.9σ",
+     "US 10Y Yield -1.5σ",
+     "KOSDAQ -1.5σ"
     ]
    },
    "corrections": []
