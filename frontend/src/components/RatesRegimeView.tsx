@@ -4,10 +4,13 @@ import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { FactorBreakdown, hypothesisFor } from "./ScenarioView";
 import { strengthColor } from "./OilRegimeView";
 import { DailyHistoryPanel } from "./DailyHistoryStrip";
+import { RatesRegimeHead, CurrentRatesAnalysisPanel, PolicyMacroEventsPanel } from "./RatesTopSections";
 
 /**
- * 물가 탭 — Inflation & Rates Intelligence.
- * 순서: REGIME → WHAT IS DRIVING RATES? → INFLATION PRESSURE → TREASURY CURVE → NOMINAL YIELD DECOMPOSITION
+ * 금리 탭 — Inflation & Rates Intelligence.
+ * 2026-10-12 상단 정리: REGIME(방향·주도 driver·물가 여부·신뢰도) → CURRENT RATES ANALYSIS(+compact WHAT IS DRIVING RATES?) → STATE HISTORY · 1M
+ *   → POLICY & MACRO EVENTS → (이하 기존 그대로) INFLATION PRESSURE → … → Diagnostics. regime.top 이 없는 옛 캡처는 예전 머리·순서를 그린다.
+ * 예전 순서: REGIME → WHAT IS DRIVING RATES? → INFLATION PRESSURE → TREASURY CURVE → NOMINAL YIELD DECOMPOSITION
  *       → MARKET CONFIRMATION → KEY DIVERGENCE → MARKET IMPLICATION → WHAT CHANGES THE VIEW → Diagnostics(접이식).
  * 5초 안에 (1) 금리를 움직이는 driver, (2) 물가 리프라이싱이 확인됐는지, (3) 무엇이 바뀌면 판단이 바뀌는지가 읽혀야 한다.
  * 숫자는 서버가 만들고 화면은 그리기만 한다. 확률이 아니라 증거 크기다. 추천이 아니라 전이 방향이다.
@@ -115,7 +118,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       {/* 1. INFLATION & RATES REGIME */}
       <section className="panel span-3 rr-regime" data-testid="rates-regime-card">
         <header className="panel-head"><h2 className="panel-title">Inflation &amp; Rates Regime</h2><div className="panel-note mono">{new Date(regime.as_of).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" })} KST · FRED 하루 지연</div></header>
-        <div className="panel-body">
+        {regime.top ? <div className="panel-body"><RatesRegimeHead regime={regime} /></div> : <div className="panel-body">
           <div className="rr-head">
             <div className="rr-title">
               <span className="rr-k mono">REGIME · DOMINANT RATE DRIVER</span>
@@ -143,19 +146,27 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
               </span>
             ))}
           </div>
-        </div>
+        </div>}
       </section>
 
-      {/* 1a. STATE HISTORY · 1M — 저장된 daily snapshot 의 sequence (지배 driver · 점수 · 확신). 과거 고정, 오늘 LIVE */}
-      <DailyHistoryPanel tab="rates_regime" title="Inflation & Rates State History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} />
+      {/* 1b. CURRENT RATES ANALYSIS — Driver · Curve · Real Yield · Breakeven + compact WHAT IS DRIVING RATES?(누르면 근거) */}
+      {regime.current_analysis ? <CurrentRatesAnalysisPanel regime={regime} analysis={regime.current_analysis} /> : null}
 
-      {/* 2. WHAT IS DRIVING RATES? */}
-      <section className="panel span-2">
-        <header className="panel-head"><h2 className="panel-title">What Is Driving Rates?</h2><div className="panel-note mono">evidence score · −100 장기금리 하락 압력 … +100 상승 압력 · 상태는 10Y 방향과의 일치</div></header>
-        <div className="panel-body rr-drivers">
-          {ordered.map((d) => <DriverRow key={d.id} d={d} dominant={d.id === regime.dominant} />)}
-        </div>
-      </section>
+      {/* 1c. STATE HISTORY · 1M — 저장된 daily snapshot 의 sequence (지배 driver · 점수 · 확신). 과거 고정, 오늘 LIVE. 계산 로직은 그대로, 머리만 칸으로 */}
+      <DailyHistoryPanel tab="rates_regime" title="Inflation & Rates State History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} layout={regime.top ? "grid" : "inline"} />
+
+      {/* 1d. POLICY & MACRO EVENTS — 금리 방향을 바꿀 수 있는 최근 정책 결정과 주요 지표(EVENT → SURPRISE → RATES REACTION) · 다음 일정 */}
+      {regime.top ? <PolicyMacroEventsPanel events={regime.events} /> : null}
+
+      {/* 2. WHAT IS DRIVING RATES? — 상단 정리 이후엔 1b 안의 compact 표로 옮겼다. 옛 캡처(top 없음)만 예전 패널 */}
+      {regime.current_analysis ? null : (
+        <section className="panel span-2">
+          <header className="panel-head"><h2 className="panel-title">What Is Driving Rates?</h2><div className="panel-note mono">evidence score · −100 장기금리 하락 압력 … +100 상승 압력 · 상태는 10Y 방향과의 일치</div></header>
+          <div className="panel-body rr-drivers">
+            {ordered.map((d) => <DriverRow key={d.id} d={d} dominant={d.id === regime.dominant} />)}
+          </div>
+        </section>
+      )}
 
       {/* 3. INFLATION PRESSURE */}
       <section className="panel">
@@ -211,7 +222,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 7. KEY DIVERGENCE */}
-      <section className="panel" data-testid="key-divergence">
+      <section className={`panel${regime.current_analysis ? " rt-fill" : ""}`} data-testid="key-divergence">
         <header className="panel-head"><h2 className="panel-title">Key Divergence</h2><div className="panel-note mono">자동 탐지 {divs.length}건 · 심각도 = 관련 z 중 작은 쪽</div></header>
         <div className="panel-body rr-divs">
           {divs.length === 0 ? <div className="sv-muted">설정된 괴리 짝 중 지금 걸린 것이 없다.</div> : divs.map((d) => (

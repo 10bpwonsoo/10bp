@@ -609,6 +609,39 @@ export interface RatesRegime {
   signal_strength: number; signal_strength_label: string; inflation_status: DriverStatus; regime_label: string; headline: string; implication: string;
   inflation_components: InflationComponent[]; curve: CurveView; decomposition: YieldDecomposition[]; confirmations: RatesConfirmationRow[];
   divergences: KeyDivergence[]; market_implication: MarketImplication; triggers: TriggerItem[]; release: TriggerItem[]; note: string;
+  /** 상단 정리(2026-10-12) — 옛 캡처엔 없다 */
+  top?: RatesTop | null; current_analysis?: CurrentRatesAnalysis | null; events?: PolicyMacroEvents | null;
+}
+export interface RatesDriverRef { id: string; label: string; label_ko: string; score: number; status: DriverStatus }
+export interface RatesTop {
+  direction: RateMove["direction"]; direction_arrow: string; direction_en: string; direction_ko: string; segment: string; driver_title: string;
+  primary: RatesDriverRef; counter: RatesDriverRef | null; not_confirmed: RatesDriverRef[]; not_confirmed_text: string; market_read: string; driver_lines: Record<string, string>;
+}
+export interface AnalysisTile { key: "driver" | "curve" | "real_yield" | "breakeven"; label: string; value: string; sub: string; arrow: string; move: "up" | "down" | "flat" | "missing" | "none"; detail: string }
+export interface CurrentRatesAnalysis { tiles: AnalysisTile[]; sentence: string }
+
+/** 금리 탭 POLICY & MACRO EVENTS (2026-10-12) — 출처 확인된 결정·지표 + 미국채 2Y·10Y 일간 반응. 서버(policy_events.yaml)가 만든다 */
+export type EventImpact = "SUPPORTED" | "CHALLENGED" | "NEUTRAL";
+export type EventImportance = "HIGH" | "MED" | "LOW";
+export interface EventSource { title: string; url: string; publisher: string }
+export interface RateReaction { date: string | null; us2y_bp: number | null; us10y_bp: number | null; us2y_arrow: string; us10y_arrow: string; note: string }
+export interface RegimeImpact { impact: EventImpact | null; reason: string }
+export interface PolicyDecision {
+  bank: "FED" | "ECB" | "BOJ" | "BOK"; name: string; date: string; decision: "HIKE" | "HOLD" | "CUT"; decision_label: string; previous_rate: string; current_rate: string; rate_label: string;
+  vote: string; tone: "HAWKISH" | "NEUTRAL" | "DOVISH"; tone_basis: string; line: string; statement: string; chair: string; projections: string; market_path: string;
+  next_meeting: string | null; next_meeting_start: string | null; implication: string; age_days: number; chain: string[]; reaction: RateReaction | null; regime: RegimeImpact; sources: EventSource[];
+}
+export interface MacroMeasure { key: string; label: string; unit: string; actual: number | null; consensus: number | null; prior: number | null; diff: number | null; judged: boolean; note: string }
+export interface MacroRelease {
+  key: string; name: string; period: string; date: string; importance: EventImportance; measures: MacroMeasure[]; surprise: "HOT" | "INLINE" | "COOL" | "MIXED" | "STRONG" | "WEAK" | "N/A";
+  surprise_basis: string; consensus_source: string; chain: string[]; reaction: RateReaction; read: string; regime: RegimeImpact; age_days: number; note: string; sources: EventSource[];
+}
+export interface RecentEventItem { kind: "release" | "policy"; key: string; date: string; title: string; label: string; reaction_text: string; impact: EventImpact | null; importance: EventImportance }
+export interface UpcomingEvent { date: string; date_start: string | null; importance: EventImportance; kind: string; name: string; note: string; days_ahead: number; sources: EventSource[] }
+export interface RegimeLink { current_driver: string; current_driver_ko: string; direction_ko: string; latest_key: string; latest_label: string; latest_surprise: string; impact: EventImpact; sentence: string; counts: Record<string, number> }
+export interface PolicyMacroEvents {
+  as_of: string; collected: string; policy: PolicyDecision[]; releases: MacroRelease[]; recent: RecentEventItem[]; recent_default: number; upcoming: UpcomingEvent[]; upcoming_default: number;
+  link: RegimeLink | null; note: string; missing: string[];
 }
 
 /** AI Trade Intelligence — AI 트레이드 자체의 상태. 시장 온도가 아니다. 서버(ai_regime.yaml)가 만든다 */

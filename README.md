@@ -791,6 +791,29 @@ MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "
 회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
 raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
 
+### 금리 탭 상단 정리 — REGIME · CURRENT RATES ANALYSIS · HISTORY · POLICY & MACRO EVENTS (2026-10-12)
+
+금리 탭의 위쪽 세 영역만 다시 짰다. Inflation Pressure 이하(Treasury Curve · Nominal Yield Decomposition · Market Confirmation · Key Divergence ·
+Market Implication · What Changes the View · Diagnostics)는 이름·계산·내용 그대로다(Key Divergence 는 빈 칸이 생기지 않게 폭만 한 줄로).
+
+- **RATES REGIME**: 큰 판정(`LONG-END RATE / TERM PREMIUM SHOCK`)은 그대로, 바로 아래 **YIELD DIRECTION ↓ FALLING** · `LONG-END YIELD ↓` ·
+  `TERM PREMIUM / SUPPLY DRIVEN`. 오른쪽 네 칸은 10Y(수준 · 5D bp · σ) · CONFIDENCE(Evidence Strength) · PRIMARY DRIVER · INFLATION REPRICING.
+  MARKET READ 는 최대 2문장이고 숫자를 다시 읽지 않는다. DRIVER READ 는 PRIMARY(지배 driver) · COUNTER(반박된 driver, 없으면 반대 부호 중 가장 큰 것,
+  |점수| ≥ 25) · NOT CONFIRMED(물가 · Fed 중 미확인). 기존 driver chip · TRANSMISSION 은 그대로 두고, 긴 판정 근거 문장은 접어 둔다.
+- **CURRENT RATES ANALYSIS**: Driver(DOMINANT · LEADING · CONTESTED — 2위와 격차 30 / 10) · Curve(Bull Flattening · Long-end led) · Real Yield(TIPS 10Y) ·
+  Breakeven(BE 10Y) 네 칸 + 한 줄, 그 아래 compact **WHAT IS DRIVING RATES?** — 순위 · 점수 · 상태 · 결론 한 줄만 보이고 행을 누르면 근거 계열(σ · 기여)이 펼쳐진다.
+- **INFLATION & RATES STATE HISTORY · 1M**: 계산·저장 원칙은 그대로(과거 Recorded 고정 · 없는 날은 1회 Backfill · 오늘 LIVE · 마감 뒤 LOCK).
+  머리 숫자만 CURRENT · DURATION · PREVIOUS · 1M SHARE · TRANSITIONS · DRIVER SCORE(1W) 칸으로 나누고 범례를 색 띠 바로 아래에 둔다(`DailyHistoryStrip layout="grid"`,
+  금리 탭에서만).
+- **POLICY & MACRO EVENTS**(신규): 금리 방향을 바꿀 수 있는 최근 정책 결정과 주요 지표. 값은 출처가 확인된 수기 파일
+  `data/policy_events/YYYY-MM-DD.json`(as_of 이하 가장 최근 파일)에서만 오고, 확인 못 한 값(9월 평균시간당임금 · ECB 표결 등)은 비워 둔다.
+  `engines/policy_events.py` + `config/policy_events.yaml` 이 ① 놀람(실제 − 컨센서스, HOT/COOL/INLINE/MIXED · STRONG/WEAK) ② 금리 반응(발표일 미국채
+  2Y·10Y 일간 종가 − 직전 거래일 종가, FRED) ③ 경로(EVENT → SURPRISE → 기대 경로 → 2Y · 10Y bp) ④ 현재 regime 영향(기대 방향이 지금 10Y 방향과 반대면
+  CHALLENGED, 같고 경로 driver 가 지배 driver 면 SUPPORTED, 나머지 NEUTRAL; ECB·BOJ·BOK 는 미국 regime 판정 대상이 아니라 CONTEXT)을 만든다.
+  화면은 regime 연결(최근 CPI·PCE 중 최근 것) → RECENT(기본 4, 영향도 → 최근 순) · CENTRAL BANKS(FED · ECB · BOJ · BOK: LAST · RATE · TONE · NEXT, 누르면
+  Decision · Previous / Current Rate · Vote · Statement · Chair tone · Projections · Market path · Next meeting · implication · 출처) · UPCOMING(기본 5, 날짜순).
+  MOCK 시나리오에는 실제 이벤트를 붙이지 않는다. 오늘 이후 날짜의 결과는 쓰지 않고, 일정은 as_of 기준으로 자동으로 RECENT/UPCOMING 이 갈린다.
+
 ### 탭 정리 — 실시간 · AI 센티 · 메모리 업사이클 탭 제거 (2026-10-07)
 
 헤더 탭은 **실시간 · AI 센티 · 금리 · 유가 · 평시** 다섯 개, 이 순서다. 같은 날 이름을 바꿨다: 남은 cockpit 탭 `실시간 2` → `실시간`,

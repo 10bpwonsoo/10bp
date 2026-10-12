@@ -15,7 +15,9 @@ import yaml
 
 from ..config.settings import CONFIG_DIR
 from ..models.market import Instrument, MarketFeature, MarketSnapshot
+from .korean import fix_particles
 from ..models.rates_regime import (
+    AnalysisTile, CurrentRatesAnalysis, DriverRef, RatesTop,
     ComponentScore, ConfirmationRow, CurveView, DriverScore, EvidenceItem, ImplicationRow, KeyDivergence,
     MarketImplication, RateMove, RatesRegime, TenorPoint, TriggerItem, YieldDecomposition,
 )
@@ -325,7 +327,95 @@ def build_rates_regime(
     note = ("driver 점수는 설정(rates_regime.yaml)의 증거표를 실데이터 z(하루·5일 중 큰 쪽)와 테마 뉴스 톤에 대어 만든 가중 평균이다. 부호는 장기 명목금리에 주는 방향, 결측은 분모에서 뺀다. "
             "상태는 10년 명목금리의 움직임과 driver 방향의 일치 여부다. 명목 분해는 항등식(명목 − 기대인플레 = 실질)이며 TIPS 는 실측 대조다. "
             "확률이 아니라 증거 크기이고, 판정 룰(Inflation Shock)은 그대로 돌아 Diagnostics 에 있다. FRED 금리는 하루 지연이다.")
+    top, current = build_top(cfg, drivers=drivers, dom=dom, margin=margin, rate_move=rate_move, curve=curve, market=market, extra=extra, window=window, min_score=min_score)
     return RatesRegime(as_of=market.as_of, rate_move=rate_move, drivers=drivers, dominant=dom.id, runner_up=run.id if run else None, margin=margin,
                        signal_strength=round(min(100.0, abs(dom.score)), 1), signal_strength_label=dom.strength, inflation_status=infl_status,  # type: ignore[arg-type]
                        regime_label=regime_label, headline=headline, implication=dom.implication, inflation_components=comps, curve=curve, decomposition=decomp,
-                       confirmations=rows, divergences=divs, market_implication=implication, triggers=triggers, release=release, note=note)
+                       confirmations=rows, divergences=divs, market_implication=implication, triggers=triggers, release=release, note=note,
+                       top=top, current_analysis=current)
+
+
+def _ref(d: DriverScore) -> DriverRef:
+    return DriverRef(id=d.id, label=d.label, label_ko=d.label_ko, score=d.score, status=d.status)
+
+
+def build_top(cfg: Mapping, *, drivers: Sequence[DriverScore], dom: DriverScore, margin: float, rate_move: RateMove, curve: CurveView,
+              market: MarketSnapshot, extra: ExtraZ, window: str, min_score: float) -> tuple[RatesTop, CurrentRatesAnalysis]:
+    """
+    상단 정리(2026-10-12). 새 계산은 없다 — 이미 계산한 방향 · driver 점수 · 상태 · 커브 · 실질/기대인플레 z 를 설정(top · current_analysis)의
+    문턱과 문구로 다시 읽는다. ① 금리 방향 ② 주도 driver ③ 물가/Fed 확인 여부 ④ 신뢰도가 첫 화면에서 읽히게 하는 것이 목적이다.
+    """
+    tc = cfg.get("top") or {}
+    dmap = (tc.get("direction") or {}).get(rate_move.direction) or {"arrow": "?", "en": rate_move.direction.upper(), "ko": rate_move.direction}
+    seg_key = curve.lead if curve.lead in ("long", "front", "parallel") else "none"
+    segment = str((tc.get("segment") or {}).get(seg_key, "US 10Y YIELD"))
+    seg_ko = str((tc.get("seg_ko") or {}).get(seg_key, "금리"))
+    driver_title = f"{dom.label.upper()} {tc.get('driver_suffix', 'DRIVEN')}"
+    # COUNTER — 금리와 반대로 간다고 판정된(CONTRADICTED) driver 중 가장 큰 것, 없으면 지배 driver 와 부호가 반대인 가장 큰 것
+    cmin = float(tc.get("counter_min_abs", min_score))
+    others = [d for d in drivers if d.id != dom.id and abs(d.score) >= cmin]
+    contra = sorted([d for d in others if d.status == "CONTRADICTED"], key=lambda d: -abs(d.score))
+    opposite = sorted([d for d in others if dom.score != 0 and d.score * dom.score < 0], key=lambda d: -abs(d.score))
+    counter = contra[0] if contra else (opposite[0] if opposite else None)
+    # NOT CONFIRMED — 물가 · Fed 처럼 늘 확인해야 하는 driver 중 지배가 아니고 CONFIRMED 도 아닌 것
+    watch = [w for w in tc.get("watch_drivers", []) if w != dom.id]
+    nc = [d for d in drivers if d.id in watch and d.status != "CONFIRMED"]
+    short = tc.get("watch_short") or {}; wko = tc.get("watch_ko") or {}
+    nc_text = " / ".join(str(short.get(d.id, d.label)) for d in nc)
+    nc_ko = "와 ".join(str(wko.get(d.id, d.label_ko)) for d in nc)
+    rd = tc.get("read") or {}
+    fmt = dict(seg_ko=seg_ko, dir_ko=dmap["ko"], primary_ko=dom.label_ko, nc_ko=nc_ko, counter_ko=counter.label_ko if counter else "")
+    if dom.status != "CONFIRMED":
+        s1 = str(rd.get("primary_unconfirmed", "")).format(**fmt)
+    elif nc:
+        s1 = str(rd.get("primary_with_nc", "")).format(**fmt)
+    else:
+        s1 = str(rd.get("primary_all", "")).format(**fmt)
+    s2 = str(rd.get("counter" if counter else "no_counter", "")).format(**fmt)
+    ln = tc.get("line") or {}
+    lines = {dom.id: str(ln.get("primary" if dom.status == "CONFIRMED" else "primary_unconfirmed", "")).format(**fmt)}
+    if counter:
+        lines[counter.id] = str(ln.get("counter", "")).format(label_ko=counter.label_ko)
+    for d in nc:
+        lines.setdefault(d.id, str(ln.get("not_confirmed", "")))
+    top = RatesTop(driver_lines=lines, direction=rate_move.direction, direction_arrow=str(dmap["arrow"]), direction_en=str(dmap["en"]), direction_ko=str(dmap["ko"]),
+                   segment=segment, driver_title=driver_title, primary=_ref(dom), counter=_ref(counter) if counter else None,
+                   not_confirmed=[_ref(d) for d in nc], not_confirmed_text=nc_text, market_read=fix_particles(f"{s1} {s2}".strip()))
+
+    # ── CURRENT RATES ANALYSIS ─────────────────────────────
+    ca = cfg.get("current_analysis") or {}
+    dom_lbl, dom_ko = "CONTESTED", "경합"
+    for b in ca.get("dominance", []):
+        if margin >= float(b.get("min_margin", 0)):
+            dom_lbl, dom_ko = str(b["label"]), str(b.get("ko", b["label"])); break
+    flat = float(ca.get("flat_abs", 0.5)); mv = ca.get("move") or {}
+
+    def leg(key: str) -> AnalysisTile:
+        spec = ca.get(key) or {}; iid = str(spec.get("instrument", ""))
+        z, _w, _l = _z_of(iid, market, extra, window) if iid else (None, None, "")
+        f = _feat(iid, market) if iid else None
+        bp5 = None if f is None or f.ret_5d is None else round(f.ret_5d, 1)
+        m = "missing" if z is None else ("flat" if abs(z) < flat else ("up" if z > 0 else "down"))
+        mm = mv.get(m) or {"arrow": "", "en": m, "ko": m}
+        detail = "계열 없음 — 0 이 아니라 결측" if z is None else f"{spec.get('label_ko', iid)} · 5일 {'–' if bp5 is None else f'{bp5:+.0f}bp'} · {z:+.1f}σ"
+        return AnalysisTile(key=key, label=str(spec.get("label", key)), value=str(mm["en"]), arrow=str(mm["arrow"]), move=m, detail=detail)  # type: ignore[arg-type]
+
+    real, be = leg("real_yield"), leg("breakeven")
+    shape = str((ca.get("curve_shape") or {}).get(curve.shape, curve.shape))
+    lead = str((ca.get("curve_lead") or {}).get(curve.lead, ""))
+    tiles = [
+        AnalysisTile(key="driver", label="Driver", value=dom.label, sub=dom_lbl, detail=f"{dom.label_ko} {dom.score:+.0f} · 2위와 {margin:.0f} 차 · {dom.status}"),
+        AnalysisTile(key="curve", label="Curve", value=shape, sub=lead, detail=curve.sentence),
+        real, be,
+    ]
+    sc = ca.get("sentence") or {}
+    f2 = dict(dom_ko=dom.label_ko, dominance_ko=dom_ko, r_ko=(mv.get(real.move) or {}).get("ko", ""), b_ko=(mv.get(be.move) or {}).get("ko", ""))
+    if real.move == "missing" or be.move == "missing":
+        sent = str(sc.get("missing", "")).format(**f2)
+    elif real.move == "flat" and be.move == "flat":
+        sent = str(sc.get("flat", "")).format(**f2)
+    elif real.move == be.move:
+        sent = str(sc.get("both_same", "")).format(**f2)
+    else:
+        sent = str(sc.get("split", "")).format(**f2)
+    return top, CurrentRatesAnalysis(tiles=tiles, sentence=fix_particles(sent))

@@ -159,3 +159,49 @@ triggers:
   release:
     driver_release_abs: 25
     runner_up_margin: 10
+
+# ── 상단 정리 (2026-10-12) — 기존 계산값만 다시 읽어 '방향 · 주도 driver · 물가/Fed 여부 · 신뢰도' 를 먼저 보이게 한다 ──
+#: 계산 로직(점수·상태·지배 driver)은 위 그대로다. 여기는 표시 문구와 문턱만.
+top:
+  direction:   # rate_move.direction → 큰 판정 바로 아래 방향 줄
+    up:      {arrow: "↑", en: "RISING",  ko: "상승"}
+    down:    {arrow: "↓", en: "FALLING", ko: "하락"}
+    flat:    {arrow: "→", en: "IN RANGE", ko: "보합"}
+    unknown: {arrow: "?", en: "UNKNOWN", ko: "미상"}
+  segment: {long: "LONG-END YIELD", front: "FRONT-END YIELD", parallel: "YIELD CURVE", none: "US 10Y YIELD"}   # curve.lead 로 고른다
+  driver_suffix: "DRIVEN"
+  #: DRIVER READ — PRIMARY(지배) · COUNTER(반대 방향) · NOT CONFIRMED(물가·Fed 처럼 늘 확인해야 하는 driver 중 미확인)
+  counter_min_abs: 25          # |점수| 가 이보다 작으면 counter 로 세우지 않는다(= status.min_score)
+  watch_drivers: [inflation_repricing, fed_policy]
+  watch_short: {inflation_repricing: "Inflation", fed_policy: "Fed Policy"}
+  watch_ko: {inflation_repricing: "물가 재평가", fed_policy: "Fed 정책 경로 변화"}
+  #: MARKET READ — 최대 2문장. 숫자를 다시 읽지 않는다. 한국어 조사는 '은(는)' 같은 이중 표기로 쓰고 엔진이 고른다.
+  read:
+    primary_with_nc: "{seg_ko} {dir_ko}의 주된 원인은 {primary_ko}이며 {nc_ko}은(는) 아직 확인되지 않았습니다."
+    primary_all: "{seg_ko} {dir_ko}의 주된 원인은 {primary_ko}이고 물가·Fed 쪽 신호도 같은 방향으로 확인됩니다."
+    primary_unconfirmed: "금리 방향이 아직 뚜렷하지 않아 {primary_ko} 쪽 증거가 가장 크지만 확인 전입니다."
+    counter: "{counter_ko} 신호는 반대 방향이라 현재 금리 {dir_ko}을(를) 설명하지 못합니다."
+    no_counter: "반대 방향으로 뚜렷한 driver 는 없습니다."
+  seg_ko: {long: "장기금리", front: "단기금리", parallel: "금리", none: "금리"}
+  #: compact WHAT IS DRIVING RATES 행 아래 한 줄 — 결론만. 근거는 행을 눌러야 펼쳐진다
+  line:
+    primary: "{seg_ko} {dir_ko}의 핵심 driver"
+    primary_unconfirmed: "증거는 가장 크지만 금리 방향과 아직 확인 전"
+    counter: "{label_ko} 신호는 반대 방향"
+    not_confirmed: "아직 확인되지 않음"
+
+#: CURRENT RATES ANALYSIS — Driver · Curve · Real Yield · Breakeven 네 칸 + 한 줄. 세부 데이터는 아래 기존 패널에 그대로 있다.
+current_analysis:
+  dominance: [{min_margin: 30, label: "DOMINANT", ko: "압도적"}, {min_margin: 10, label: "LEADING", ko: "우세"}, {min_margin: 0, label: "CONTESTED", ko: "경합"}]
+  real_yield: {instrument: TIPS10Y, label: "Real Yield", label_ko: "실질금리(TIPS 10Y)"}
+  breakeven:  {instrument: BE10Y,   label: "Breakeven",  label_ko: "기대인플레(BE 10Y)"}
+  flat_abs: 0.5                # |z| 가 이보다 작으면 Stable
+  move: {up: {arrow: "↑", en: "Rising", ko: "상승"}, down: {arrow: "↓", en: "Falling", ko: "하락"}, flat: {arrow: "→", en: "Stable", ko: "보합"}, missing: {arrow: "–", en: "No data", ko: "결측"}}
+  curve_shape: {bear_steepening: "Bear Steepening", bear_flattening: "Bear Flattening", bull_steepening: "Bull Steepening", bull_flattening: "Bull Flattening",
+                parallel_up: "Parallel Up", parallel_down: "Parallel Down", flat: "Flat / Range", unknown: "Unknown"}
+  curve_lead: {front: "Front-end led", long: "Long-end led", parallel: "Parallel", none: ""}
+  sentence:
+    both_same: "실질금리와 기대인플레이션이 모두 {r_ko}하지만, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    split: "실질금리는 {r_ko}, 기대인플레이션은 {b_ko} 쪽이고, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    flat: "실질금리와 기대인플레이션의 움직임이 작아, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    missing: "실질금리·기대인플레 계열이 일부 없어 분해는 생략하고, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."

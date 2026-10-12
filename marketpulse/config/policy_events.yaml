@@ -1,0 +1,51 @@
+# 금리 탭 POLICY & MACRO EVENTS (2026-10-12) — 판정 문턱과 문구. 값은 data/policy_events/*.json(출처 확인된 수기 파일)에서만 온다.
+# 놀람 = 실제 − 컨센서스, 금리 반응 = 발표일 미국채 2Y·10Y 종가 − 직전 거래일 종가(FRED 일간). '확률' 이라는 말은 쓰지 않는다.
+
+data_dir: data/policy_events          # marketpulse/ 기준. as_of 이하의 가장 최근 파일을 읽는다
+recent_window_days: 45                # 이보다 오래된 발표는 RECENT 에서 뺀다(정책 카드에는 최신 결정이 남는다)
+recent_default: 4                     # 미국 핵심 이벤트 4개 — 나머지(ECB·BOJ)는 중앙은행 칸과 View all
+upcoming_default: 5
+importance: {us_cpi: HIGH, us_pce: HIGH, us_nfp: HIGH, fomc: HIGH, FED: HIGH, us_ppi_retail: MED, ECB: MED, ecb: MED, BOJ: MED, boj: MED, BOK: MED, bok: MED}
+reaction:
+  series: {us2y: US2Y, us10y: US10Y}
+  strong_bp: 8                        # |bp| ≥ 8 → ↑↑ / ↓↓
+  mild_bp: 3                          # |bp| ≥ 3 → ↑ / ↓, 그 아래 →
+  note: "FRED 일간 종가 기준 — 발표일 종가 − 직전 거래일 종가. 장중 반응과 다를 수 있다."
+
+#: 놀람 판정 — judge 의 각 항목에서 |실제 − 컨센서스| ≥ step 이면 sign 방향으로 한 표. 위쪽만 → up, 아래쪽만 → down, 둘 다 → MIXED, 없음 → INLINE.
+surprise:
+  us_cpi: {up: HOT, down: COOL, judge: [{key: headline_yoy, step: 0.1, sign: 1}, {key: headline_mom, step: 0.1, sign: 1}, {key: core_mom, step: 0.1, sign: 1}, {key: core_yoy, step: 0.1, sign: 1}]}
+  us_pce: {up: HOT, down: COOL, judge: [{key: headline_yoy, step: 0.1, sign: 1}, {key: headline_mom, step: 0.1, sign: 1}, {key: core_mom, step: 0.1, sign: 1}, {key: core_yoy, step: 0.1, sign: 1}]}
+  us_nfp: {up: STRONG, down: WEAK, judge: [{key: payrolls, step: 50, sign: 1}, {key: unemployment, step: 0.1, sign: -1}, {key: ahe, step: 0.1, sign: 1}]}
+
+#: 금리 연결 — 놀람이 기대하는 금리 방향(+1 상승 · −1 하락 · 0)과 경로 문구, 그리고 그 경로가 가리키는 rates driver
+channel:
+  us_cpi: {driver: inflation_repricing, HOT: {dir: 1, path: "Fed 긴축 기대 ↑"}, COOL: {dir: -1, path: "Fed 긴축 기대 ↓"}, INLINE: {dir: 0, path: "정책 기대 변화 제한"}, MIXED: {dir: 0, path: "항목별로 엇갈림"}}
+  us_pce: {driver: inflation_repricing, HOT: {dir: 1, path: "Fed 긴축 기대 ↑"}, COOL: {dir: -1, path: "Fed 긴축 기대 ↓"}, INLINE: {dir: 0, path: "정책 기대 변화 제한"}, MIXED: {dir: 0, path: "항목별로 엇갈림"}}
+  us_nfp: {driver: growth, STRONG: {dir: 1, path: "정책 긴축 기대 ↑"}, WEAK: {dir: -1, path: "정책 완화 기대 ↑"}, INLINE: {dir: 0, path: "정책 기대 변화 제한"}, MIXED: {dir: 0, path: "항목별로 엇갈림"}}
+  policy: {driver: fed_policy, HAWKISH: {dir: 1, path: "추가 긴축 경로 ↑"}, DOVISH: {dir: -1, path: "완화 경로 ↑"}, NEUTRAL: {dir: 0, path: "경로 변화 제한"}}
+
+#: 정책 톤 — 수기 파일의 guidance(hawkish/neutral/dovish)가 있으면 그것, 없으면 결정으로 정한다
+tone_by_decision: {HIKE: HAWKISH, HOLD: NEUTRAL, CUT: DOVISH}
+decision_label: {HIKE: "HIKE", HOLD: "HOLD", CUT: "CUT"}
+us_banks: [FED]                       # 미국 금리 regime 영향을 판정하는 중앙은행. 나머지는 맥락(None)
+
+surprise_ko: {HOT: "예상보다 높은 물가", COOL: "예상보다 낮은 물가", INLINE: "예상 수준의 결과", MIXED: "항목별로 엇갈린 결과",
+              STRONG: "예상보다 강한 고용", WEAK: "예상보다 약한 고용", HAWKISH: "매파적 결정", DOVISH: "비둘기파적 결정", NEUTRAL: "중립적 결정"}
+read:
+  matched: "{surprise_ko} — {lead_ko} 중심으로 금리가 {rx_ko}했습니다."
+  opposite: "{surprise_ko}에도 금리는 {rx_ko}했습니다 — 발표 외 요인이 더 컸습니다."
+  muted: "{surprise_ko}였지만 금리 반응은 제한적이었습니다."
+  neutral: "{surprise_ko} — 금리는 {rx_ko}했습니다."
+  missing: "{surprise_ko} — 같은 날 금리 계열이 없어 반응은 재지 못했습니다."
+lead_ko: {front: "단기금리", long: "장기금리", both: "단기·장기금리"}
+
+#: 현재 regime 과의 연결 — 기대 방향이 지금 10Y 방향과 반대면 CHALLENGED, 같고 경로 driver 가 지배 driver 면 SUPPORTED, 그 외 NEUTRAL
+impact_reason:
+  SUPPORTED: "{name} 결과는 현재 {primary_ko} 중심 해석과 같은 방향입니다."
+  CHALLENGED: "{surprise_ko} 쪽 서프라이즈가 이어지면 현재 {primary_ko} 중심 해석이 {channel_ko} 쪽으로 이동할 수 있습니다."
+  CHALLENGED_POLICY: "추가 {surprise_ko}이(가) 이어지면 현재 {primary_ko} 중심 해석이 {channel_ko} 쪽으로 이동할 수 있습니다."
+  NEUTRAL: "현재 금리 {dir_ko}의 핵심 원인을 {channel_ko}으로(로) 바꿀 정도는 아닙니다."
+  NEUTRAL_INLINE: "예상 수준의 결과라 현재 {primary_ko} 중심 해석에 주는 영향이 작습니다."
+  NOT_US: "미국 금리 regime 직접 판정 대상은 아닙니다 — 글로벌 금리 경로의 맥락으로만 봅니다."
+link_keys: [us_cpi, us_pce]           # '최근 물가 지표' 로 regime 연결을 보여줄 발표 — 둘 중 최근 것

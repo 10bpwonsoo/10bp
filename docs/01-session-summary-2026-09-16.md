@@ -308,6 +308,12 @@
 - ANALYST VIEW 수기 파일 `data/analyst_views/manual/2026-10-12.json`(SK하이닉스 메리츠 김선우, 삼성전자 KB 김동원 — 원문에서 확인된 것만).
 - `cockpit.yaml` 의 전환 문장 두 개(`now_read.changed`, `history.transition.changed`)를 "(으)로" 대신 화살표로 — 영문 라벨 뒤 조사를 정할 수 없어 "NO REGIME(으)로" 가 그대로 보이던 것.
 
+### 2026-10-12 — 금리 탭 상단 정리 + POLICY & MACRO EVENTS
+- 순서: RATES REGIME → CURRENT RATES ANALYSIS → STATE HISTORY · 1M → POLICY & MACRO EVENTS → 기존 하단 그대로. `RatesRegime.top · current_analysis · events`(옛 캡처는 None → 예전 화면).
+- REGIME: 방향(↓ FALLING) · LONG-END YIELD · TERM PREMIUM / SUPPLY DRIVEN · 10Y · CONFIDENCE · PRIMARY · INFLATION REPRICING, MARKET READ ≤2문장, DRIVER READ(PRIMARY −67 · COUNTER Growth +27 · NOT CONFIRMED Inflation / Fed Policy). 계산은 그대로(같은 입력이면 기존 필드 동일 — 확인).
+- CURRENT RATES ANALYSIS: Driver DOMINANT · Bull Flattening / Long-end led · Real Yield ↓ · Breakeven ↓ + 한 줄, compact WHAT IS DRIVING RATES(누르면 근거).
+- POLICY & MACRO EVENTS: FED 9/16 +25bp 3.75–4.00%(12–0) · ECB 9/10 +25bp 2.50% · BOJ 9/18 +25bp 1.25%(7–2) · BOK 8/27 +25bp 3.00%. 8월 CPI HOT(근원 0.3 vs 0.2, 2Y +7bp) · 8월 PCE COOL · 9월 NFP WEAK(29k vs 84k, 그래도 2Y +5bp · 10Y +4bp). 다음: CPI 10/14 · PPI 10/15 · BOK 10/22 · FOMC 10/27–28 · ECB 10/29 · BOJ 10/29–30 · NFP 11/6. 공식 사이트는 이 환경에서 막혀 둘 이상의 보도로 대조했다.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

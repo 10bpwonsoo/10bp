@@ -592,6 +592,16 @@ class RatesRegimeService:
             if hit and hit[0] == snapshot.as_of:
                 return hit[1]
         result = build_rates_regime(market, snapshot.themes, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
+        # POLICY & MACRO EVENTS(2026-10-12) — 확인된 실제 결정·지표라 MOCK 시나리오에는 붙이지 않는다. 실패해도 금리 화면은 그대로.
+        if settings.data_mode is not DataMode.MOCK:
+            try:
+                from ..engines.policy_events import build_policy_events, load_events_file
+
+                ev = build_policy_events(load_events_file(snapshot.as_of.date()), self._checks._base.series(settings), result, as_of=snapshot.as_of)
+                if ev is not None:
+                    result = result.model_copy(update={"events": ev})
+            except Exception:
+                logger.exception("POLICY & MACRO EVENTS 구성 실패 — 금리 화면은 이벤트 없이 진행한다")
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         try:

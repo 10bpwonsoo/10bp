@@ -133,6 +133,45 @@ class TriggerItem(Base):
     measurable: bool = True
 
 
+class DriverRef(Base):
+    id: str
+    label: str
+    label_ko: str
+    score: float
+    status: DriverStatus
+
+
+class RatesTop(Base):
+    """상단 정리(2026-10-12) — 기존 계산값을 다시 읽어 방향 · 주도 driver · 물가/Fed 여부 · 신뢰도를 먼저 보인다. 새 계산 없음."""
+    direction: Literal["up", "down", "flat", "unknown"]
+    direction_arrow: str
+    direction_en: str = Field(description="RISING / FALLING / IN RANGE")
+    direction_ko: str
+    segment: str = Field(description="LONG-END YIELD 처럼 움직이는 구간 — curve.lead 에서")
+    driver_title: str = Field(description="TERM PREMIUM / SUPPLY DRIVEN")
+    primary: DriverRef
+    counter: DriverRef | None = Field(default=None, description="반대 방향(CONTRADICTED 또는 반대 부호)의 가장 큰 driver")
+    not_confirmed: list[DriverRef] = Field(default_factory=list, description="물가·Fed 처럼 늘 확인하는 driver 중 미확인")
+    not_confirmed_text: str = Field(default="", description="Inflation / Fed Policy")
+    market_read: str = Field(description="최대 2문장, 숫자 반복 없음")
+    driver_lines: dict[str, str] = Field(default_factory=dict, description="compact WHAT IS DRIVING RATES 의 한 줄 — primary · counter · 미확인만")
+
+
+class AnalysisTile(Base):
+    key: Literal["driver", "curve", "real_yield", "breakeven"]
+    label: str
+    value: str
+    sub: str = ""
+    arrow: str = ""
+    move: Literal["up", "down", "flat", "missing", "none"] = "none"
+    detail: str = Field(default="", description="툴팁용 — 5일 bp · z")
+
+
+class CurrentRatesAnalysis(Base):
+    tiles: list[AnalysisTile]
+    sentence: str
+
+
 class RatesRegime(Base):
     as_of: datetime
     rate_move: RateMove
@@ -155,3 +194,13 @@ class RatesRegime(Base):
     triggers: list[TriggerItem] = Field(default_factory=list)
     release: list[TriggerItem] = Field(default_factory=list)
     note: str
+    #: 상단 정리(2026-10-12). 옛 캡처에는 없다 — 없으면 화면은 예전 머리를 그린다.
+    top: RatesTop | None = None
+    current_analysis: CurrentRatesAnalysis | None = None
+    #: POLICY & MACRO EVENTS — 확인된 정책 결정·지표만. 없거나 MOCK 이면 None.
+    events: "PolicyMacroEvents | None" = None
+
+
+from .policy_events import PolicyMacroEvents  # noqa: E402  — 순환 참조를 피해 끝에서 읽는다
+
+RatesRegime.model_rebuild()

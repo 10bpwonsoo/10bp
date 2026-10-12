@@ -12,6 +12,12 @@ inv = InvestmentIntelligence.model_validate_json((CAP / "investment.json").read_
 market = pickle.load(open("/tmp/snap/market_snapshot.pkl", "rb"))
 ins = get_instruments().instruments
 r = build_rates_regime(market, live.themes, {i.id: i for i in ins}, extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative})
+# POLICY & MACRO EVENTS(2026-10-12) — 출처 확인된 수기 파일 + 미국채 2Y·10Y 일간 종가로 잰 반응
+from marketpulse.engines.policy_events import build_policy_events, load_events_file
+_ev = build_policy_events(load_events_file(live.as_of.date()), pickle.load(open("/tmp/snap/series_live.pkl", "rb")), r, as_of=live.as_of)
+if _ev is not None:
+    r = r.model_copy(update={"events": _ev})
+    print("EVENTS recent", [(i.title, i.label, i.reaction_text, i.impact) for i in _ev.recent], "| upcoming", [(u.date.isoformat()[5:], u.name) for u in _ev.upcoming][:5], "| link", _ev.link and (_ev.link.latest_label, _ev.link.impact))
 (CAP / "rates_regime.json").write_text(r.model_dump_json(), encoding="utf-8")
 from marketpulse.config.settings import get_settings
 from marketpulse.history import DailySnapshotManager, JsonDirStore
