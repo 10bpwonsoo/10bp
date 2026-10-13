@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import Field
@@ -92,6 +92,9 @@ class YieldDecomposition(Base):
     dominant: Literal["real", "breakeven", "mixed", "unknown"] = "unknown"
     sentence: str = ""
     missing: list[str] = Field(default_factory=list)
+    start_date: date | None = Field(default=None, description="변화 구간 시작(세 계열 공통 관측일)")
+    end_date: date | None = Field(default=None, description="변화 구간 끝(세 계열 공통 관측일)")
+    aligned: bool | None = Field(default=None, description="명목·기대인플레·TIPS 를 같은 날짜로 맞춰 쟀나. None = 옛 캡처")
 
 
 class ConfirmationRow(Base):
@@ -221,9 +224,107 @@ class RatesRegime(Base):
     current_analysis: CurrentRatesAnalysis | None = None
     #: POLICY & MACRO EVENTS — 확인된 정책 결정·지표만. 없거나 MOCK 이면 None.
     events: "PolicyMacroEvents | None" = None
+    #: 아래 세 패널 정리(2026-10-13) — INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN. 옛 캡처는 None → 예전 패널.
+    inflation_map: InflationPressureMap | None = None
+    curve_move: CurveMoveView | None = None
+    yield_breakdown: YieldMoveBreakdown | None = None
+
+
+class PressureItem(Base):
+    """INFLATION PRESSURE MAP 한 줄 — 상태 → 점수 → 근거 순으로 읽힌다. 결측은 점수 없이 DATA MISSING."""
+    key: str
+    label: str = Field(description="Realized Inflation 같은 영어명(그대로)")
+    label_ko: str = Field(description="실제 물가 같은 짧은 한글 설명")
+    state: str = Field(description="COOLING · EASING · MILD EASING · NEUTRAL · MILD PRESSURE · PRESSURE · STRONG PRESSURE · DATA MISSING")
+    state_ko: str = ""
+    tone: Literal["up", "down", "flat", "missing"]
+    score: float | None = None
+    evidence_text: str = Field(default="", description="10Y BE -1.2σ · 5Y BE -1.1σ")
+    missing_text: str = ""
+
+
+class InflationPressureMap(Base):
+    """INFLATION PRESSURE MAP(2026-10-13) — 기존 구성요소 점수를 상태 · 신호 · 확인 정도로 다시 읽는다. 결측은 0 이 아니라 분모에서 빠진다."""
+    signal: str = Field(description="COOLING BIAS · MIXED · UPSIDE BIAS · COOLING · REACCELERATING · NO SIGNAL")
+    signal_ko: str
+    signal_tone: Literal["up", "down", "flat", "missing"]
+    confirmation: Literal["FULL", "PARTIAL", "INSUFFICIENT"]
+    confirmation_ko: str
+    available: int
+    total: int
+    summary: str = Field(description="상단 한 줄 — 숫자 없음")
+    items: list[PressureItem] = Field(default_factory=list)
+    read: str = Field(default="", description="하단 해석 최대 2문장 — LLM(검증 통과) 또는 규칙 기반")
+    read_meta: MarketReadMeta | None = None
+    scale_note: str = ""
+    link: str = Field(default="", description="아래 TREASURY CURVE 로 잇는 한 줄")
+
+
+class CurvePoint(Base):
+    label: str
+    today: float | None = Field(default=None, description="수익률 %")
+    ago: float | None = Field(default=None, description="window 전 수익률 % (today − 변화)")
+    chg_bp: float | None = None
+    z: float | None = Field(default=None, description="평소 변동성 대비(엔진 z — 하루·5일 중 큰 쪽)")
+    z_window: str = ""
+
+
+class SpreadMove(Base):
+    key: str = Field(description="2s10s · 5s30s")
+    level_bp: float | None = None
+    chg_bp: float | None = None
+    direction: Literal["steepening", "flattening", "flat", "missing"]
+
+
+class CurveMoveView(Base):
+    """TREASURY CURVE(2026-10-13) — 모양은 실제 bp 스프레드 변화로, 이례성은 z 로. 둘을 섞지 않는다."""
+    window_label: str = Field(description="5D")
+    as_of_date: date | None = None
+    shape_key: str = Field(description="bull_steepening · bull_flattening · bear_steepening · bear_flattening · parallel_down · parallel_up · twist · flat · unknown")
+    shape: str = Field(description="MILD BULL STEEPENING")
+    level_dir: str = Field(description="ALL YIELDS ↓ · ALL YIELDS ↑ · MIXED")
+    points: list[CurvePoint] = Field(default_factory=list)
+    spreads: list[SpreadMove] = Field(default_factory=list)
+    short_window: str = Field(default="", description="1D 모양 한 줄 — 상단 REGIME 칸(1D 기준)과 맞춰 읽게")
+    intensity: str = Field(default="", description="LONG-END MOVE MORE UNUSUAL")
+    most_unusual: str | None = None
+    most_unusual_z: float | None = None
+    read: str = ""
+    link: str = ""
+
+
+class BreakdownTenor(Base):
+    tenor: str
+    window_days: int
+    start_date: date | None = None
+    end_date: date | None = None
+    aligned: bool = False
+    nominal_bp: float | None = None
+    real_bp: float | None = Field(default=None, description="MODEL REAL YIELD = 명목 − 기대인플레(항등식)")
+    breakeven_bp: float | None = None
+    tips_bp: float | None = Field(default=None, description="OBSERVED TIPS — 실측")
+    primary: Literal["real", "breakeven", "both", "unknown"]
+    primary_label: str = Field(description="INFLATION EXPECTATION ↓ · REAL YIELD ↑ · BOTH ↓")
+    line: str = Field(default="", description="금리 하락은 … 이(가) 주도 — 숫자 없음")
+    small_move: bool = False
+    divergence: bool = Field(default=False, description="MODEL REAL 과 OBSERVED TIPS 가 방향·크기에서 갈림")
+    divergence_text: str = ""
+    missing: list[str] = Field(default_factory=list)
+
+
+class YieldMoveBreakdown(Base):
+    """YIELD MOVE BREAKDOWN(2026-10-13, 옛 이름 Nominal Yield Decomposition) — 기존 분해값을 주도 요인 · 성격으로 다시 읽는다."""
+    tenors: list[BreakdownTenor] = Field(default_factory=list)
+    default_tenors: list[str] = Field(default_factory=list)
+    headline_tenor: str | None = None
+    character_key: str = ""
+    character: str = Field(default="", description="투자적 성격 한 문장")
+    link: str = ""
+    note: str = ""
 
 
 from .policy_events import PolicyMacroEvents  # noqa: E402  — 순환 참조를 피해 끝에서 읽는다
 
 RatesTop.model_rebuild()
+InflationPressureMap.model_rebuild()
 RatesRegime.model_rebuild()

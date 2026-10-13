@@ -7,6 +7,8 @@ driver 점수 · 물가 구성 · 커브 · 명목 분해 · 크로스에셋 확
 
 from __future__ import annotations
 
+import math
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -14,7 +16,7 @@ from typing import Mapping, Sequence
 import yaml
 
 from ..config.settings import CONFIG_DIR
-from ..models.market import Instrument, MarketFeature, MarketSnapshot
+from ..models.market import Instrument, MarketFeature, MarketSeries, MarketSnapshot
 from .korean import fix_particles
 from ..models.rates_regime import (
     AnalysisTile, CurrentRatesAnalysis, DriverRef, RatesTop,
@@ -114,6 +116,23 @@ def _score_table(evidence: Sequence[dict], market: MarketSnapshot, themes: Mappi
     return items, score, (round(den / tot, 3) if tot > 0 else 0.0)
 
 
+def _aligned_change(series: Mapping[str, MarketSeries] | None, ids: Sequence[str], window: int) -> tuple[dict[str, float], date, date] | None:
+    """ids 가 모두 값을 가진 날짜만 남겨, 마지막 공통일과 그보다 window 공통일 앞 사이의 변화(bp). 공통일이 모자라면 None."""
+    if not series:
+        return None
+    maps = []
+    for iid in ids:
+        s = series.get(iid)
+        if s is None:
+            return None
+        maps.append({t.date(): float(v) for t, v in zip(s.timestamps, s.values) if v is not None and not math.isnan(float(v))})
+    days = sorted(set.intersection(*(set(m) for m in maps)))
+    if len(days) <= window:
+        return None
+    end, start = days[-1], days[-1 - window]
+    return {iid: round((m[end] - m[start]) * 100.0, 1) for iid, m in zip(ids, maps)}, start, end
+
+
 def build_rates_regime(
     market: MarketSnapshot,
     themes: Sequence[ThemeState],
@@ -122,6 +141,7 @@ def build_rates_regime(
     extra_z: ExtraZ | None = None,
     extra_names: Mapping[str, str] | None = None,
     config_dir: Path | None = None,
+    series: Mapping[str, MarketSeries] | None = None,
 ) -> RatesRegime:
     cfg = load_rates_regime_config(config_dir)
     z_ref = float(cfg.get("z_ref", 2.0)); news_ref = float(cfg.get("news_ref", 40.0)); window = str(cfg.get("window", "max"))
@@ -233,13 +253,24 @@ def build_rates_regime(
     decomp: list[YieldDecomposition] = []
     for d in dc.get("tenors", []):
         fn, fb, fr = _feat(d["nominal"], market), _feat(d["breakeven"], market), _feat(d["real"], market)
-        nom = None if fn is None or fn.ret_5d is None else round(fn.ret_5d, 1)
-        be = None if fb is None or fb.ret_5d is None else round(fb.ret_5d, 1)
-        real_m = None if fr is None or fr.ret_5d is None else round(fr.ret_5d, 1)
         missing = [k for k, f in (("명목", fn), ("기대인플레", fb), ("TIPS 실질", fr)) if f is None]
+        # 세 계열을 같은 날짜로 맞춘다(2026-10-13). FRED 기대인플레(T10YIE)가 명목·TIPS 보다 하루 먼저 나오는 날이 있어,
+        # 각자의 마지막 5봉 변화를 그대로 빼면 서로 다른 구간을 섞게 되고 항등식(명목 = 실질 + 기대인플레)이 깨진다.
+        ids = [d["nominal"], d["breakeven"]] + ([d["real"]] if fr is not None else [])
+        al = _aligned_change(series, ids, wdays) if series else None
+        if al is not None:
+            chg, d0, d1 = al
+            nom, be, real_m, aligned = chg[d["nominal"]], chg[d["breakeven"]], chg.get(d["real"]), True
+        else:
+            nom = None if fn is None or fn.ret_5d is None else round(fn.ret_5d, 1)
+            be = None if fb is None or fb.ret_5d is None else round(fb.ret_5d, 1)
+            real_m = None if fr is None or fr.ret_5d is None else round(fr.ret_5d, 1)
+            ends = {f.meta.as_of.date() for f in (fn, fb, fr) if f is not None and f.meta is not None and f.meta.as_of is not None}
+            d0, d1, aligned = None, (max(ends) if ends else None), len(ends) <= 1
         if nom is None or be is None:
             decomp.append(YieldDecomposition(tenor=d["tenor"], window_days=wdays, nominal_bp=nom, breakeven_bp=be, real_measured_bp=real_m, dominant="unknown",
-                                             sentence=f"{d['tenor']}: {' · '.join(missing) or '변화'} 계열이 없어 분해하지 못한다.", missing=missing))
+                                             sentence=f"{d['tenor']}: {' · '.join(missing) or '변화'} 계열이 없어 분해하지 못한다.", missing=missing,
+                                             start_date=d0, end_date=d1, aligned=aligned))
             continue
         real_i = round(nom - be, 1)
         if abs(nom) < 3:
@@ -251,8 +282,12 @@ def build_rates_regime(
         else:
             dom_part, sent = "mixed", f"{d['tenor']} 명목 {nom:+.0f}bp = 실질 {real_i:+.0f}bp + 기대인플레 {be:+.0f}bp — 둘이 비슷하게 기여한다."
         if real_m is not None:
-            sent += f" TIPS 실측 {real_m:+.0f}bp{'(항등식과 일치)' if abs(real_m - real_i) <= 5 else '(항등식과 차이 — 유동성·계절 요인)'}."
-        decomp.append(YieldDecomposition(tenor=d["tenor"], window_days=wdays, nominal_bp=nom, breakeven_bp=be, real_implied_bp=real_i, real_measured_bp=real_m, dominant=dom_part, sentence=sent, missing=missing))  # type: ignore[arg-type]
+            if not aligned:
+                sent += f" TIPS 실측 {real_m:+.0f}bp(세 계열의 마지막 관측일이 달라 항등식 대조는 하지 않는다)."
+            else:
+                sent += f" TIPS 실측 {real_m:+.0f}bp{'(항등식과 일치)' if abs(real_m - real_i) <= 2 else '(항등식과 차이 — 유동성·계절 요인)'}."
+        decomp.append(YieldDecomposition(tenor=d["tenor"], window_days=wdays, nominal_bp=nom, breakeven_bp=be, real_implied_bp=real_i, real_measured_bp=real_m, dominant=dom_part, sentence=sent, missing=missing,  # type: ignore[arg-type]
+                                         start_date=d0, end_date=d1, aligned=aligned))
 
     # ── 크로스에셋 확인 ───────────────────────────────────
     cmin2 = float(cfg.get("confirm_min_abs", 0.5))
@@ -327,12 +362,15 @@ def build_rates_regime(
     note = ("driver 점수는 설정(rates_regime.yaml)의 증거표를 실데이터 z(하루·5일 중 큰 쪽)와 테마 뉴스 톤에 대어 만든 가중 평균이다. 부호는 장기 명목금리에 주는 방향, 결측은 분모에서 뺀다. "
             "상태는 10년 명목금리의 움직임과 driver 방향의 일치 여부다. 명목 분해는 항등식(명목 − 기대인플레 = 실질)이며 TIPS 는 실측 대조다. "
             "확률이 아니라 증거 크기이고, 판정 룰(Inflation Shock)은 그대로 돌아 Diagnostics 에 있다. FRED 금리는 하루 지연이다.")
+    # 아래 세 패널(2026-10-13) — 위에서 만든 구성요소 · 커브 · 분해를 다시 읽을 뿐 새 계산은 없다
+    from .rates_panels import build_panels
+    infl_map, curve_move, breakdown = build_panels(comps, curve, decomp, market)
     top, current = build_top(cfg, drivers=drivers, dom=dom, margin=margin, rate_move=rate_move, curve=curve, market=market, extra=extra, window=window, min_score=min_score)
     return RatesRegime(as_of=market.as_of, rate_move=rate_move, drivers=drivers, dominant=dom.id, runner_up=run.id if run else None, margin=margin,
                        signal_strength=round(min(100.0, abs(dom.score)), 1), signal_strength_label=dom.strength, inflation_status=infl_status,  # type: ignore[arg-type]
                        regime_label=regime_label, headline=headline, implication=dom.implication, inflation_components=comps, curve=curve, decomposition=decomp,
                        confirmations=rows, divergences=divs, market_implication=implication, triggers=triggers, release=release, note=note,
-                       top=top, current_analysis=current)
+                       top=top, current_analysis=current, inflation_map=infl_map, curve_move=curve_move, yield_breakdown=breakdown)
 
 
 def _ref(d: DriverScore) -> DriverRef:

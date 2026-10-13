@@ -11,7 +11,8 @@ live = IntelligenceSnapshot.model_validate_json((CAP / "live.json").read_text(en
 inv = InvestmentIntelligence.model_validate_json((CAP / "investment.json").read_text(encoding="utf-8"))
 market = pickle.load(open("/tmp/snap/market_snapshot.pkl", "rb"))
 ins = get_instruments().instruments
-r = build_rates_regime(market, live.themes, {i.id: i for i in ins}, extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative})
+r = build_rates_regime(market, live.themes, {i.id: i for i in ins}, extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative},
+                       series=pickle.load(open("/tmp/snap/series_live.pkl", "rb")))  # 분해를 같은 날짜로 맞춘다(2026-10-13)
 # POLICY & MACRO EVENTS(2026-10-13) — 출처 확인된 수기 파일 + 미국채 2Y·10Y 일간 종가로 잰 반응
 from marketpulse.engines.policy_events import build_policy_events, load_events_file
 _ev = build_policy_events(load_events_file(live.as_of.date()), pickle.load(open("/tmp/snap/series_live.pkl", "rb")), r, as_of=live.as_of)
@@ -27,6 +28,14 @@ _sess = CAP / "rates_read_session.json"
 r, _ctx = attach_market_read(r, client=build_client(_gs()), market=market, series=pickle.load(open("/tmp/snap/series_live.pkl", "rb")), news=live.events,
                              instrument_kinds={i.id: i.series_kind for i in ins}, as_of=live.as_of,
                              session_read=_json.loads(_sess.read_text(encoding="utf-8")) if _sess.exists() else None)
+# INFLATION PRESSURE MAP 하단 해석 — 같은 방식(API → 실패 시 같은 검증을 통과한 세션 생성본 → 규칙 기반)
+from marketpulse.ai.inflation_read import attach_inflation_read, build_context as _ictx
+_isess = CAP / "inflation_read_session.json"
+r = attach_inflation_read(r, client=build_client(_gs()), session_read=_json.loads(_isess.read_text(encoding="utf-8")) if _isess.exists() else None)
+_im = r.inflation_map
+print("INFLATION READ", _im.read_meta.source, _im.read_meta.generator, "|", _im.read_meta.reason, "| warn", _im.read_meta.warnings, "\n  ", _im.read)
+_ctx["inflation_map"] = _ictx(_im)
+print("PANELS", _im.signal, _im.confirmation, "|", r.curve_move.shape, r.curve_move.level_dir, "|", [(t.tenor, t.primary_label) for t in r.yield_breakdown.tenors], r.yield_breakdown.character_key)
 (CAP / "rates_read_context.json").write_text(_json.dumps(_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
 _m = r.top.market_read_meta
 print("MARKET READ", _m.source, _m.status, _m.generator, "|", _m.reason, "|", _m.themes_ko, _m.move_quality_ko, _m.regime_fit, "| warn", _m.warnings)

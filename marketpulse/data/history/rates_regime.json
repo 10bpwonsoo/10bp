@@ -2763,7 +2763,7 @@
    "data_asof": "2026-10-13T00:12:16.061019Z",
    "missing_components": [],
    "history_source": "LIVE",
-   "calculated_at": "2026-10-13T01:30:34.746824Z",
+   "calculated_at": "2026-10-13T06:10:10.544109Z",
    "model_version": "rates_regime_v0.1.0",
    "logic_version": "rules_f27eae24",
    "is_final": false,

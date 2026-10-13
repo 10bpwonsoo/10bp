@@ -598,7 +598,7 @@ export interface RateMove { instrument: string; z: number | null; window: number
 export interface InflationComponent { key: string; label: string; label_ko: string; score: number | null; status: "up" | "down" | "flat" | "missing"; coverage: number; evidence: RatesEvidenceItem[]; note: string }
 export interface TenorPoint { id: string; label: string; level: number | null; z_1d: number | null; z_5d: number | null; z: number | null; change_5d_bp: number | null }
 export interface CurveView { tenors: TenorPoint[]; spread_z: number | null; shape: "bear_steepening" | "bear_flattening" | "bull_steepening" | "bull_flattening" | "parallel_up" | "parallel_down" | "flat" | "unknown"; lead: "front" | "long" | "parallel" | "none"; sentence: string }
-export interface YieldDecomposition { tenor: string; window_days: number; nominal_bp: number | null; breakeven_bp: number | null; real_implied_bp: number | null; real_measured_bp: number | null; dominant: "real" | "breakeven" | "mixed" | "unknown"; sentence: string; missing: string[] }
+export interface YieldDecomposition { tenor: string; window_days: number; nominal_bp: number | null; breakeven_bp: number | null; real_implied_bp: number | null; real_measured_bp: number | null; dominant: "real" | "breakeven" | "mixed" | "unknown"; sentence: string; missing: string[]; start_date?: string | null; end_date?: string | null; aligned?: boolean | null }
 export interface RatesConfirmationRow { key: string; label: string; instruments: string[]; values: Record<string, number | null>; expected_sign: number | null; status: RatesConfirmStatus; note: string }
 export interface KeyDivergence { key: string; label: string; why: string; severity: number; values: Record<string, number | null> }
 export interface ImplicationRow { key: string; label: string; pressure: -1 | 0 | 1 | 2 }
@@ -611,7 +611,27 @@ export interface RatesRegime {
   divergences: KeyDivergence[]; market_implication: MarketImplication; triggers: TriggerItem[]; release: TriggerItem[]; note: string;
   /** 상단 정리(2026-10-12) — 옛 캡처엔 없다 */
   top?: RatesTop | null; current_analysis?: CurrentRatesAnalysis | null; events?: PolicyMacroEvents | null;
+  /** 아래 세 패널 정리(2026-10-13) — 옛 캡처에는 없다(= 예전 패널) */
+  inflation_map?: InflationPressureMap | null; curve_move?: CurveMoveView | null; yield_breakdown?: YieldMoveBreakdown | null;
 }
+export type PressureTone = "up" | "down" | "flat" | "missing";
+export interface PressureItem { key: string; label: string; label_ko: string; state: string; state_ko: string; tone: PressureTone; score: number | null; evidence_text: string; missing_text: string }
+export interface InflationPressureMap {
+  signal: string; signal_ko: string; signal_tone: PressureTone; confirmation: "FULL" | "PARTIAL" | "INSUFFICIENT"; confirmation_ko: string; available: number; total: number;
+  summary: string; items: PressureItem[]; read: string; read_meta: MarketReadMeta | null; scale_note: string; link: string;
+}
+export interface CurvePoint { label: string; today: number | null; ago: number | null; chg_bp: number | null; z: number | null; z_window: string }
+export interface SpreadMove { key: string; level_bp: number | null; chg_bp: number | null; direction: "steepening" | "flattening" | "flat" | "missing" }
+export interface CurveMoveView {
+  window_label: string; as_of_date: string | null; shape_key: string; shape: string; level_dir: string; points: CurvePoint[]; spreads: SpreadMove[];
+  short_window: string; intensity: string; most_unusual: string | null; most_unusual_z: number | null; read: string; link: string;
+}
+export interface BreakdownTenor {
+  tenor: string; window_days: number; start_date: string | null; end_date: string | null; aligned: boolean; nominal_bp: number | null; real_bp: number | null;
+  breakeven_bp: number | null; tips_bp: number | null; primary: "real" | "breakeven" | "both" | "unknown"; primary_label: string; line: string; small_move: boolean;
+  divergence: boolean; divergence_text: string; missing: string[];
+}
+export interface YieldMoveBreakdown { tenors: BreakdownTenor[]; default_tenors: string[]; headline_tenor: string | null; character_key: string; character: string; link: string; note: string }
 export interface RatesDriverRef { id: string; label: string; label_ko: string; score: number; status: DriverStatus }
 export interface RatesTop {
   direction: RateMove["direction"]; direction_arrow: string; direction_en: string; direction_ko: string; segment: string; driver_title: string;

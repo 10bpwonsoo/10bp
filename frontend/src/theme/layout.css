@@ -2356,3 +2356,79 @@
   .rt-mrow { grid-template-columns: minmax(0, 1.2fr) repeat(3, 54px); }
 }
 @media (max-width: 340px) { .rt-banks { grid-template-columns: 1fr; } }
+
+/* ── 금리 탭 아래 세 패널 (2026-10-13) — INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN ── */
+.rp-flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+@media (max-width: 1100px) { .rr .rp-flow { grid-column: span 2; grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .rr .rp-flow { grid-column: span 1; } }
+.rp-panel .panel-note { font-size: 11px; }
+.rp-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rp-verdict { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.rp-fact { display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: 7px 9px; min-width: 0; }
+.rp-fact b { font-size: 15px; line-height: 1.2; letter-spacing: .02em; }
+.rp-sub { font-size: 10.5px; color: var(--muted); }
+.rp-summary { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink); }
+.rp-scale { display: flex; justify-content: space-between; gap: 6px; font-size: 9.5px; color: var(--faint); border-top: 1px dashed var(--rule-soft); padding-top: 6px; }
+.rp-items { display: flex; flex-direction: column; gap: 2px; }
+.rp-item { display: grid; grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1fr); grid-template-areas: "name state score" "name ev ev"; gap: 1px 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--rule-soft); }
+.rp-item:last-child { border-bottom: 0; }
+.rp-item-name { grid-area: name; display: flex; flex-direction: column; min-width: 0; }
+.rp-item-name b { font-size: 12px; font-weight: 600; }
+.rp-item-name span { font-size: 10.5px; color: var(--muted); }
+.rp-item-state { grid-area: state; font-size: 11px; font-weight: 600; letter-spacing: .03em; }
+.rp-item-score { grid-area: score; display: flex; align-items: center; gap: 6px; font-size: 12px; justify-content: flex-end; }
+.rp-item-ev { grid-area: ev; font-size: 10.5px; color: var(--muted); }
+.rp-item-miss { grid-column: 2 / -1; grid-row: 2; font-size: 10.5px; color: var(--faint); }
+.rp-item[data-state="DATA MISSING"] .rp-item-state { grid-column: 2 / -1; }
+.rp-track { position: relative; display: inline-block; width: 64px; height: 6px; background: color-mix(in oklab, var(--ink) 7%, transparent); border-radius: 3px; overflow: hidden; }
+.rp-track .rp-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--faint); }
+.rp-track .rp-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.rp-read { border-left: 2px solid var(--accent); padding: 2px 0 2px 9px; }
+.rp-read-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.rp-read p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ink); }
+.rp-link { margin: auto 0 0; font-size: 11px; color: var(--accent); }
+.rp-note { margin: 0; font-size: 10.5px; color: var(--faint); line-height: 1.45; }
+.rp-spreads { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11px; }
+.rp-spreads em { font-style: normal; color: var(--faint); }
+.rp-spreads small { color: var(--faint); }
+.rp-chart { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.rp-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.rp-legend { display: flex; gap: 12px; font-size: 10px; color: var(--muted); align-items: center; }
+.rp-legend-y { margin-left: auto; color: var(--faint); }
+.rp-sw { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--accent); margin-right: 5px; vertical-align: middle; }
+.rp-sw.ago { border-top: 2px dashed var(--muted); }
+.rp-grid { stroke: var(--rule-soft); stroke-width: 1; }
+.rp-axis { font-size: 9.5px; fill: var(--faint); font-family: var(--font-mono); }
+.rp-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rp-line.today { stroke: var(--accent); }
+.rp-line.ago { stroke: var(--muted); stroke-dasharray: 4 3; }
+.rp-dot.today { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.rp-dot.ago { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
+.rp-dl { font-size: 9.5px; font-family: var(--font-mono); }
+.rp-dl.today { fill: var(--ink); } .rp-dl.ago { fill: var(--muted); }
+.rp-cross { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 2 2; }
+.rp-tip { font-size: 10.5px; color: var(--ink-2); min-height: 1.4em; }
+.rp-tip-hint { color: var(--faint); }
+.rp-table { display: flex; flex-direction: column; font-size: 12px; }
+.rp-tr { display: grid; grid-template-columns: 0.7fr 1fr 1fr 1fr; gap: 6px; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+.rp-tr > *:not(:first-child) { text-align: right; }
+.rp-th { font-size: 9.5px; color: var(--faint); letter-spacing: .06em; }
+.rp-formula { margin: 0; font-size: 12px; color: var(--ink-2); }
+.rp-formula .mono { font-size: 10.5px; color: var(--faint); }
+.rp-bds { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.rp-bd { border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rp-bd-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.rp-bd-head b { font-size: 14px; }
+.rp-tag { font-size: 9px; letter-spacing: .05em; color: var(--warn); border: 1px solid color-mix(in oklab, var(--warn) 45%, transparent); border-radius: 3px; padding: 0 4px; font-family: var(--font-mono); }
+.rp-bd-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; padding: 1px 0; }
+.rp-bd-row span { display: flex; flex-direction: column; }
+.rp-bd-row small { font-size: 9.5px; color: var(--faint); font-family: var(--font-mono); }
+.rp-bd-row.lead span { font-weight: 600; }
+.rp-bd-sum { border-top: 1px solid var(--ink-2); margin-top: 2px; padding-top: 2px; }
+.rp-bd-sum .rp-bd-row { font-weight: 600; }
+.rp-bd-primary { font-size: 11px; margin-top: 4px; }
+.rp-bd-primary b { color: var(--accent); }
+.rp-bd-line { margin: 0; font-size: 12px; line-height: 1.5; }
+.rp-bd-tips { font-size: 10px; color: var(--muted); }
+.rp-bd-tips.div { color: var(--warn); }
+.rp-more { align-self: flex-start; font-size: 11px; background: none; border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: 2px 8px; color: var(--ink-2); cursor: pointer; }

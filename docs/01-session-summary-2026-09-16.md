@@ -371,3 +371,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 4340d75 docs: Market Pulse AI 사전 분석 및 아키텍처 설계서 추가
 32b7b36 Initial commit: upbit_cursor.py + upbit_trading 모듈
 ```
+
+### 2026-10-13 — 금리 탭 아래 세 패널 재구성 + 분해 날짜 맞춤
+- `engines/rates_panels.py` + `config/rates_panels.yaml` → `RatesRegime.inflation_map · curve_move · yield_breakdown`(옛 캡처 None → 예전 패널). 화면 `RatesLowerPanels.tsx`.
+- INFLATION PRESSURE MAP: COOLING BIAS · PARTIAL(3/5), STATE → SCORE → EVIDENCE, DATA MISSING, 점수 눈금, READ 는 LLM(`ai/inflation_read.py`, 숫자 없음 검증) — 오늘은 API 크레딧 부족으로 세션 생성.
+- TREASURY CURVE: 오늘·5D 전 곡선, 5D bp 모양 MILD BULL STEEPENING(2s10s +1bp)과 5D σ 이례성(10Y −0.9σ, 평소 범위)을 분리, 1D 모양(BULL FLATTENING, 2s10s −4bp)은 한 줄로 — 상단 칸은 하루 기준.
+- YIELD MOVE BREAKDOWN: 5Y REAL YIELD ↓ · 10Y REAL + INFLATION EXP. ↓, MODEL REAL / OBSERVED TIPS 분리. 기대인플레가 하루 먼저 나오는 날 날짜가 섞이던 버그를 공통 날짜 맞춤으로 고쳤다(10Y 실질 +1 → −1, TIPS 와 일치).

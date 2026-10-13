@@ -5,6 +5,7 @@ import { FactorBreakdown, hypothesisFor } from "./ScenarioView";
 import { strengthColor } from "./OilRegimeView";
 import { DailyHistoryPanel } from "./DailyHistoryStrip";
 import { RatesRegimeHead, CurrentRatesAnalysisPanel, PolicyMacroEventsPanel } from "./RatesTopSections";
+import { RatesLowerFlow } from "./RatesLowerPanels";
 
 /**
  * 금리 탭 — Inflation & Rates Intelligence.
@@ -168,50 +169,53 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
         </section>
       )}
 
-      {/* 3. INFLATION PRESSURE */}
-      <section className="panel">
-        <header className="panel-head"><h2 className="panel-title">Inflation Pressure</h2><div className="panel-note mono">구성별 · 결측은 0 이 아니다</div></header>
-        <div className="panel-body rr-comps">
-          {regime.inflation_components.map((c) => <ComponentRow key={c.key} c={c} />)}
-        </div>
-      </section>
+      {/* 3–5. 아래 세 패널 정리(2026-10-13): INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN. 옛 캡처는 예전 패널 */}
+      {regime.inflation_map && regime.curve_move && regime.yield_breakdown ? <RatesLowerFlow map={regime.inflation_map} cv={regime.curve_move} yb={regime.yield_breakdown} /> : (<>
+        {/* 3. INFLATION PRESSURE */}
+        <section className="panel">
+          <header className="panel-head"><h2 className="panel-title">Inflation Pressure</h2><div className="panel-note mono">구성별 · 결측은 0 이 아니다</div></header>
+          <div className="panel-body rr-comps">
+            {regime.inflation_components.map((c) => <ComponentRow key={c.key} c={c} />)}
+          </div>
+        </section>
 
-      {/* 4. TREASURY CURVE */}
-      <section className="panel span-2" data-testid="curve">
-        <header className="panel-head"><h2 className="panel-title">Treasury Curve</h2><div className="panel-note mono">{SHAPE_KO[regime.curve.shape]}{regime.curve.lead !== "none" ? ` · ${LEAD_KO[regime.curve.lead]}` : ""} · 2s10s {sg(regime.curve.spread_z)}σ</div></header>
-        <div className="panel-body">
-          <div className="rr-tenors" role="table" aria-label="테너별 금리">
-            {regime.curve.tenors.map((t) => (
-              <div key={t.id} className="rr-tenor" role="row" data-tenor={t.label} title={`${t.id} · 하루 ${sg(t.z_1d)}σ · 5일 ${sg(t.z_5d)}σ`}>
-                <span className="rr-tenor-l mono">{t.label}</span>
-                <b className="num rr-tenor-lvl">{t.level === null ? "–" : `${t.level.toFixed(2)}%`}</b>
-                <span className="num rr-tenor-bp" style={{ color: t.change_5d_bp !== null && t.change_5d_bp >= 0 ? "var(--up)" : "var(--down)" }}>{bp(t.change_5d_bp)}</span>
-                <span className="rr-tenor-z"><i style={{ width: `${Math.min(100, Math.abs(t.z ?? 0) / 3 * 50)}%`, [(t.z ?? 0) >= 0 ? "left" : "right"]: "50%", background: (t.z ?? 0) >= 0 ? "var(--up)" : "var(--down)" } as React.CSSProperties} /><b className="num">{sg(t.z)}σ</b></span>
+        {/* 4. TREASURY CURVE */}
+        <section className="panel span-2" data-testid="curve">
+          <header className="panel-head"><h2 className="panel-title">Treasury Curve</h2><div className="panel-note mono">{SHAPE_KO[regime.curve.shape]}{regime.curve.lead !== "none" ? ` · ${LEAD_KO[regime.curve.lead]}` : ""} · 2s10s {sg(regime.curve.spread_z)}σ</div></header>
+          <div className="panel-body">
+            <div className="rr-tenors" role="table" aria-label="테너별 금리">
+              {regime.curve.tenors.map((t) => (
+                <div key={t.id} className="rr-tenor" role="row" data-tenor={t.label} title={`${t.id} · 하루 ${sg(t.z_1d)}σ · 5일 ${sg(t.z_5d)}σ`}>
+                  <span className="rr-tenor-l mono">{t.label}</span>
+                  <b className="num rr-tenor-lvl">{t.level === null ? "–" : `${t.level.toFixed(2)}%`}</b>
+                  <span className="num rr-tenor-bp" style={{ color: t.change_5d_bp !== null && t.change_5d_bp >= 0 ? "var(--up)" : "var(--down)" }}>{bp(t.change_5d_bp)}</span>
+                  <span className="rr-tenor-z"><i style={{ width: `${Math.min(100, Math.abs(t.z ?? 0) / 3 * 50)}%`, [(t.z ?? 0) >= 0 ? "left" : "right"]: "50%", background: (t.z ?? 0) >= 0 ? "var(--up)" : "var(--down)" } as React.CSSProperties} /><b className="num">{sg(t.z)}σ</b></span>
+                </div>
+              ))}
+            </div>
+            <p className="rr-sent">{regime.curve.sentence}</p>
+          </div>
+        </section>
+
+        {/* 5. NOMINAL YIELD DECOMPOSITION */}
+        <section className="panel" data-testid="decomposition">
+          <header className="panel-head"><h2 className="panel-title">Nominal Yield Decomposition</h2><div className="panel-note mono">명목 = <span style={{ color: "var(--accent)" }}>실질</span> + <span style={{ color: "var(--muted)" }}>기대인플레</span> · {regime.decomposition[0]?.window_days ?? 5}일 변화</div></header>
+          <div className="panel-body rr-decomp">
+            {regime.decomposition.map((d) => (
+              <div key={d.tenor} className="rr-dec" data-dominant={d.dominant}>
+                <div className="rr-dec-head mono"><b>{d.tenor}</b> 명목 <b className="num">{bp(d.nominal_bp)}</b> = 실질 <b className="num" style={{ color: d.dominant === "real" ? "var(--accent)" : undefined }}>{bp(d.real_implied_bp)}</b> + 기대인플레 <b className="num" style={{ color: d.dominant === "breakeven" ? "var(--accent)" : undefined }}>{bp(d.breakeven_bp)}</b>{d.real_measured_bp !== null ? <span style={{ color: "var(--muted)" }}> · TIPS 실측 {bp(d.real_measured_bp)}</span> : null}</div>
+                {d.nominal_bp !== null && d.breakeven_bp !== null && d.real_implied_bp !== null ? (
+                  <div className="rr-dec-bar" aria-hidden="true">
+                    <i style={{ flex: Math.abs(d.real_implied_bp) || 0.0001, background: "var(--accent)" }} title={`실질 ${bp(d.real_implied_bp)}`} />
+                    <i style={{ flex: Math.abs(d.breakeven_bp) || 0.0001, background: "var(--muted)" }} title={`기대인플레 ${bp(d.breakeven_bp)}`} />
+                  </div>
+                ) : null}
+                <div className="rr-sent">{d.sentence}</div>
               </div>
             ))}
           </div>
-          <p className="rr-sent">{regime.curve.sentence}</p>
-        </div>
-      </section>
-
-      {/* 5. NOMINAL YIELD DECOMPOSITION */}
-      <section className="panel" data-testid="decomposition">
-        <header className="panel-head"><h2 className="panel-title">Nominal Yield Decomposition</h2><div className="panel-note mono">명목 = <span style={{ color: "var(--accent)" }}>실질</span> + <span style={{ color: "var(--muted)" }}>기대인플레</span> · {regime.decomposition[0]?.window_days ?? 5}일 변화</div></header>
-        <div className="panel-body rr-decomp">
-          {regime.decomposition.map((d) => (
-            <div key={d.tenor} className="rr-dec" data-dominant={d.dominant}>
-              <div className="rr-dec-head mono"><b>{d.tenor}</b> 명목 <b className="num">{bp(d.nominal_bp)}</b> = 실질 <b className="num" style={{ color: d.dominant === "real" ? "var(--accent)" : undefined }}>{bp(d.real_implied_bp)}</b> + 기대인플레 <b className="num" style={{ color: d.dominant === "breakeven" ? "var(--accent)" : undefined }}>{bp(d.breakeven_bp)}</b>{d.real_measured_bp !== null ? <span style={{ color: "var(--muted)" }}> · TIPS 실측 {bp(d.real_measured_bp)}</span> : null}</div>
-              {d.nominal_bp !== null && d.breakeven_bp !== null && d.real_implied_bp !== null ? (
-                <div className="rr-dec-bar" aria-hidden="true">
-                  <i style={{ flex: Math.abs(d.real_implied_bp) || 0.0001, background: "var(--accent)" }} title={`실질 ${bp(d.real_implied_bp)}`} />
-                  <i style={{ flex: Math.abs(d.breakeven_bp) || 0.0001, background: "var(--muted)" }} title={`기대인플레 ${bp(d.breakeven_bp)}`} />
-                </div>
-              ) : null}
-              <div className="rr-sent">{d.sentence}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+        </section>
+      </>)}
 
       {/* 6. MARKET CONFIRMATION */}
       <section className="panel span-2">
@@ -222,7 +226,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 7. KEY DIVERGENCE */}
-      <section className={`panel${regime.current_analysis ? " rt-fill" : ""}`} data-testid="key-divergence">
+      <section className={`panel${regime.current_analysis && !regime.inflation_map ? " rt-fill" : ""}`} data-testid="key-divergence">
         <header className="panel-head"><h2 className="panel-title">Key Divergence</h2><div className="panel-note mono">자동 탐지 {divs.length}건 · 심각도 = 관련 z 중 작은 쪽</div></header>
         <div className="panel-body rr-divs">
           {divs.length === 0 ? <div className="sv-muted">설정된 괴리 짝 중 지금 걸린 것이 없다.</div> : divs.map((d) => (

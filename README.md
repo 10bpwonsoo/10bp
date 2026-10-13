@@ -791,6 +791,31 @@ MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "
 회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
 raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
 
+### 금리 탭 아래 세 패널 — INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN (2026-10-13)
+
+데이터를 더하지 않고, 기존 계산값(물가 구성요소 점수 · 테너 수준과 변화 · 명목 분해)을 "물가 압력 → 금리곡선 → 금리 변화 원인" 순서로,
+각 칸은 **상태 → 방향 → 원인 → 의미** 순으로 다시 읽는다(`engines/rates_panels.py` + `config/rates_panels.yaml`, 화면 `RatesLowerPanels.tsx`).
+데스크톱은 세 패널이 한 줄, 좁은 화면은 위에서 아래로 이어지고, 각 패널 맨 아래 한 줄이 다음 패널로 잇는다. 그 밖의 금리 탭 섹션은 내용 그대로다
+(Key Divergence 는 빈 칸이 생기지 않게 Market Confirmation 옆으로 자리만 옮겼다).
+
+- **INFLATION PRESSURE MAP**(옛 Inflation Pressure): 맨 위에 INFLATION SIGNAL(COOLING BIAS · MIXED · UPSIDE BIAS, 다섯 칸이 다 있고 실제 물가가 있을 때만
+  COOLING · REACCELERATING)과 CONFIRMATION(FULL · PARTIAL · INSUFFICIENT, 구성요소 n/5) + 한 줄. 구성요소는 영어명 + 한글 설명(실제 물가 · 시장 기대인플레이션 ·
+  에너지·원자재 · 임금·서비스 · 환율 전가), 그리고 STATE(COOLING · EASING · MILD PRESSURE …) → SCORE → EVIDENCE(10Y BE −1.2σ · 5Y BE −1.1σ). 점수 눈금
+  (−100 강한 물가 하락 압력 · 0 중립 · +100 강한 물가 상승 압력)을 칸 위에 적었다. 결측은 DATA MISSING + "CPI / PCE 실제 물가 데이터 미연결" — 0 으로 세지 않는다.
+  하단 READ(최대 2문장, 숫자 없음)는 LLM 이 구성요소를 보고 쓴다(`ai/inflation_read.py`, MARKET READ 와 같은 호출 · 검증 · 폴백에 '숫자 없음' 추가).
+- **TREASURY CURVE**: 오늘과 5D 전 수익률 곡선(2Y · 5Y · 10Y · 30Y)을 작게 그리고, **CURVE MOVE(5D bp)** 와 **MOVE INTENSITY(5D σ)** 를 칸으로 나눴다 —
+  모양은 실제 2s10s(보조 5s30s) bp 변화로, 이례성은 같은 창의 z 로. 판정: 금리 하락 + 스프레드 확대 = Bull Steepening, 하락 + 축소 = Bull Flattening,
+  상승 + 확대 = Bear Steepening, 상승 + 축소 = Bear Flattening(|Δ| < 1bp 는 평행, < 3bp 는 MILD). 같은 날의 1D 모양도 한 줄로 보인다 —
+  상단 REGIME · Current Rates Analysis 의 "Bull Flattening" 은 하루(10/8: 2Y −2 · 10Y −6 · 30Y −7bp) 기준이라 5D(2Y −3 · 10Y −2 · 30Y −1bp, 2s10s +1bp)와 다르다.
+  예전 패널이 5D bp 막대 옆에 하루 z 로 정한 모양을 붙여 둘이 섞여 보였던 것이다(계산 오류가 아니라 창이 달랐다).
+- **YIELD MOVE BREAKDOWN**(옛 Nominal Yield Decomposition): "명목금리 변화 = 실질금리 변화 + 기대인플레이션 변화", 5Y · 10Y 기본(나머지는 View all).
+  만기마다 Real Yield(MODEL = 명목 − 기대인플레) + Inflation Expectation = Nominal, **PRIMARY DRIVER**(한쪽이 1.5배 이상이면 그쪽, 아니면 둘 다)와
+  한 줄("금리 하락은 기대인플레이션이 아니라 실질금리 하락이 주도."), OBSERVED TIPS 를 따로 — 모델과 2bp 이상 다르거나 방향이 반대면 MODEL / MARKET DIVERGENCE.
+  READ 는 성격 한 문장(Discount-rate easing · Disinflation repricing · Growth / Risk-off 가능성 · 할인율 상승 · Inflation repricing · 혼재), 움직임이 3bp 미만이면 약한 신호라고 붙인다.
+- **분해 날짜 맞춤(버그 수정)**: FRED 기대인플레(T10YIE · T5YIE)가 명목·TIPS 보다 하루 먼저 나오는 날, 각자의 마지막 5봉 변화를 빼서 서로 다른 구간을 섞고 있었다
+  (10/13 화면의 "실질 +1bp vs TIPS 실측 −1bp"). 이제 `build_rates_regime(series=…)` 가 세 계열이 모두 값을 가진 공통 날짜로 5일 변화를 잰다 —
+  10Y 명목 −2 = 실질 −1 + 기대인플레 −1(TIPS −1 과 일치), 5Y −2 = −3 + +1. 계열을 못 받으면 예전처럼 재되 `aligned=false` 로 표시하고 대조하지 않는다.
+
 ### 금리 탭 MARKET READ — LLM Macro + Rates Investment Interpretation (2026-10-13)
 
 금리 탭 맨 위 MARKET READ 를 "지배 driver 를 문장으로 다시 읽는 템플릿" 에서 PM/매크로 전략가 관점의 짧은 투자 해석(한국어 2~4문장)으로 바꿨다.

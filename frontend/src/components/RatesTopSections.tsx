@@ -308,7 +308,7 @@ export function PolicyMacroEventsPanel({ events }: { events: PolicyMacroEvents |
   );
 }
 
-const kst = (iso: string | null | undefined): string => {
+export const kst = (iso: string | null | undefined): string => {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
