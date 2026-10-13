@@ -574,6 +574,55 @@ def get_oil_regime_service() -> OilRegimeService:
     return _oil_regime_service
 
 
+class MacroLayerService:
+    """
+    macro fallback layer(2026-10-13) — FRED 월간·분기 계열을 하루 한 번 받아 둔다(실패도 30분 동안 기억해 매 요청마다 다시 두드리지 않는다).
+    키는 환경변수 FRED_API_KEY 로만 받고 어디에도 남기지 않는다. MOCK 에는 실데이터 macro 를 붙이지 않는다.
+    """
+
+    RETRY_SEC = 1800.0
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._raw: dict[str, tuple[float, dict]] = {}
+
+    def layer(self, settings: Settings, snapshot):
+        import os
+        import time
+
+        from ..adapters.http import HttpClient
+        from ..adapters.macro_fred import fetch_macro_raw
+        from ..engines.macro_fallback import build_layer, load_macro_config
+        from ..engines.policy_events import load_events_file
+
+        if settings.data_mode is DataMode.MOCK:
+            return None
+        day = snapshot.as_of.date().isoformat()
+        with self._lock:
+            hit = self._raw.get(day)
+        raw = hit[1] if hit and (hit[1] or time.monotonic() - hit[0] < self.RETRY_SEC) else None
+        if raw is None:
+            try:
+                raw = fetch_macro_raw(load_macro_config(), api_key=os.environ.get("FRED_API_KEY") or None, http=HttpClient(timeout_sec=10.0, retries=0), as_of=snapshot.as_of)
+            except Exception:
+                logger.exception("macro 원자료 수집 실패 — 보도 확인값 · 대체 지표 · UNAVAILABLE 로 내려간다")
+                raw = {}
+            with self._lock:
+                self._raw[day] = (time.monotonic(), raw if any(v.get("path") for v in raw.values()) else {})
+        try:
+            return build_layer(raw, as_of=snapshot.as_of, curated=load_events_file(snapshot.as_of.date()), themes=snapshot.themes, events=snapshot.events)
+        except Exception:
+            logger.exception("macro layer 구성 실패 — 물가 구성요소는 결측으로 둔다")
+            return None
+
+    def clear(self) -> None:
+        with self._lock:
+            self._raw.clear()
+
+
+_macro_layer_service = MacroLayerService()
+
+
 class RatesRegimeService:
     """금리·물가 원인 판별 — 스냅샷 as_of 별 캐시. 유가 판별과 같은 입력(시장 z + 대체 z + 테마)을 쓴다."""
 
@@ -640,7 +689,7 @@ class RatesRegimeService:
         if hit and hit[0] == snapshot.as_of:
             return self._with_read(settings, key, snapshot, market, instruments, hit[1])
         result = build_rates_regime(market, snapshot.themes, {i.id: i for i in instruments}, extra_z=extra, extra_names=names,
-                                    series=self._checks._base.series(settings))
+                                    series=self._checks._base.series(settings), macro=_macro_layer_service.layer(settings, snapshot))
         # POLICY & MACRO EVENTS(2026-10-12) — 확인된 실제 결정·지표라 MOCK 시나리오에는 붙이지 않는다. 실패해도 금리 화면은 그대로.
         if settings.data_mode is not DataMode.MOCK:
             try:

@@ -89,7 +89,8 @@ class TestInflationMap:
         assert m.available == 3 and m.total == 5 and m.confirmation == "PARTIAL"
         assert m.signal == "COOLING BIAS"  # 실제 물가가 없으면 'COOLING' 이라고 단정하지 않는다
         st = {i.key: i for i in m.items}
-        assert st["realized"].state == "DATA MISSING" and st["realized"].score is None and "CPI / PCE" in st["realized"].missing_text
+        assert st["realized"].state == "DATA UNAVAILABLE" and st["realized"].score is None and "CPI / PCE" in st["realized"].missing_text
+        assert st["realized"].source_class == "UNAVAILABLE" and st["realized"].in_signal is False
         assert st["implied"].state == "COOLING" and st["energy"].state == "MILD PRESSURE" and st["fx"].state == "EASING"
         assert st["implied"].evidence_text == "10Y BE -1.2σ · 5Y BE -1.1σ"
         for txt in (m.summary, m.read, m.link):

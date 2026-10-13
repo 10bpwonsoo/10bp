@@ -11,8 +11,17 @@ live = IntelligenceSnapshot.model_validate_json((CAP / "live.json").read_text(en
 inv = InvestmentIntelligence.model_validate_json((CAP / "investment.json").read_text(encoding="utf-8"))
 market = pickle.load(open("/tmp/snap/market_snapshot.pkl", "rb"))
 ins = get_instruments().instruments
+# macro fallback layer(2026-10-13) — fetch_macro.py 가 남긴 FRED 원자료(PRIMARY) → 없으면 보도 확인 수기 파일(SECONDARY) → 대체 지표(PROXY) → UNAVAILABLE
+import json as _json0
+from marketpulse.engines.macro_fallback import build_layer
+from marketpulse.engines.policy_events import load_events_file as _lef
+_mr = CAP / "macro_raw.json"
+macro = build_layer(_json0.loads(_mr.read_text(encoding="utf-8"))["series"] if _mr.exists() else None, as_of=live.as_of, curated=_lef(live.as_of.date()),
+                    themes=live.themes, events=live.events)
+(CAP / "macro_data.json").write_text(macro.model_dump_json(indent=1), encoding="utf-8")
+print("MACRO", {k: (c.source_class, c.score, c.display_label) for k, c in macro.components.items()}, "news", macro.news and macro.news.score)
 r = build_rates_regime(market, live.themes, {i.id: i for i in ins}, extra_z=extra_z_from_investment(inv), extra_names={p.id: p.label for p in inv.alternative},
-                       series=pickle.load(open("/tmp/snap/series_live.pkl", "rb")))  # 분해를 같은 날짜로 맞춘다(2026-10-13)
+                       series=pickle.load(open("/tmp/snap/series_live.pkl", "rb")), macro=macro)  # 분해를 같은 날짜로 맞춘다(2026-10-13)
 # POLICY & MACRO EVENTS(2026-10-13) — 출처 확인된 수기 파일 + 미국채 2Y·10Y 일간 종가로 잰 반응
 from marketpulse.engines.policy_events import build_policy_events, load_events_file
 _ev = build_policy_events(load_events_file(live.as_of.date()), pickle.load(open("/tmp/snap/series_live.pkl", "rb")), r, as_of=live.as_of)
@@ -35,6 +44,7 @@ r = attach_inflation_read(r, client=build_client(_gs()), session_read=_json.load
 _im = r.inflation_map
 print("INFLATION READ", _im.read_meta.source, _im.read_meta.generator, "|", _im.read_meta.reason, "| warn", _im.read_meta.warnings, "\n  ", _im.read)
 _ctx["inflation_map"] = _ictx(_im)
+print("IMAP", [(i.key, i.state, i.score, i.source_class, i.in_signal) for i in _im.items], "official", _im.official_count, "proxy", _im.proxy_count, "news", _im.news_count)
 print("PANELS", _im.signal, _im.confirmation, "|", r.curve_move.shape, r.curve_move.level_dir, "|", [(t.tenor, t.primary_label) for t in r.yield_breakdown.tenors], r.yield_breakdown.character_key)
 (CAP / "rates_read_context.json").write_text(_json.dumps(_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
 _m = r.top.market_read_meta

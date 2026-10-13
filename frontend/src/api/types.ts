@@ -615,10 +615,18 @@ export interface RatesRegime {
   inflation_map?: InflationPressureMap | null; curve_move?: CurveMoveView | null; yield_breakdown?: YieldMoveBreakdown | null;
 }
 export type PressureTone = "up" | "down" | "flat" | "missing";
-export interface PressureItem { key: string; label: string; label_ko: string; state: string; state_ko: string; tone: PressureTone; score: number | null; evidence_text: string; missing_text: string }
+export type SourceClass = "PRIMARY" | "MIRROR" | "SECONDARY" | "PROXY" | "NEWS" | "UNAVAILABLE";
+export interface PressureValue { label: string; text: string; source_class: SourceClass; source: string; updated: string | null; freshness_days: number | null; stale: boolean; is_original_data: boolean }
+export interface PressureItem {
+  key: string; label: string; label_ko: string; state: string; state_ko: string; tone: PressureTone; score: number | null; evidence_text: string; missing_text: string;
+  /** 출처 급(2026-10-13) — 옛 캡처에는 없다 */
+  display_label?: string; source_class?: SourceClass; source_label?: string; is_original_data?: boolean; proxy_components?: string[]; fallback_reason?: string; proxy_note?: string;
+  last_updated?: string | null; freshness_days?: number | null; stale?: boolean; confidence?: number | null; in_signal?: boolean; values?: PressureValue[]; comment?: string;
+}
 export interface InflationPressureMap {
   signal: string; signal_ko: string; signal_tone: PressureTone; confirmation: "FULL" | "PARTIAL" | "INSUFFICIENT"; confirmation_ko: string; available: number; total: number;
   summary: string; items: PressureItem[]; read: string; read_meta: MarketReadMeta | null; scale_note: string; link: string;
+  official_count?: number; proxy_count?: number; news_count?: number; unavailable_count?: number; data_sources?: PressureValue[];
 }
 export interface CurvePoint { label: string; today: number | null; ago: number | null; chg_bp: number | null; z: number | null; z_window: string }
 export interface SpreadMove { key: string; level_bp: number | null; chg_bp: number | null; direction: "steepening" | "flattening" | "flat" | "missing" }

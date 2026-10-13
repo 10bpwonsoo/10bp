@@ -21,20 +21,50 @@ describe("금리 탭 아래 세 패널", () => {
     expect(screen.getAllByTestId("panel-link").length).toBe(3);
   });
 
-  it("INFLATION PRESSURE MAP: 결론(신호 · 확인) 먼저, 구성요소는 상태 → 점수 → 근거, 결측은 DATA MISSING", () => {
+  it("INFLATION PRESSURE MAP: 결론(신호 · 확인) 먼저, 구성요소는 상태 → 점수 → 근거, 출처 급이 항상 보인다", () => {
     render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
     expect(screen.getByTestId("inflation-signal").textContent).toContain("COOLING BIAS");
     expect(screen.getByTestId("inflation-confirmation").textContent).toContain("PARTIAL");
+    expect(screen.getByTestId("confirmation-quality").textContent).toBe("Official data 4/5 · Proxy 1 · News 1");
     const items = screen.getAllByTestId("pressure-item");
-    expect(items.map((x) => x.getAttribute("data-state"))).toEqual(["DATA MISSING", "COOLING", "MILD PRESSURE", "DATA MISSING", "EASING"]);
-    expect(items[0]!.textContent).toContain("실제 물가");
-    expect(items[0]!.textContent).toContain("CPI / PCE 실제 물가 데이터 미연결");
+    expect(items.map((x) => x.getAttribute("data-key"))).toEqual(["realized", "implied", "energy", "wages", "fx", "news"]);
+    expect(items.map((x) => x.getAttribute("data-tier"))).toEqual(["PRIMARY", "PRIMARY", "PRIMARY", "PROXY", "PRIMARY", "NEWS"]);
+    // 실제 물가 — 공식 원자료(BLS / BEA), 값 줄과 갱신일
+    const real = items[0]!;
+    expect(within(real).getByTestId("item-source").textContent).toContain("BLS / BEA via FRED");
+    expect(within(real).getByTestId("item-source").textContent).toContain("Updated 9/30");
+    expect(within(real).getByTestId("item-values").textContent).toContain("Core PCE");
     const t = items[1]!.textContent ?? "";
     expect(t.indexOf("COOLING")).toBeLessThan(t.indexOf("−59"));
     expect(t.indexOf("−59")).toBeLessThan(t.indexOf("10Y BE"));
+  });
+
+  it("PROXY 는 숨기지 않는다 — 배지 · 원데이터 누락 설명 · 무엇으로 대체했는지 세 가지를 함께", () => {
+    render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
+    const wages = screen.getAllByTestId("pressure-item").find((x) => x.getAttribute("data-key") === "wages")!;
+    expect(within(wages).getAllByTestId("tier-badge")[0]!.textContent).toBe("PROXY");
+    const d = within(wages).getByTestId("proxy-disclosure").textContent ?? "";
+    expect(d).toContain("실제 원데이터 미연결 · 대체 지표로 추정");
+    expect(d).toContain("실제 Wage / Services 단일 원데이터 미연결");
+    expect(d).toContain("대체: AHE · ECI · Services CPI · Core Services PCE 기반");
+    // 뉴스는 보조 신호 — 신호 점수에 넣지 않는다고 적는다
+    const news = screen.getAllByTestId("pressure-item").find((x) => x.getAttribute("data-key") === "news")!;
+    expect(within(news).getByTestId("item-source").textContent).toContain("INFLATION SIGNAL 점수 미반영");
+    // DATA SOURCES — 모든 series 의 급 · 갱신일
+    const ds = screen.getByTestId("data-sources");
+    expect(ds.querySelectorAll('[role="row"]').length).toBe(regime.inflation_map!.data_sources!.length);
     const read = screen.getByTestId("inflation-read");
     expect(read.textContent).toContain("AI INTERPRETATION · 세션 생성");
-    expect(within(read).getByText(/둔화 신호/).textContent).not.toMatch(/\d/);
+    expect(within(read).getByText(/대체 지표로 본/).textContent).not.toMatch(/\d/);
+  });
+
+  it("옛 캡처 형식(출처 급 없음)의 결측 칸은 DATA UNAVAILABLE 로 그대로 그린다", () => {
+    const im = regime.inflation_map!;
+    const old = { ...regime, inflation_map: { ...im, items: [{ key: "realized", label: "Realized Inflation", label_ko: "실제 물가", state: "DATA MISSING", state_ko: "", tone: "missing", score: null, evidence_text: "", missing_text: "CPI / PCE 실제 물가 데이터 미연결" }] } } as unknown as RatesRegime;
+    render(<RatesRegimeView regime={old} snapshot={snapshot} check={check} />);
+    const it0 = screen.getByTestId("pressure-item");
+    expect(it0.getAttribute("data-tier")).toBe("UNAVAILABLE");
+    expect(it0.textContent).toContain("CPI / PCE 실제 물가 데이터 미연결");
   });
 
   it("TREASURY CURVE: 모양(bp)과 이례성(σ)을 칸으로 나누고, 오늘·5D 전 곡선을 그린다", () => {

@@ -2379,7 +2379,7 @@
 .rp-item-score { grid-area: score; display: flex; align-items: center; gap: 6px; font-size: 12px; justify-content: flex-end; }
 .rp-item-ev { grid-area: ev; font-size: 10.5px; color: var(--muted); }
 .rp-item-miss { grid-column: 2 / -1; grid-row: 2; font-size: 10.5px; color: var(--faint); }
-.rp-item[data-state="DATA MISSING"] .rp-item-state { grid-column: 2 / -1; }
+.rp-item[data-state="DATA UNAVAILABLE"] .rp-item-state { grid-column: 2 / -1; }
 .rp-track { position: relative; display: inline-block; width: 64px; height: 6px; background: color-mix(in oklab, var(--ink) 7%, transparent); border-radius: 3px; overflow: hidden; }
 .rp-track .rp-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--faint); }
 .rp-track .rp-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
@@ -2432,3 +2432,26 @@
 .rp-bd-tips { font-size: 10px; color: var(--muted); }
 .rp-bd-tips.div { color: var(--warn); }
 .rp-more { align-self: flex-start; font-size: 11px; background: none; border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: 2px 8px; color: var(--ink-2); cursor: pointer; }
+
+/* ── macro fallback layer 출처 급 (2026-10-13) — 색은 아끼고 글자 배지로 ── */
+.rp-item { grid-template-areas: "name state score" "name ev ev" "src src src" "proxy proxy proxy" "vals vals vals" "cm cm cm"; }
+.rp-item-src { grid-area: src; display: flex; flex-wrap: wrap; gap: 3px 8px; align-items: center; font-size: 9.5px; color: var(--faint); margin-top: 2px; }
+.rp-tier { font-family: var(--font-mono); font-size: 9px; letter-spacing: .05em; border: 1px solid var(--rule-soft); border-radius: 3px; padding: 0 4px; color: var(--ink-2); white-space: nowrap; }
+.rp-tier.t-primary { border-color: var(--ink-2); color: var(--ink); font-weight: 600; }
+.rp-tier.t-mirror { border-color: var(--ink-2); color: var(--ink-2); }
+.rp-tier.t-secondary { border-style: dashed; border-color: var(--muted); color: var(--ink-2); }
+.rp-tier.t-proxy { border-color: color-mix(in oklab, var(--warn) 60%, transparent); color: var(--warn); font-weight: 600; }
+.rp-tier.t-news { border-style: dotted; color: var(--muted); }
+.rp-tier.t-unavailable { color: var(--faint); }
+.rp-tier.t-stale { border-color: color-mix(in oklab, var(--warn) 60%, transparent); color: var(--warn); }
+.rp-proxy { grid-area: proxy; display: flex; flex-direction: column; gap: 1px; font-size: 10.5px; color: var(--ink-2); border-left: 2px solid color-mix(in oklab, var(--warn) 55%, transparent); padding: 2px 0 2px 7px; margin-top: 3px; }
+.rp-proxy b { font-weight: 600; color: var(--warn); }
+.rp-vals { grid-area: vals; list-style: none; margin: 3px 0 0; padding: 0; display: flex; flex-direction: column; gap: 1px; font-size: 10.5px; }
+.rp-vals li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.rp-vals li span:first-child { min-width: 9.5em; color: var(--muted); }
+.rp-item-comment { grid-area: cm; font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+.rp-item.is-news { opacity: .92; }
+.rp-sources summary { font-size: 10px; color: var(--faint); cursor: pointer; }
+.rp-src-table { display: flex; flex-direction: column; margin-top: 4px; font-size: 10.5px; }
+.rp-src-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); }
+.rp-src-meta { grid-column: 1 / -1; font-size: 9.5px; color: var(--muted); }

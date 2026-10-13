@@ -791,6 +791,37 @@ MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "
 회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
 raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
 
+### 신뢰도 기반 macro fallback data layer (2026-10-13)
+
+INFLATION PRESSURE MAP 에서 DATA MISSING 이던 실제 물가 · 임금·서비스를, 빈 칸을 억지로 추정하지 않고 급(tier)이 붙은 경로로 보완한다.
+`adapters/macro_fred.py`(수집) → `engines/macro_fallback.py`(급 판정 · 점수) → `models/macro_data.py`(정규화 스키마), 설정 `config/macro_sources.yaml`.
+
+| 급 | 경로 | 기본 신뢰도 |
+|---|---|---|
+| PRIMARY | FRED API(`FRED_API_KEY`) — 원 발표기관(BLS · BEA)을 그대로 표기, 발표일은 FRED vintage 일자 | 0.95 |
+| MIRROR | FRED 그래프 CSV(키 불필요) — 같은 원자료, 경로만 다름 | 0.85 |
+| SECONDARY VERIFIED | `data/policy_events/*.json` 의 보도 확인 공식 발표값(CNBC 등 출처 표기, 발표일 ≤ as_of 의 actual 만) | 0.70 |
+| PROXY | 원 series 가 없을 때 경제적으로 비슷한 지표 조합 — 늘 PROXY 배지 + "실제 원데이터 미연결 · 대체 지표로 추정" + 대체 구성 | 0.45 |
+| NEWS | 테마 뉴스 톤 — 수치를 대체하지 않는 INFLATION NEWS PULSE, 신호 점수에 넣지 않음 | 0.20 |
+| DATA UNAVAILABLE | 어느 경로도 없음 — 숫자를 만들지 않는다 | 0 |
+
+- **series**: CPI · Core CPI(BLS) · PCE · Core PCE(BEA) · AHE · ECI(분기) · Services CPI(서비스, 에너지 제외) · Core Services PCE(에너지·주거 제외 서비스) · PPI Final Demand · Import Prices.
+  각 값은 `series · value · previous · consensus · period · release_date · source · source_tier · is_original_data · proxy_components · fallback_reason ·
+  last_updated · freshness_days · frequency · stale · confidence` 를 들고 다닌다(캡처 `macro_data.json`).
+- **점수**: 수준이 아니라 모멘텀 — (최근 3개월 연율 − 12개월 상승률)을 과거 5년 같은 값의 표준편차로 나눈 z, ±2σ 에서 ±100. 화면에 YoY 와 3M 연율을 함께 보인다
+  (CPI 3.35% YoY 인데 3M 연율 0.2% → 둔화 쪽 힘). YoY 는 FRED 계절조정 지수로 계산해 공식 발표(비계절조정)와 0.1%p 안팎 다를 수 있어 둘째 자리까지 보인다.
+- **실제 물가**: CPI · Core CPI · PCE · Core PCE 가 하나라도 있으면 원자료 구성요소(점수는 STALE 이 아닌 것만). 하나도 없을 때만 PPI · 수입물가로
+  **REALIZED INFLATION PROXY**(이름부터 바뀜, "실제 CPI/PCE 데이터 미연결 · 대체 지표 기반 추정"). 원자료가 있으면 PPI · 수입물가는 참고값으로만 남고 점수에 넣지 않는다.
+- **임금·서비스**: 단일 원데이터가 없어 AHE · ECI · Services CPI · Core Services PCE 를 각각 표준화한 합성 점수 — 구성 series 가 공식 원자료여도 **늘 PROXY**.
+  상태는 ACCELERATING · STICKY · STABLE · EASING · COOLING, 실제 물가 점수와 비교한 한 줄("임금·서비스 인플레이션 둔화 속도가 전체 물가보다 느림").
+- **STALE**: 예상 갱신 주기(월 31일 · 분기 92일 · 회의 49일) × 1.5 를 넘으면 STALE — 보여주되 점수·신호에서 빼고 신뢰도를 절반으로.
+- **확인 정도**: 개수와 품질을 나눈다 — `Official data 4/5 · Proxy 1 · News 1`. FULL 은 모든 구성요소가 공식/시장 원자료이고 STALE 이 아닐 때만,
+  강한 신호 라벨(COOLING · REACCELERATING)은 FULL 이고 실제 물가가 원자료일 때만. 신호는 신뢰도 가중 평균(NEWS · STALE · 결측 제외).
+- **LLM 해석**: 구성요소의 출처 급 · 원자료 여부 · STALE 을 함께 넘기고, 공식과 PROXY 가 같은 방향일 때만 확신을 싣게 한다(PROXY 만 강하면 "공식 확인은 부족",
+  뉴스만 한쪽이면 "서사는 늘었지만 공식 확인은 부족"). PROXY 를 확정 사실처럼 쓰지 않는다.
+- **API**: `MacroLayerService` 가 하루 한 번 받는다(실패는 30분 기억). MOCK 시나리오에는 실데이터 macro 를 붙이지 않는다. 이 환경에서는 FRED 그래프 CSV 가 egress 정책으로
+  막혀 MIRROR 경로는 시도만 하고 넘어간다.
+
 ### 금리 탭 아래 세 패널 — INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN (2026-10-13)
 
 데이터를 더하지 않고, 기존 계산값(물가 구성요소 점수 · 테너 수준과 변화 · 명목 분해)을 "물가 압력 → 금리곡선 → 금리 변화 원인" 순서로,

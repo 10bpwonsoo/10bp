@@ -19,11 +19,13 @@ from typing import Mapping, Sequence
 import yaml
 
 from ..config.settings import CONFIG_DIR
+from ..models.macro_data import MacroDataPoint, MacroInflationLayer
 from ..models.market import MarketSnapshot
 from ..models.rates_regime import (
-    BreakdownTenor, ComponentScore, CurveMoveView, CurvePoint, CurveView, InflationPressureMap, MarketReadMeta, PressureItem, SpreadMove,
+    BreakdownTenor, ComponentScore, CurveMoveView, CurvePoint, CurveView, InflationPressureMap, MarketReadMeta, PressureItem, PressureValue, SpreadMove,
     YieldDecomposition, YieldMoveBreakdown,
 )
+from .macro_fallback import load_macro_config, news_state, wage_state
 from .korean import fix_particles
 
 
@@ -37,7 +39,8 @@ def load_rates_panels_config(config_dir: Path | None = None) -> dict:
 
 
 def _join(names: Sequence[str]) -> str:
-    return "·".join(names)
+    # 이름 안에 '·' 가 들어 있어(에너지·원자재) 목록은 쉼표로 잇는다
+    return ", ".join(names)
 
 
 # ── INFLATION PRESSURE MAP ─────────────────────────────────
@@ -50,61 +53,130 @@ def _state(score: float | None, states: Sequence[Mapping]) -> tuple[str, str, st
     return "NEUTRAL", "중립", "flat"
 
 
-def build_inflation_map(components: Sequence[ComponentScore], cfg: Mapping) -> InflationPressureMap:
+def _fmt_point(p: MacroDataPoint) -> str:
+    if p.value is None:
+        return "–"
+    sign = "+" if p.measure != "YoY" and p.value > 0 else ""
+    # FRED 계절조정 지수로 계산한 YoY 는 공식 발표(비계절조정, 소수 첫째 자리)와 0.1%p 안팎 다를 수 있어 둘째 자리까지 그대로 보인다
+    txt = f"{sign}{p.value:.2f}% {p.measure}" if p.source_tier in ("PRIMARY", "MIRROR") and p.measure == "YoY" else f"{sign}{p.value:.1f}% {p.measure}"
+    if p.momentum_ann is not None:
+        txt += f" · {'3M' if p.frequency == 'monthly' else '1Q'} 연율 {p.momentum_ann:.1f}%"
+    return txt
+
+
+def _pv(p: MacroDataPoint) -> PressureValue:
+    return PressureValue(label=p.label, text=_fmt_point(p) if p.value is not None else "DATA UNAVAILABLE", source_class=p.source_tier, source=p.source,
+                         updated=p.last_updated, freshness_days=p.freshness_days, stale=p.stale, is_original_data=p.is_original_data)
+
+
+def build_inflation_map(components: Sequence[ComponentScore], cfg: Mapping, macro: MacroInflationLayer | None = None) -> InflationPressureMap:
+    """
+    구성요소 → 상태 · 점수 · 근거 + 출처 급. 신호는 신뢰도 가중 평균이고 NEWS · STALE · 결측은 빠진다.
+    확인 정도는 개수(구성요소 n)와 품질(공식/시장 원자료 대 PROXY · NEWS)을 나눠 센다.
+    """
     c = cfg.get("inflation_map") or {}
+    mcfg = load_macro_config()
+    tiers = mcfg.get("tiers") or {}
+    proxy_note = str(mcfg.get("proxy_note", "실제 원데이터 미연결 · 대체 지표로 추정"))
     lko = c.get("label_ko") or {}; mtext = c.get("missing_text") or {}; mshort = c.get("missing_short") or {}; short = c.get("short") or {}
+    mkt_conf = float((tiers.get("PRIMARY") or {}).get("confidence", 0.95))
     items: list[PressureItem] = []
     for comp in components:
-        state, sko, tone = _state(comp.score, c.get("states") or [])
+        mc = macro.components.get(comp.key) if macro is not None else None
+        if comp.key == "wages" and comp.score is not None and wage_state(comp.score, mcfg):
+            state, sko, tone = wage_state(comp.score, mcfg)  # type: ignore[misc]
+        else:
+            state, sko, tone = _state(comp.score, c.get("states") or [])
+        if comp.score is None:
+            state, sko = "DATA UNAVAILABLE", "데이터 없음"
         ev = sorted([e for e in comp.evidence if e.available and e.value is not None and e.kind == "price"], key=lambda e: -abs(e.contribution))
         ev_txt = " · ".join(f"{short.get(e.id, e.label)} {e.value:+.1f}σ" for e in ev[: int(c.get("evidence_max", 3))])
-        items.append(PressureItem(key=comp.key, label=comp.label, label_ko=str(lko.get(comp.key, comp.label_ko)), state=state, state_ko=sko, tone=tone,  # type: ignore[arg-type]
-                                  score=None if comp.score is None else round(comp.score, 1), evidence_text=ev_txt,
-                                  missing_text=str(mtext.get(comp.key, "데이터 미연결")) if comp.score is None else ""))
-    have = [i for i in items if i.score is not None]
-    missing = [i for i in items if i.score is None]
-    sg = c.get("signal") or {}
-    cf = c.get("confirmation") or {}
-    realized_ok = any(i.key == "realized" and i.score is not None for i in items)
-    if have and not missing:
+        base = dict(key=comp.key, label=comp.label, label_ko=str(lko.get(comp.key, comp.label_ko)), state=state, state_ko=sko, tone=tone,
+                    score=None if comp.score is None else round(comp.score, 1), evidence_text=ev_txt)
+        if mc is not None and comp.source_class is not None:
+            # macro 구성요소 — 원자료(PRIMARY · MIRROR · SECONDARY) 또는 대체 추정(PROXY)
+            proxy = mc.source_class == "PROXY"
+            used_vals = [_pv(p) for p in mc.series if p.source_tier != "UNAVAILABLE"]
+            items.append(PressureItem(**base, display_label=mc.display_label, source_class=mc.source_class, source_label=mc.source_label,  # type: ignore[arg-type]
+                                      is_original_data=mc.is_original_data, proxy_components=list(mc.proxy_components), fallback_reason=mc.fallback_reason,
+                                      proxy_note=proxy_note if proxy else "", last_updated=mc.last_updated, freshness_days=mc.freshness_days, stale=mc.stale,
+                                      confidence=mc.confidence, in_signal=not mc.stale, values=used_vals, comment=mc.comment))
+        elif comp.score is None:
+            reason = (mc.fallback_reason if mc is not None and mc.fallback_reason else str(mtext.get(comp.key, "데이터 미연결")))
+            items.append(PressureItem(**base, missing_text=reason, display_label=comp.label, source_class="UNAVAILABLE", is_original_data=False,  # type: ignore[arg-type]
+                                      fallback_reason=reason, confidence=0.0, in_signal=False,
+                                      values=[_pv(p) for p in (mc.series if mc is not None else [])]))
+        else:
+            # 시장 가격 구성요소 — 기대인플레(FRED) · 원자재 · 환율(거래소 가격). 시장 원자료다
+            items.append(PressureItem(**base, display_label=comp.label, source_class="PRIMARY", source_label="MARKET", is_original_data=True,  # type: ignore[arg-type]
+                                      confidence=round(mkt_conf * (0.5 + 0.5 * max(0.0, min(1.0, comp.coverage))), 2), in_signal=True))
+    # INFLATION NEWS PULSE — 방향 보조 신호. 신호 점수에는 넣지 않는다
+    nc = mcfg.get("news") or {}
+    if macro is not None and macro.news is not None:
+        nw = macro.news
+        nstate, nko, ntone = news_state(nw.score, mcfg)
+        items.append(PressureItem(key="news", label=str(nc.get("label", "Inflation News Pulse")), label_ko="뉴스 흐름", display_label=str(nc.get("label", "Inflation News Pulse")),
+                                  state=nstate, state_ko=nko, tone=ntone, score=nw.score,  # type: ignore[arg-type]
+                                  evidence_text=" · ".join(f"{d.label} {d.arrow}" for d in nw.drivers if d.arrow != "–") + (f" · 기사 {nw.articles}건" if nw.articles else ""),
+                                  source_class="NEWS", source_label="뉴스 톤(테마)", is_original_data=False, confidence=nw.confidence, in_signal=False, comment=nw.comment))
+    sig_items = [i for i in items if i.in_signal and i.score is not None]
+    core = [i for i in items if i.key != "news"]
+    official = [i for i in core if i.source_class in ("PRIMARY", "MIRROR", "SECONDARY") and i.score is not None and not i.stale]
+    proxies = [i for i in core if i.source_class == "PROXY" and i.score is not None]
+    news_n = sum(1 for i in items if i.key == "news" and i.score is not None)
+    missing = [i for i in core if i.score is None]
+    sg = c.get("signal") or {}; cf = c.get("confirmation") or {}
+    realized_ok = any(i.key == "realized" and i.score is not None and i.is_original_data and not i.stale for i in items)
+    if official and len(official) == len(core):
         conf = "FULL"
-    elif len(have) >= int(cf.get("partial_min", 3)):
+    elif len(official) >= int(cf.get("partial_min", 3)):
         conf = "PARTIAL"
     else:
         conf = "INSUFFICIENT"
     lean, counter = float(sg.get("lean_abs", 20)), float(sg.get("counter_abs", 25))
-    if not have:
+    if not sig_items:
         key, signal, sko, tone = "none", str((sg.get("none") or {}).get("label", "NO SIGNAL")), str((sg.get("none") or {}).get("ko", "")), "missing"
     else:
-        mean = sum(float(i.score) for i in have) / len(have)  # type: ignore[arg-type]
+        w = [(float(i.score), float(i.confidence or 0.0)) for i in sig_items]  # type: ignore[arg-type]
+        if not any(x for _, x in w):
+            w = [(sc, 1.0) for sc, _ in w]  # 신뢰도를 모르면 같은 가중치
+        den = sum(x for _, x in w) or 1.0
+        mean = sum(s * x for s, x in w) / den
         strong = conf == "FULL" and realized_ok
-        if mean <= -lean and not any(float(i.score) >= counter for i in have):  # type: ignore[arg-type]
+        if mean <= -lean and not any(float(i.score) >= counter for i in sig_items):  # type: ignore[arg-type]
             key, d = "down", sg.get("down") or {}
-        elif mean >= lean and not any(float(i.score) <= -counter for i in have):  # type: ignore[arg-type]
+        elif mean >= lean and not any(float(i.score) <= -counter for i in sig_items):  # type: ignore[arg-type]
             key, d = "up", sg.get("up") or {}
         else:
             key, d = "mixed", sg.get("mixed") or {}
         signal = str(d.get("strong" if strong else "weak", d.get("label", "MIXED"))) if key != "mixed" else str(d.get("label", "MIXED"))
         sko, tone = str(d.get("ko", "")), {"down": "down", "up": "up", "mixed": "flat"}[key]
-    down = [i for i in have if i.tone == "down"]; up = [i for i in have if i.tone == "up"]
+    name = lambda i: str(lko.get(i.key, i.label_ko)) + ("(대체 추정)" if i.source_class == "PROXY" else "")  # noqa: E731
+    down = [i for i in sig_items if i.tone == "down"]; up = [i for i in sig_items if i.tone == "up"]
     mild = all((i.score or 0) < 25 for i in up)
     clauses = []
     if down:
-        clauses.append(str(c.get("clause_down", "")).format(names=_join([i.label_ko for i in down])))
+        clauses.append(str(c.get("clause_down", "")).format(names=_join([name(i) for i in down])))
     if up:
-        clauses.append(str(c.get("clause_up", "")).format(names=_join([i.label_ko for i in up]), mild="약한 " if mild else ""))
+        clauses.append(str(c.get("clause_up", "")).format(names=_join([name(i) for i in up]), mild="약한 " if mild else ""))
     lead = "이고 ".join(clauses) if clauses else "뚜렷한 방향의 구성요소가 없음"
     miss_names = _join([str(mshort.get(i.key, i.label_ko)) for i in missing])
     summary = fix_particles(lead + ("이지만, " + str(c.get("clause_missing", "")).format(names=miss_names) + "." if missing else "입니다."))
     rr = c.get("rule_read") or {}
     s1 = str(rr.get(key if key in ("down", "up", "mixed") else "mixed", "")).format(lead=lead)
-    s2 = str(rr.get("missing", "")).format(names=miss_names, dir_ko=(rr.get("dir_ko") or {}).get(key, "방향")) if missing else ""
+    if missing:
+        s2 = str(rr.get("missing", "")).format(names=miss_names, dir_ko=(rr.get("dir_ko") or {}).get(key, "방향"))
+    elif proxies:
+        s2 = str(rr.get("proxy", "")).format(names=_join([str(lko.get(i.key, i.label_ko)) for i in proxies]))
+    else:
+        s2 = ""
     read = fix_particles(f"{s1} {s2}".strip())
     link = str((c.get("link") or {}).get(key if key in ("down", "up") else "mixed", ""))
     return InflationPressureMap(signal=signal, signal_ko=sko, signal_tone=tone, confirmation=conf, confirmation_ko=str((cf.get("ko") or {}).get(conf, conf)),  # type: ignore[arg-type]
-                                available=len(have), total=len(items), summary=summary, items=items, read=read,
+                                available=len([i for i in core if i.score is not None]), total=len(core), summary=summary, items=items, read=read,
                                 read_meta=MarketReadMeta(source="rule", status="fallback", reason="규칙 기반 — AI 해석 전", rule_read=read),
-                                scale_note=str(c.get("scale_note", "")), link=link)
+                                scale_note=str(c.get("scale_note", "")), link=link, official_count=len(official), proxy_count=len(proxies), news_count=news_n,
+                                unavailable_count=len(missing), data_sources=[_pv(p) for p in (macro.series if macro is not None else [])])
 
 
 # ── TREASURY CURVE ─────────────────────────────────────────
@@ -284,6 +356,6 @@ def build_yield_breakdown(decomp: Sequence[YieldDecomposition], market: MarketSn
 
 
 def build_panels(components: Sequence[ComponentScore], curve: CurveView, decomp: Sequence[YieldDecomposition], market: MarketSnapshot,
-                 config_dir: Path | None = None) -> tuple[InflationPressureMap, CurveMoveView, YieldMoveBreakdown]:
+                 config_dir: Path | None = None, macro: MacroInflationLayer | None = None) -> tuple[InflationPressureMap, CurveMoveView, YieldMoveBreakdown]:
     cfg = load_rates_panels_config(config_dir)
-    return build_inflation_map(components, cfg), build_curve_move(curve, market, cfg), build_yield_breakdown(decomp, market, cfg)
+    return build_inflation_map(components, cfg, macro), build_curve_move(curve, market, cfg), build_yield_breakdown(decomp, market, cfg)

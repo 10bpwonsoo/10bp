@@ -377,3 +377,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - INFLATION PRESSURE MAP: COOLING BIAS · PARTIAL(3/5), STATE → SCORE → EVIDENCE, DATA MISSING, 점수 눈금, READ 는 LLM(`ai/inflation_read.py`, 숫자 없음 검증) — 오늘은 API 크레딧 부족으로 세션 생성.
 - TREASURY CURVE: 오늘·5D 전 곡선, 5D bp 모양 MILD BULL STEEPENING(2s10s +1bp)과 5D σ 이례성(10Y −0.9σ, 평소 범위)을 분리, 1D 모양(BULL FLATTENING, 2s10s −4bp)은 한 줄로 — 상단 칸은 하루 기준.
 - YIELD MOVE BREAKDOWN: 5Y REAL YIELD ↓ · 10Y REAL + INFLATION EXP. ↓, MODEL REAL / OBSERVED TIPS 분리. 기대인플레가 하루 먼저 나오는 날 날짜가 섞이던 버그를 공통 날짜 맞춤으로 고쳤다(10Y 실질 +1 → −1, TIPS 와 일치).
+
+### 2026-10-13 — 신뢰도 기반 macro fallback data layer
+- `adapters/macro_fred.py` · `engines/macro_fallback.py` · `models/macro_data.py` · `config/macro_sources.yaml`. 급: PRIMARY(FRED API) → MIRROR(FRED CSV) → SECONDARY(보도 확인 수기 파일) → PROXY(대체 조합) → UNAVAILABLE, NEWS 는 별도 펄스.
+- 10/13: CPI 3.35% · Core CPI 2.45% · PCE 3.42% · Core PCE 3.01%(YoY, FRED SA) — 모두 PRIMARY(BLS 9/11 · BEA 9/30 발표). 3M 연율은 CPI 0.2% · PCE 1.0% → Realized Inflation COOLING −72.
+- Wage / Services PROXY −41 EASING(AHE · ECI · Services CPI · Core Services PCE, 모두 PRIMARY 입력) — "둔화 속도가 전체 물가보다 느림". Inflation News Pulse MILD UPWARD +15(NEWS, 신호 미반영).
+- INFLATION SIGNAL COOLING BIAS · PARTIAL · Official data 4/5 · Proxy 1 · News 1. 물가 압력 해석은 크레딧 부족으로 세션 생성(출처 급 규칙 포함 프롬프트·검증 통과).
+- History: 10/13 LIVE 행의 inflation:realized · wages 점수만 채워졌다(과거 행 변화 없음).

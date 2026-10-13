@@ -16,6 +16,7 @@ from typing import Mapping, Sequence
 import yaml
 
 from ..config.settings import CONFIG_DIR
+from ..models.macro_data import MacroInflationLayer
 from ..models.market import Instrument, MarketFeature, MarketSeries, MarketSnapshot
 from .korean import fix_particles
 from ..models.rates_regime import (
@@ -142,6 +143,7 @@ def build_rates_regime(
     extra_names: Mapping[str, str] | None = None,
     config_dir: Path | None = None,
     series: Mapping[str, MarketSeries] | None = None,
+    macro: MacroInflationLayer | None = None,
 ) -> RatesRegime:
     cfg = load_rates_regime_config(config_dir)
     z_ref = float(cfg.get("z_ref", 2.0)); news_ref = float(cfg.get("news_ref", 40.0)); window = str(cfg.get("window", "max"))
@@ -199,7 +201,17 @@ def build_rates_regime(
     for c in cfg.get("inflation_components", []):
         items, score, cov = _score_table(c.get("evidence", []), market, theme_by_id, extra, instruments_by_id, names, **common)
         note = str(c.get("missing_note", ""))
+        mc = (macro.components.get(c["key"]) if macro is not None else None)
+        if score is None and mc is not None and mc.score is not None:
+            # macro fallback layer(2026-10-13) — 시장 계열이 없는 실제 물가 · 임금·서비스는 급(tier)이 붙은 macro 점수를 쓴다.
+            # 점수 자체는 그대로 기록하고, STALE · PROXY 여부는 source 로 넘겨 신호 계산(패널)에서 가중치를 정한다.
+            st = "flat" if abs(mc.score) < min_score else ("up" if mc.score > 0 else "down")
+            comps.append(ComponentScore(key=c["key"], label=c["label"], label_ko=c.get("label_ko", c["label"]), score=mc.score, status=st, coverage=1.0, evidence=items,  # type: ignore[arg-type]
+                                        note="", source_class=mc.source_class, is_original_data=mc.is_original_data, confidence=mc.confidence))
+            continue
         if score is None:
+            if mc is not None and mc.fallback_reason:
+                note = mc.fallback_reason
             t = theme_by_id.get(str(c.get("theme"))) if c.get("theme") else None
             if t is not None and t.news_sentiment is not None:
                 note += f" 뉴스 톤 {t.news_sentiment:+.0f}."
@@ -364,7 +376,7 @@ def build_rates_regime(
             "확률이 아니라 증거 크기이고, 판정 룰(Inflation Shock)은 그대로 돌아 Diagnostics 에 있다. FRED 금리는 하루 지연이다.")
     # 아래 세 패널(2026-10-13) — 위에서 만든 구성요소 · 커브 · 분해를 다시 읽을 뿐 새 계산은 없다
     from .rates_panels import build_panels
-    infl_map, curve_move, breakdown = build_panels(comps, curve, decomp, market)
+    infl_map, curve_move, breakdown = build_panels(comps, curve, decomp, market, macro=macro)
     top, current = build_top(cfg, drivers=drivers, dom=dom, margin=margin, rate_move=rate_move, curve=curve, market=market, extra=extra, window=window, min_score=min_score)
     return RatesRegime(as_of=market.as_of, rate_move=rate_move, drivers=drivers, dominant=dom.id, runner_up=run.id if run else None, margin=margin,
                        signal_strength=round(min(100.0, abs(dom.score)), 1), signal_strength_label=dom.strength, inflation_status=infl_status,  # type: ignore[arg-type]

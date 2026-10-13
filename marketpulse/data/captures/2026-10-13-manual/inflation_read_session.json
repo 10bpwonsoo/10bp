@@ -1,4 +1,4 @@
 {
- "_note": "API 호출이 실패한 날(크레딧 부족) 같은 컨텍스트(rates_read_context.json 의 inflation_map) · 같은 프롬프트(ai/inflation_read.py SYSTEM_PROMPT) · 같은 검증으로 세션에서 생성한 INFLATION PRESSURE MAP 해석. 화면에는 '세션 생성' 으로 표시된다.",
- "read": "채권시장의 기대인플레이션이 내려오고 달러 강세와 원화 강세가 수입물가를 누르는 쪽이라, 원자재 쪽의 약한 상승 압력만으로는 물가 재가속으로 읽기 어렵습니다. 다만 실제 CPI·PCE와 임금·서비스 데이터가 빠져 있어 지금의 둔화 신호는 시장 가격에 기댄 부분 확인에 가깝습니다."
+ "_note": "API 호출이 실패한 날(크레딧 부족) 같은 컨텍스트(rates_read_context.json 의 inflation_map — 출처 급 포함) · 같은 프롬프트(ai/inflation_read.py SYSTEM_PROMPT) · 같은 검증으로 세션에서 생성한 INFLATION PRESSURE MAP 해석. 화면에는 '세션 생성' 으로 표시된다. 2026-10-13 macro fallback layer 연결 뒤 다시 썼다.",
+ "read": "공식 CPI·PCE의 최근 모멘텀과 시장 기대인플레이션이 함께 낮아져 물가 둔화 쪽 힘은 실제 데이터와 시장가격에서 동시에 확인되고, 에너지 압력과 상방 뉴스 흐름은 아직 이를 뒤집지 못합니다. 다만 대체 지표로 본 임금·서비스는 전체 물가보다 더디게 식고 있어 둔화가 서비스 부문까지 넓게 번졌다고 보기는 이릅니다."
 }

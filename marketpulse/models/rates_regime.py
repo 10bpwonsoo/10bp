@@ -62,6 +62,10 @@ class ComponentScore(Base):
     coverage: float = 0.0
     evidence: list[EvidenceItem] = Field(default_factory=list)
     note: str = ""
+    #: macro fallback layer(2026-10-13) — 시장 계열이 아니라 macro 점수를 쓴 구성요소의 출처 급. 시장 구성요소·옛 캡처는 None
+    source_class: str | None = None
+    is_original_data: bool | None = None
+    confidence: float | None = None
 
 
 class TenorPoint(Base):
@@ -230,6 +234,17 @@ class RatesRegime(Base):
     yield_breakdown: YieldMoveBreakdown | None = None
 
 
+class PressureValue(Base):
+    label: str
+    text: str = Field(description="3.4% YoY · 3M 연율 0.2%")
+    source_class: str
+    source: str = ""
+    updated: date | None = None
+    freshness_days: int | None = None
+    stale: bool = False
+    is_original_data: bool = True
+
+
 class PressureItem(Base):
     """INFLATION PRESSURE MAP 한 줄 — 상태 → 점수 → 근거 순으로 읽힌다. 결측은 점수 없이 DATA MISSING."""
     key: str
@@ -241,6 +256,21 @@ class PressureItem(Base):
     score: float | None = None
     evidence_text: str = Field(default="", description="10Y BE -1.2σ · 5Y BE -1.1σ")
     missing_text: str = ""
+    #: 출처 급(2026-10-13) — 숫자가 공식 원자료인지 · 대체 추정인지 · 뉴스 보조 신호인지 화면에서 바로 보이게
+    display_label: str = Field(default="", description="REALIZED INFLATION PROXY 처럼 급에 따라 바뀌는 이름. 비면 label")
+    source_class: Literal["PRIMARY", "MIRROR", "SECONDARY", "PROXY", "NEWS", "UNAVAILABLE"] = "PRIMARY"
+    source_label: str = Field(default="", description="BLS / BEA via FRED · MARKET · AHE · ECI · Services CPI")
+    is_original_data: bool = True
+    proxy_components: list[str] = Field(default_factory=list)
+    fallback_reason: str = ""
+    proxy_note: str = Field(default="", description="PROXY 면 '실제 원데이터 미연결 · 대체 지표로 추정'")
+    last_updated: date | None = None
+    freshness_days: int | None = None
+    stale: bool = False
+    confidence: float | None = None
+    in_signal: bool = Field(default=True, description="INFLATION SIGNAL 계산에 들어갔나 — NEWS · STALE · 결측은 빠진다")
+    values: list[PressureValue] = Field(default_factory=list, description="실제 값 줄(CPI 3.4% YoY …) — 각 줄의 출처 급과 함께")
+    comment: str = ""
 
 
 class InflationPressureMap(Base):
@@ -258,6 +288,12 @@ class InflationPressureMap(Base):
     read_meta: MarketReadMeta | None = None
     scale_note: str = ""
     link: str = Field(default="", description="아래 TREASURY CURVE 로 잇는 한 줄")
+    #: 확인 정도를 개수와 품질로 나눠 보인다(2026-10-13) — 공식/시장 원자료 · 대체 추정 · 뉴스 · 결측
+    official_count: int = 0
+    proxy_count: int = 0
+    news_count: int = 0
+    unavailable_count: int = 0
+    data_sources: list[PressureValue] = Field(default_factory=list, description="macro layer 의 모든 series — DATA SOURCES 목록")
 
 
 class CurvePoint(Base):

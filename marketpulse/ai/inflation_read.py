@@ -36,6 +36,15 @@ SYSTEM_PROMPT = """당신은 매크로 전략가다. 금리 탭의 INFLATION PRE
 - 컨텍스트에 없는 데이터·사건을 상상하지 않는다. 인과를 단정하지 않는다('~에 더 가깝다', '~로 읽힌다').
 - 직접 추천(매수·매도·비중 확대/축소), '확률', '전망' 이라는 말, 상투 문구('모니터링해야', '지켜볼 필요', '주된 원인은', '아직 확인되지 않았습니다')를 쓰지 않는다.
 - 고정된 문장 틀을 쓰지 않는다.
+
+[출처 급 — 반드시 함께 판단한다]
+- 각 구성요소에는 source_class 가 있다: PRIMARY(공식 원자료) · MIRROR(공식 원자료 미러) · SECONDARY(보도로 확인된 공식 발표값) ·
+  PROXY(원데이터가 없어 대체 지표 조합으로 추정) · NEWS(수치가 아닌 방향 보조 신호) · UNAVAILABLE(없음).
+- 공식 지표와 PROXY 가 같은 방향이면 확신을 조금 더 실어도 된다. PROXY 만 강하면 '대체 지표는 그쪽을 가리키지만 공식 데이터 확인은 부족' 처럼 쓴다.
+- NEWS 만 한쪽이면 '서사는 늘었지만 공식 데이터 확인은 아직 부족' 처럼 쓴다. 뉴스를 근거로 공식 물가가 움직였다고 쓰지 않는다.
+- 공식 CPI/PCE 와 시장 기대인플레가 같은 방향으로 함께 움직일 때만 '실제 데이터와 시장가격에서 동시 확인' 이라고 쓴다.
+- PROXY 기반 신호를 확정된 macro 사실처럼 서술하지 않는다. STALE(오래된) 값은 지금의 신호로 쓰지 않는다.
+- 실제 물가 점수는 수준이 아니라 모멘텀(최근 3개월 연율 대 12개월 상승률)이다 — 상승률이 높아도 모멘텀이 낮으면 '둔화 쪽 힘' 이다.
 """
 
 VALIDATE = {"min_sentences": 1, "max_sentences": 2, "max_chars": 240, "max_numbers": 0}
@@ -45,8 +54,12 @@ def build_context(imap: InflationPressureMap) -> dict:
     return {
         "signal": imap.signal, "signal_ko": imap.signal_ko, "confirmation": imap.confirmation, "confirmation_ko": imap.confirmation_ko,
         "available_components": imap.available, "total_components": imap.total, "score_scale": imap.scale_note,
-        "components": [{"label": i.label, "label_ko": i.label_ko, "state": i.state, "state_ko": i.state_ko,
-                        "score": i.score, "evidence": i.evidence_text, "missing": i.missing_text or None} for i in imap.items],
+        "official_components": imap.official_count, "proxy_components": imap.proxy_count, "news_components": imap.news_count, "unavailable_components": imap.unavailable_count,
+        "components": [{"label": i.display_label or i.label, "label_ko": i.label_ko, "state": i.state, "state_ko": i.state_ko, "score": i.score,
+                        "source_class": i.source_class, "source": i.source_label, "is_original_data": i.is_original_data, "proxy_components": i.proxy_components or None,
+                        "fallback_reason": i.fallback_reason or None, "stale": i.stale, "in_signal": i.in_signal, "evidence": i.evidence_text or None,
+                        "values": [f"{v.label} {v.text} [{v.source_class}{' · STALE' if v.stale else ''}]" for v in i.values] or None,
+                        "comment": i.comment or None, "missing": i.missing_text or None} for i in imap.items],
     }
 
 

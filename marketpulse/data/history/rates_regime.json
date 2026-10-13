@@ -2748,10 +2748,10 @@
     "driver:risk_liquidity": -27.6,
     "rate_move_z": -1.55,
     "rate_change_5d_bp": -2.0,
-    "inflation:realized": null,
+    "inflation:realized": -72.0,
     "inflation:implied": -58.5,
     "inflation:energy": 16.3,
-    "inflation:wages": null,
+    "inflation:wages": -40.6,
     "inflation:fx": -36.2
    },
    "key_drivers": [
@@ -2763,7 +2763,7 @@
    "data_asof": "2026-10-13T00:12:16.061019Z",
    "missing_components": [],
    "history_source": "LIVE",
-   "calculated_at": "2026-10-13T06:10:10.544109Z",
+   "calculated_at": "2026-10-13T06:41:34.611690Z",
    "model_version": "rates_regime_v0.1.0",
    "logic_version": "rules_f27eae24",
    "is_final": false,
@@ -2828,10 +2828,10 @@
     "rate_direction": "down",
     "curve": "bull_flattening",
     "inflation_components": {
-     "realized": "missing",
+     "realized": "down",
      "implied": "down",
      "energy": "flat",
-     "wages": "missing",
+     "wages": "down",
      "fx": "down"
     }
    },

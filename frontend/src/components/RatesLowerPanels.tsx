@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BreakdownTenor, CurveMoveView, CurvePoint, InflationPressureMap, MarketReadMeta, PressureItem, PressureTone, YieldMoveBreakdown } from "../api/types";
+import type { BreakdownTenor, CurveMoveView, CurvePoint, InflationPressureMap, MarketReadMeta, PressureItem, PressureTone, PressureValue, SourceClass, YieldMoveBreakdown } from "../api/types";
 import { kst } from "./RatesTopSections";
 
 /**
@@ -34,19 +34,66 @@ function ScoreTrack({ score }: { score: number }) {
   );
 }
 
+/** 출처 급 배지 — 색을 아끼고 글자로 구분한다. PRIMARY 실선 · MIRROR 실선 · SECONDARY 점선 · PROXY 주의 · NEWS 보조 · UNAVAILABLE 흐림 */
+const TIER_LABEL: Record<SourceClass, string> = { PRIMARY: "PRIMARY", MIRROR: "MIRROR", SECONDARY: "SECONDARY VERIFIED", PROXY: "PROXY", NEWS: "NEWS", UNAVAILABLE: "DATA UNAVAILABLE" };
+export function TierBadge({ tier, title }: { tier: SourceClass; title?: string }) {
+  return <span className={`rp-tier t-${tier.toLowerCase()}`} data-testid="tier-badge" data-tier={tier} title={title}>{TIER_LABEL[tier]}</span>;
+}
+
 function PressureRow({ it }: { it: PressureItem }) {
   const missing = it.score === null;
+  const tier = it.source_class ?? (missing ? "UNAVAILABLE" : "PRIMARY");
+  const proxy = tier === "PROXY";
+  const news = tier === "NEWS";
   return (
-    <div className="rp-item" data-testid="pressure-item" data-key={it.key} data-state={it.state}>
-      <div className="rp-item-name"><b>{it.label}</b><span>{it.label_ko}</span></div>
+    <div className={`rp-item${proxy ? " is-proxy" : ""}${news ? " is-news" : ""}`} data-testid="pressure-item" data-key={it.key} data-state={it.state} data-tier={tier}>
+      <div className="rp-item-name"><b>{it.display_label || it.label}</b><span>{it.label_ko}</span></div>
       <div className="rp-item-state mono" style={{ color: TONE[it.tone] }}>{it.state}</div>
       {missing ? <div className="rp-item-miss">{it.missing_text}</div> : (
         <>
           <div className="rp-item-score mono num" title={`${it.state_ko} · −100 강한 물가 하락 압력 … +100 강한 물가 상승 압력`}>{sg(it.score)}<ScoreTrack score={it.score!} /></div>
-          <div className="rp-item-ev mono">{it.evidence_text}</div>
+          {it.evidence_text ? <div className="rp-item-ev mono">{it.evidence_text}</div> : null}
         </>
       )}
+      <div className="rp-item-src mono" data-testid="item-source">
+        <TierBadge tier={tier} title={it.fallback_reason || undefined} />
+        {it.stale ? <span className="rp-tier t-stale" data-testid="stale-badge">STALE</span> : null}
+        {it.source_label && !proxy ? <span>{it.source_label}</span> : null}
+        {it.last_updated ? <span>Updated {md(it.last_updated)}{it.freshness_days !== null && it.freshness_days !== undefined ? ` · ${it.freshness_days}D` : ""}</span> : null}
+        {news ? <span>보조 신호 · INFLATION SIGNAL 점수 미반영</span> : null}
+        {it.in_signal === false && !news && !missing ? <span>신호 계산 제외</span> : null}
+      </div>
+      {proxy ? (
+        <div className="rp-proxy" data-testid="proxy-disclosure">
+          <b>{it.proxy_note || "실제 원데이터 미연결 · 대체 지표로 추정"}</b>
+          {it.fallback_reason ? <span>{it.fallback_reason}</span> : null}
+          <span>대체: {(it.proxy_components ?? []).join(" · ")} 기반</span>
+        </div>
+      ) : null}
+      {it.values && it.values.length ? (
+        <ul className="rp-vals mono" data-testid="item-values">
+          {it.values.map((v) => <li key={v.label}><span>{v.label}</span><b className="num">{v.text}</b>{v.source_class !== tier || v.stale ? <TierBadge tier={v.source_class} /> : null}{v.stale ? <span className="rp-tier t-stale">STALE</span> : null}</li>)}
+        </ul>
+      ) : null}
+      {it.comment ? <div className="rp-item-comment">{it.comment}</div> : null}
     </div>
+  );
+}
+
+function DataSources({ rows }: { rows: PressureValue[] }) {
+  if (!rows.length) return null;
+  return (
+    <details className="rp-sources" data-testid="data-sources">
+      <summary className="mono">DATA SOURCES · macro {rows.length}개 series — 출처 급 · 갱신일 · 신선도</summary>
+      <div className="rp-src-table" role="table">
+        {rows.map((r) => (
+          <div key={r.label} className="rp-src-row" role="row" data-tier={r.source_class}>
+            <span className="rp-src-l">{r.label}</span><b className="num mono">{r.text}</b>
+            <span className="rp-src-meta mono"><TierBadge tier={r.source_class} /> {r.source || "–"} · {r.updated ? `Updated ${md(r.updated)} · ${r.freshness_days ?? "–"}D` : "날짜 없음"}{r.stale ? " · STALE" : ""}</span>
+          </div>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -65,11 +112,13 @@ export function InflationPressureMapPanel({ map }: { map: InflationPressureMap }
             <span className="rr-k mono">CONFIRMATION</span>
             <b className="mono" style={{ color: map.confirmation === "FULL" ? "var(--ok)" : "var(--warn)" }}>{map.confirmation}</b>
             <span className="rp-sub">{map.confirmation_ko} · 구성요소 {map.available}/{map.total}</span>
+            {map.official_count !== undefined ? <span className="rp-sub mono" data-testid="confirmation-quality">Official data {map.official_count}/{map.total} · Proxy {map.proxy_count ?? 0} · News {map.news_count ?? 0}{map.unavailable_count ? ` · Unavailable ${map.unavailable_count}` : ""}</span> : null}
           </div>
         </div>
         <p className="rp-summary" data-testid="inflation-summary">{map.summary}</p>
         <div className="rp-scale mono" title={map.scale_note}><span style={{ color: "var(--down)" }}>−100 물가 하락 압력</span><span>0 중립</span><span style={{ color: "var(--up)" }}>+100 물가 상승 압력</span></div>
         <div className="rp-items">{map.items.map((it) => <PressureRow key={it.key} it={it} />)}</div>
+        <DataSources rows={map.data_sources ?? []} />
         <div className="rp-read" data-testid="inflation-read"><div className="rp-read-head"><span className="rr-k mono">READ</span><ReadTag meta={map.read_meta} /></div><p>{map.read}</p></div>
         <Link text={map.link} />
       </div>
