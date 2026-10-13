@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type {
-  RatesRegime, RatesDriverScore, RatesEvidenceItem, CurrentRatesAnalysis, PolicyMacroEvents, PolicyDecision, MacroRelease, RecentEventItem, UpcomingEvent, EventImpact, EventSource,
+  RatesRegime, RatesDriverScore, RatesEvidenceItem, CurrentRatesAnalysis, PolicyMacroEvents, PolicyDecision, MacroRelease, RecentEventItem, UpcomingEvent, EventImpact, EventSource, RatesTop,
 } from "../api/types";
 import { strengthColor } from "./OilRegimeView";
 
@@ -73,7 +73,7 @@ export function RatesRegimeHead({ regime }: { regime: RatesRegime }) {
           <span className="mono" style={{ color: infl.color }}>{infl.ko}</span>
         </div>
       </div>
-      <p className="rt-read" data-testid="rates-market-read"><span className="rr-k mono">MARKET READ</span> {t.market_read}</p>
+      <MarketRead t={t} />
       <div className="rt-dread mono" data-testid="driver-read">
         <span className="rr-k">DRIVER READ</span>
         <span className="rt-dr"><em>PRIMARY</em> {t.primary.label} <b className="num" style={{ color: t.primary.score >= 0 ? "var(--up)" : "var(--down)" }}>{sg(t.primary.score)}</b></span>
@@ -305,5 +305,36 @@ export function PolicyMacroEventsPanel({ events }: { events: PolicyMacroEvents |
         <div className="sh-note" style={{ marginTop: 8 }} data-testid="events-note">{ev.missing.length ? `확인하지 못해 비워 둔 값: ${ev.missing.join(" · ")}. ` : ""}금리 반응 = 발표일 미국채 일간 종가 − 직전 거래일 종가(FRED). 수집 {ev.collected}.</div>
       </div>
     </section>
+  );
+}
+
+const kst = (iso: string | null | undefined): string => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const p = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d);
+  const g = (k: string) => p.find((x) => x.type === k)?.value ?? "";
+  return `${g("month")}/${g("day")} ${g("hour")}:${g("minute")} KST`;
+};
+
+/** MARKET READ — LLM 해석(검증 통과)이면 AI INTERPRETATION, 아니면 RULE-BASED 와 그 이유. 모델 이름은 보이지 않는다. */
+function MarketRead({ t }: { t: RatesTop }) {
+  const m = t.market_read_meta ?? null;
+  const llm = m?.source === "llm";
+  const tag = llm ? "AI INTERPRETATION" : "RULE-BASED";
+  const sub = !m ? "" : llm ? [m.generator === "session" ? "세션 생성" : "", kst(m.generated_at)].filter(Boolean).join(" · ")
+    : m.status === "pending" ? "AI 해석 생성 중" : m.status === "skipped" ? "AI 해석 생략" : "AI 해석 없음";
+  return (
+    <div className="rt-read" data-testid="rates-market-read" data-source={m?.source ?? "rule"} data-status={m?.status ?? "none"}>
+      <div className="rt-read-head mono">
+        <span className="rr-k">MARKET READ</span>
+        <span className={`rt-src${llm ? " ai" : ""}`} data-testid="market-read-source" title={m?.reason || undefined}>{tag}{sub ? ` · ${sub}` : ""}</span>
+        {llm && m?.themes_ko.length ? m.themes_ko.map((x) => <span key={x} className="rt-theme" data-testid="market-read-theme">{x}</span>) : null}
+      </div>
+      <p className="rt-read-text" data-testid="market-read-text">{t.market_read}</p>
+      {m && !llm && m.reason ? <p className="rt-read-note" data-testid="market-read-reason">{m.reason}</p> : null}
+      {llm && m?.data_caveat ? <p className="rt-read-note" data-testid="market-read-caveat">데이터 주의 — {m.data_caveat}</p> : null}
+      {llm && m?.generator === "session" && m.reason ? <p className="rt-read-note" data-testid="market-read-reason">{m.reason}</p> : null}
+    </div>
   );
 }

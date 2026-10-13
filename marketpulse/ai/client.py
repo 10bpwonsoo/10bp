@@ -264,6 +264,80 @@ class LLMClient:
         self._circuit.record_success()
         return data
 
+    def interpret(
+        self,
+        *,
+        system: str,
+        user: str,
+        schema: dict,
+        effort: str = "high",
+        max_tokens: int = 16000,
+        timeout_sec: float = 120.0,
+        model: str | None = None,
+    ) -> dict | LLMFailure:
+        """
+        해석용 구조화 호출 — 적응형 사고 + JSON 스키마 출력.
+
+        추출(structured)과 달리 여러 자산을 함께 놓고 판단해야 하므로 사고를 켜고 시간 상한을 길게 둔다.
+        안전 분류기가 거절하면 서버가 권장 대체 모델로 같은 요청을 다시 돌린다(fallbacks="default").
+        그래도 거절이면 LLMFailure(refusal) 로 돌려주고, 호출자는 규칙 기반 문장으로 돌아간다.
+        """
+        if not self.enabled:
+            return LLMFailure("LLM 이 비활성화되어 있다", "disabled")
+        if self._circuit.is_open():
+            return LLMFailure(
+                self._client_error or "연속 실패로 호출을 잠시 멈춘 상태다",
+                "unavailable",
+                permanent=self._circuit.permanently_open,
+            )
+        client = self._ensure_client()
+        if isinstance(client, LLMFailure):
+            return client
+
+        response = self._invoke(
+            lambda: client.beta.messages.create(
+                model=model or self.model,
+                max_tokens=max_tokens,
+                betas=["server-side-fallback-2026-07-01"],
+                fallbacks="default",
+                thinking={"type": "adaptive"},
+                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": user}],
+                output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
+                timeout=timeout_sec,
+            )
+        )
+        if isinstance(response, LLMFailure):
+            return response
+        return self._parse_json_response(response)
+
+    def _parse_json_response(self, response: Any) -> dict | LLMFailure:
+        import json
+
+        stop = getattr(response, "stop_reason", None)
+        if stop == "refusal":
+            details = getattr(response, "stop_details", None)
+            category = getattr(details, "category", None) if details else None
+            self._circuit.record_success()  # 모델이 답한 것이다. 장애가 아니다.
+            return LLMFailure(f"모델이 응답을 거절했다 (category={category})", "refusal")
+        if stop == "max_tokens":
+            self._circuit.record_success()
+            return LLMFailure("출력 상한에 걸려 응답이 잘렸다", "parse")
+        text = next((b.text for b in response.content if getattr(b, "type", None) == "text"), None)
+        if not text:
+            self._circuit.record_failure()
+            return LLMFailure("응답에 텍스트 블록이 없다", "parse")
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            self._circuit.record_failure()
+            return LLMFailure(f"JSON 파싱 실패: {exc}", "parse")
+        if not isinstance(data, dict):
+            self._circuit.record_failure()
+            return LLMFailure("최상위가 객체가 아니다", "parse")
+        self._circuit.record_success()
+        return data
+
     def _invoke(self, call: Any) -> Any | LLMFailure:
         """
         SDK 호출 하나를 실행하고 실패를 값으로 바꾼다.

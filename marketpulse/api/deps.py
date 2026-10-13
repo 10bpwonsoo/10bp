@@ -581,6 +581,46 @@ class RatesRegimeService:
         self._checks = checks
         self._lock = threading.Lock()
         self._cache: dict[str, tuple[object, object]] = {}
+        #: MARKET READ(LLM) — 스냅샷 as_of 별 결과. 생성은 백그라운드에서 돌고, 그동안 화면은 규칙 기반 문장 + '생성 중' 을 그린다
+        self._reads: dict[str, tuple[object, object]] = {}
+        self._pending: set[str] = set()
+
+    def _with_read(self, settings: Settings, key: str, snapshot, market, instruments, result):
+        """GET 을 LLM 응답만큼 붙잡지 않는다 — 준비된 해석이 있으면 붙이고, 없으면 생성을 한 번 걸어 두고 규칙 기반 문장을 돌려준다."""
+        from ..ai.rates_read import apply_read
+
+        if getattr(result, "top", None) is None:
+            return result
+        if settings.data_mode is DataMode.MOCK:
+            return apply_read(result, out=None, status="skipped", reason="MOCK 시나리오 — 실데이터가 아니라 AI 해석을 만들지 않는다")
+        if not settings.llm_enabled:
+            return apply_read(result, out=None, status="fallback", reason="LLM 비활성 — 키 없음 또는 설정 off")
+        with self._lock:
+            hit = self._reads.get(key)
+            if hit and hit[0] == snapshot.as_of:
+                return hit[1]
+            start = key not in self._pending
+            if start:
+                self._pending.add(key)
+        if start:
+            series = self._checks._base.series(settings)
+            threading.Thread(target=self._generate, args=(settings, key, snapshot, market, instruments, series, result), daemon=True,
+                             name="rates-market-read").start()
+        return apply_read(result, out=None, status="pending", reason="AI 해석 생성 중 — 준비되면 다음 갱신에 바뀐다")
+
+    def _generate(self, settings: Settings, key: str, snapshot, market, instruments, series, result) -> None:
+        from ..ai.client import build_client
+        from ..ai.rates_read import apply_read, attach_market_read
+
+        try:
+            out, _ctx = attach_market_read(result, client=build_client(settings), market=market, series=series, news=snapshot.events,
+                                           instrument_kinds={i.id: i.series_kind for i in instruments}, as_of=snapshot.as_of)
+        except Exception:
+            logger.exception("MARKET READ 생성 실패 — 규칙 기반 문장 유지")
+            out = apply_read(result, out=None, status="fallback", reason="AI 해석 생성 중 오류")
+        with self._lock:
+            self._reads[key] = (snapshot.as_of, out)
+            self._pending.discard(key)
 
     def get(self, settings: Settings):
         from ..engines.rates_regime import build_rates_regime
@@ -589,8 +629,8 @@ class RatesRegimeService:
         snapshot, market, instruments, extra, names = self._checks.market_and_extra(settings)
         with self._lock:
             hit = self._cache.get(key)
-            if hit and hit[0] == snapshot.as_of:
-                return hit[1]
+        if hit and hit[0] == snapshot.as_of:
+            return self._with_read(settings, key, snapshot, market, instruments, hit[1])
         result = build_rates_regime(market, snapshot.themes, {i.id: i for i in instruments}, extra_z=extra, extra_names=names)
         # POLICY & MACRO EVENTS(2026-10-12) — 확인된 실제 결정·지표라 MOCK 시나리오에는 붙이지 않는다. 실패해도 금리 화면은 그대로.
         if settings.data_mode is not DataMode.MOCK:
@@ -608,11 +648,13 @@ class RatesRegimeService:
             get_history_service().attach_regime(settings, "rates", result, snapshot, self._checks._base.series(settings))
         except Exception:
             logger.exception("금리·물가 daily snapshot 기록 실패 — 화면은 그대로 진행한다")
-        return result
+        return self._with_read(settings, key, snapshot, market, instruments, result)
 
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
+            self._reads.clear()
+            self._pending.clear()
 
 
 _rates_regime_service = RatesRegimeService(_scenario_check_service)

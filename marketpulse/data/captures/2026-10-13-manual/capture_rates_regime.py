@@ -18,6 +18,19 @@ _ev = build_policy_events(load_events_file(live.as_of.date()), pickle.load(open(
 if _ev is not None:
     r = r.model_copy(update={"events": _ev})
     print("EVENTS recent", [(i.title, i.label, i.reaction_text, i.impact) for i in _ev.recent], "| upcoming", [(u.date.isoformat()[5:], u.name) for u in _ev.upcoming][:5], "| link", _ev.link and (_ev.link.latest_label, _ev.link.impact))
+# MARKET READ(2026-10-13) — LLM Macro + Rates Investment Interpretation. 실패하면 규칙 기반 문장 + 이유. 세션 생성본은 같은 검증을 통과해야만 쓴다
+import json as _json
+from marketpulse.ai.client import build_client
+from marketpulse.ai.rates_read import attach_market_read
+from marketpulse.config.settings import get_settings as _gs
+_sess = CAP / "rates_read_session.json"
+r, _ctx = attach_market_read(r, client=build_client(_gs()), market=market, series=pickle.load(open("/tmp/snap/series_live.pkl", "rb")), news=live.events,
+                             instrument_kinds={i.id: i.series_kind for i in ins}, as_of=live.as_of,
+                             session_read=_json.loads(_sess.read_text(encoding="utf-8")) if _sess.exists() else None)
+(CAP / "rates_read_context.json").write_text(_json.dumps(_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
+_m = r.top.market_read_meta
+print("MARKET READ", _m.source, _m.status, _m.generator, "|", _m.reason, "|", _m.themes_ko, _m.move_quality_ko, _m.regime_fit, "| warn", _m.warnings)
+print("  ", r.top.market_read)
 (CAP / "rates_regime.json").write_text(r.model_dump_json(), encoding="utf-8")
 from marketpulse.config.settings import get_settings
 from marketpulse.history import DailySnapshotManager, JsonDirStore

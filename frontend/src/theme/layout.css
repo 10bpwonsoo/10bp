@@ -2252,8 +2252,13 @@
 .rt-fact { display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--rule-soft); border-radius: var(--radius); padding: 7px 9px; min-width: 0; font-size: 11px; }
 .rt-big { font-size: 20px; line-height: 1.15; }
 .rt-mid { font-size: 13.5px; line-height: 1.25; }
-.rt-read { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); max-width: 92ch; }
-.rt-read .rr-k { margin-right: 6px; }
+.rt-read { grid-column: 1 / -1; margin: 2px 0 0; max-width: 96ch; display: flex; flex-direction: column; gap: 3px; }
+.rt-read-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 10.5px; }
+.rt-src { font-size: 9.5px; letter-spacing: .06em; color: var(--faint); border: 1px solid var(--rule-soft); border-radius: 3px; padding: 0 5px; }
+.rt-src.ai { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.rt-theme { font-family: var(--font-sans); font-size: 10.5px; color: var(--ink-2); background: var(--surface-2); border-radius: 3px; padding: 0 6px; }
+.rt-read-text { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--ink); }
+.rt-read-note { margin: 0; font-size: 10.5px; line-height: 1.45; color: var(--faint); }
 .rt-dread { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; font-size: 11.5px; padding: 7px 9px; background: color-mix(in oklab, var(--surface-2) 60%, transparent); border-radius: var(--radius); }
 .rt-dr em { font-style: normal; font-size: 9.5px; letter-spacing: .08em; color: var(--faint); margin-right: 5px; }
 .rt-head .rr-chips, .rt-trans, .rt-more { grid-column: 1 / -1; }

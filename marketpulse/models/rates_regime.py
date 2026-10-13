@@ -153,8 +153,30 @@ class RatesTop(Base):
     counter: DriverRef | None = Field(default=None, description="반대 방향(CONTRADICTED 또는 반대 부호)의 가장 큰 driver")
     not_confirmed: list[DriverRef] = Field(default_factory=list, description="물가·Fed 처럼 늘 확인하는 driver 중 미확인")
     not_confirmed_text: str = Field(default="", description="Inflation / Fed Policy")
-    market_read: str = Field(description="최대 2문장, 숫자 반복 없음")
+    market_read: str = Field(description="화면에 보이는 MARKET READ — LLM 해석(검증 통과) 또는 규칙 기반 문장")
     driver_lines: dict[str, str] = Field(default_factory=dict, description="compact WHAT IS DRIVING RATES 의 한 줄 — primary · counter · 미확인만")
+    market_read_meta: MarketReadMeta | None = Field(default=None, description="MARKET READ 출처·상태. 옛 캡처는 None(= 규칙 기반)")
+
+
+class MarketReadMeta(Base):
+    """
+    MARKET READ 출처(2026-10-13). source=llm 이면 컨텍스트 숫자 대조·금지어·문장 수 검증을 통과한 해석이다.
+    source=rule 이면 규칙 기반 문장이고 reason 에 LLM 해석이 없는 이유를 적는다. 모델 이름은 남기지 않는다.
+    """
+    source: Literal["llm", "rule"]
+    status: Literal["ok", "fallback", "pending", "skipped"]
+    generator: Literal["api", "session", "none"] = Field(default="none", description="api = 파이프라인 API 호출, session = 같은 컨텍스트·프롬프트·검증으로 오프라인 생성")
+    reason: str = Field(default="", description="규칙 기반으로 남은 이유 — 화면에 그대로 보인다")
+    themes: list[str] = Field(default_factory=list, description="LLM 이 고른 1~3개 테마 키")
+    themes_ko: list[str] = Field(default_factory=list)
+    move_quality: str | None = Field(default=None, description="금리 움직임의 성격(내부 판단) — growth_scare · flight_to_quality …")
+    move_quality_ko: str | None = None
+    regime_fit: Literal["consistent", "partly_consistent", "inconsistent"] | None = Field(default=None, description="regime 모델과 실제 cross-asset 이 맞는 정도")
+    data_caveat: str = Field(default="", description="지연·결측 데이터에 대한 한 줄 — 없으면 빈칸")
+    generated_at: datetime | None = None
+    context_as_of: datetime | None = None
+    rule_read: str = Field(default="", description="같은 시점의 규칙 기반 문장(비교·폴백용)")
+    warnings: list[str] = Field(default_factory=list, description="검증에서 걸러진 이유 — 재시도 기록")
 
 
 class AnalysisTile(Base):
@@ -203,4 +225,5 @@ class RatesRegime(Base):
 
 from .policy_events import PolicyMacroEvents  # noqa: E402  — 순환 참조를 피해 끝에서 읽는다
 
+RatesTop.model_rebuild()
 RatesRegime.model_rebuild()

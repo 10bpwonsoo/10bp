@@ -19,7 +19,7 @@ describe("금리 탭 상단 정리", () => {
     expect(titles).toEqual(["Inflation & Rates Regime", "Current Rates Analysis", "Inflation & Rates State History · 1M", "Policy & Macro Events", "Inflation Pressure", "Treasury Curve", "Nominal Yield Decomposition", "Market Confirmation", "Key Divergence", "Market Implication", "What Changes The View", "Diagnostics"]);
   });
 
-  it("REGIME: 큰 판정 아래 금리 방향 · 주도 driver · 물가 여부 · 신뢰도, MARKET READ 는 숫자 없이 최대 2문장, DRIVER READ 는 PRIMARY/COUNTER/NOT CONFIRMED", () => {
+  it("REGIME: 큰 판정 아래 금리 방향 · 주도 driver · 물가 여부 · 신뢰도, MARKET READ(규칙 기반)는 숫자 없이 최대 2문장, DRIVER READ 는 PRIMARY/COUNTER/NOT CONFIRMED", () => {
     render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
     expect(screen.getByTestId("rates-regime-label").textContent).toBe("LONG-END RATE / TERM PREMIUM SHOCK");
     const dir = screen.getByTestId("yield-direction");
@@ -28,9 +28,11 @@ describe("금리 탭 상단 정리", () => {
     expect(screen.getByTestId("driver-title").textContent).toBe("TERM PREMIUM / SUPPLY DRIVEN");
     expect(screen.getByTestId("inflation-status").textContent).toContain("NOT CONFIRMED");
     expect(screen.getByTestId("rate-move").textContent).toContain("5.22%");
-    const read = screen.getByTestId("rates-market-read").textContent ?? "";
+    // 옛 캡처(메타 없음)는 규칙 기반 문장 — 숫자 없음, 상투 문구 없음
+    const read = screen.getByTestId("market-read-text").textContent ?? "";
     expect(read).toContain("기간 프리미엄·공급");
-    expect(read).not.toMatch(/\d|확률/);
+    expect(read).not.toMatch(/\d|확률|주된 원인은|아직 확인되지 않았습니다/);
+    expect(screen.getByTestId("market-read-source").textContent).toBe("RULE-BASED");
     const dr = screen.getByTestId("driver-read");
     expect(dr.textContent).toContain("PRIMARY");
     expect(screen.getByTestId("driver-counter").textContent).toContain("Growth");
@@ -38,6 +40,25 @@ describe("금리 탭 상단 정리", () => {
     // 기존 driver chip · Transmission 은 그대로 남는다
     expect(screen.getByTestId("rates-regime-card").querySelectorAll(".rr-chip").length).toBe(5);
     expect(screen.getByTestId("rates-regime-card").textContent).toContain("TRANSMISSION");
+  });
+
+  it("MARKET READ: LLM 해석이면 AI INTERPRETATION · 테마 태그 · 데이터 주의, 규칙 기반이면 그 이유가 보이고 모델 이름은 없다", () => {
+    const meta = { source: "llm", status: "ok", generator: "api", reason: "", themes: ["term_premium", "oil"], themes_ko: ["기간 프리미엄", "유가"], move_quality: "fiscal_supply_premium",
+      move_quality_ko: "재정·공급 프리미엄", regime_fit: "partly_consistent", data_caveat: "미국채는 10월 8일 종가 기준이다.", generated_at: "2026-10-13T01:30:00Z", context_as_of: null, rule_read: "규칙 문장", warnings: [] } as const;
+    const llm = { ...regime, top: { ...regime.top!, market_read: "장기물 강세는 되돌림에 더 가깝다. 위험자산에는 선별적인 환경으로 읽힌다.", market_read_meta: meta } } as unknown as RatesRegime;
+    const { unmount } = render(<RatesRegimeView regime={llm} snapshot={snapshot} check={check} />);
+    const box = screen.getByTestId("rates-market-read");
+    expect(box.getAttribute("data-source")).toBe("llm");
+    expect(screen.getByTestId("market-read-source").textContent).toBe("AI INTERPRETATION · 10/13 10:30 KST");
+    expect(screen.getAllByTestId("market-read-theme").map((x) => x.textContent)).toEqual(["기간 프리미엄", "유가"]);
+    expect(screen.getByTestId("market-read-caveat").textContent).toContain("10월 8일");
+    expect(box.textContent).not.toMatch(/claude|opus|sonnet|규칙 문장/i);
+    unmount();
+    const fb = { ...regime, top: { ...regime.top!, market_read_meta: { ...meta, source: "rule", status: "fallback", generator: "none", reason: "API 오류 — API 계정 크레딧 부족", themes: [], themes_ko: [] } } } as unknown as RatesRegime;
+    render(<RatesRegimeView regime={fb} snapshot={snapshot} check={check} />);
+    expect(screen.getByTestId("market-read-source").textContent).toBe("RULE-BASED · AI 해석 없음");
+    expect(screen.getByTestId("market-read-reason").textContent).toContain("크레딧 부족");
+    expect(screen.queryAllByTestId("market-read-theme").length).toBe(0);
   });
 
   it("CURRENT RATES ANALYSIS: Driver · Curve · Real Yield · Breakeven 네 칸 + 한 줄, compact driver 행은 누르면 근거가 펼쳐진다", () => {

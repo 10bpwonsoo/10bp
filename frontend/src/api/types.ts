@@ -616,6 +616,13 @@ export interface RatesDriverRef { id: string; label: string; label_ko: string; s
 export interface RatesTop {
   direction: RateMove["direction"]; direction_arrow: string; direction_en: string; direction_ko: string; segment: string; driver_title: string;
   primary: RatesDriverRef; counter: RatesDriverRef | null; not_confirmed: RatesDriverRef[]; not_confirmed_text: string; market_read: string; driver_lines: Record<string, string>;
+  /** MARKET READ 출처(2026-10-13) — 옛 캡처에는 없다(= 규칙 기반) */
+  market_read_meta?: MarketReadMeta | null;
+}
+export interface MarketReadMeta {
+  source: "llm" | "rule"; status: "ok" | "fallback" | "pending" | "skipped"; generator: "api" | "session" | "none"; reason: string;
+  themes: string[]; themes_ko: string[]; move_quality: string | null; move_quality_ko: string | null; regime_fit: "consistent" | "partly_consistent" | "inconsistent" | null;
+  data_caveat: string; generated_at: string | null; context_as_of: string | null; rule_read: string; warnings: string[];
 }
 export interface AnalysisTile { key: "driver" | "curve" | "real_yield" | "breakeven"; label: string; value: string; sub: string; arrow: string; move: "up" | "down" | "flat" | "missing" | "none"; detail: string }
 export interface CurrentRatesAnalysis { tiles: AnalysisTile[]; sentence: string }

@@ -319,6 +319,12 @@
 - Yahoo 가 10/12 일봉 종가를 null 로 두고 meta 에만 시장가를 준 계열(^KS11 · ^KQ11 · SOXX · XLU · XLK) — `YahooProvider.parse` 가 meta 시각과 같은 날짜의 빈 봉 하나만 meta 값으로 채운다(테스트 추가). 일시 실패로 오래된 CSV 로 떨어진 계열은 `refetch_stale.py` 로 한 번 더 받아 더 최근 봉이면 바꾼다(USDKRW).
 - 실시간 NO REGIME 2일째 · 온도 −19, AI 센티 MACRO-DRAGGED AI WEAKNESS(반도체 사이클 −60), 금리 Term Premium 4일째, 유가 Geopolitical 2일째. History 10/12 LIVE → RECORDED(payload 동일), 10/13 LIVE.
 
+### 2026-10-13 — 금리 탭 MARKET READ 를 LLM 투자 해석으로
+- `ai/rates_read.py` + `config/rates_read.yaml`: 결정적 컨텍스트(금리 · 커브 · 실질/기대인플레 · 기간 프리미엄 proxy · regime · 매크로 실제치 · 정책 · cross-asset · 헤드라인, 계열별 OK/STALE/MISSING) → 구조화 출력 + 적응형 사고(`LLMClient.interpret`, 거절 시 서버측 대체 모델) → 검증(숫자 대조 · 개수 · 금지어 · 상투 문구 · 인과 단정 · 문장 수, 1회 재시도) → 실패 시 규칙 기반 + 이유.
+- `RatesTop.market_read_meta`, 화면 `AI INTERPRETATION` / `RULE-BASED` 태그 · 테마 태그 · 데이터 주의. API 는 백그라운드 생성(그동안 '생성 중'), MOCK 은 생략.
+- 규칙 기반 문장에서 "주된 원인은 …" · "아직 확인되지 않았습니다" · "반대 방향으로 뚜렷한 driver 는 없습니다" 를 뺐다.
+- 오늘 API 호출은 계정 크레딧 부족(400)으로 실패 — 10/13 캡처의 MARKET READ 는 같은 컨텍스트·프롬프트·검증으로 세션에서 생성한 것이고 화면에 `세션 생성` 으로 표시된다. History 는 10/13 LIVE 행의 logic_version 만 바뀌었다(과거 행 변화 없음).
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

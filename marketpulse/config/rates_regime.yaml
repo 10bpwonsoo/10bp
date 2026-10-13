@@ -175,13 +175,13 @@ top:
   watch_drivers: [inflation_repricing, fed_policy]
   watch_short: {inflation_repricing: "Inflation", fed_policy: "Fed Policy"}
   watch_ko: {inflation_repricing: "물가 재평가", fed_policy: "Fed 정책 경로 변화"}
-  #: MARKET READ — 최대 2문장. 숫자를 다시 읽지 않는다. 한국어 조사는 '은(는)' 같은 이중 표기로 쓰고 엔진이 고른다.
+  #: MARKET READ 규칙 기반 문장 — LLM 해석(ai/rates_read.py)이 없거나 검증을 못 넘을 때만 보인다. 숫자를 다시 읽지 않는다. 조사는 '은(는)' 이중 표기로 쓰고 엔진이 고른다.
   read:
-    primary_with_nc: "{seg_ko} {dir_ko}의 주된 원인은 {primary_ko}이며 {nc_ko}은(는) 아직 확인되지 않았습니다."
-    primary_all: "{seg_ko} {dir_ko}의 주된 원인은 {primary_ko}이고 물가·Fed 쪽 신호도 같은 방향으로 확인됩니다."
-    primary_unconfirmed: "금리 방향이 아직 뚜렷하지 않아 {primary_ko} 쪽 증거가 가장 크지만 확인 전입니다."
-    counter: "{counter_ko} 신호는 반대 방향이라 현재 금리 {dir_ko}을(를) 설명하지 못합니다."
-    no_counter: "반대 방향으로 뚜렷한 driver 는 없습니다."
+    primary_with_nc: "{seg_ko} {dir_ko}은(는) {primary_ko} 쪽 신호와 가장 잘 맞고, {nc_ko} 쪽 근거는 약합니다."
+    primary_all: "{seg_ko} {dir_ko}은(는) {primary_ko} 쪽 신호와 맞고, 물가·Fed 쪽 신호도 같은 방향입니다."
+    primary_unconfirmed: "금리 방향이 뚜렷하지 않아 {primary_ko} 쪽 근거가 가장 크다는 정도로만 읽습니다."
+    counter: "{counter_ko} 신호는 반대 방향입니다."
+    no_counter: ""                # 반대 driver 가 없으면 문장을 덧붙이지 않는다
   seg_ko: {long: "장기금리", front: "단기금리", parallel: "금리", none: "금리"}
   #: compact WHAT IS DRIVING RATES 행 아래 한 줄 — 결론만. 근거는 행을 눌러야 펼쳐진다
   line:

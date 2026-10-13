@@ -791,6 +791,34 @@ MARKET READ 문장은 `now_read` 템플릿(확률·전망 어휘 없음)으로 "
 회귀 테스트(`tests/test_cockpit.py TestCanonicalRegime`): 직전 확정 Risk-On · 오늘 raw Neutral 1D → HISTORY CURRENT = MARKET NOW = Risk-On,
 raw 는 보조, 다음 날도 Neutral 이면 CHANGED; 저장 sequence 없음 → NO_HISTORY; 장중 오늘 = LIVE·unlocked.
 
+### 금리 탭 MARKET READ — LLM Macro + Rates Investment Interpretation (2026-10-13)
+
+금리 탭 맨 위 MARKET READ 를 "지배 driver 를 문장으로 다시 읽는 템플릿" 에서 PM/매크로 전략가 관점의 짧은 투자 해석(한국어 2~4문장)으로 바꿨다.
+판정·점수·숫자는 정량 엔진 그대로이고, LLM 은 그것을 바꾸지 않고 "이 금리 움직임의 성격이 무엇이고 위험자산에 어떤 환경인가" 만 쓴다.
+
+- **컨텍스트**(`ai/rates_read.py::build_context`, 설정 `config/rates_read.yaml`): 미국채 2Y·5Y·10Y·30Y 수준과 1D·5D·20D 변화(bp)·z, 2s10s·5s30s,
+  TIPS 실질금리, BE 기대인플레, 기간 프리미엄 proxy(엔진 driver 점수 — 직접 추정치가 아니라고 적어 넘긴다), 5일 분해, regime 판정·driver·확인/괴리,
+  출처 확인된 매크로 발표(실제치만)·발표일 금리 반응·중앙은행 결정과 톤·예정 이벤트, cross-asset(S&P · Nasdaq 100 · SOXX · XLF · 경기민감/방어 · Russell ·
+  DXY · USD/KRW · USD/JPY · 금 · 브렌트 · WTI · 구리 · VIX · MOVE · HY OAS, 성장 대 시장은 NDX − SPX 로 대신), 금리·매크로 관련 헤드라인(48시간, 금리·물가·정책
+  테마 우선). 계열마다 OK · STALE · MISSING 과 마지막 관측일을 붙이고, 미국채와 미국 주식의 마지막 관측일이 다르면 "같은 날 반응으로 묶지 않는다" 를 적는다.
+  화면 상단에 이미 보이는 숫자(10Y 수준 · 5D · driver 점수 · 격차)는 `displayed_elsewhere` 로 넘겨 반복하지 않게 한다.
+- **프롬프트**: 내부 판단 순서(금리 움직임 → 이유 → 시장 반응(DATA → MARKET REACTION) → 움직임의 성격 → 위험자산 환경 → 필요할 때만 다음 확인 지점)는
+  화면에 쓰지 않는다. 주제는 기간 프리미엄 · Fed · 물가 · 성장 · 재정/공급 · 유동성 · 위험회피 · 유가 · 달러/환율 · 크레딧 중 1~3개만. regime 판정을 반복하지 말고
+  cross-asset 과 대조, 정책은 관련 있을 때만, 인과는 단정하지 않고("~에 더 부합한다"), 직접 추천·확률·전망 표현과 상투 문구는 금지, 결측·지연 데이터는 상상하지 않는다.
+- **호출**(`LLMClient.interpret`): 구조화 출력(read · move_quality · themes · regime_fit · data_caveat) + 적응형 사고, effort high. 안전 분류기가 거절하면
+  서버가 권장 대체 모델로 같은 요청을 다시 돌린다(`fallbacks: "default"`); 그래도 거절이면 규칙 기반으로 돌아간다. 키는 환경변수로만, 모델은
+  `MARKETPULSE_RATES_READ_MODEL`(없으면 `MARKETPULSE_LLM_MODEL`)로 바꾼다.
+- **검증**(`validate_read` · `check_output`): 문장 2~4개 · 460자 이내 · 숫자 3개 이내(날짜·만기 이름·지수 이름 제외) · 모든 숫자가 컨텍스트 값과 일치(반올림 허용) ·
+  화면 숫자 반복 금지 · 금지어(매수 · 매도 · 비중 확대/축소 · 확률 · 전망 …) · 상투 문구("주된 원인은" · "아직 확인되지 않았습니다" · "모니터링해야" …) ·
+  인과 단정("때문입니다" …). 걸리면 문제를 알려주고 한 번 더, 그래도 안 되면 규칙 기반 문장.
+- **폴백**: LLM 이 꺼져 있거나(키 없음) · 실패하거나 · 검증을 못 넘으면 규칙 기반 문장(`rates_regime.yaml top.read`, 상투 문구를 뺀 새 문장)과 그 이유가
+  보인다. `RatesTop.market_read_meta`(source llm/rule · status ok/fallback/pending/skipped · generator api/session · reason · themes · data_caveat · rule_read)에 남고,
+  화면은 `AI INTERPRETATION · 10/13 10:30 KST` + 테마 태그 + 데이터 주의, 또는 `RULE-BASED · AI 해석 없음` + 이유. 모델 이름은 어디에도 남기지 않는다.
+- **API**: `/rates-regime` 은 LLM 응답을 기다리지 않는다 — 스냅샷 as_of 별로 백그라운드 생성을 한 번 걸고 그동안 `RULE-BASED · AI 해석 생성 중` 을 돌려준다.
+  MOCK 시나리오는 실데이터가 아니라 해석을 만들지 않는다(`skipped`). 정량 화면은 LLM 상태와 무관하게 그대로 돈다.
+- **캡처**: `capture_rates_regime.py` 가 같은 경로를 돌리고 컨텍스트를 `rates_read_context.json` 으로 남긴다. API 호출이 실패한 날 같은 컨텍스트 · 같은 프롬프트로
+  세션에서 만든 출력(`rates_read_session.json`)은 같은 검증을 통과해야만 쓰고, 화면에 `세션 생성` 과 API 실패 사유가 함께 보인다.
+
 ### 금리 탭 상단 정리 — REGIME · CURRENT RATES ANALYSIS · HISTORY · POLICY & MACRO EVENTS (2026-10-12)
 
 금리 탭의 위쪽 세 영역만 다시 짰다. Inflation Pressure 이하(Treasury Curve · Nominal Yield Decomposition · Market Confirmation · Key Divergence ·
