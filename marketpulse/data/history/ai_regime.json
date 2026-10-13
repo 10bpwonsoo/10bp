@@ -1913,14 +1913,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-12T06:09:54.750991Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-12T06:16:11.700931Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
    "model_version": "ai_regime_v0.1.0",
    "logic_version": "rules_5be636bd",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "AI 위험선호 확인. AI 바스켓 절대 상승(+0.6σ, 5일 +1.7%) · Nasdaq 100 대비 시장과 같은 걸음(5일 +1.4%p, 상대 z +0.4σ) 가장 큰 driver 는 매크로·금리(+61, driver 방향(상승)과 AI 바스켓(+0.6σ)이 같다.) breadth 69%(stable). 뉴스×가격 UNCLEAR. AI 고유 스트레스 MODERATE.",
    "payload": {
     "leadership": [
@@ -1955,6 +1955,80 @@
      "fundamental": "WEAK"
     },
     "subtitle": "CONFIRMED AI RISK-ON / FUNDAMENTALS WEAK",
+    "stress": "MODERATE"
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "ai_regime",
+   "state": "macro_dragged",
+   "state_label": "MACRO-DRAGGED AI WEAKNESS",
+   "state_label_ko": "매크로에 눌린 AI 약세",
+   "state_score": 59.7,
+   "confidence": 59.7,
+   "component_scores": {
+    "basket_z_5d": -0.43,
+    "rel_ndx_5d": 0.29,
+    "rel_ndx_z_5d": -0.09,
+    "breadth_ma20": 53.0,
+    "news_tone": -5.1,
+    "driver:macro_rates": 51.3,
+    "driver:broad_risk_off": -35.4,
+    "driver:semi_cycle": -59.7,
+    "driver:ai_narrative": -15.1,
+    "driver:ai_fundamental_stress": -14.2
+   },
+   "key_drivers": [
+    "Semiconductor Cycle -60 CONFIRMED",
+    "Macro / Rates +51 CONTRADICTED",
+    "Broad Risk-Off -35 CONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-13T00:16:15.626685Z",
+   "model_version": "ai_regime_v0.1.0",
+   "logic_version": "rules_5be636bd",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "매크로에 눌린 AI 약세. AI 바스켓 절대 하락(-1.2σ, 5일 -1.0%) · Nasdaq 100 대비 시장과 같은 걸음(5일 +0.3%p, 상대 z -0.1σ) — 절대 하락이지만 Nasdaq 보다 약하지 않다. AI-specific selloff 가 아니다. 가장 큰 driver 는 반도체 사이클(-60, driver 방향(하락)과 AI 바스켓(-1.2σ)이 같다.) breadth 53%(narrowing). 뉴스×가격 UNCLEAR. AI 고유 스트레스 MODERATE.",
+   "payload": {
+    "leadership": [
+     "software",
+     "hyperscalers",
+     "networking",
+     "dc_infra"
+    ],
+    "lagging": [
+     "memory_hbm",
+     "packaging",
+     "equipment"
+    ],
+    "leader_1w": "power_datacenter",
+    "breadth_trend": "narrowing",
+    "breadth_ma20": 53.0,
+    "price_confirmation": "WEAK",
+    "fundamental_confirmation": "WEAK",
+    "narrative": "unclear",
+    "ai_vs_market": "inline",
+    "abs_direction": "down",
+    "dominant": "semi_cycle",
+    "status_strip": {
+     "narrative": "NEUTRAL−",
+     "relative": "RESILIENT",
+     "price": "WEAK",
+     "semi": "WEAK",
+     "infra": "MIXED",
+     "software": "STRONG",
+     "breadth": "NARROWING",
+     "macro": "HEADWIND",
+     "fundamental": "WEAK"
+    },
+    "subtitle": "MACRO-DRAGGED AI WEAKNESS / FUNDAMENTALS WEAK",
     "stress": "MODERATE"
    },
    "corrections": []

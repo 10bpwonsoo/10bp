@@ -1605,14 +1605,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-12T06:09:54.750991Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-12T06:16:11.652408Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
    "model_version": "ai_sentiment_v0.1.0",
    "logic_version": "rules_db9f30c3",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "GREED 61",
    "payload": {
     "components": {
@@ -1682,6 +1682,121 @@
       "component": "narrative",
       "score": 39.7,
       "display": "-8 · 12건"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 43.4,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 40.9,
+    "price": 40.9,
+    "breadth": 36.5,
+    "fundamentals": 46.0,
+    "macro": 54.1
+   },
+   "key_drivers": [
+    "Long-End Rates",
+    "Real Yield",
+    "AI Basket 1M",
+    "−Advancing",
+    "−AI Basket Price",
+    "−Credit Stress"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-13T00:16:15.618551Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "NEUTRAL 43",
+   "payload": {
+    "components": {
+     "narrative": 40.9,
+     "price": 40.9,
+     "breadth": 36.5,
+     "fundamentals": 46.0,
+     "macro": 54.1
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "NEUTRAL",
+     "breadth": "FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Long-End Rates · Real Yield는 여전히 지지적입니다. 그러나 확산도가 따라오지 않고 Advancing · AI Basket Price가 sentiment 를 압박하고 있습니다.",
+    "secondary": "BALANCED",
+    "support": [
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 88.8,
+      "display": "-1.6σ"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 86.8,
+      "display": "-1.5σ"
+     },
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 71.2,
+      "display": "+4.2%"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 12.0,
+      "display": "12%"
+     },
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 18.8,
+      "display": "-1.2σ"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 22.0,
+      "display": "+1.1σ"
      }
     ],
     "basis": [

@@ -314,6 +314,11 @@
 - CURRENT RATES ANALYSIS: Driver DOMINANT · Bull Flattening / Long-end led · Real Yield ↓ · Breakeven ↓ + 한 줄, compact WHAT IS DRIVING RATES(누르면 근거).
 - POLICY & MACRO EVENTS: FED 9/16 +25bp 3.75–4.00%(12–0) · ECB 9/10 +25bp 2.50% · BOJ 9/18 +25bp 1.25%(7–2) · BOK 8/27 +25bp 3.00%. 8월 CPI HOT(근원 0.3 vs 0.2, 2Y +7bp) · 8월 PCE COOL · 9월 NFP WEAK(29k vs 84k, 그래도 2Y +5bp · 10Y +4bp). 다음: CPI 10/14 · PPI 10/15 · BOK 10/22 · FOMC 10/27–28 · ECB 10/29 · BOJ 10/29–30 · NFP 11/6. 공식 사이트는 이 환경에서 막혀 둘 이상의 보도로 대조했다.
 
+### 2026-10-13 — 12차 캡처 (09:12 KST 장 초반)
+- 새 캡처 `data/captures/2026-10-13-manual/` · 태그 `manual_tags_v11.py`(RSS 29건, LLM 없음) · 정책 이벤트 `data/policy_events/2026-10-13.json`(BOK 총재 국감 발언 추가).
+- Yahoo 가 10/12 일봉 종가를 null 로 두고 meta 에만 시장가를 준 계열(^KS11 · ^KQ11 · SOXX · XLU · XLK) — `YahooProvider.parse` 가 meta 시각과 같은 날짜의 빈 봉 하나만 meta 값으로 채운다(테스트 추가). 일시 실패로 오래된 CSV 로 떨어진 계열은 `refetch_stale.py` 로 한 번 더 받아 더 최근 봉이면 바꾼다(USDKRW).
+- 실시간 NO REGIME 2일째 · 온도 −19, AI 센티 MACRO-DRAGGED AI WEAKNESS(반도체 사이클 −60), 금리 Term Premium 4일째, 유가 Geopolitical 2일째. History 10/12 LIVE → RECORDED(payload 동일), 10/13 LIVE.
+
 ### 남은 것
 - 롤오버 판정은 여전히 임계 기반이라 실제 2σ 충격도 물음표가 붙는다(다음 봉에서 풀린다).
 - 컨센서스·수급·메모리 현물은 CSV 를 넣기 전까지 빈 채로 남는다.

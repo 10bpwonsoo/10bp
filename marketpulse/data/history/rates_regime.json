@@ -2657,14 +2657,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-12T06:09:54.750991Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-12T08:19:51.753212Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
    "model_version": "rates_regime_v0.1.0",
    "logic_version": "rules_7ec511bb",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "금리를 움직이는 증거는 기간 프리미엄·공급 쪽이 가장 크다(-67, STRONG) — 성장 +27 보다 40 앞선다. 물가 리프라이싱은 미확인(-20). 상태: driver 방향(하락)과 10년 금리(-1.5σ)가 같다.",
    "payload": {
     "regime_label": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
@@ -2728,6 +2728,111 @@
      "energy": "flat",
      "wages": "missing",
      "fx": "flat"
+    }
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "rates_regime",
+   "state": "term_premium",
+   "state_label": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+   "state_label_ko": "",
+   "state_score": -66.9,
+   "confidence": 66.9,
+   "component_scores": {
+    "driver:inflation_repricing": -9.0,
+    "driver:fed_policy": 5.7,
+    "driver:growth": 1.7,
+    "driver:term_premium": -66.9,
+    "driver:risk_liquidity": -27.6,
+    "rate_move_z": -1.55,
+    "rate_change_5d_bp": -2.0,
+    "inflation:realized": null,
+    "inflation:implied": -58.5,
+    "inflation:energy": 16.3,
+    "inflation:wages": null,
+    "inflation:fx": -36.2
+   },
+   "key_drivers": [
+    "Term Premium / Supply -67 CONFIRMED",
+    "Risk / Liquidity -28 CONFIRMED",
+    "Inflation Repricing -9 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-13T00:15:39.765358Z",
+   "model_version": "rates_regime_v0.1.0",
+   "logic_version": "rules_7ec511bb",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "금리를 움직이는 증거는 기간 프리미엄·공급 쪽이 가장 크다(-67, STRONG) — 위험·유동성 -28 보다 39 앞선다. 물가 리프라이싱은 미확인(-9). 상태: driver 방향(하락)과 10년 금리(-1.5σ)가 같다.",
+   "payload": {
+    "regime_label": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+    "dominant": "term_premium",
+    "runner_up": "risk_liquidity",
+    "margin": 39.3,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "inflation_repricing": {
+      "label": "Inflation Repricing",
+      "score": -9.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "fed_policy": {
+      "label": "Fed Policy",
+      "score": 5.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "growth": {
+      "label": "Growth",
+      "score": 1.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "term_premium": {
+      "label": "Term Premium / Supply",
+      "score": -66.9,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "risk_liquidity": {
+      "label": "Risk / Liquidity",
+      "score": -27.6,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Breakeven (기대인플레)": "CONFIRMED",
+     "Oil": "MIXED",
+     "Commodities (구리)": "MIXED",
+     "USD": "CONFIRMED",
+     "Rates — 2Y": "CONFIRMED",
+     "Rates — 10Y / 30Y": "NOT_CONFIRMED",
+     "Equities (S&P)": "MIXED",
+     "Growth / Tech (Nasdaq)": "CONFIRMED",
+     "Banks (XLF)": "CONFIRMED",
+     "HY OAS": "CONFIRMED",
+     "VIX": "MIXED",
+     "Gold": "MIXED"
+    },
+    "implication": "장기물이 단기물과 따로 오르는 국면 — 재정·공급·변동성 프리미엄. 물가 기대가 동반하지 않으면 실질금리 충격이다.",
+    "inflation_status": "UNCONFIRMED",
+    "rate_direction": "down",
+    "curve": "bull_flattening",
+    "inflation_components": {
+     "realized": "missing",
+     "implied": "down",
+     "energy": "flat",
+     "wages": "missing",
+     "fx": "down"
     }
    },
    "corrections": []

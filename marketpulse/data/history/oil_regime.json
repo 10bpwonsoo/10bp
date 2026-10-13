@@ -2177,14 +2177,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-12T06:09:54.750991Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-12T06:15:37.928644Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
    "model_version": "oil_regime_v0.1.0",
    "logic_version": "rules_76e6ad14",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(+36, MODERATE) — 거시·유동성 (위험회피) +15 보다 22 앞선다. 상태 미확인: 유가가 평탄하다(-0.4σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
    "payload": {
     "regime_label": "Geopolitical Premium — UNCONFIRMED",
@@ -2229,6 +2229,92 @@
      "에너지 주식 (XLE)": "confirms",
      "항공 (JETS)": "neutral",
      "방산 (ITA)": "confirms",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 27.0,
+   "confidence": 27.0,
+   "component_scores": {
+    "driver:macro_liquidity": -11.4,
+    "driver:demand": 14.4,
+    "driver:supply": 15.3,
+    "driver:geopolitical": 27.0,
+    "brent_z": 0.2655721809397995,
+    "wti_z": 0.3978771655586847,
+    "oil_z": 0.3317246732492421
+   },
+   "key_drivers": [
+    "Geopolitical Premium +27 UNCONFIRMED",
+    "Supply +15 UNCONFIRMED",
+    "Demand +14 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-13T00:15:40.601862Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(+27, MODERATE) — 공급 (물리적 타이트) +15 보다 12 앞선다. 상태 미확인: 유가가 평탄하다(+0.3σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — UNCONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "supply",
+    "margin": 11.7,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -11.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 14.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 15.3,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 27.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "neutral",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
      "구리 / 경기민감": "neutral",
      "금": "neutral"
     },

@@ -68,6 +68,19 @@ class TestYahoo:
         assert points[0][1] == pytest.approx(5820.11)
         assert points[-1][1] == pytest.approx(5870.30)
 
+    def test_null_last_close_filled_only_from_same_day_meta(self):
+        """2026-10-12 ^KS11: 일봉 종가가 null 인데 meta 에만 그 날 시장가가 있다 → 그 날짜의 빈 봉 하나만 meta 값으로. 다른 빈 봉은 그대로 비운다."""
+        import json as _j
+        kst = 9 * 3600
+        d = lambda day: int(datetime(2026, 10, day, 0, 0, tzinfo=timezone.utc).timestamp())  # 09:00 KST 일봉
+        doc = {"chart": {"error": None, "result": [{"meta": {"gmtoffset": kst, "regularMarketPrice": 6384.24, "regularMarketTime": d(12) + 11 * 3600},
+                                                     "timestamp": [d(7), d(8), d(12), d(13)], "indicators": {"quote": [{"close": [6803.9, 6625.93, None, None]}]}}]}}
+        pts = YahooProvider.parse(_j.dumps(doc).encode(), bars=10)
+        assert [round(v, 2) for _, v in pts] == [6803.9, 6625.93, 6384.24]  # 10/13 빈 봉은 채우지 않는다
+        # meta 시각이 다른 날이면 아무것도 채우지 않는다
+        doc["chart"]["result"][0]["meta"]["regularMarketTime"] = d(8) + 11 * 3600
+        assert len(YahooProvider.parse(_j.dumps(doc).encode(), bars=10)) == 2
+
     def test_timestamps_are_utc_and_ascending(self):
         points = YahooProvider.parse(fixture("yahoo_spx.json"), bars=10)
         stamps = [t for t, _ in points]

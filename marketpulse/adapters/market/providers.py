@@ -190,6 +190,21 @@ class YahooProvider(Provider):
         if not stamps or not series:
             raise FetchError("종가 계열이 없다", kind="empty", permanent=True)
 
+        series = list(series)
+        # Yahoo 가 일봉의 종가를 비워(null) 둔 채 같은 응답의 meta 에만 그 날 시장가를 주는 날이 있다(2026-10-12 ^KS11 · SOXX).
+        # 그때는 meta.regularMarketTime 의 현지 날짜와 같은 날짜의 '빈 일봉' 하나만 meta.regularMarketPrice 로 채운다.
+        # 공급자가 준 실제 값이고, 다른 날짜의 빈 봉은 그대로 비워 둔다 — 만들어 채우지 않는다.
+        meta = node.get("meta") or {}
+        price, mtime = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+        if price is not None and mtime is not None:
+            off = int(meta.get("gmtoffset") or 0)
+            mday = datetime.fromtimestamp(int(mtime) + off, tz=timezone.utc).date()
+            for i in range(len(series) - 1, -1, -1):
+                if datetime.fromtimestamp(int(stamps[i]) + off, tz=timezone.utc).date() == mday:
+                    if series[i] is None and int(mtime) >= int(stamps[i]):
+                        series[i] = float(price)
+                    break
+
         return _clean(
             [(_utc(t), v * scale) for t, v in zip(stamps, series) if v is not None],
             bars,
