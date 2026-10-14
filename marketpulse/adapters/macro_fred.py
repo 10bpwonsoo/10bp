@@ -10,6 +10,7 @@ import csv
 import io
 import json
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import Any, Mapping
 
 from .http import FetchError, HttpClient
@@ -59,7 +60,8 @@ def fetch_macro_raw(cfg: Mapping, *, api_key: str | None, http: HttpClient | Non
     http = http or HttpClient(timeout_sec=20.0, retries=1)
     paths = cfg.get("paths") or {}
     start = (as_of - timedelta(days=366 * int(paths.get("observation_years", 8)))).date().isoformat()
-    day = as_of.date().isoformat()
+    # FRED 의 '오늘' 은 미국 중부시간 날짜다. UTC 날짜를 그대로 realtime 으로 주면 한국 오전(= 미국 전날 밤)에 미래 vintage 라며 400 을 돌려준다(2026-10-14)
+    day = as_of.astimezone(ZoneInfo("America/Chicago")).date().isoformat()
     out: dict[str, dict[str, Any]] = {}
     for spec in (cfg.get("series") or {}).values():
         sid = str(spec.get("fred", ""))

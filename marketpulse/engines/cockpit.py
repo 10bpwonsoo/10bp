@@ -180,7 +180,11 @@ def build_cockpit(
         if len(parts) >= 3:
             break
     tail = str(cfg.get("regime_tail", {}).get(label, "이 겹친 환경이다."))
-    sentence = fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
+    if not parts and tail.startswith("있지만 "):
+        # NEUTRAL 꼬리는 'X이(가) 있지만 …' 을 전제한다 — 핵심 변수 문구가 없을 때 '없지만 있지만' 이 겹치지 않게(2026-10-14)
+        sentence = fix_particles("뚜렷한 방향의 핵심 변수가 없고 " + tail[len("있지만 "):])
+    else:
+        sentence = fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
     rh = regime_history
     if rh is not None:
         streak = int(rh.duration_days); prev_s = inv_tax.get(rh.previous_regime or "", None)

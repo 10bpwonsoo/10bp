@@ -672,7 +672,7 @@ export interface MacroRelease {
   surprise_basis: string; consensus_source: string; chain: string[]; reaction: RateReaction; read: string; regime: RegimeImpact; age_days: number; note: string; sources: EventSource[];
 }
 export interface RecentEventItem { kind: "release" | "policy"; key: string; date: string; title: string; label: string; reaction_text: string; impact: EventImpact | null; importance: EventImportance }
-export interface UpcomingEvent { date: string; date_start: string | null; importance: EventImportance; kind: string; name: string; note: string; days_ahead: number; sources: EventSource[] }
+export interface UpcomingEvent { date: string; date_start: string | null; importance: EventImportance; kind: string; name: string; note: string; days_ahead: number; sources: EventSource[]; release_utc?: string | null }
 export interface RegimeLink { current_driver: string; current_driver_ko: string; direction_ko: string; latest_key: string; latest_label: string; latest_surprise: string; impact: EventImpact; sentence: string; counts: Record<string, number> }
 export interface PolicyMacroEvents {
   as_of: string; collected: string; policy: PolicyDecision[]; releases: MacroRelease[]; recent: RecentEventItem[]; recent_default: number; upcoming: UpcomingEvent[]; upcoming_default: number;

@@ -252,7 +252,7 @@ function UpcomingRow({ u }: { u: UpcomingEvent }) {
     <li className="rt-up" data-testid="upcoming-event" data-importance={u.importance}>
       <span className="mono rt-up-imp" style={{ color: u.importance === "HIGH" ? "var(--accent)" : "var(--muted)" }}>{u.importance}</span>
       <b className="rt-up-name">{u.name}</b>
-      <span className="mono num rt-up-date">{u.date_start ? `${md(u.date_start)}–` : ""}{md(u.date)}<small> D-{u.days_ahead}</small></span>
+      <span className="mono num rt-up-date">{u.date_start ? `${md(u.date_start)}–` : ""}{md(u.date)}<small data-testid="upcoming-when"> {u.days_ahead === 0 ? `오늘${u.release_utc ? ` ${kst(u.release_utc).split(" ")[1] ?? ""} KST` : ""}` : `D-${u.days_ahead}`}</small></span>
       {u.note ? <span className="rt-up-note">{u.note}</span> : null}
     </li>
   );

@@ -175,3 +175,17 @@ def client():
         svc.clear()
     with TestClient(create_app()) as c:
         yield c
+
+
+class TestSameDayUpcoming:
+    def test_release_time_keeps_today_event_until_release(self):
+        """발표 시각이 적힌 오늘 일정은 그 시각 전까지 UPCOMING 에 남는다 — 시각이 없거나 지났으면 뺀다(2026-10-14)."""
+        data = _data()
+        data["upcoming"] = [
+            {"date": "2026-10-12", "kind": "us_cpi", "name": "오늘 밤 CPI", "release_utc": "2026-10-12T12:30:00Z"},
+            {"date": "2026-10-12", "kind": "bok", "name": "오늘 — 시각 없음"},
+            {"date": "2026-10-12", "kind": "fomc", "name": "오늘 — 이미 지남", "release_utc": "2026-10-12T05:00:00Z"},
+        ]
+        ev = build_policy_events(data, SERIES, _regime(), as_of=AS_OF)
+        assert [u.name for u in ev.upcoming] == ["오늘 밤 CPI"]
+        assert ev.upcoming[0].days_ahead == 0 and ev.upcoming[0].release_utc == datetime(2026, 10, 12, 12, 30, tzinfo=timezone.utc)

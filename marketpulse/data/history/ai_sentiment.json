@@ -1720,14 +1720,14 @@
    "data_coverage": 1.0,
    "data_asof": "2026-10-13T00:12:16.061019Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-13T00:16:15.618551Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-13T00:12:16.061019Z",
    "model_version": "ai_sentiment_v0.1.0",
    "logic_version": "rules_db9f30c3",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "migrated",
    "summary": "NEUTRAL 43",
    "payload": {
     "components": {
@@ -1797,6 +1797,121 @@
       "component": "macro",
       "score": 22.0,
       "display": "+1.1σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-14",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 49.7,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 52.5,
+    "price": 37.2,
+    "breadth": 53.8,
+    "fundamentals": 57.8,
+    "macro": 52.2
+   },
+   "key_drivers": [
+    "AI Basket 1M",
+    "HBM / Memory Fundamentals",
+    "Long-End Rates",
+    "−AI Basket Price",
+    "−AI Relative Strength",
+    "−Semi Fundamental Confirmation"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-14T01:26:00.269404Z",
+   "missing_components": [],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-14T01:34:56.341337Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "NEUTRAL 50",
+   "payload": {
+    "components": {
+     "narrative": 52.5,
+     "price": 37.2,
+     "breadth": 53.8,
+     "fundamentals": 57.8,
+     "macro": 52.2
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "FEAR",
+     "breadth": "NEUTRAL",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "가격이 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "AI Basket 1M · HBM / Memory Fundamentals는 여전히 지지적입니다. 그러나 가격이 따라오지 않고 AI Basket Price · AI Relative Strength가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 86.2,
+      "display": "+7.2%"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 80.0,
+      "display": "+60 · STRONG"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 78.2,
+      "display": "-1.1σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 23.8,
+      "display": "-1.1σ (5일)"
+     },
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 26.2,
+      "display": "-0.9σ vs NDX"
+     },
+     {
+      "id": "semi_confirmation",
+      "label": "Semi Fundamental Confirmation",
+      "label_ko": "반도체 펀더멘털 확인",
+      "component": "fundamentals",
+      "score": 30.0,
+      "display": "WEAK"
      }
     ],
     "basis": [

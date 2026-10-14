@@ -137,3 +137,25 @@ class TestPanel:
         assert (m.official_count, m.proxy_count, m.news_count) == (4, 1, 1)
         assert m.confirmation == "PARTIAL" and not m.signal.startswith("REACCELERATING")  # 뉴스가 강해도 신호를 끌어올리지 않는다
         assert len(m.data_sources) == len(L.series)
+
+
+class TestFetchDates:
+    def test_fred_realtime_uses_us_central_date(self):
+        """한국 오전(= 미국 전날 밤)에 UTC 날짜를 realtime 으로 주면 FRED 가 미래 vintage 라며 400 을 돌려준다(2026-10-14)."""
+        import json as _j
+        from marketpulse.adapters.macro_fred import fetch_macro_raw
+
+        seen = []
+
+        class FakeHttp:
+            def get(self, url, *, params=None, **kw):
+                seen.append((url, dict(params or {})))
+                if url.endswith("/series/observations"):
+                    return _j.dumps({"observations": [{"date": "2026-08-01", "value": "1.0"}]}).encode()
+                return _j.dumps({"vintage_dates": ["2026-09-11"]}).encode()
+
+        cfg = {"paths": {"fred_api": "https://api", "observation_years": 1}, "series": {"CPI": {"fred": "CPIAUCSL"}}}
+        out = fetch_macro_raw(cfg, api_key="k", http=FakeHttp(), as_of=datetime(2026, 10, 14, 1, 26, tzinfo=timezone.utc))
+        assert out["CPIAUCSL"]["path"] == "PRIMARY"
+        obs = next(p for u, p in seen if u.endswith("/series/observations"))
+        assert obs["realtime_end"] == "2026-10-13" and obs["observation_end"] == "2026-10-13"

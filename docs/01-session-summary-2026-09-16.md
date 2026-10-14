@@ -384,3 +384,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - Wage / Services PROXY −41 EASING(AHE · ECI · Services CPI · Core Services PCE, 모두 PRIMARY 입력) — "둔화 속도가 전체 물가보다 느림". Inflation News Pulse MILD UPWARD +15(NEWS, 신호 미반영).
 - INFLATION SIGNAL COOLING BIAS · PARTIAL · Official data 4/5 · Proxy 1 · News 1. 물가 압력 해석은 크레딧 부족으로 세션 생성(출처 급 규칙 포함 프롬프트·검증 통과).
 - History: 10/13 LIVE 행의 inflation:realized · wages 점수만 채워졌다(과거 행 변화 없음).
+
+### 2026-10-14 — 13차 캡처 (10:26 KST 장 초반)
+- 새 캡처 `data/captures/2026-10-14-manual/` · 태그 `manual_tags_v12.py`(RSS 30건, LLM 없음) · 정책 이벤트 `data/policy_events/2026-10-14.json`(9월 CPI 발표 시각 · CNBC 컨센서스 추가).
+- 보정: `fill_prev_close.py` — Yahoo 일봉에서 10/13 봉이 통째로 빈 계열을 같은 공급자의 previousClose 로 하나만 채움(코스피 6,035.35 = 보도 종가). 환율(=X)·휴장 이월값(MOVE)은 제외 규칙. `refetch_fx.py` — 환율 3종 단독 재수집.
+- 버그 수정: `adapters/macro_fred.py` 의 FRED realtime 날짜를 미국 중부시간으로(한국 오전 실행 시 400) · `policy_events` 의 오늘 일정은 `release_utc` 전까지 UPCOMING 에 남김 · cockpit NEUTRAL 문장의 "없지만 있지만" 중복.
+- 실시간 NO REGIME 3일째 · 온도 −7, AI TRADE MIXED, 금리 Term Premium 5일째(INFLATION SIGNAL MIXED — 환율 전가 +32), 유가 Supply. History 10/13 LIVE → RECORDED(payload 동일), 10/14 LIVE.

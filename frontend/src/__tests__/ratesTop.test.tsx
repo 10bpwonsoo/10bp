@@ -104,6 +104,14 @@ describe("금리 탭 상단 정리", () => {
     expect(screen.getByTestId("policy-macro-events").textContent).not.toMatch(/확률|매수|매도/);
   });
 
+  it("UPCOMING: 발표 시각이 있는 오늘 일정은 'D-0' 대신 '오늘 21:30 KST' 로 보인다", () => {
+    const ev = regime.events!;
+    const today = { ...regime, events: { ...ev, upcoming: [{ ...ev.upcoming[0]!, days_ahead: 0, release_utc: "2026-10-14T12:30:00Z" }, ...ev.upcoming.slice(1)] } } as RatesRegime;
+    render(<RatesRegimeView regime={today} snapshot={snapshot} check={check} />);
+    expect(screen.getAllByTestId("upcoming-when")[0]!.textContent).toBe(" 오늘 21:30 KST");
+    expect(screen.getAllByTestId("upcoming-when")[1]!.textContent).toMatch(/D-\d+/);
+  });
+
   it("옛 캡처(top 없음)는 예전 머리와 순서를 그대로 그린다", () => {
     const { container } = render(<RatesRegimeView regime={oldFx as unknown as RatesRegime} snapshot={snapshot} check={check} />);
     expect(screen.queryByTestId("rates-top")).toBeNull();

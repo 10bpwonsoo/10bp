@@ -242,14 +242,15 @@ def build_policy_events(data: Mapping | None, series: Mapping[str, MarketSeries]
     rank = {"HIGH": 0, "MED": 1, "LOW": 2}
     recent.sort(key=lambda x: (rank.get(x.importance, 3), -x.date.toordinal()))
 
-    # ── UPCOMING — 오늘 이후 일정, 날짜순 ────────────────
+    # ── UPCOMING — 오늘 이후 일정, 날짜순. 발표 시각(release_utc)이 적힌 오늘 일정은 그 시각 전까지 남긴다(2026-10-14) ──
     upcoming: list[UpcomingEvent] = []
     for u in data.get("upcoming", []):
         day = _d(u["date"])
-        if day is None or day <= today:
+        rel = datetime.fromisoformat(str(u["release_utc"]).replace("Z", "+00:00")) if u.get("release_utc") else None
+        if day is None or day < today or (day == today and (rel is None or rel <= as_of)):
             continue
         upcoming.append(UpcomingEvent(date=day, date_start=_d(u.get("date_start")), importance=str(imp.get(u["kind"], "MED")), kind=u["kind"], name=u["name"],  # type: ignore[arg-type]
-                                      note=str(u.get("note", "")), days_ahead=(day - today).days, sources=[EventSource(**s) for s in u.get("sources", [])]))
+                                      note=str(u.get("note", "")), days_ahead=(day - today).days, sources=[EventSource(**s) for s in u.get("sources", [])], release_utc=rel))
     upcoming.sort(key=lambda x: x.date)
 
     # ── 현재 regime 과의 연결 — 최근 물가 지표 ──────────

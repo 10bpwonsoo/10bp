@@ -121,6 +121,7 @@ class UpcomingEvent(Base):
     note: str = ""
     days_ahead: int
     sources: list[EventSource] = Field(default_factory=list)
+    release_utc: datetime | None = Field(default=None, description="발표 시각(UTC). 있으면 같은 날이라도 이 시각 전까지는 UPCOMING(2026-10-14)")
 
 
 class RegimeLink(Base):
