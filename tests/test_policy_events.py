@@ -189,3 +189,12 @@ class TestSameDayUpcoming:
         ev = build_policy_events(data, SERIES, _regime(), as_of=AS_OF)
         assert [u.name for u in ev.upcoming] == ["오늘 밤 CPI"]
         assert ev.upcoming[0].days_ahead == 0 and ev.upcoming[0].release_utc == datetime(2026, 10, 12, 12, 30, tzinfo=timezone.utc)
+
+
+class TestEventsFileDate:
+    def test_datetime_is_matched_by_korean_date(self, tmp_path):
+        """한국 오전(UTC 전날 밤)에 만든 파일 — UTC 날짜로 찾으면 하루 전 파일을 읽는다(2026-10-15)."""
+        (tmp_path / "2026-10-14.json").write_text('{"v": 14}', encoding="utf-8"); (tmp_path / "2026-10-15.json").write_text('{"v": 15}', encoding="utf-8")
+        assert load_events_file(datetime(2026, 10, 14, 23, 31, tzinfo=timezone.utc), data_dir=tmp_path) == {"v": 15}
+        assert load_events_file(date(2026, 10, 14), data_dir=tmp_path) == {"v": 14}  # 날짜를 주면 그대로
+        assert load_events_file(datetime(2026, 10, 14, 10, 0, tzinfo=timezone.utc), data_dir=tmp_path) == {"v": 14}  # KST 19:00 10/14

@@ -390,3 +390,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 보정: `fill_prev_close.py` — Yahoo 일봉에서 10/13 봉이 통째로 빈 계열을 같은 공급자의 previousClose 로 하나만 채움(코스피 6,035.35 = 보도 종가). 환율(=X)·휴장 이월값(MOVE)은 제외 규칙. `refetch_fx.py` — 환율 3종 단독 재수집.
 - 버그 수정: `adapters/macro_fred.py` 의 FRED realtime 날짜를 미국 중부시간으로(한국 오전 실행 시 400) · `policy_events` 의 오늘 일정은 `release_utc` 전까지 UPCOMING 에 남김 · cockpit NEUTRAL 문장의 "없지만 있지만" 중복.
 - 실시간 NO REGIME 3일째 · 온도 −7, AI TRADE MIXED, 금리 Term Premium 5일째(INFLATION SIGNAL MIXED — 환율 전가 +32), 유가 Supply. History 10/13 LIVE → RECORDED(payload 동일), 10/14 LIVE.
+
+### 2026-10-15 — 14차 캡처 (08:32 KST 개장 전)
+- 새 캡처 `data/captures/2026-10-15-manual/` · 태그 `manual_tags_v13.py`(RSS 28건, LLM 없음) · 정책 이벤트 `data/policy_events/2026-10-15.json`(9월 CPI 결과 — 전년 3.7% vs 3.6%, 근원 2.6% · 0.3% 상회; 헤드라인 전월치는 FRED 지수로 확인).
+- 버그 수정: `load_events_file` 이 시각을 받으면 한국 날짜로 파일을 고른다(`policy_events.yaml file_timezone`) — UTC 날짜로 찾으면 한국 오전에 하루 전 파일을 읽었다. 테스트 추가. `fetch_macro.py` 는 live.json 대신 fetch_report 의 as_of 로 돈다.
+- 실시간 NO REGIME → LIQUIDITY STRESS(92%), AI-specific De-risking, 금리 RISK-OFF FLIGHT TO QUALITY(위험·유동성 −59), 물가 압력 MIXED(기대인플레 +48 · 실제 물가 −25), 유가 Supply.
+- History: 스냅샷 날짜가 UTC 라 이 수집은 10/14 의 마감 기록 — 10/14 LIVE(잠기지 않음)가 마감 데이터로 RECORDED 확정·잠금. 잠긴 행 변화 없음(HEAD 대비 확인).

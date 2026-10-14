@@ -2884,20 +2884,20 @@
    },
    "key_drivers": [],
    "data_coverage": 0.25,
-   "data_asof": "2026-10-14T01:32:02.155569Z",
+   "data_asof": "2026-10-14T23:34:27.126289Z",
    "missing_components": [
     "memory",
     "korea",
     "eps"
    ],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-14T01:33:02.004011Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-14T23:34:29.119382Z",
    "model_version": "memory_cycle_v0.1.0",
    "logic_version": "rules_9de0ac3d",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
+   "finalization": "daily_close",
    "summary": "글로벌 peer 하락 합의 · 국내 반도체 판단 불가 · 메모리 현물 방향 미정(봉 부족) · 컨센서스 데이터 없음. 방향을 말할 만큼 신호가 없다. DRAM 현물·DDR5 현물·NAND 현물·DXI 메모리 지수은 값은 있으나 봉이 4/20 이라 z 가 없다 — 방향 계산은 봉이 차면 ",
    "payload": {
     "directions": {

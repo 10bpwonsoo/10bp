@@ -2036,55 +2036,55 @@
   {
    "snapshot_date": "2026-10-14",
    "tab_id": "ai_regime",
-   "state": "mixed",
-   "state_label": "AI TRADE MIXED",
-   "state_label_ko": "AI 혼조",
-   "state_score": 64.8,
-   "confidence": 64.8,
+   "state": "ai_specific_derisking",
+   "state_label": "AI-SPECIFIC DE-RISKING",
+   "state_label_ko": "AI 고유 디레버리징",
+   "state_score": 80.0,
+   "confidence": 80.0,
    "component_scores": {
-    "basket_z_5d": -1.05,
-    "rel_ndx_5d": -1.5,
-    "rel_ndx_z_5d": -0.95,
-    "breadth_ma20": 59.0,
-    "news_tone": -2.8,
-    "driver:macro_rates": 19.7,
-    "driver:broad_risk_off": -15.2,
-    "driver:semi_cycle": -64.8,
-    "driver:ai_narrative": 9.6,
-    "driver:ai_fundamental_stress": 7.2
+    "basket_z_5d": -2.17,
+    "rel_ndx_5d": -4.5,
+    "rel_ndx_z_5d": -2.38,
+    "breadth_ma20": 31.0,
+    "news_tone": -5.8,
+    "driver:macro_rates": 50.1,
+    "driver:broad_risk_off": -79.0,
+    "driver:semi_cycle": -80.0,
+    "driver:ai_narrative": -32.0,
+    "driver:ai_fundamental_stress": -28.1
    },
    "key_drivers": [
-    "Semiconductor Cycle -65 CONFIRMED",
-    "Macro / Rates +20 UNCONFIRMED",
-    "Broad Risk-Off -15 UNCONFIRMED"
+    "Semiconductor Cycle -80 CONFIRMED",
+    "Broad Risk-Off -79 CONFIRMED",
+    "Macro / Rates +50 CONTRADICTED"
    ],
    "data_coverage": 1.0,
-   "data_asof": "2026-10-14T01:26:00.269404Z",
+   "data_asof": "2026-10-14T23:31:59.950733Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-14T01:34:56.354417Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-14T23:36:54.032627Z",
    "model_version": "ai_regime_v0.1.0",
    "logic_version": "rules_5be636bd",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
-   "summary": "AI 혼조. AI 바스켓 절대 하락(-1.1σ·5일, 5일 -3.6%) · Nasdaq 100 대비 underperform(5일 -1.5%p, 상대 z -0.9σ) — 시장보다 더 빠진다. AI 고유 요인을 의심한다. 가장 큰 driver 는 반도체 사이클(-65, driver 방향(하락)과 AI 바스켓(-1.1σ)이 같다.) breadth 59%(narrowing). 뉴스×가격 UNCLEAR. AI 고유 스트레스 MODERATE.",
+   "finalization": "daily_close",
+   "summary": "AI 고유 디레버리징. AI 바스켓 절대 하락(-2.6σ, 5일 -8.2%) · Nasdaq 100 대비 underperform(5일 -4.5%p, 상대 z -2.4σ) — 시장보다 더 빠진다. AI 고유 요인을 의심한다. 가장 큰 driver 는 반도체 사이클(-80, driver 방향(하락)과 AI 바스켓(-2.6σ)이 같다.) breadth 31%(narrowing). 뉴스×가격 UNCLEAR. AI 고유 스트레스 HIGH.",
    "payload": {
     "leadership": [
      "software",
      "hyperscalers",
-     "dc_infra",
-     "foundry"
+     "foundry",
+     "dc_infra"
     ],
     "lagging": [
      "memory_hbm",
-     "packaging",
+     "networking",
      "equipment"
     ],
     "leader_1w": "software_app",
     "breadth_trend": "narrowing",
-    "breadth_ma20": 59.0,
+    "breadth_ma20": 31.0,
     "price_confirmation": "WEAK",
     "fundamental_confirmation": "WEAK",
     "narrative": "unclear",
@@ -2092,18 +2092,18 @@
     "abs_direction": "down",
     "dominant": "semi_cycle",
     "status_strip": {
-     "narrative": "NEUTRAL",
-     "relative": "SOFT",
+     "narrative": "NEUTRAL−",
+     "relative": "WEAK",
      "price": "WEAK",
      "semi": "WEAK",
      "infra": "WEAK",
      "software": "STRONG",
      "breadth": "NARROWING",
-     "macro": "NEUTRAL",
+     "macro": "HEADWIND",
      "fundamental": "WEAK"
     },
-    "subtitle": "AI TRADE MIXED / FUNDAMENTALS WEAK",
-    "stress": "MODERATE"
+    "subtitle": "AI-SPECIFIC DE-RISKING / FUNDAMENTALS WEAK",
+    "stress": "HIGH"
    },
    "corrections": []
   }

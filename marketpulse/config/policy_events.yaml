@@ -2,6 +2,7 @@
 # 놀람 = 실제 − 컨센서스, 금리 반응 = 발표일 미국채 2Y·10Y 종가 − 직전 거래일 종가(FRED 일간). '확률' 이라는 말은 쓰지 않는다.
 
 data_dir: data/policy_events          # marketpulse/ 기준. as_of 이하의 가장 최근 파일을 읽는다
+file_timezone: Asia/Seoul             # 파일 이름(수기 확인일)의 기준 시간대 — as_of 시각을 이 날짜로 바꿔 고른다
 recent_window_days: 45                # 이보다 오래된 발표는 RECENT 에서 뺀다(정책 카드에는 최신 결정이 남는다)
 recent_default: 4                     # 미국 핵심 이벤트 4개 — 나머지(ECB·BOJ)는 중앙은행 칸과 View all
 upcoming_default: 5

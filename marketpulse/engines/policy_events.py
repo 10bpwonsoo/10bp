@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from functools import lru_cache
 from pathlib import Path
 from typing import Mapping
@@ -41,8 +42,14 @@ def load_policy_events_config(config_dir: Path | None = None) -> dict:
     return _load(config_dir)
 
 
-def load_events_file(as_of: date, *, data_dir: Path | None = None, config_dir: Path | None = None) -> dict | None:
-    """as_of 이하 날짜의 가장 최근 수기 파일. 없으면 None — 화면은 '확인된 이벤트 없음' 을 그린다."""
+def load_events_file(as_of: date | datetime, *, data_dir: Path | None = None, config_dir: Path | None = None) -> dict | None:
+    """
+    as_of 이하 날짜의 가장 최근 수기 파일. 없으면 None — 화면은 '확인된 이벤트 없음' 을 그린다.
+    파일 이름은 수기 확인한 날의 한국 날짜다. 시각(datetime)을 주면 한국 날짜로 바꿔 고른다 — 한국 오전(= UTC 전날)에 만든 파일을
+    UTC 날짜로 찾으면 하루 전 파일을 읽는다(2026-10-15). 파일 안의 발표·일정은 build_policy_events 가 as_of 로 다시 거른다.
+    """
+    if isinstance(as_of, datetime):
+        as_of = as_of.astimezone(ZoneInfo(str(load_policy_events_config(config_dir).get("file_timezone", "Asia/Seoul")))).date() if as_of.tzinfo else as_of.date()
     cfg = load_policy_events_config(config_dir)
     d = data_dir or (PKG_DIR / str(cfg.get("data_dir", "data/policy_events")))
     if not d.exists():

@@ -610,7 +610,7 @@ class MacroLayerService:
             with self._lock:
                 self._raw[day] = (time.monotonic(), raw if any(v.get("path") for v in raw.values()) else {})
         try:
-            return build_layer(raw, as_of=snapshot.as_of, curated=load_events_file(snapshot.as_of.date()), themes=snapshot.themes, events=snapshot.events)
+            return build_layer(raw, as_of=snapshot.as_of, curated=load_events_file(snapshot.as_of), themes=snapshot.themes, events=snapshot.events)
         except Exception:
             logger.exception("macro layer 구성 실패 — 물가 구성요소는 결측으로 둔다")
             return None
@@ -695,7 +695,7 @@ class RatesRegimeService:
             try:
                 from ..engines.policy_events import build_policy_events, load_events_file
 
-                ev = build_policy_events(load_events_file(snapshot.as_of.date()), self._checks._base.series(settings), result, as_of=snapshot.as_of)
+                ev = build_policy_events(load_events_file(snapshot.as_of), self._checks._base.series(settings), result, as_of=snapshot.as_of)
                 if ev is not None:
                     result = result.model_copy(update={"events": ev})
             except Exception:
