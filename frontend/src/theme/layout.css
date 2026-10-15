@@ -2464,9 +2464,9 @@
 @media (min-width: 1100px) {
   .ai.ai-ext {
     max-width: 1440px; width: calc(100% - 48px); margin: 0 auto; padding: 20px 24px 48px; box-sizing: border-box;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start;
     grid-template-areas:
-      "state state" "sent hist" "vm vm" "drv drv" "chain chain" "trans gap" "semi semi" "vc vc"
+      "state state" "sent sent" "hist hist" "vm vm" "drv drv" "chain chain" "trans gap" "semi semi" "vc vc"
       "grp grp" "brd brd" "impact impact" "radar radar" "news news" "nar nar" "macro macro" "stress stress"
       "matters matters" "changes changes" "diag diag";
     word-break: keep-all; overflow-wrap: break-word;
@@ -2474,8 +2474,8 @@
   .ai.ai-ext > * { min-width: 0; max-width: 100%; }
   .ai.ai-ext > [data-testid="ai-regime-card"] { grid-area: state; }
   .ai.ai-ext > [data-testid="ai-sentiment"] { grid-area: sent; }
-  /* REGIME HISTORY 는 SENTIMENT 보다 훨씬 짧다 — 위에 붙이고, 옆 SENTIMENT 를 읽는 동안 따라 내려오게 한다 */
-  .ai.ai-ext > [data-testid="history-panel-ai_regime"] { grid-area: hist; position: sticky; top: 12px; }
+  /* SENTIMENT · REGIME HISTORY 는 좌우로 나누지 않는다 — 각각 한 줄 전체 폭, 문서 흐름대로 스크롤(고정·따라붙기 없음) */
+  .ai.ai-ext > [data-testid="history-panel-ai_regime"] { grid-area: hist; position: static !important; top: auto !important; }
   .ai.ai-ext > [data-testid="ai-vs-market"] { grid-area: vm; }
   .ai.ai-ext > [data-testid="ai-drivers"] { grid-area: drv; }
   .ai.ai-ext > [data-testid="ai-chain-snapshot"] { grid-area: chain; }
@@ -2496,9 +2496,7 @@
   .ai.ai-ext > [data-testid="ai-diagnostics"] { grid-area: diag; }
   .ai.ai-ext .panel-body > *, .ai.ai-ext .panel-head > * { min-width: 0; }
   /* 절반 폭 패널은 제목을 한 줄로 두고 설명 메모를 아래 줄로 내린다 */
-  .ai.ai-ext > [data-testid="ai-sentiment"] > .panel-head, .ai.ai-ext > [data-testid="history-panel-ai_regime"] > .panel-head,
   .ai.ai-ext > [data-testid="ai-transmission"] > .panel-head, .ai.ai-ext > [data-testid="ai-gap"] > .panel-head { flex-wrap: wrap; row-gap: 2px; }
-  .ai.ai-ext > [data-testid="ai-sentiment"] .panel-title, .ai.ai-ext > [data-testid="history-panel-ai_regime"] .panel-title,
   .ai.ai-ext > [data-testid="ai-transmission"] .panel-title, .ai.ai-ext > [data-testid="ai-gap"] .panel-title { white-space: nowrap; }
 
   /* 1. AI MARKET STATE — 왼쪽 regime·핵심 수치, 오른쪽 Read·Key tension, 아래 상태 타일 */
@@ -2515,10 +2513,9 @@
   .ai.ai-ext [data-testid="ai-regime-card"] .ai-rread { grid-area: read; margin-top: 0; }
   .ai.ai-ext [data-testid="ai-regime-card"] .ai-tension { grid-area: tension; margin-top: 8px; align-self: start; }
 
-  /* 2. AI SENTIMENT(절반 폭) — 게이지 | 요인 막대는 그대로, 아래는 drivers 한 줄 + 1M·Read 두 칸 */
-  .ai.ai-ext [data-testid="ai-sentiment"] .gf-top { gap: 14px 20px; }
-  .ai.ai-ext [data-testid="ai-sentiment"] .gf-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
-  .ai.ai-ext [data-testid="ai-sentiment"] .gf-drv { grid-column: 1 / -1; }
+  /* 2. AI SENTIMENT(전체 폭) — 게이지 | 요인 막대, 아래는 원래 3칸(drivers | 1M | Read). 1M 차트가 지나치게 커지지 않는다 */
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-bottom { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.9fr); gap: 14px 24px; }
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-read { grid-column: auto; }
   .ai.ai-ext [data-testid="ai-sentiment"] .gf-fb-l b { white-space: nowrap; }
 
   /* 3. AI VS MARKET — 35% 요약 / 65% 표, MARKET READ 는 아래 */
