@@ -2455,3 +2455,107 @@
 .rp-src-table { display: flex; flex-direction: column; margin-top: 4px; font-size: 10.5px; }
 .rp-src-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px solid var(--rule-soft); }
 .rp-src-meta { grid-column: 1 / -1; font-size: 9.5px; color: var(--muted); }
+
+.ai-mac-h.desktop-only { display: none; }
+
+/* ── AI 탭 · DESKTOP 전용 레이아웃(2026-10-15) ─────────────────────────
+   ≥1100px 에서만, 확장 AI 탭(.ai.ai-ext)에만 적용한다. 모바일·태블릿(<1100px) 규칙과 DOM 은 그대로 둔다.
+   흐름: 현재 상태 → 시장 대비 → 원인 → 펀더멘털 → 밸류체인 → breadth → 종목 → 뉴스 → 매크로. 큰 섹션은 최대 2열. */
+@media (min-width: 1100px) {
+  .ai.ai-ext {
+    max-width: 1440px; width: calc(100% - 48px); margin: 0 auto; padding: 20px 24px 48px; box-sizing: border-box;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start;
+    grid-template-areas:
+      "state state" "sent hist" "vm vm" "drv drv" "chain chain" "trans gap" "semi semi" "vc vc"
+      "grp grp" "brd brd" "impact impact" "radar radar" "news news" "nar nar" "macro macro" "stress stress"
+      "matters matters" "changes changes" "diag diag";
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .ai.ai-ext > * { min-width: 0; max-width: 100%; }
+  .ai.ai-ext > [data-testid="ai-regime-card"] { grid-area: state; }
+  .ai.ai-ext > [data-testid="ai-sentiment"] { grid-area: sent; }
+  /* REGIME HISTORY 는 SENTIMENT 보다 훨씬 짧다 — 위에 붙이고, 옆 SENTIMENT 를 읽는 동안 따라 내려오게 한다 */
+  .ai.ai-ext > [data-testid="history-panel-ai_regime"] { grid-area: hist; position: sticky; top: 12px; }
+  .ai.ai-ext > [data-testid="ai-vs-market"] { grid-area: vm; }
+  .ai.ai-ext > [data-testid="ai-drivers"] { grid-area: drv; }
+  .ai.ai-ext > [data-testid="ai-chain-snapshot"] { grid-area: chain; }
+  .ai.ai-ext > [data-testid="ai-transmission"] { grid-area: trans; align-self: stretch; }
+  .ai.ai-ext > [data-testid="ai-gap"] { grid-area: gap; align-self: stretch; }
+  .ai.ai-ext > [data-testid="ai-semi-confirmation"] { grid-area: semi; }
+  .ai.ai-ext > [data-testid="ai-value-chain"] { grid-area: vc; }
+  .ai.ai-ext > [data-testid="ai-leadership"] { grid-area: grp; }
+  .ai.ai-ext > [data-testid="ai-breadth"] { grid-area: brd; }
+  .ai.ai-ext > [data-testid="ai-stock-impact"] { grid-area: impact; }
+  .ai.ai-ext > [data-testid="ai-radar"] { grid-area: radar; }
+  .ai.ai-ext > [data-testid="ai-news-impact"] { grid-area: news; }
+  .ai.ai-ext > [data-testid="ai-narrative"] { grid-area: nar; }
+  .ai.ai-ext > [data-testid="ai-macro"] { grid-area: macro; }
+  .ai.ai-ext > [data-testid="ai-stress"] { grid-area: stress; }
+  .ai.ai-ext > [data-testid="ai-what-matters"] { grid-area: matters; }
+  .ai.ai-ext > [data-testid="ai-what-changes"] { grid-area: changes; }
+  .ai.ai-ext > [data-testid="ai-diagnostics"] { grid-area: diag; }
+  .ai.ai-ext .panel-body > *, .ai.ai-ext .panel-head > * { min-width: 0; }
+  /* 절반 폭 패널은 제목을 한 줄로 두고 설명 메모를 아래 줄로 내린다 */
+  .ai.ai-ext > [data-testid="ai-sentiment"] > .panel-head, .ai.ai-ext > [data-testid="history-panel-ai_regime"] > .panel-head,
+  .ai.ai-ext > [data-testid="ai-transmission"] > .panel-head, .ai.ai-ext > [data-testid="ai-gap"] > .panel-head { flex-wrap: wrap; row-gap: 2px; }
+  .ai.ai-ext > [data-testid="ai-sentiment"] .panel-title, .ai.ai-ext > [data-testid="history-panel-ai_regime"] .panel-title,
+  .ai.ai-ext > [data-testid="ai-transmission"] .panel-title, .ai.ai-ext > [data-testid="ai-gap"] .panel-title { white-space: nowrap; }
+
+  /* 1. AI MARKET STATE — 왼쪽 regime·핵심 수치, 오른쪽 Read·Key tension, 아래 상태 타일 */
+  .ai.ai-ext [data-testid="ai-regime-card"] > .panel-body {
+    display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 28px; align-items: start;
+    grid-template-rows: auto 1fr auto auto auto;
+    grid-template-areas: "head read" "head tension" "headline headline" "impl impl" "strip strip";
+  }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-head { grid-area: head; }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-headline { grid-area: headline; }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-impl { grid-area: impl; }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-strip-wrap { display: contents; }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-strip { grid-area: strip; margin-top: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-rread { grid-area: read; margin-top: 0; }
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-tension { grid-area: tension; margin-top: 8px; align-self: start; }
+
+  /* 2. AI SENTIMENT(절반 폭) — 게이지 | 요인 막대는 그대로, 아래는 drivers 한 줄 + 1M·Read 두 칸 */
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-top { gap: 14px 20px; }
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-drv { grid-column: 1 / -1; }
+  .ai.ai-ext [data-testid="ai-sentiment"] .gf-fb-l b { white-space: nowrap; }
+
+  /* 3. AI VS MARKET — 35% 요약 / 65% 표, MARKET READ 는 아래 */
+  .ai.ai-ext .vm-top { grid-template-columns: minmax(0, 35fr) minmax(0, 65fr); gap: 12px 24px; }
+
+  /* 4. WHAT IS DRIVING AI? — verdict 위, 2열 카드. 기본은 Driver·Score·Direction·Confirmation·Why, 증거는 펼침 */
+  .ai.ai-ext .dv-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .ai.ai-ext .dv-card:not(.open) > .dv-sec-ev, .ai.ai-ext .dv-card:not(.open) > .dv-sec-pc { display: none; }
+  .ai.ai-ext .dv-ref { grid-template-columns: minmax(120px, 150px) minmax(0, 1fr) 44px 92px; }
+
+  /* 5. AI FUNDAMENTAL CHAIN */
+  .ai.ai-ext .ch-snap { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  /* EXPECTATIONS VS FUNDAMENTALS(절반 폭) — 1100~1399 는 세그먼트 | 막대 | gap 한 줄, 설명은 그 아래 줄(≥1400 은 한 줄) */
+  .ai.ai-ext [data-testid="ai-gap"] .ai-gap-row { grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) 64px; row-gap: 2px; }
+  .ai.ai-ext [data-testid="ai-gap"] .ai-gap-n { display: block; grid-column: 2 / -1; }
+  .ai.ai-ext .ch-sm { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+
+  /* 9. STOCK IMPACT MAP · STOCK RADAR — 종목 카드는 2열을 넘기지 않는다 */
+  .ai.ai-ext .sv-grid, .ai.ai-ext .sv-rd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* 10. NEWS IMPACT — 한 줄 행: 점수·헤드라인 | value chain·종목·가격 반응. 상세는 클릭 */
+  .ai.ai-ext .sv-nw { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 18px; align-items: baseline; }
+  .ai.ai-ext .sv-nw > .sv-nw-kv { padding-left: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px 12px; align-items: baseline; }
+  .ai.ai-ext .sv-nw > .sv-nw-kv > span { flex-direction: column; gap: 1px; min-width: 0; }
+  .ai.ai-ext .sv-nw > .sv-more { grid-column: 1 / -1; }
+
+  /* 11. MACRO CONFIRMATION — FACTOR · MOVE · EXPECTED AI IMPACT · STATUS 표 */
+  .ai.ai-ext .ai-mac { grid-template-columns: 14px minmax(0, 2fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(110px, 1fr); gap: 10px; }
+  .ai.ai-ext .ai-mac > :nth-child(4) { text-align: center; }
+  .ai.ai-ext .ai-mac-h.desktop-only { display: grid; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); border-bottom-color: var(--rule); }
+  .ai.ai-ext .ai-mac-h > :nth-child(3) { text-align: right; }
+  .ai.ai-ext .ai-mac-h > :nth-child(5) { text-align: right; }
+
+  /* 긴 식별자(티커·시리즈 ID)는 아무 곳에서나 끊어 세로 글자 없이 맞춘다 */
+  .ai.ai-ext .mono { overflow-wrap: anywhere; }
+}
+@media (min-width: 1400px) {
+  .ai.ai-ext [data-testid="ai-gap"] .ai-gap-row { grid-template-columns: minmax(120px, 150px) minmax(0, 1fr) 64px minmax(0, 1fr); }
+  .ai.ai-ext [data-testid="ai-gap"] .ai-gap-n { grid-column: auto; }
+}

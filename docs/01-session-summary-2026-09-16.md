@@ -396,3 +396,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 버그 수정: `load_events_file` 이 시각을 받으면 한국 날짜로 파일을 고른다(`policy_events.yaml file_timezone`) — UTC 날짜로 찾으면 한국 오전에 하루 전 파일을 읽었다. 테스트 추가. `fetch_macro.py` 는 live.json 대신 fetch_report 의 as_of 로 돈다.
 - 실시간 NO REGIME → LIQUIDITY STRESS(92%), AI-specific De-risking, 금리 RISK-OFF FLIGHT TO QUALITY(위험·유동성 −59), 물가 압력 MIXED(기대인플레 +48 · 실제 물가 −25), 유가 Supply.
 - History: 스냅샷 날짜가 UTC 라 이 수집은 10/14 의 마감 기록 — 10/14 LIVE(잠기지 않음)가 마감 데이터로 RECORDED 확정·잠금. 잠긴 행 변화 없음(HEAD 대비 확인).
+
+### 2026-10-15 — AI 탭 데스크톱 전용 레이아웃
+- 범위: `@media (min-width: 1100px)` 와 확장 AI 탭 루트 `.ai.ai-ext` 에만 적용(`theme/layout.css` 끝). 1100px 미만 규칙·카드 구성·순서·문구·접힘은 그대로. 분석·데이터·history 로직 변경 없음.
+- 원인: 전역 `.span-3` 가 1400px 이상에서만 켜져 1101~1399px 에서 큰 섹션이 3열 그리드의 한 칸(≈419px)으로 떨어짐 → 글자가 세로로 끊기고(Driver verdict) 가로 스크롤(1280px 에서 scrollWidth 1390) 발생.
+- 데스크톱 흐름(최대 2열, `grid-template-areas`): AI Trade Regime(왼쪽 regime·핵심 수치 / 오른쪽 Regime Read·Key tension / 아래 상태 타일 5열) → Sentiment | Regime History(History 는 sticky) → AI vs Market(35/65) → What Is Driving AI?(verdict + 2열 카드, 증거·Price check 는 카드를 펼칠 때) → Chain Snapshot → Transmission | Expectations vs Fundamentals → Semiconductor Confirmation → Value-Chain Leadership → Basket Groups → Breadth → Stock Impact Map(2열) → Stock Radar(2열) → News(점수·헤드라인 | value chain·종목·가격 반응 한 줄, 상세는 클릭) → Narrative × Price → Macro Confirmation(FACTOR·MOVE·EXPECTED AI IMPACT·STATUS 머리줄) → Stress → What Matters → What Changes → Details.
+- DOM: 루트에 `ai-ext` 클래스, DriverCard 섹션에 `dv-sec-ev`·`dv-sec-pc` 훅 클래스, Macro 표 머리줄 `.ai-mac-h.desktop-only`(1100px 미만에서는 `display: none`).
+- 검증: 390/430/768px 전체 화면 스크린샷 해시·모든 요소 위치/크기/글꼴/여백 해시가 변경 전과 동일. 1100/1280/1440/1920px 가로 스크롤 없음, 세로 글자 없음. vitest 95개 통과.

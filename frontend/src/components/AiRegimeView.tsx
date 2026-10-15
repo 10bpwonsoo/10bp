@@ -121,7 +121,7 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
     { label: "S&P 500", r1: null, r5: a.spx_ret_5d, r21: a.spx_ret_21d, z: null, w: null },
   ];
   return (
-    <div className="ai" data-testid="ai-regime">
+    <div className={extended ? "ai ai-ext" : "ai"} data-testid="ai-regime">
       {/* 1. AI TRADE REGIME */}
       <section className="panel span-3 ai-regime" data-testid="ai-regime-card">
         <header className="panel-head"><h2 className="panel-title">AI Trade Regime</h2><div className="panel-note mono">{new Date(regime.as_of).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" })} KST · 바스켓 {a.members_used}/{a.members_total} · 마지막 봉 {a.last_date ?? "–"}</div></header>
@@ -272,7 +272,7 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
       <section className="panel span-2" data-testid="ai-macro">
         <header className="panel-head"><h2 className="panel-title">Macro Confirmation</h2><div className="panel-note mono">설명 {m.explains}/{m.evaluated} · <span style={{ color: m.verdict === "ai_specific" ? "var(--crit)" : m.verdict === "macro_driven" ? "var(--info)" : "var(--muted)" }}>{VERDICT_KO[m.verdict]}</span></div></header>
         <div className="panel-body">
-          <div className="ai-macs" role="table" aria-label="매크로 확인">{m.rows.map((r) => <MacroRowView key={r.key} r={r} />)}</div>
+          <div className="ai-macs" role="table" aria-label="매크로 확인">{extended ? <div className="ai-mac ai-mac-h desktop-only mono" aria-hidden="true"><span /><span>Factor</span><span>Move</span><span>Expected AI impact</span><span>Status</span></div> : null}{m.rows.map((r) => <MacroRowView key={r.key} r={r} />)}</div>
           <p className="ai-sent" data-testid="ai-macro-verdict" data-verdict={m.verdict}>{m.sentence}</p>
         </div>
       </section>
