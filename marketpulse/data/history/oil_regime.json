@@ -1,0 +1,2414 @@
+{
+ "tab_id": "oil_regime",
+ "note": "append-only daily snapshots — locked rows are never rewritten by routine updates",
+ "snapshots": [
+  {
+   "snapshot_date": "2026-09-04",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -30.8,
+   "confidence": 30.8,
+   "component_scores": {
+    "driver:macro_liquidity": -20.7,
+    "driver:demand": 4.2,
+    "driver:supply": -14.5,
+    "driver:geopolitical": -30.8,
+    "brent_z": 0.2057229333959177,
+    "wti_z": 0.04296249465123413,
+    "oil_z": 0.12434271402357593
+   },
+   "key_drivers": [
+    "Geopolitical Premium -31 UNCONFIRMED",
+    "Macro / Liquidity -21 UNCONFIRMED",
+    "Supply -14 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-04T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.535999Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(-31, MODERATE) — 거시·유동성 (위험회피) -21 보다 10 앞선다. 상태 미확인: 유가가 평탄하다(+0.1σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — UNCONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "macro_liquidity",
+    "margin": 10.1,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -20.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 4.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -14.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -30.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "confirms",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "contradicts",
+     "구리 / 경기민감": "neutral",
+     "금": "contradicts"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-08",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -21.2,
+   "confidence": 21.2,
+   "component_scores": {
+    "driver:macro_liquidity": -21.2,
+    "driver:demand": 10.4,
+    "driver:supply": 12.8,
+    "driver:geopolitical": 0.1,
+    "brent_z": 0.46744131758778157,
+    "wti_z": 0.5113235274264265,
+    "oil_z": 0.48938242250710406
+   },
+   "key_drivers": [
+    "Macro / Liquidity -21 UNCONFIRMED",
+    "Supply +13 UNCONFIRMED",
+    "Demand +10 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-08T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.602140Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-21, WEAK) — 공급 (물리적 타이트) +13 보다 8 앞선다. 상태 미확인: 증거가 약하다(|-21| < 25).",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 8.4,
+    "signal_strength_label": "WEAK",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -21.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 10.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 12.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 0.1,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-09",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -24.1,
+   "confidence": 24.1,
+   "component_scores": {
+    "driver:macro_liquidity": -24.1,
+    "driver:demand": 10.0,
+    "driver:supply": -3.2,
+    "driver:geopolitical": -3.5,
+    "brent_z": 0.9120324506054236,
+    "wti_z": 0.9610825866205129,
+    "oil_z": 0.9365575186129682
+   },
+   "key_drivers": [
+    "Macro / Liquidity -24 UNCONFIRMED",
+    "Demand +10 UNCONFIRMED",
+    "Geopolitical Premium -4 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-09T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.668270Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-24, WEAK) — 수요 (경기) +10 보다 14 앞선다. 상태 미확인: 증거가 약하다(|-24| < 25).",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 14.1,
+    "signal_strength_label": "WEAK",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -24.1,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 10.0,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -3.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -3.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "neutral",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "up",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-10",
+   "tab_id": "oil_regime",
+   "state": "demand",
+   "state_label": "Demand — CONTRADICTED",
+   "state_label_ko": "",
+   "state_score": -64.5,
+   "confidence": 64.5,
+   "component_scores": {
+    "driver:macro_liquidity": -60.5,
+    "driver:demand": -64.5,
+    "driver:supply": -33.0,
+    "driver:geopolitical": 2.9,
+    "brent_z": 1.7022043521550592,
+    "wti_z": 1.9512403025967489,
+    "oil_z": 1.826722327375904
+   },
+   "key_drivers": [
+    "Demand -64 CONTRADICTED",
+    "Macro / Liquidity -60 CONTRADICTED",
+    "Supply -33 CONTRADICTED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-10T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.734334Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-64, STRONG) — 거시·유동성 (위험회피) -60 보다 4 앞선다. 상태 반박됨: driver 는 하락 압력인데 유가는 반대(+1.8σ)로 움직였다.",
+   "payload": {
+    "regime_label": "Demand — CONTRADICTED",
+    "dominant": "demand",
+    "runner_up": "macro_liquidity",
+    "margin": 4.0,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -60.5,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -64.5,
+      "status": "CONTRADICTED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -33.0,
+      "status": "CONTRADICTED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 2.9,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+    "oil_direction": "up",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-11",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -48.6,
+   "confidence": 48.6,
+   "component_scores": {
+    "driver:macro_liquidity": 22.4,
+    "driver:demand": -17.5,
+    "driver:supply": -10.4,
+    "driver:geopolitical": -48.6,
+    "brent_z": -0.9400495898210436,
+    "wti_z": -0.8627083415639519,
+    "oil_z": -0.9013789656924978
+   },
+   "key_drivers": [
+    "Geopolitical Premium -49 CONFIRMED",
+    "Macro / Liquidity +22 UNCONFIRMED",
+    "Demand -18 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-11T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.799911Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(-49, MODERATE) — 거시·유동성 (위험회피) +22 보다 26 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-0.9σ)가 같다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — CONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "macro_liquidity",
+    "margin": 26.2,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 22.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -17.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -10.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -48.6,
+      "status": "CONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "neutral",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "contradicts",
+     "구리 / 경기민감": "neutral",
+     "금": "contradicts"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-14",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -74.0,
+   "confidence": 74.0,
+   "component_scores": {
+    "driver:macro_liquidity": -74.0,
+    "driver:demand": -28.7,
+    "driver:supply": -19.3,
+    "driver:geopolitical": -10.4,
+    "brent_z": 0.15985795701333264,
+    "wti_z": 0.27689936773779694,
+    "oil_z": 0.2183786623755648
+   },
+   "key_drivers": [
+    "Macro / Liquidity -74 UNCONFIRMED",
+    "Demand -29 UNCONFIRMED",
+    "Supply -19 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-14T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.865116Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-74, STRONG) — 수요 (경기) -29 보다 45 앞선다. 상태 미확인: 유가가 평탄하다(+0.2σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 45.3,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -74.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -28.7,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -19.3,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -10.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-15",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — CONTRADICTED",
+   "state_label_ko": "",
+   "state_score": -60.6,
+   "confidence": 60.6,
+   "component_scores": {
+    "driver:macro_liquidity": -60.6,
+    "driver:demand": -48.2,
+    "driver:supply": 58.2,
+    "driver:geopolitical": -10.4,
+    "brent_z": 0.6960988282364226,
+    "wti_z": 1.2115797131805646,
+    "oil_z": 0.9538392707084935
+   },
+   "key_drivers": [
+    "Macro / Liquidity -61 CONTRADICTED",
+    "Supply +58 CONFIRMED",
+    "Demand -48 CONTRADICTED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-15T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:36.931517Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-61, STRONG) — 공급 (물리적 타이트) +58 보다 2 앞선다. 상태 반박됨: driver 는 하락 압력인데 유가는 반대(+1.0σ)로 움직였다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — CONTRADICTED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 2.4,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -60.6,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -48.2,
+      "status": "CONTRADICTED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 58.2,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -10.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "up",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-16",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -61.9,
+   "confidence": 61.9,
+   "component_scores": {
+    "driver:macro_liquidity": 2.9,
+    "driver:demand": -44.1,
+    "driver:supply": -61.9,
+    "driver:geopolitical": 25.8,
+    "brent_z": -0.938817141000512,
+    "wti_z": -1.191792611801959,
+    "oil_z": -1.0653048764012354
+   },
+   "key_drivers": [
+    "Supply -62 CONFIRMED",
+    "Demand -44 CONFIRMED",
+    "Geopolitical Premium +26 CONTRADICTED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-16T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.000786Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-62, STRONG) — 수요 (경기) -44 보다 18 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-1.1σ)가 같다.",
+   "payload": {
+    "regime_label": "Supply — CONFIRMED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 17.8,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 2.9,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -44.1,
+      "status": "CONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -61.9,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 25.8,
+      "status": "CONTRADICTED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-17",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 40.6,
+   "confidence": 40.6,
+   "component_scores": {
+    "driver:macro_liquidity": 40.6,
+    "driver:demand": 40.4,
+    "driver:supply": -18.4,
+    "driver:geopolitical": -33.0,
+    "brent_z": -0.4258133858813694,
+    "wti_z": -0.32181984612770576,
+    "oil_z": -0.3738166160045376
+   },
+   "key_drivers": [
+    "Macro / Liquidity +41 UNCONFIRMED",
+    "Demand +40 UNCONFIRMED",
+    "Geopolitical Premium -33 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-17T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.062098Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(+41, MODERATE) — 수요 (경기) +40 보다 0 앞선다. 상태 미확인: 유가가 평탄하다(-0.4σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 0.2,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 40.6,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 40.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -18.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -33.0,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "confirms",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-18",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -25.2,
+   "confidence": 25.2,
+   "component_scores": {
+    "driver:macro_liquidity": -10.5,
+    "driver:demand": 22.6,
+    "driver:supply": -25.2,
+    "driver:geopolitical": -11.4,
+    "brent_z": -0.412328375113245,
+    "wti_z": -0.6716796463685925,
+    "oil_z": -0.5420040107409188
+   },
+   "key_drivers": [
+    "Supply -25 CONFIRMED",
+    "Demand +23 UNCONFIRMED",
+    "Geopolitical Premium -11 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-18T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.125341Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-25, MODERATE) — 수요 (경기) +23 보다 3 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-0.5σ)가 같다.",
+   "payload": {
+    "regime_label": "Supply — CONFIRMED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 2.6,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -10.5,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 22.6,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -25.2,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -11.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-21",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -88.1,
+   "confidence": 88.1,
+   "component_scores": {
+    "driver:macro_liquidity": 36.8,
+    "driver:demand": 68.7,
+    "driver:supply": -88.1,
+    "driver:geopolitical": -29.1,
+    "brent_z": -1.186750503747488,
+    "wti_z": -1.652537877722105,
+    "oil_z": -1.4196441907347963
+   },
+   "key_drivers": [
+    "Supply -88 CONFIRMED",
+    "Demand +69 CONTRADICTED",
+    "Macro / Liquidity +37 CONTRADICTED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-21T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.196375Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-88, STRONG) — 수요 (경기) +69 보다 19 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-1.4σ)가 같다.",
+   "payload": {
+    "regime_label": "Supply — CONFIRMED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 19.4,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 36.8,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 68.7,
+      "status": "CONTRADICTED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -88.1,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -29.1,
+      "status": "CONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-22",
+   "tab_id": "oil_regime",
+   "state": "demand",
+   "state_label": "Demand — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 57.8,
+   "confidence": 57.8,
+   "component_scores": {
+    "driver:macro_liquidity": 45.1,
+    "driver:demand": 57.8,
+    "driver:supply": -45.5,
+    "driver:geopolitical": -46.2,
+    "brent_z": -0.4584183607128786,
+    "wti_z": -0.5380266602373991,
+    "oil_z": -0.4982225104751389
+   },
+   "key_drivers": [
+    "Demand +58 UNCONFIRMED",
+    "Geopolitical Premium -46 UNCONFIRMED",
+    "Supply -46 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-22T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.287817Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(+58, STRONG) — 지정학 프리미엄 -46 보다 12 앞선다. 상태 미확인: 유가가 평탄하다(-0.5σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Demand — UNCONFIRMED",
+    "dominant": "demand",
+    "runner_up": "geopolitical",
+    "margin": 11.6,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 45.1,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 57.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -45.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -46.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "neutral"
+    },
+    "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-23",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -54.7,
+   "confidence": 54.7,
+   "component_scores": {
+    "driver:macro_liquidity": -54.7,
+    "driver:demand": 21.7,
+    "driver:supply": -24.9,
+    "driver:geopolitical": 1.1,
+    "brent_z": 0.9636897627374678,
+    "wti_z": -0.9851012092511302,
+    "oil_z": -0.010705723256831223
+   },
+   "key_drivers": [
+    "Macro / Liquidity -55 UNCONFIRMED",
+    "Supply -25 UNCONFIRMED",
+    "Demand +22 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-23T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.359960Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-55, STRONG) — 공급 (물리적 타이트) -25 보다 30 앞선다. 상태 미확인: 유가 관측이 의심스러워(브렌트·WTI 불일치) 확인을 보류한다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 29.8,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -54.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 21.7,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -24.9,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 1.1,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "neutral",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": true
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-24",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — CONTRADICTED",
+   "state_label_ko": "",
+   "state_score": -61.2,
+   "confidence": 61.2,
+   "component_scores": {
+    "driver:macro_liquidity": -61.2,
+    "driver:demand": 23.6,
+    "driver:supply": -19.3,
+    "driver:geopolitical": -18.6,
+    "brent_z": 0.8201601394585643,
+    "wti_z": 0.6848455965685467,
+    "oil_z": 0.7525028680135555
+   },
+   "key_drivers": [
+    "Macro / Liquidity -61 CONTRADICTED",
+    "Demand +24 UNCONFIRMED",
+    "Supply -19 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-24T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.425373Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-61, STRONG) — 수요 (경기) +24 보다 38 앞선다. 상태 반박됨: driver 는 하락 압력인데 유가는 반대(+0.8σ)로 움직였다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — CONTRADICTED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 37.6,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -61.2,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 23.6,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -19.3,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -18.6,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "confirms",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "up",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-25",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -42.3,
+   "confidence": 42.3,
+   "component_scores": {
+    "driver:macro_liquidity": -42.3,
+    "driver:demand": 1.2,
+    "driver:supply": -27.3,
+    "driver:geopolitical": -24.8,
+    "brent_z": -0.8186877973885381,
+    "wti_z": -0.8997290253872603,
+    "oil_z": -0.8592084113878993
+   },
+   "key_drivers": [
+    "Macro / Liquidity -42 CONFIRMED",
+    "Supply -27 CONFIRMED",
+    "Geopolitical Premium -25 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-25T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.490341Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-42, MODERATE) — 공급 (물리적 타이트) -27 보다 15 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-0.9σ)가 같다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — CONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 15.0,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -42.3,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 1.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -27.3,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -24.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-28",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -81.9,
+   "confidence": 81.9,
+   "component_scores": {
+    "driver:macro_liquidity": -81.9,
+    "driver:demand": -39.5,
+    "driver:supply": -50.8,
+    "driver:geopolitical": -24.8,
+    "brent_z": 0.0842830919108498,
+    "wti_z": -0.09117278291078443,
+    "oil_z": -0.0034448454999673125
+   },
+   "key_drivers": [
+    "Macro / Liquidity -82 UNCONFIRMED",
+    "Supply -51 UNCONFIRMED",
+    "Demand -40 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-28T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.576073Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-82, STRONG) — 공급 (물리적 타이트) -51 보다 31 앞선다. 상태 미확인: 유가가 평탄하다(-0.0σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 31.1,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -81.9,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -39.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -50.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -24.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-29",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -79.7,
+   "confidence": 79.7,
+   "component_scores": {
+    "driver:macro_liquidity": -79.7,
+    "driver:demand": -14.5,
+    "driver:supply": -0.0,
+    "driver:geopolitical": 20.0,
+    "brent_z": -1.8663769534795696,
+    "wti_z": 0.06708464193816029,
+    "oil_z": -0.8996461557707046
+   },
+   "key_drivers": [
+    "Macro / Liquidity -80 UNCONFIRMED",
+    "Geopolitical Premium +20 UNCONFIRMED",
+    "Demand -14 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-09-29T00:45:02.311551Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-09-29T00:45:02.311551Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-80, STRONG) — 지정학 프리미엄 +20 보다 60 앞선다. 상태 미확인: 유가 관측이 의심스러워(브렌트·WTI 불일치) 확인을 보류한다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "geopolitical",
+    "margin": 59.7,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -79.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -14.5,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -0.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 20.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "neutral",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "confirms",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "down",
+    "suspect": true
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-30",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -58.4,
+   "confidence": 58.4,
+   "component_scores": {
+    "driver:macro_liquidity": -58.4,
+    "driver:demand": -24.9,
+    "driver:supply": -31.2,
+    "driver:geopolitical": -8.2,
+    "brent_z": 0.09345587365786821,
+    "wti_z": 0.22055796917311313,
+    "oil_z": 0.15700692141549066
+   },
+   "key_drivers": [
+    "Macro / Liquidity -58 UNCONFIRMED",
+    "Supply -31 UNCONFIRMED",
+    "Demand -25 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-09-30T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.655468Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-58, STRONG) — 공급 (물리적 타이트) -31 보다 27 앞선다. 상태 미확인: 유가가 평탄하다(+0.2σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "supply",
+    "margin": 27.2,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -58.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -24.9,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -31.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -8.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-01",
+   "tab_id": "oil_regime",
+   "state": "demand",
+   "state_label": "Demand — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -47.2,
+   "confidence": 47.2,
+   "component_scores": {
+    "driver:macro_liquidity": -37.2,
+    "driver:demand": -47.2,
+    "driver:supply": 19.9,
+    "driver:geopolitical": 6.2,
+    "brent_z": -0.5078857879716429,
+    "wti_z": 0.6993571083891837,
+    "oil_z": 0.09573566020877045
+   },
+   "key_drivers": [
+    "Demand -47 UNCONFIRMED",
+    "Macro / Liquidity -37 UNCONFIRMED",
+    "Supply +20 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-10-01T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.718655Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-47, MODERATE) — 거시·유동성 (위험회피) -37 보다 10 앞선다. 상태 미확인: 유가가 평탄하다(+0.1σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Demand — UNCONFIRMED",
+    "dominant": "demand",
+    "runner_up": "macro_liquidity",
+    "margin": 10.0,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -37.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -47.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 19.9,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 6.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-02",
+   "tab_id": "oil_regime",
+   "state": "demand",
+   "state_label": "Demand — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -30.6,
+   "confidence": 30.6,
+   "component_scores": {
+    "driver:macro_liquidity": 23.3,
+    "driver:demand": -30.6,
+    "driver:supply": -13.7,
+    "driver:geopolitical": -23.5,
+    "brent_z": -0.1508272285719351,
+    "wti_z": -0.7192122865164631,
+    "oil_z": -0.4350197575441991
+   },
+   "key_drivers": [
+    "Demand -31 UNCONFIRMED",
+    "Geopolitical Premium -24 UNCONFIRMED",
+    "Macro / Liquidity +23 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-10-02T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.780046Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-31, MODERATE) — 지정학 프리미엄 -24 보다 7 앞선다. 상태 미확인: 유가가 평탄하다(-0.4σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Demand — UNCONFIRMED",
+    "dominant": "demand",
+    "runner_up": "geopolitical",
+    "margin": 7.1,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 23.3,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -30.6,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -13.7,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -23.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "contradicts",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "neutral",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-05",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONTRADICTED",
+   "state_label_ko": "",
+   "state_score": 28.5,
+   "confidence": 28.5,
+   "component_scores": {
+    "driver:macro_liquidity": -10.9,
+    "driver:demand": 17.5,
+    "driver:supply": 28.5,
+    "driver:geopolitical": -1.0,
+    "brent_z": -0.7109933857678684,
+    "wti_z": -0.7034295920471401,
+    "oil_z": -0.7072114889075043
+   },
+   "key_drivers": [
+    "Supply +28 CONTRADICTED",
+    "Demand +18 UNCONFIRMED",
+    "Macro / Liquidity -11 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-10-05T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:37.846488Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(+28, MODERATE) — 수요 (경기) +18 보다 11 앞선다. 상태 반박됨: driver 는 상승 압력인데 유가는 반대(-0.7σ)로 움직였다.",
+   "payload": {
+    "regime_label": "Supply — CONTRADICTED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 11.0,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -10.9,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 17.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 28.5,
+      "status": "CONTRADICTED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -1.0,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-06",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 20.9,
+   "confidence": 20.9,
+   "component_scores": {
+    "driver:macro_liquidity": 20.9,
+    "driver:demand": 6.7,
+    "driver:supply": -3.6,
+    "driver:geopolitical": 4.7,
+    "brent_z": -0.29959101332330335,
+    "wti_z": -0.4284600074693872,
+    "oil_z": -0.3640255103963453
+   },
+   "key_drivers": [
+    "Macro / Liquidity +21 UNCONFIRMED",
+    "Demand +7 UNCONFIRMED",
+    "Geopolitical Premium +5 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-06T07:40:10.261908Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-06T07:40:10.261908Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(+21, WEAK) — 수요 (경기) +7 보다 14 앞선다. 상태 미확인: 증거가 약하다(|+21| < 25).",
+   "payload": {
+    "regime_label": "Macro / Liquidity — UNCONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 14.2,
+    "signal_strength_label": "WEAK",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 20.9,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 6.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -3.6,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 4.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "confirms",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-07",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 18.4,
+   "confidence": 18.4,
+   "component_scores": {
+    "driver:macro_liquidity": 13.2,
+    "driver:demand": -3.0,
+    "driver:supply": 18.4,
+    "driver:geopolitical": -6.2,
+    "brent_z": 0.20301728244711428,
+    "wti_z": 0.1994130067336749,
+    "oil_z": 0.20121514459039458
+   },
+   "key_drivers": [
+    "Supply +18 UNCONFIRMED",
+    "Macro / Liquidity +13 UNCONFIRMED",
+    "Geopolitical Premium -6 UNCONFIRMED"
+   ],
+   "data_coverage": 0.88625,
+   "data_asof": "2026-10-07T04:23:51.509390Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-07T04:23:51.509390Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(+18, WEAK) — 거시·유동성 (위험회피) +13 보다 5 앞선다. 상태 미확인: 증거가 약하다(|+18| < 25).",
+   "payload": {
+    "regime_label": "Supply — UNCONFIRMED",
+    "dominant": "supply",
+    "runner_up": "macro_liquidity",
+    "margin": 5.2,
+    "signal_strength_label": "WEAK",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 13.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -3.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 18.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -6.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "contradicts",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-08",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": 92.8,
+   "confidence": 92.8,
+   "component_scores": {
+    "driver:macro_liquidity": -1.0,
+    "driver:demand": -27.7,
+    "driver:supply": 92.8,
+    "driver:geopolitical": 6.5,
+    "brent_z": 1.1686410044175044,
+    "wti_z": 1.1295032148803914,
+    "oil_z": 1.149072109648948
+   },
+   "key_drivers": [
+    "Supply +93 CONFIRMED",
+    "Demand -28 CONTRADICTED",
+    "Geopolitical Premium +6 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-10-08T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:15:38.025366Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(+93, STRONG) — 수요 (경기) -28 보다 65 앞선다. 상태 확인됨: driver 방향(상승)과 유가(+1.1σ)가 같다.",
+   "payload": {
+    "regime_label": "Supply — CONFIRMED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 65.1,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -1.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -27.7,
+      "status": "CONTRADICTED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 92.8,
+      "status": "CONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 6.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "up",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-09",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 49.1,
+   "confidence": 49.1,
+   "component_scores": {
+    "driver:macro_liquidity": 15.9,
+    "driver:demand": 38.0,
+    "driver:supply": 49.1,
+    "driver:geopolitical": 26.2,
+    "brent_z": 0.024707881267400943,
+    "wti_z": 0.05292210204494093,
+    "oil_z": 0.03881499165617094
+   },
+   "key_drivers": [
+    "Supply +49 UNCONFIRMED",
+    "Demand +38 UNCONFIRMED",
+    "Geopolitical Premium +26 UNCONFIRMED"
+   ],
+   "data_coverage": 0.63925,
+   "data_asof": "2026-10-09T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:15:38.094698Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(+49, MODERATE) — 수요 (경기) +38 보다 11 앞선다. 상태 미확인: 유가가 평탄하다(+0.0σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Supply — UNCONFIRMED",
+    "dominant": "supply",
+    "runner_up": "demand",
+    "margin": 11.1,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 15.9,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 38.0,
+      "status": "UNCONFIRMED",
+      "coverage": 0.762
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 49.1,
+      "status": "UNCONFIRMED",
+      "coverage": 0.25
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 26.2,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "neutral",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "missing",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-12",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 36.2,
+   "confidence": 36.2,
+   "component_scores": {
+    "driver:macro_liquidity": 14.6,
+    "driver:demand": 13.1,
+    "driver:supply": -10.3,
+    "driver:geopolitical": 36.2,
+    "brent_z": -0.3251723457551715,
+    "wti_z": -0.4731052477751685,
+    "oil_z": -0.39913879676517
+   },
+   "key_drivers": [
+    "Geopolitical Premium +36 UNCONFIRMED",
+    "Macro / Liquidity +15 UNCONFIRMED",
+    "Demand +13 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-12T06:09:54.750991Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(+36, MODERATE) — 거시·유동성 (위험회피) +15 보다 22 앞선다. 상태 미확인: 유가가 평탄하다(-0.4σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — UNCONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "macro_liquidity",
+    "margin": 21.6,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 14.6,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 13.1,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -10.3,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 36.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "neutral",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "neutral",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "confirms",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 27.0,
+   "confidence": 27.0,
+   "component_scores": {
+    "driver:macro_liquidity": -11.4,
+    "driver:demand": 14.4,
+    "driver:supply": 15.3,
+    "driver:geopolitical": 27.0,
+    "brent_z": 0.2655721809397995,
+    "wti_z": 0.3978771655586847,
+    "oil_z": 0.3317246732492421
+   },
+   "key_drivers": [
+    "Geopolitical Premium +27 UNCONFIRMED",
+    "Supply +15 UNCONFIRMED",
+    "Demand +14 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-13T00:12:16.061019Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(+27, MODERATE) — 공급 (물리적 타이트) +15 보다 12 앞선다. 상태 미확인: 유가가 평탄하다(+0.3σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — UNCONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "supply",
+    "margin": 11.7,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -11.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 14.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 15.3,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 27.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "neutral",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-14",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 53.5,
+   "confidence": 53.5,
+   "component_scores": {
+    "driver:macro_liquidity": -36.3,
+    "driver:demand": -25.2,
+    "driver:supply": 53.5,
+    "driver:geopolitical": 36.2,
+    "brent_z": -0.10400758197961726,
+    "wti_z": 0.17189990304053102,
+    "oil_z": 0.033946160530456876
+   },
+   "key_drivers": [
+    "Supply +54 UNCONFIRMED",
+    "Macro / Liquidity -36 UNCONFIRMED",
+    "Geopolitical Premium +36 UNCONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-14T23:31:59.950733Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-14T23:36:25.568875Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(+54, STRONG) — 거시·유동성 (위험회피) -36 보다 17 앞선다. 상태 미확인: 유가가 평탄하다(+0.0σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Supply — UNCONFIRMED",
+    "dominant": "supply",
+    "runner_up": "macro_liquidity",
+    "margin": 17.2,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -36.3,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -25.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 53.5,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 36.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "confirms",
+     "기대인플레이션 (BE10Y)": "confirms",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
+  }
+ ]
+}

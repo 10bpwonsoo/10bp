@@ -1,0 +1,114 @@
+# 금리 탭 MARKET READ (2026-10-13) — LLM Macro + Rates Investment Interpretation.
+# 정량 엔진이 계산한 값 + 출처 확인된 이벤트 + 수집된 뉴스만 컨텍스트로 넘긴다. LLM 은 판정을 바꾸지 않고 '해석'만 쓴다.
+# LLM 이 꺼져 있거나 실패하거나 검증을 못 넘으면 규칙 기반 문장(rates_regime.yaml top.read)으로 돌아가고 화면에 그렇게 표시한다.
+
+effort: high                    # 해석 품질이 중요하다 — 추출(low)·요약(medium)보다 높게
+max_tokens: 16000               # adaptive thinking 포함 상한
+timeout_sec: 120
+retries_on_invalid: 1           # 검증 실패 시 문제를 알려주고 한 번 더. 그래도 안 되면 규칙 기반
+
+#: 컨텍스트 — 금리
+rates:
+  tenors: [US2Y, US5Y, US10Y, US30Y]
+  curve: {"2s10s": [US2Y, US10Y], "5s30s": [US5Y, US30Y]}
+  real: [TIPS10Y, TIPS5Y]
+  breakeven: [BE10Y, BE5Y]
+  term_premium_driver: term_premium   # 기간 프리미엄 직접 추정치(ACM 등)는 없다 — 엔진 driver 점수를 proxy 로만 넘긴다
+
+#: 컨텍스트 — cross-asset. unit: pct(가격 % 변화) · bp(수준 변화)
+cross_asset:
+  - {id: SPX, label: "S&P 500"}
+  - {id: NDX, label: "Nasdaq 100"}
+  - {id: SOXX, label: "Semis (SOXX)"}
+  - {id: XLF, label: "Banks/Financials (XLF)"}
+  - {id: CYC_DEF, label: "Cyclicals vs Defensives"}
+  - {id: RUT, label: "Russell 2000"}
+  - {id: DXY, label: "DXY"}
+  - {id: USDKRW, label: "USD/KRW"}
+  - {id: USDJPY, label: "USD/JPY"}
+  - {id: GOLD, label: "Gold"}
+  - {id: BRENT, label: "Brent"}
+  - {id: WTI, label: "WTI"}
+  - {id: COPPER, label: "Copper"}
+  - {id: VIX, label: "VIX"}
+  - {id: MOVE, label: "MOVE"}
+  - {id: US_HY_OAS, label: "US HY OAS"}
+#: growth vs value 직접 계열이 없어 NDX − SPX 1일·5일 상대 수익률로 대신한다(라벨에 그렇게 적는다)
+relative:
+  - {id: growth_vs_broad, label: "Growth vs broad (NDX − SPX)", a: NDX, b: SPX}
+
+#: 컨텍스트 — 뉴스. 이 테마가 붙은 기사만, 중요도 순으로
+news:
+  themes: [rates, inflation, oil, geopolitical_risk, fx, credit, liquidity, growth, fed, policy, china, energy]
+  event_types: [macro, policy, geopolitical]
+  priority_themes: [rates, inflation, fed, policy, credit, liquidity, fx]   # 금리와 직접 닿는 기사를 먼저
+  priority_bonus: 30
+  lookback_hours: 48
+  limit: 10
+  reason_chars: 220
+
+releases_limit: 5
+upcoming_limit: 5
+stale_days: 2                   # 마지막 관측이 as_of 보다 이 일수 넘게 오래면 STALE 로 표시
+
+#: 출력 검증 — 하나라도 걸리면 그 문장은 쓰지 않는다
+validate:
+  min_sentences: 2
+  max_sentences: 4
+  max_chars: 460
+  max_numbers: 3                # 날짜(월·일) 제외 숫자 토큰 수
+  forbidden:                    # 직접 추천 · 확률 · 단정 전망
+    - 매수
+    - 매도
+    - 비중 확대
+    - 비중확대
+    - 비중 축소
+    - 비중축소
+    - BUY
+    - SELL
+    - Overweight
+    - Underweight
+    - 확률
+    - 전망
+    - 사야
+    - 팔아야
+  filler:                       # 정보 없는 상투 문구
+    - 주된 원인은
+    - 아직 확인되지 않았습니다
+    - 반대 방향으로 뚜렷한
+    - 모니터링해야
+    - 모니터링할 필요
+    - 지켜볼 필요
+    - 향후 추이
+    - 주목할 필요
+    - 귀추가 주목
+  certainty:                    # 인과 단정
+    - 때문입니다
+    - 때문이다
+    - 확실히
+    - 분명히
+    - 틀림없이
+    - 확정적으로
+
+#: 화면용 한국어 라벨(내부 판단 결과 — 화면에는 테마 태그만 쓴다)
+theme_ko:
+  term_premium: 기간 프리미엄
+  fed: Fed 경로
+  inflation: 물가
+  growth: 성장
+  fiscal_supply: 재정·공급
+  liquidity: 유동성
+  risk_off: 위험회피
+  oil: 유가
+  fx: 달러·환율
+  credit: 크레딧
+move_quality_ko:
+  growth_scare: 성장 우려
+  financial_conditions_easing: 금융여건 완화
+  disinflation_repricing: 디스인플레이션 재평가
+  flight_to_quality: 안전자산 선호
+  fiscal_supply_premium: 재정·공급 프리미엄
+  inflation_shock: 물가 충격
+  policy_repricing: 정책 경로 재평가
+  mixed: 혼재
+  unclear: 판단 보류

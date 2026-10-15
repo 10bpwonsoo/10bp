@@ -1,0 +1,291 @@
+{
+  "name": "memory_upcycle",
+  "title": "메모리 업사이클 — DRAM 현물 상승, 글로벌 peer 강세, EPS 상향",
+  "description": "DRAM 현물 +2.4σ, DDR5 +2.0σ, Micron +2.2σ, SOX +1.8σ. 반도체 인텔리전스의 네 신호(메모리·peer·국내·EPS)가 전부 상승으로 합의하는 그림. 하이닉스 EPS 컨센서스 +8%.",
+  "seed": 20260913,
+  "bars": 180,
+  "class_defaults": {
+    "equity": {
+      "vol": 0.0105,
+      "mean_reversion": 0.02
+    },
+    "rate": {
+      "vol": 0.045,
+      "mean_reversion": 0.05,
+      "floor": 0.05
+    },
+    "fx": {
+      "vol": 0.0045,
+      "mean_reversion": 0.03
+    },
+    "commodity": {
+      "vol": 0.0155,
+      "mean_reversion": 0.02
+    },
+    "volatility": {
+      "vol": 0.055,
+      "mean_reversion": 0.1,
+      "floor": 8.0
+    },
+    "credit": {
+      "vol": 6.0,
+      "mean_reversion": 0.06,
+      "floor": 120.0
+    },
+    "flow": {
+      "vol": 420.0,
+      "mean_reversion": 0.35
+    },
+    "breadth": {
+      "vol": 0.085,
+      "mean_reversion": 0.4
+    }
+  },
+  "regimes": {
+    "KOSPI": {
+      "base": 2684.0
+    },
+    "KOSPI200": {
+      "base": 358.4
+    },
+    "KOSDAQ": {
+      "base": 762.0,
+      "vol": 0.0135
+    },
+    "SPX": {
+      "base": 5847.0,
+      "vol": 0.0092
+    },
+    "NDX": {
+      "base": 20830.0,
+      "vol": 0.0121
+    },
+    "RUT": {
+      "base": 2312.0,
+      "vol": 0.0128
+    },
+    "HSCEI": {
+      "base": 7248.0,
+      "vol": 0.0142
+    },
+    "NIKKEI": {
+      "base": 39820.0,
+      "vol": 0.0118
+    },
+    "SX5E": {
+      "base": 5012.0,
+      "vol": 0.0098
+    },
+    "XLK": {
+      "base": 245.6,
+      "vol": 0.0124
+    },
+    "XLE": {
+      "base": 91.8,
+      "vol": 0.0131
+    },
+    "XLF": {
+      "base": 48.3,
+      "vol": 0.0096
+    },
+    "XLU": {
+      "base": 79.4,
+      "vol": 0.0089
+    },
+    "XLY": {
+      "base": 205.1,
+      "vol": 0.0112
+    },
+    "SOXX": {
+      "base": 246.2,
+      "vol": 0.0178
+    },
+    "ITA": {
+      "base": 148.3,
+      "vol": 0.0105
+    },
+    "JETS": {
+      "base": 24.1,
+      "vol": 0.0152
+    },
+    "KRX_SEMI": {
+      "base": 4118.0,
+      "vol": 0.0165
+    },
+    "US2Y": {
+      "base": 3.85,
+      "vol": 0.042
+    },
+    "US10Y": {
+      "base": 4.22,
+      "vol": 0.048
+    },
+    "US30Y": {
+      "base": 4.54,
+      "vol": 0.05
+    },
+    "KR3Y": {
+      "base": 2.94,
+      "vol": 0.03
+    },
+    "KR10Y": {
+      "base": 3.17,
+      "vol": 0.034
+    },
+    "BE10Y": {
+      "base": 2.31,
+      "vol": 0.021
+    },
+    "USDKRW": {
+      "base": 1362.0,
+      "vol": 0.0041
+    },
+    "DXY": {
+      "base": 103.4,
+      "vol": 0.0032
+    },
+    "USDJPY": {
+      "base": 148.2,
+      "vol": 0.0048
+    },
+    "EURUSD": {
+      "base": 1.0863,
+      "vol": 0.0035
+    },
+    "USDCNH": {
+      "base": 7.213,
+      "vol": 0.0026
+    },
+    "WTI": {
+      "base": 78.4,
+      "vol": 0.0172,
+      "floor": 20.0
+    },
+    "BRENT": {
+      "base": 82.1,
+      "vol": 0.0168,
+      "floor": 20.0
+    },
+    "GOLD": {
+      "base": 2412.0,
+      "vol": 0.0094,
+      "floor": 800.0
+    },
+    "COPPER": {
+      "base": 4.28,
+      "vol": 0.0131,
+      "floor": 1.0
+    },
+    "NATGAS": {
+      "base": 2.95,
+      "vol": 0.031,
+      "floor": 0.5
+    },
+    "VIX": {
+      "base": 14.8,
+      "vol": 0.058,
+      "floor": 9.0,
+      "cap": 80.0
+    },
+    "MOVE": {
+      "base": 98.0,
+      "vol": 0.036,
+      "floor": 40.0,
+      "cap": 250.0
+    },
+    "VKOSPI": {
+      "base": 16.2,
+      "vol": 0.05,
+      "floor": 9.0,
+      "cap": 70.0
+    },
+    "US_HY_OAS": {
+      "base": 318.0,
+      "vol": 5.6
+    },
+    "KR_FOREIGN_NET": {
+      "base": 0.0,
+      "vol": 430.0,
+      "mean_reversion": 0.38
+    },
+    "KR_INSTITUTION_NET": {
+      "base": 0.0,
+      "vol": 360.0,
+      "mean_reversion": 0.42
+    },
+    "KR_RETAIL_NET": {
+      "base": 0.0,
+      "vol": 390.0,
+      "mean_reversion": 0.4
+    },
+    "KR_TRADING_VALUE": {
+      "base": 11500.0,
+      "vol": 880.0,
+      "mean_reversion": 0.3,
+      "floor": 3000.0
+    },
+    "KOSPI_ADV_RATIO": {
+      "base": 0.5,
+      "vol": 0.082,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "SPX_ADV_RATIO": {
+      "base": 0.52,
+      "vol": 0.078,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "KOSPI_NHNL": {
+      "base": 4.0,
+      "vol": 26.0,
+      "mean_reversion": 0.35
+    }
+  },
+  "quiet_z": 0.85,
+  "shocks": {
+    "DRAM_SPOT": 2.4,
+    "DDR5_SPOT": 2.0,
+    "NAND_SPOT": 1.2,
+    "MU": 2.2,
+    "NVDA": 1.5,
+    "SOX": 1.8,
+    "SMH": 1.7,
+    "SKHYNIX": 2.0,
+    "SAMSUNG": 1.4,
+    "HANMI_SEMI": 1.8,
+    "KRX_SEMI": 1.8,
+    "SOXX": 1.8
+  },
+  "news": [
+    {
+      "id": "mu-1",
+      "title": "DRAM 현물가 3주 연속 상승…HBM 수요에 범용 D램까지 온기",
+      "body": "DDR4 8Gb 현물이 한 달 새 12% 올랐다. SK하이닉스와 삼성전자 실적 기대가 높아진다.",
+      "publisher": "테스트 뉴스",
+      "hours_ago": 3
+    }
+  ],
+  "volume_shocks": {
+    "SKHYNIX": 2.2,
+    "HANMI_SEMI": 1.9
+  },
+  "analyst": {
+    "SKHYNIX": {
+      "eps_revision_1w": 3.0,
+      "eps_revision_1m": 8.5,
+      "eps_revision_3m": 14.0,
+      "tp_change_1m": 12.0,
+      "rating": "BUY",
+      "rating_change": "HOLD→BUY",
+      "brokers": 18
+    },
+    "SAMSUNG": {
+      "eps_revision_1m": 4.2,
+      "eps_revision_3m": 6.0,
+      "tp_change_1m": 5.0,
+      "rating": "BUY",
+      "brokers": 22
+    }
+  }
+}

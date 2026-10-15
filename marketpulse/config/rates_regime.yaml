@@ -1,0 +1,207 @@
+# 물가 충격 탭 — Inflation & Rates Intelligence. 판정 룰이 아니라 증거 집계다.
+# 핵심 질문: 금리를 무엇이 움직이나 / 실제 물가 리프라이싱인가 / 명목 = 실질 + 기대인플레 중 어느 쪽 / 커브 어느 구간 /
+#           다른 자산이 확인하나 / 무엇이 바뀌면 판단이 바뀌나.
+#
+# driver 점수: 부호(sign)는 '그 계열이 + 로 움직일 때 장기 명목금리에 주는 방향'. 점수 = 100 × Σ w·clip(sign·z/z_ref, −1, 1) / Σ w
+#   (확보된 계열만, 결측은 분모 제외). −100 금리 하락 압력 … +100 상승 압력. 뉴스 항목은 테마 뉴스 톤을 news_ref 로 나눈다.
+# 확률(probability)이라는 말은 쓰지 않는다 — 증거 크기(evidence score)다.
+z_ref: 2.0
+news_ref: 40.0
+window: "max"
+strength_bands: [{min: 50, label: STRONG}, {min: 25, label: MODERATE}, {min: 0, label: WEAK}]
+#: 금리 관측 — 10년 명목의 z(하루·5일 중 큰 쪽). 평탄 기준 flat_abs
+rate_move: {instrument: US10Y, flat_abs: 0.5}
+status: {min_score: 25}
+
+drivers:
+  inflation_repricing:
+    label: "Inflation Repricing"
+    label_ko: "물가 리프라이싱"
+    headline: "INFLATION REPRICING"
+    implication: "기대인플레이션이 금리를 끌어올리는 국면 — 원자재·기대인플레·단기물이 같이 오른다."
+    evidence:
+      - {id: BE10Y,  sign: 1, weight: 1.5}
+      - {id: BE5Y,   sign: 1, weight: 1.0}
+      - {id: BRENT,  sign: 1, weight: 0.6}
+      - {id: WTI,    sign: 1, weight: 0.4}
+      - {id: COPPER, sign: 1, weight: 0.3}
+      - {id: XLE,    sign: 1, weight: 0.3}
+      - {theme: inflation, field: news_sentiment, sign: 1, weight: 0.8, label: "물가 뉴스 톤"}
+      - {theme: oil,       field: news_sentiment, sign: 1, weight: 0.4, label: "유가 뉴스 톤(공급 우려)"}
+  fed_policy:
+    label: "Fed Policy"
+    label_ko: "연준 정책 경로"
+    headline: "FED POLICY REPRICING"
+    implication: "정책 경로(단기물)가 커브를 이끄는 국면 — 2년물과 커브 평탄화가 신호다."
+    evidence:
+      - {id: US2Y,        sign:  1, weight: 1.5}
+      - {id: CURVE_2S10S, sign: -1, weight: 0.8, note: "정책 주도면 커브가 눌린다(베어 플래트닝)"}
+      - {id: DXY,         sign:  1, weight: 0.4}
+      - {theme: rates, field: news_sentiment, sign: 1, weight: 0.6, label: "금리 뉴스 톤"}
+  growth:
+    label: "Growth"
+    label_ko: "성장"
+    headline: "GROWTH-LED RATES"
+    implication: "성장 기대가 금리를 올리는 국면 — 주식·경기민감주·구리가 같이 오르면 '좋은 금리 상승'."
+    evidence:
+      - {id: SPX,     sign: 1, weight: 0.8}
+      - {id: CYC_DEF, sign: 1, weight: 0.8}
+      - {id: COPPER,  sign: 1, weight: 0.6}
+      - {id: RUT,     sign: 1, weight: 0.4}
+      - {id: XLY,     sign: 1, weight: 0.4}
+      - {id: HSCEI,   sign: 1, weight: 0.3}
+  term_premium:
+    label: "Term Premium / Supply"
+    label_ko: "기간 프리미엄·공급"
+    headline: "LONG-END RATE / TERM PREMIUM SHOCK"
+    implication: "장기물이 단기물과 따로 오르는 국면 — 재정·공급·변동성 프리미엄. 물가 기대가 동반하지 않으면 실질금리 충격이다."
+    evidence:
+      - {id: US30Y,       sign:  1, weight: 1.5}
+      - {id: CURVE_2S10S, sign:  1, weight: 1.0, note: "베어 스티프닝"}
+      - {id: MOVE,        sign:  1, weight: 0.8}
+      - {id: TIPS10Y,     sign:  1, weight: 1.0, note: "실질금리 상승"}
+      - {id: US10Y,       sign:  1, weight: 0.5}
+      - {id: US2Y,        sign: -1, weight: 0.5, note: "단기물이 따라오지 않으면 +"}
+  risk_liquidity:
+    label: "Risk / Liquidity"
+    label_ko: "위험·유동성"
+    headline: "RISK-OFF FLIGHT TO QUALITY"
+    implication: "위험회피가 금리를 누르는 국면(안전자산 매수) — 스프레드·VIX 가 오르면서 금리가 내려야 확인된다."
+    evidence:
+      - {id: US_HY_OAS, sign: -1, weight: 1.2}
+      - {id: VIX,       sign: -1, weight: 1.0}
+      - {id: SPX,       sign:  1, weight: 0.8}
+      - {id: GOLD,      sign: -1, weight: 0.3}
+
+#: 물가 압력 분해 — factor 하나가 아니라 다섯 구성. 각 구성의 점수는 driver 와 같은 식. 없는 구성은 '없음' 으로 적는다
+inflation_components:
+  - {key: realized,  label: "Realized Inflation",      label_ko: "실현 물가(CPI·PCE)", evidence: [], missing_note: "월간 CPI·PCE 계열 미설정 — FRED CPIAUCSL·PCEPI 를 붙이면 채워진다"}
+  - {key: implied,   label: "Market-Implied Inflation", label_ko: "시장 기대인플레", evidence: [{id: BE10Y, sign: 1, weight: 1.0}, {id: BE5Y, sign: 1, weight: 1.0}]}
+  - {key: energy,    label: "Energy / Commodity Inputs", label_ko: "에너지·원자재 투입", evidence: [{id: BRENT, sign: 1, weight: 1.0}, {id: WTI, sign: 1, weight: 0.6}, {id: COPPER, sign: 1, weight: 0.5}, {id: NATGAS, sign: 1, weight: 0.3}, {id: GASOLINE, sign: 1, weight: 0.4, layer: alternative}]}
+  - {key: wages,     label: "Wage / Services",          label_ko: "임금·서비스", evidence: [], missing_note: "임금·서비스 물가 계열 미설정(고용비용지수·서비스 CPI) — 뉴스로만 본다", theme: inflation}
+  - {key: fx,        label: "FX Pass-through",          label_ko: "환율 전가", evidence: [{id: USDKRW, sign: 1, weight: 1.0, note: "원화 약세 = 국내 수입물가 ↑"}, {id: DXY, sign: -1, weight: 0.5, note: "달러 강세 = 미국 수입물가 ↓"}]}
+
+#: 커브 — 테너와 판별 임계
+curve:
+  tenors: [{id: US2Y, label: "2Y"}, {id: US5Y, label: "5Y"}, {id: US10Y, label: "10Y"}, {id: US30Y, label: "30Y"}]
+  spread: CURVE_2S10S
+  min_abs: 0.5          # |z| 가 이 아래면 '보합'
+  lead_margin: 0.5      # 앞·뒤 구간 |z| 차가 이 이상이면 그쪽 주도
+
+#: 명목 = 실질 + 기대인플레 — 테너별 (명목, 기대인플레, 실질 실측)
+decomposition:
+  window_days: 5
+  tenors:
+    - {tenor: "10Y", nominal: US10Y, breakeven: BE10Y, real: TIPS10Y}
+    - {tenor: "5Y",  nominal: US5Y,  breakeven: BE5Y,  real: TIPS5Y}
+
+#: 크로스에셋 확인 — dominant driver 아래서 기대 부호. 여러 계열이 갈리면 MIXED
+confirmations:
+  - {key: breakeven, label: "Breakeven (기대인플레)", instruments: [BE10Y, BE5Y],  expect: {inflation_repricing: 1, term_premium: -1, fed_policy: -1, growth: 1, risk_liquidity: -1}}
+  - {key: oil,       label: "Oil",                    instruments: [BRENT, WTI],   expect: {inflation_repricing: 1, growth: 1, risk_liquidity: -1}}
+  - {key: commod,    label: "Commodities (구리)",       instruments: [COPPER],       expect: {inflation_repricing: 1, growth: 1, risk_liquidity: -1}}
+  - {key: usd,       label: "USD",                    instruments: [DXY],          expect: {fed_policy: 1, term_premium: 1, risk_liquidity: 1, inflation_repricing: 1}}
+  - {key: front,     label: "Rates — 2Y",             instruments: [US2Y],         expect: {fed_policy: 1, inflation_repricing: 1, growth: 1, term_premium: -1, risk_liquidity: -1}}
+  - {key: long,      label: "Rates — 10Y / 30Y",      instruments: [US10Y, US30Y], expect: {term_premium: 1, inflation_repricing: 1, growth: 1, fed_policy: 1, risk_liquidity: -1}}
+  - {key: equities,  label: "Equities (S&P)",          instruments: [SPX],          expect: {growth: 1, term_premium: -1, inflation_repricing: -1, fed_policy: -1, risk_liquidity: -1}}
+  - {key: tech,      label: "Growth / Tech (Nasdaq)",  instruments: [NDX, XLK],     expect: {term_premium: -1, inflation_repricing: -1, fed_policy: -1, growth: 1, risk_liquidity: -1}}
+  - {key: banks,     label: "Banks (XLF)",             instruments: [XLF],          expect: {term_premium: 1, growth: 1, risk_liquidity: -1}}
+  - {key: hy,        label: "HY OAS",                  instruments: [US_HY_OAS],    expect: {risk_liquidity: 1, term_premium: 1, growth: -1}}
+  - {key: vix,       label: "VIX",                     instruments: [VIX],          expect: {risk_liquidity: 1, term_premium: 1, growth: -1}}
+  - {key: gold,      label: "Gold",                    instruments: [GOLD],         expect: {inflation_repricing: 1, term_premium: -1, risk_liquidity: 1, fed_policy: -1}}
+confirm_min_abs: 0.5
+
+#: 핵심 괴리 — 두 계열의 조건이 같이 맞으면 잡는다. 문장은 '왜 중요한가'
+divergences:
+  - {key: rates_up_be_down, label: "Rates ↑ / Breakeven ↔↓", a: {id: US10Y, op: ">=", z: 1.0}, b: {id: BE10Y, op: "<=", z: 0.0},
+     why: "명목금리 상승이 물가 기대가 아니라 실질금리·기간 프리미엄에서 온다 — 물가 충격이 아니라 실질금리 충격이다."}
+  - {key: oil_down_be_flat, label: "Oil ↓ / Inflation Expectations →", a: {id: BRENT, op: "<=", z: -1.0}, b: {id: BE10Y, op: "abs<", z: 0.5},
+     why: "시장이 유가 하락을 물가 경로로 전이시키지 않는다 — 유가 변동을 일시적으로 본다는 뜻이거나, 봉 자체가 의심스럽다."}
+  - {key: front_down_long_up, label: "2Y ↓ / 30Y ↑", a: {id: US2Y, op: "<=", z: -0.5}, b: {id: US30Y, op: ">=", z: 1.0},
+     why: "정책 완화 기대와 장기 공급·프리미엄 우려가 동시에 있다 — 베어 스티프닝. 커브가 연준이 아니라 재정·수급을 본다."}
+  - {key: credit_up_yields_up, label: "HY OAS ↑ / Yields ↑", a: {id: US_HY_OAS, op: ">=", z: 1.5}, b: {id: US10Y, op: ">=", z: 1.0},
+     why: "신용 스트레스에도 국채 매수가 없다 — 안전자산 역할이 깨진 유동성 매도 국면. 금리 상승이 위험자산을 더 누른다."}
+  - {key: equities_down_yields_up, label: "Equities ↓ / Yields ↑", a: {id: SPX, op: "<=", z: -1.0}, b: {id: US10Y, op: ">=", z: 1.0},
+     why: "금리가 주식을 누른다 — 성장 주도 금리 상승이 아니다."}
+  - {key: gold_down_real_up, label: "Gold ↓ / Real Yield ↑", a: {id: GOLD, op: "<=", z: -1.5}, b: {id: TIPS10Y, op: ">=", z: 0.5},
+     why: "실질금리 상승이 금을 누른다 — 고전적 전이. 실질금리 계열이 없으면 (명목−기대인플레) 로 대신 본다."}
+
+#: 시장 함의 — 전이 방향(매수/매도 추천이 아니다). dominant driver 별 표. +1 상승 압력 / −1 하락 압력 / 0 중립 / 2 양방향
+implications:
+  targets: [{key: duration, label: "Duration (장기채)"}, {key: tech, label: "Growth / Tech"}, {key: banks, label: "Banks"}, {key: gold, label: "Gold"}, {key: energy, label: "Energy"}, {key: usd, label: "USD"}, {key: krw, label: "KRW"}, {key: kospi, label: "KOSPI"}]
+  by_driver:
+    inflation_repricing: {duration: -1, tech: -1, banks: 1, gold: 1, energy: 1, usd: 1, krw: -1, kospi: -1,
+      why: "물가 리프라이싱은 명목금리·원자재를 같이 올린다 — 듀레이션·성장주에 역풍, 에너지·금·은행에 순풍, 원화엔 수입물가 역풍."}
+    fed_policy: {duration: -1, tech: -1, banks: 1, gold: -1, energy: 0, usd: 1, krw: -1, kospi: -1,
+      why: "정책 경로 상향은 단기물·달러를 올리고 커브를 누른다 — 성장주·신흥국 통화에 역풍."}
+    growth: {duration: -1, tech: 1, banks: 1, gold: -1, energy: 1, usd: 0, krw: 1, kospi: 1,
+      why: "성장 주도 금리 상승은 '좋은 금리' — 주식·경기민감·원화에 순풍, 금·듀레이션에 역풍."}
+    term_premium: {duration: -1, tech: -1, banks: 2, gold: -1, energy: 0, usd: 1, krw: -1, kospi: -1,
+      why: "기간 프리미엄 충격은 실질금리 상승 — 듀레이션·성장주·금에 역풍. 은행은 커브 스티프닝(순이자마진)과 신용 악화가 맞선다. 달러 강세, 원화·코스피엔 역풍."}
+    risk_liquidity: {duration: 1, tech: -1, banks: -1, gold: 1, energy: -1, usd: 1, krw: -1, kospi: -1,
+      why: "위험회피는 국채·금·달러로 자금을 옮긴다 — 주식·신용·원자재·원화에 역풍."}
+
+#: 무엇이 바뀌면 판단이 바뀌나 — 물가 리프라이싱으로 전환하는 조건(대상 driver 가 inflation_repricing 이 아닐 때)
+triggers:
+  to_inflation_repricing:
+    - {id: BE10Y,  op: ">=", z: 1.0, text: "10년 기대인플레(BE10Y)가 +1σ 이상 오른다"}
+    - {id: BRENT,  op: ">=", z: 1.0, text: "브렌트가 +1σ 이상 오르고 WTI 가 같은 방향이다"}
+    - {id: US2Y,   op: ">=", z: 1.0, text: "2년물이 10년물과 같이 +1σ 이상 오른다(커브 전체 상향)"}
+    - {theme: inflation, field: news_sentiment, op: ">=", value: 30, text: "물가 뉴스 톤이 +30 이상(물가 서프라이즈·기대 상향)"}
+    - {missing: realized, text: "실현 물가(CPI·PCE) 서프라이즈가 + 로 나온다 — 계열이 없어 지금은 못 잰다"}
+  #: 물가 리프라이싱이 이미 지배 driver 일 때 — 그 판단이 깨지는 조건
+  from_inflation_repricing:
+    - {id: BE10Y,  op: "<=", z: -0.5, text: "10년 기대인플레(BE10Y)가 −0.5σ 아래로 되돌린다"}
+    - {id: BRENT,  op: "<=", z: -1.0, text: "브렌트가 −1σ 이상 내린다(에너지 경로가 끊긴다)"}
+    - {id: US2Y,   op: "<=", z: -0.5, text: "2년물이 −0.5σ 아래로 내린다(연준 경로가 물가와 반대로 간다)"}
+    - {theme: inflation, field: news_sentiment, op: "<=", value: 0, text: "물가 뉴스 톤이 0 이하로 식는다"}
+    - {missing: realized, text: "실현 물가(CPI·PCE) 서프라이즈가 − 로 나온다 — 계열이 없어 지금은 못 잰다"}
+  release:
+    driver_release_abs: 25
+    runner_up_margin: 10
+
+# ── 상단 정리 (2026-10-12) — 기존 계산값만 다시 읽어 '방향 · 주도 driver · 물가/Fed 여부 · 신뢰도' 를 먼저 보이게 한다 ──
+#: 계산 로직(점수·상태·지배 driver)은 위 그대로다. 여기는 표시 문구와 문턱만.
+top:
+  direction:   # rate_move.direction → 큰 판정 바로 아래 방향 줄
+    up:      {arrow: "↑", en: "RISING",  ko: "상승"}
+    down:    {arrow: "↓", en: "FALLING", ko: "하락"}
+    flat:    {arrow: "→", en: "IN RANGE", ko: "보합"}
+    unknown: {arrow: "?", en: "UNKNOWN", ko: "미상"}
+  segment: {long: "LONG-END YIELD", front: "FRONT-END YIELD", parallel: "YIELD CURVE", none: "US 10Y YIELD"}   # curve.lead 로 고른다
+  driver_suffix: "DRIVEN"
+  #: DRIVER READ — PRIMARY(지배) · COUNTER(반대 방향) · NOT CONFIRMED(물가·Fed 처럼 늘 확인해야 하는 driver 중 미확인)
+  counter_min_abs: 25          # |점수| 가 이보다 작으면 counter 로 세우지 않는다(= status.min_score)
+  watch_drivers: [inflation_repricing, fed_policy]
+  watch_short: {inflation_repricing: "Inflation", fed_policy: "Fed Policy"}
+  watch_ko: {inflation_repricing: "물가 재평가", fed_policy: "Fed 정책 경로 변화"}
+  #: MARKET READ 규칙 기반 문장 — LLM 해석(ai/rates_read.py)이 없거나 검증을 못 넘을 때만 보인다. 숫자를 다시 읽지 않는다. 조사는 '은(는)' 이중 표기로 쓰고 엔진이 고른다.
+  read:
+    primary_with_nc: "{seg_ko} {dir_ko}은(는) {primary_ko} 쪽 신호와 가장 잘 맞고, {nc_ko} 쪽 근거는 약합니다."
+    primary_all: "{seg_ko} {dir_ko}은(는) {primary_ko} 쪽 신호와 맞고, 물가·Fed 쪽 신호도 같은 방향입니다."
+    primary_unconfirmed: "금리 방향이 뚜렷하지 않아 {primary_ko} 쪽 근거가 가장 크다는 정도로만 읽습니다."
+    counter: "{counter_ko} 신호는 반대 방향입니다."
+    no_counter: ""                # 반대 driver 가 없으면 문장을 덧붙이지 않는다
+  seg_ko: {long: "장기금리", front: "단기금리", parallel: "금리", none: "금리"}
+  #: compact WHAT IS DRIVING RATES 행 아래 한 줄 — 결론만. 근거는 행을 눌러야 펼쳐진다
+  line:
+    primary: "{seg_ko} {dir_ko}의 핵심 driver"
+    primary_unconfirmed: "증거는 가장 크지만 금리 방향과 아직 확인 전"
+    counter: "{label_ko} 신호는 반대 방향"
+    not_confirmed: "아직 확인되지 않음"
+
+#: CURRENT RATES ANALYSIS — Driver · Curve · Real Yield · Breakeven 네 칸 + 한 줄. 세부 데이터는 아래 기존 패널에 그대로 있다.
+current_analysis:
+  dominance: [{min_margin: 30, label: "DOMINANT", ko: "압도적"}, {min_margin: 10, label: "LEADING", ko: "우세"}, {min_margin: 0, label: "CONTESTED", ko: "경합"}]
+  real_yield: {instrument: TIPS10Y, label: "Real Yield", label_ko: "실질금리(TIPS 10Y)"}
+  breakeven:  {instrument: BE10Y,   label: "Breakeven",  label_ko: "기대인플레(BE 10Y)"}
+  flat_abs: 0.5                # |z| 가 이보다 작으면 Stable
+  move: {up: {arrow: "↑", en: "Rising", ko: "상승"}, down: {arrow: "↓", en: "Falling", ko: "하락"}, flat: {arrow: "→", en: "Stable", ko: "보합"}, missing: {arrow: "–", en: "No data", ko: "결측"}}
+  curve_shape: {bear_steepening: "Bear Steepening", bear_flattening: "Bear Flattening", bull_steepening: "Bull Steepening", bull_flattening: "Bull Flattening",
+                parallel_up: "Parallel Up", parallel_down: "Parallel Down", flat: "Flat / Range", unknown: "Unknown"}
+  curve_lead: {front: "Front-end led", long: "Long-end led", parallel: "Parallel", none: ""}
+  sentence:
+    both_same: "실질금리와 기대인플레이션이 모두 {r_ko}하지만, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    split: "실질금리는 {r_ko}, 기대인플레이션은 {b_ko} 쪽이고, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    flat: "실질금리와 기대인플레이션의 움직임이 작아, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."
+    missing: "실질금리·기대인플레 계열이 일부 없어 분해는 생략하고, 현재 driver 점수는 {dom_ko} 쪽이 {dominance_ko}입니다."

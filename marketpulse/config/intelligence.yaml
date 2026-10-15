@@ -1,0 +1,129 @@
+# Investment Intelligence 파라미터 (2026-09-16 신설). 코드에는 숫자가 없다.
+# 값은 매크로·기업 상식에 기반한 초기값이며 통계 추정치가 아니다.
+
+# ── Today's Market Drivers ────────────────────────────────
+drivers:
+  # 오늘의 드라이버 후보. instruments.yaml 과 universe.yaml 의 id.
+  candidates: [US10Y, US2Y, KR10Y, USDKRW, USDJPY, DXY, USDCNH, BRENT, WTI, NATGAS, COPPER, IRON_ORE, GOLD, VIX, MOVE, SOX, NDX, SPX, KOSPI, CSI300, HSI, DRY_BULK_ETF, DRAM_SPOT, LITHIUM_ETF]
+  min_abs_z: 0.8
+  limit: 6
+  top_stocks: 5
+
+# ── Market → Stock Impact ─────────────────────────────────
+#   impact = 100 · tanh(|shock_z| / shock_divisor) · exposure · stat_conf · fund_relevance · current_relevance
+impact:
+  shock_divisor: 2.0
+  # 통계 노출 창(봉). 셋 다 계산하고 점수에는 primary 를 쓴다.
+  windows: [20, 60, 120]
+  primary_window: 60
+  min_observations: 15
+  # |corr| 가 이 이상이면 통계 신뢰 1.0. 그 아래는 비례.
+  stat_conf_full_corr: 0.5
+  # 사업 노출 중요도 → 관련성. 노출 정의가 없는 쌍은 none.
+  fund_relevance: {high: 1.0, medium: 0.6, low: 0.3, none: 0.2}
+  # 현재 관련성: 드라이버가 역사적 극단(백분위 ≥ 90 또는 ≤ 10)이면 1.0, 아니면 0.7
+  current_relevance: {extreme: 1.0, normal: 0.7}
+  extreme_percentile: 90
+  # 통계와 사업 노출의 부호가 다르면 점수를 이만큼 깎고 '상충' 을 남긴다
+  sign_conflict_penalty: 0.5
+  min_score: 8
+  # 통계가 없을 때(사업 노출만 있을 때) 쓰는 노출·신뢰 — '모른다' 는 낮은 확신이다
+  no_stat_exposure: 0.5
+  no_stat_confidence: 0.3
+  # |corr| 가 이보다 작으면 통계 부호를 판정하지 않는다
+  min_abs_corr_for_sign: 0.1
+  # 방향 판정 데드밴드 (z × 부호)
+  direction_deadband: 0.3
+
+# ── Unusual Move Detector ─────────────────────────────────
+anomaly:
+  return_z: 2.0
+  volume_z: 2.0
+  relative_z: 1.5
+  # 종목 |return z| 가 이보다 작으면 거래량만으로 이상으로 보지 않는다
+  min_return_z_for_volume_only: 1.0
+  # 뉴스: 종목 테마에 태그된 기사가 이 개수 이상이면 '뉴스 있음'
+  news_min_events: 1
+  limit: 8
+  # severity = 100·tanh(max|z| / divisor)
+  severity_divisor: 3.0
+
+# ── Price vs Fundamental Divergence ───────────────────────
+stock_divergence:
+  # 가격 방향 판정 최소 |z| (5일 창)
+  price_min_abs_z: 0.8
+  # EPS/TP 리비전 최소 % (1개월)
+  eps_min_pct: 2.0
+  tp_min_pct: 2.0
+  # 업종 vs 종목: 상대 z
+  relative_min_abs_z: 1.5
+  # 원자재 순풍/역풍: 사업 노출 × 원자재 z
+  commodity_min_abs_z: 1.0
+  # 2틱 지속은 상위 divergence 트리거와 같다
+  min_duration: 2
+  severity_divisor: 2.5
+
+# ── Alternative Data Pulse ────────────────────────────────
+alternative:
+  # 마지막 관측이 이보다 오래되면 stale
+  stale_days: 5
+  # 일간이 아닌 계열의 '낡음' 기준. 분기 추정치가 두 달 지났다고 낡은 것이 아니다
+  stale_days_by_frequency: {weekly: 14, monthly: 45, quarterly: 120}
+  # 선물 연속 계열에서 하루 |z| 가 이 이상이면 롤오버 의심. 실제 충격일 수도
+  # 있으므로 버리지 않고 표시만 한다.
+  rollover_suspect_z: 2.0
+  # 다음 봉의 반대 방향 z 가 전일 |z| 의 이 비율 이상이면 '되돌림(롤오버였다)' 로 판정
+  rollover_revert_ratio: 0.5
+  # 화면에 올릴 순서
+  groups: [semiconductor, energy, metals, chemicals, agriculture, shipping, china, peer]
+  # z 가 이 이상이면 '움직임' 으로 상단에 올린다
+  moving_min_abs_z: 1.0
+
+# ── Lead / Lag ────────────────────────────────────────────
+lead_lag:
+  max_lag_days: 10
+  min_observations: 60
+  # 최적 시차의 상관이 이 이상이어야 "선행하는 경향" 이라 적는다
+  min_abs_corr: 0.25
+  pairs:
+    - {lead: DRAM_SPOT,    lag: SKHYNIX,     label: "DRAM 현물 → SK하이닉스"}
+    - {lead: DRAM_SPOT,    lag: SAMSUNG,     label: "DRAM 현물 → 삼성전자"}
+    - {lead: SOX,          lag: SKHYNIX,     label: "SOX → SK하이닉스"}
+    - {lead: MU,           lag: SKHYNIX,     label: "Micron → SK하이닉스"}
+    - {lead: BRENT,        lag: KOREAN_AIR,  label: "브렌트 → 대한항공"}
+    - {lead: DRY_BULK_ETF, lag: PAN_OCEAN,   label: "건화물 운임 → 팬오션"}
+    - {lead: IRON_ORE,     lag: POSCO,       label: "철광석 → POSCO"}
+    - {lead: COPPER,       lag: LS_ELECTRIC, label: "구리 → LS ELECTRIC"}
+    - {lead: USDKRW,       lag: HYUNDAI_MOTOR, label: "원달러 → 현대차"}
+    - {lead: NATGAS,       lag: HD_HHI,      label: "천연가스 → HD현대중공업"}
+
+# ── Semiconductor Intelligence ────────────────────────────
+semiconductor:
+  memory: [DRAM_SPOT, DDR5_SPOT, NAND_SPOT, DXI, HBM3E_CONTRACT, HBM4_CONTRACT]
+  peers: [NVDA, MU, TSM, AMD, AVGO, ASML, AMAT, LRCX, TEL, SOX, SMH]
+  korea: [SAMSUNG, SKHYNIX, HANMI_SEMI, SAMSUNG_EM]
+  # 방향 합의: |z| 가 이 이상인 것만 방향을 센다
+  direction_min_abs_z: 0.5
+
+# ── Commodity → Industry → Stock ──────────────────────────
+commodity_impact:
+  commodities: [BRENT, WTI, NATGAS, COPPER, IRON_ORE, ALUMINUM, GOLD, SILVER, LITHIUM_ETF, STEEL_ETF, DRY_BULK_ETF, CORN, WHEAT, GASOLINE, DIESEL_PROXY, URANIUM_ETF]
+  min_abs_z: 1.0
+  limit: 6
+
+# ── Watchlist ─────────────────────────────────────────────
+watchlist:
+  default: [SAMSUNG, SKHYNIX, HANMI_SEMI, HYUNDAI_MOTOR, POSCO, LG_ENSOL, KOREAN_AIR, HMM, HD_HHI, HANWHA_AERO, LS_ELECTRIC, HD_ELECTRIC, DOOSAN_ENER, SOIL, KEPCO, NAVER, KB, CELLTRION, CJ_CJ, KOREA_ZINC]
+  badge_thresholds:
+    theme_change: 15.0
+    eps_revision_pct: 2.0
+    alt_signal_z: 1.5
+    commodity_impact_min: 25.0
+    # NEW_EVENT 배지: 종목을 직접 지목한(entity·affected_assets) 기사가 이 수 이상일 때만.
+    # 테마 태그만 붙은 기사로는 켜지지 않는다 — 그러면 모든 줄에 배지가 붙어 정보가 없다.
+    news_min_stock_events: 1
+
+# ── 화면 문장 규칙 ────────────────────────────────────────
+commentary:
+  # 저장된 수기 해설을 as_of 로부터 이 시간 안의 것만 쓴다
+  max_age_hours: 72

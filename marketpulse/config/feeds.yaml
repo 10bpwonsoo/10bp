@@ -1,0 +1,45 @@
+# Market Pulse AI — 뉴스 피드 (P4)
+#
+# RSS 만 쓴다. 무료이고 키가 필요 없으며 계약이 안정적이다. 유료 뉴스
+# API 는 라이선스 문제가 있고, 크롤링은 약관 문제가 있다.
+#
+# weight 는 scoring.yaml 의 source_weights 와 같은 축이다. 여기 적힌 이름이
+# NewsEvent.source 로 들어간다.
+#
+# 피드가 죽어도 대시보드는 돈다. 하나가 실패하면 그것만 건너뛰고 경고가
+# data_health 에 남는다.
+
+feeds:
+  - {name: "연합인포맥스", url: "https://news.einfomax.co.kr/rss/S1N1.xml", lang: ko, weight: 1.0}
+  - {name: "한국경제 마켓", url: "https://www.hankyung.com/feed/finance", lang: ko, weight: 0.95}
+  - {name: "매일경제 증권", url: "https://www.mk.co.kr/rss/50200011/", lang: ko, weight: 0.95}
+  - {name: "이데일리 마켓", url: "https://rss.edaily.co.kr/stock_news.xml", lang: ko, weight: 0.9}
+  - {name: "Reuters Business", url: "https://feeds.reuters.com/reuters/businessNews", lang: en, weight: 1.0}
+  - {name: "CNBC Markets", url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258", lang: en, weight: 0.9}
+  - {name: "Investing.com", url: "https://www.investing.com/rss/news_25.rss", lang: en, weight: 0.8}
+  # Google News RSS — 해외 시장 헤드라인을 폭넓게 모은다. 호스트 news.google.com
+  # 이 허용 목록에 있어야 한다. 막혀 있으면 이 줄들만 실패하고 나머지는 돈다.
+  - {name: "Google News · Markets", url: "https://news.google.com/rss/search?q=stock+market+when:1d&hl=en-US&gl=US&ceid=US:en", lang: en, weight: 0.85}
+  - {name: "Google News · Fed/Rates", url: "https://news.google.com/rss/search?q=Federal+Reserve+OR+Treasury+yields+when:1d&hl=en-US&gl=US&ceid=US:en", lang: en, weight: 0.85}
+  - {name: "Google News · Oil", url: "https://news.google.com/rss/search?q=oil+prices+Brent+OR+WTI+when:1d&hl=en-US&gl=US&ceid=US:en", lang: en, weight: 0.85}
+  - {name: "Google News · 증시", url: "https://news.google.com/rss/search?q=%EC%BD%94%EC%8A%A4%ED%94%BC+OR+%EC%A6%9D%EC%8B%9C+when:1d&hl=ko&gl=KR&ceid=KR:ko", lang: ko, weight: 0.8}
+
+# ── LLM 웹검색 경로 ──────────────────────────────────────
+# RSS 호스트가 전부 막힌 네트워크에서의 대체 경로다. 검색은 Anthropic 서버가
+# 수행하므로 api.anthropic.com 하나만 열려 있으면 된다.
+#
+# 여기서 나오는 것은 **검색 결과(제목·URL·게시 시각)** 이지 모델이 쓴 문장이
+# 아니다. 모델의 답변 텍스트는 버리고 web_search 결과 블록만 읽는다 —
+# 존재하지 않는 기사가 섞여 들어올 경로를 처음부터 막는다.
+#
+# 켜는 조건은 settings.news_search 다. auto(기본) 는 RSS 가 0건일 때만,
+# on 은 항상 병합, off 는 쓰지 않는다. LLM 자체가 꺼져 있으면 무시된다.
+search:
+  max_uses: 4          # 한 틱에 허용하는 검색 횟수
+  recency_hours: 48    # 이보다 오래된 결과는 버린다. 검색은 옛 기사를 잘 끌어온다
+  limit: 30
+  queries:
+    - 오늘 코스피 코스닥 마감 시황 외국인 순매수
+    - 오늘 미국 증시 마감 S&P500 나스닥 국채금리
+    - 국제유가 브렌트 WTI 달러 원달러 환율 오늘
+    - global markets today stocks bonds oil news

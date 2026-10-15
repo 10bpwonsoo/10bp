@@ -1,0 +1,450 @@
+{
+ "collected": "2026-10-14",
+ "note": "2026-10-14 수기 확인(10/13 파일에 9월 CPI 발표 시각과 CNBC 컨센서스를 더함). 결정·실제치·컨센서스·전월치·일정은 아래 출처에서 확인된 것만 적었다. 공식 사이트(federalreserve.gov · bls.gov · boj.or.jp · ecb.europa.eu)는 이 환경의 네트워크 정책으로 직접 열리지 않아, 같은 숫자를 둘 이상 보도한 웹검색 결과로 대조했다. 확인하지 못한 값(9월 평균시간당임금 · 7월 CPI 헤드라인 · 7월 PCE 헤드라인 · ECB 표결)은 비워 둔다 — 0 이나 추정으로 채우지 않는다. 금리 반응은 여기 적지 않는다 — 엔진이 미국채 2Y·10Y 일간 종가로 잰다.",
+ "policy": [
+  {
+   "bank": "FED",
+   "name": "FED / FOMC",
+   "date": "2026-09-16",
+   "decision": "HIKE",
+   "change_bp": 25,
+   "previous_rate": "3.50–3.75%",
+   "current_rate": "3.75–4.00%",
+   "rate_label": "Fed funds target",
+   "vote": "12–0 만장일치",
+   "guidance": "hawkish",
+   "guidance_basis": "2023년 이후 첫 인상. 참석자 18명 중 16명이 연내 추가 인상 1회 이상을 예상(보도).",
+   "statement": "\"Inflation remains elevated\" — 인상이 2% 목표로의 '더 시기적절한 복귀'를 돕는다고 명시.",
+   "chair": "Warsh 의장: 기조 인플레이션이 목표로 충분히 빠르게 간다는 확신 기준이 아직 충족되지 않았다. 중동 긴장도 고려. \"I'm not in the forward guidance business.\"",
+   "projections": "이번 회의 SEP·점도표 미제출(보도) — 경로 숫자는 없다.",
+   "market_path": "9월 고용(10/2) 이후 Kalshi 가격은 10월 동결 85%.",
+   "line": "물가 경계 유지 · 23년 이후 첫 인상, 추가 경로는 데이터 의존",
+   "next_meeting_start": "2026-10-27",
+   "next_meeting": "2026-10-28",
+   "implication": "정책금리 상향이 단기물을 떠받친다 — 다만 지금 10년물 하락은 정책 경로가 아니라 기간 프리미엄 쪽에서 나온다.",
+   "sources": [
+    {
+     "title": "Fed rate decision September 2026: Rates rise to 3.75%-4%",
+     "url": "https://www.cnbc.com/2026/09/16/fed-rate-decision-september-2026.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "Federal Reserve Issues FOMC Statement",
+     "url": "https://www.atlantafed.org/news-and-events/2026/09/16/fomc-statement",
+     "publisher": "Atlanta Fed"
+    },
+    {
+     "title": "Fed meeting recap: Warsh says inflation is still too high",
+     "url": "https://www.cnbc.com/2026/09/16/fed-meeting-today-live-updates.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "FOMC Statement: September 2026",
+     "url": "https://am.jpmorgan.com/us/en/asset-management/adv/insights/portfolio-insights/fixed-income/fixed-income-perspectives/fomc-statement-september-2026/",
+     "publisher": "J.P. Morgan AM"
+    },
+    {
+     "title": "Labor market faltered in September (Kalshi 10월 동결 85%)",
+     "url": "https://www.cnbc.com/2026/10/02/jobs-report-september-2026.html",
+     "publisher": "CNBC"
+    }
+   ]
+  },
+  {
+   "bank": "ECB",
+   "name": "ECB",
+   "date": "2026-09-10",
+   "decision": "HIKE",
+   "change_bp": 25,
+   "previous_rate": "2.25%",
+   "current_rate": "2.50%",
+   "rate_label": "Deposit facility (9/16 적용)",
+   "vote": "",
+   "guidance": "hawkish",
+   "guidance_basis": "이란 전쟁 이후 두 번째 인상. 8월 유로존 물가 3.3%(에너지 +14.3%).",
+   "statement": "중동 분쟁이 물가 압력을 계속 만들고, 물가는 상당 기간 목표를 크게 웃돌 것. 에너지 충격·무역 긴장은 성장 위험.",
+   "chair": "Lagarde: 이번 인상은 'no brainer'. 다음 단계는 사전 약속하지 않는다.",
+   "projections": "스태프 전망 마감이 회의 2주 전이라 최근 유가·국채금리 급등은 반영되지 않았다(보도).",
+   "market_path": "시장은 추가 긴축을 가격에 반영(보도).",
+   "line": "에너지발 물가에 두 번째 인상 · 추가 단계는 열어 둠",
+   "next_meeting": "2026-10-29",
+   "implication": "유럽 금리 경로 상향 — 미국 장기금리의 글로벌 기간 프리미엄 맥락. 이 탭의 미국 금리 regime 판정 대상은 아니다.",
+   "sources": [
+    {
+     "title": "ECB hikes rates to 2.5% as energy shock pushes eurozone inflation higher",
+     "url": "https://www.euronews.com/2026/09/10/ecb-hikes-rates-to-25-as-energy-shock-pushes-eurozone-inflation-higher",
+     "publisher": "Euronews"
+    },
+    {
+     "title": "European Central Bank hikes interest rates to 2.5%",
+     "url": "https://www.cnbc.com/2026/09/10/ecb-interest-rate-hike-lagarde-iran.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "Lagarde Calls ECB Hike 'No Brainer' as Markets Bet on More Ahead",
+     "url": "https://www.bloomberg.com/news/articles/2026-09-10/ecb-lifts-rates-for-second-time-as-iran-war-drives-inflation",
+     "publisher": "Bloomberg"
+    },
+    {
+     "title": "Key ECB interest rates",
+     "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html",
+     "publisher": "ECB"
+    }
+   ]
+  },
+  {
+   "bank": "BOJ",
+   "name": "BOJ",
+   "date": "2026-09-18",
+   "decision": "HIKE",
+   "change_bp": 25,
+   "previous_rate": "1.00%",
+   "current_rate": "1.25%",
+   "rate_label": "Uncollateralized overnight call rate",
+   "vote": "7–2 (Asada · Sato 동결 주장)",
+   "guidance": "hawkish",
+   "guidance_basis": "1995년 이후 최고 금리. 물가가 2% 목표를 위로 벗어날 위험에 대응.",
+   "statement": "물가가 2% 목표 위로 벗어날 위험에 대응하는 인상. 9/24 적용, 보완 예금금리도 1.25%.",
+   "chair": "",
+   "projections": "10월 회의에서 분기 전망 보고서(Outlook Report) 발표 예정.",
+   "market_path": "",
+   "line": "31년 만의 최고 금리 · 물가 상방 위험 대응",
+   "next_meeting_start": "2026-10-29",
+   "next_meeting": "2026-10-30",
+   "implication": "일본 금리 상승은 해외 자금의 미국채 수요를 줄이는 경로 — 미국 기간 프리미엄 맥락. 미국 금리 regime 직접 판정 대상은 아니다.",
+   "sources": [
+    {
+     "title": "Bank of Japan raises interest rates to 31-year high, flags concerns over inflation",
+     "url": "https://www.cnbc.com/2026/09/18/japan-raises-rates-30-year-high-yen-jgb.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "Statement on Monetary Policy (September 18, 2026)",
+     "url": "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260918a.pdf",
+     "publisher": "Bank of Japan"
+    },
+    {
+     "title": "Monetary Policy Meetings (2026 schedule: Oct. 29–30)",
+     "url": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+     "publisher": "Bank of Japan"
+    }
+   ]
+  },
+  {
+   "bank": "BOK",
+   "name": "BOK",
+   "date": "2026-08-27",
+   "decision": "HIKE",
+   "change_bp": 25,
+   "previous_rate": "2.75%",
+   "current_rate": "3.00%",
+   "rate_label": "기준금리",
+   "vote": "황건일 위원 동결 소수의견",
+   "guidance": "hawkish",
+   "guidance_basis": "7월에 이어 두 달 연속 인상. 추가 인상의 시기·속도를 살피겠다고 명시.",
+   "statement": "근원물가가 목표를 크게 웃도는 가운데 성장세가 이어져 긴축 수준을 높일 필요.",
+   "chair": "신현송 총재(10/12 국감): '금리 향방에서 가장 중요한 기준은 인플레이션 추이' — 10월 추가 인상 여부를 물가로 판단하겠다는 답.",
+   "projections": "",
+   "market_path": "",
+   "line": "두 달 연속 인상 · 추가 인상 시기·속도 점검",
+   "next_meeting": "2026-10-22",
+   "implication": "국내 금리 경로 상향. 국고채 계열이 수집 대상에 없어 반응은 재지 못한다.",
+   "sources": [
+    {
+     "title": "한국은행 기준금리 추이",
+     "url": "https://www.bok.or.kr/portal/singl/baseRate/list.do?dataSeCd=01&menuNo=200643",
+     "publisher": "한국은행"
+    },
+    {
+     "title": "한국은행 금융통화위원회 Comments (8/28)",
+     "url": "https://kbthink.com/investment/deepdive/tip/260828.html",
+     "publisher": "KB Think"
+    },
+    {
+     "title": "2026년 한국 기준금리 결정 일정 총정리",
+     "url": "https://earlyhong.com/korea-interest-rate-2026-schedule-fomc/",
+     "publisher": "블로그(일정 대조용)"
+    },
+    {
+     "title": "“기준금리 10월 또 올리나” 질문에…한은 총재가 국감장에서 밝힌 답변은",
+     "url": "https://www.mk.co.kr/news/economy/12173588",
+     "publisher": "매일경제"
+    }
+   ]
+  }
+ ],
+ "releases": [
+  {
+   "key": "us_cpi",
+   "name": "US CPI",
+   "period": "2026-08",
+   "date": "2026-09-11",
+   "consensus_source": "Dow Jones (CNBC 보도)",
+   "measures": [
+    {
+     "key": "headline_yoy",
+     "label": "CPI YoY",
+     "unit": "%",
+     "actual": 3.4,
+     "consensus": 3.4,
+     "prior": null,
+     "note": "FactSet 컨센서스는 3.3% — 출처마다 다르다. 7월 헤드라인은 확인하지 못했다."
+    },
+    {
+     "key": "headline_mom",
+     "label": "CPI MoM",
+     "unit": "%",
+     "actual": 0.4,
+     "consensus": 0.4,
+     "prior": null
+    },
+    {
+     "key": "core_mom",
+     "label": "Core CPI MoM",
+     "unit": "%",
+     "actual": 0.3,
+     "consensus": 0.2,
+     "prior": null
+    },
+    {
+     "key": "core_yoy",
+     "label": "Core CPI YoY",
+     "unit": "%",
+     "actual": 2.4,
+     "consensus": 2.4,
+     "prior": 2.5
+    }
+   ],
+   "note": "휘발유 +3.9%(전년 +27.4%), 에너지 전년 +16.3%. 발표 뒤 트레이더들이 다음 회의 인상 가능성을 올렸다(보도).",
+   "sources": [
+    {
+     "title": "CPI inflation report August 2026",
+     "url": "https://www.cnbc.com/2026/09/11/cpi-inflation-report-august-2026.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "August CPI Report Shows Inflation at a 3.4% Annual Rate, Above Forecasts",
+     "url": "https://www.morningstar.com/economy/august-cpi-report-shows-inflation-34-annual-rate-above-forecasts",
+     "publisher": "Morningstar"
+    },
+    {
+     "title": "August CPI Numbers Are In",
+     "url": "https://www.kiplinger.com/investing/economy/cpi-report-august-2026-what-to-expect",
+     "publisher": "Kiplinger"
+    }
+   ]
+  },
+  {
+   "key": "us_pce",
+   "name": "US PCE",
+   "period": "2026-08",
+   "date": "2026-09-30",
+   "consensus_source": "시장 컨센서스(Trading Economics · Yahoo 보도)",
+   "measures": [
+    {
+     "key": "headline_yoy",
+     "label": "PCE YoY",
+     "unit": "%",
+     "actual": 3.4,
+     "consensus": 3.7,
+     "prior": null,
+     "note": "7월 헤드라인은 확인하지 못했다."
+    },
+    {
+     "key": "headline_mom",
+     "label": "PCE MoM",
+     "unit": "%",
+     "actual": 0.3,
+     "consensus": 0.4,
+     "prior": null
+    },
+    {
+     "key": "core_mom",
+     "label": "Core PCE MoM",
+     "unit": "%",
+     "actual": 0.2,
+     "consensus": 0.3,
+     "prior": 0.1,
+     "note": "7월은 0.2 → 0.1 로 하향 수정"
+    },
+    {
+     "key": "core_yoy",
+     "label": "Core PCE YoY",
+     "unit": "%",
+     "actual": 3.0,
+     "consensus": 3.3,
+     "prior": 3.3
+    }
+   ],
+   "note": "BEA 연례 개정(2021년 1월까지 소급)이 겹쳐 연간 수치 하락의 일부는 방법론 변화다.",
+   "sources": [
+    {
+     "title": "A cooler-than-expected reading on Fed's favored inflation measure tamps down on urgency for rate hikes",
+     "url": "https://finance.yahoo.com/economy/policy/article/pce-inflation-eases-to-34--cooling-the-case-for-another-fed-rate-hike-125513195.html",
+     "publisher": "Yahoo Finance"
+    },
+    {
+     "title": "US Core PCE Prices Rise Less than Expected",
+     "url": "https://tradingeconomics.com/united-states/core-pce-price-index-mom/news/588257",
+     "publisher": "Trading Economics"
+    }
+   ]
+  },
+  {
+   "key": "us_nfp",
+   "name": "Nonfarm Payrolls",
+   "period": "2026-09",
+   "date": "2026-10-02",
+   "consensus_source": "Dow Jones (CNBC 보도) — Bloomberg·TD 는 90k",
+   "measures": [
+    {
+     "key": "payrolls",
+     "label": "Payrolls",
+     "unit": "k",
+     "actual": 29,
+     "consensus": 84,
+     "prior": 133,
+     "note": "8월은 133k 로 수정, 7월은 −10k"
+    },
+    {
+     "key": "unemployment",
+     "label": "Unemployment",
+     "unit": "%",
+     "actual": 4.2,
+     "consensus": 4.1,
+     "prior": 4.1,
+     "note": "8월 4.1% — 컨센서스가 '유지' 였다는 보도 기준"
+    },
+    {
+     "key": "ahe",
+     "label": "Avg Hourly Earnings",
+     "unit": "%",
+     "actual": null,
+     "consensus": null,
+     "prior": null,
+     "note": "확인하지 못했다 — 비워 둔다"
+    }
+   ],
+   "note": "10년물은 발표 직후 6bp 가까이 내렸다가 종가는 오름세로 돌아섰다(보도). 경제활동참가율 61.8%(+0.2%p).",
+   "sources": [
+    {
+     "title": "Labor market faltered in September as jobs increased by just 29,000, unemployment rate rose to 4.2%",
+     "url": "https://www.cnbc.com/2026/10/02/jobs-report-september-2026.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "U.S. Treasury yields rise despite September jobs report",
+     "url": "https://www.cnbc.com/2026/10/02/treasury-yields-bonds-nonfarm-payrolls.html",
+     "publisher": "CNBC"
+    },
+    {
+     "title": "Treasury yields sink after weak September jobs report dims October Fed hike odds",
+     "url": "https://qz.com/treasury-yields-september-jobs-report-fed-rate-hike-100226",
+     "publisher": "Quartz"
+    }
+   ]
+  }
+ ],
+ "upcoming": [
+  {
+   "date": "2026-10-14",
+   "kind": "us_cpi",
+   "name": "US CPI (9월)",
+   "note": "08:30 ET 발표. 컨센서스 전월 +0.6% · 전년 3.6%(CNBC) / 전월 +0.6% · 근원 +0.2% · 전년 3.7%(한국경제) — 매체마다 전년치가 달라 둘 다 적는다",
+   "sources": [
+    {
+     "title": "뉴욕·상하이 증시, 美 어닝시즌 개막…9월 CPI도 발표",
+     "url": "https://www.hankyung.com/article/2026101145081",
+     "publisher": "한국경제"
+    },
+    {
+     "title": "The latest inflation data is expected to show price increases are accelerating",
+     "url": "https://www.cnbc.com/2026/10/13/september-consumer-price-index-inflation.html",
+     "publisher": "CNBC"
+    }
+   ],
+   "release_utc": "2026-10-14T12:30:00Z"
+  },
+  {
+   "date": "2026-10-15",
+   "kind": "us_ppi_retail",
+   "name": "US PPI · 소매판매 (9월)",
+   "note": "PPI 컨센서스 전월 +0.5% · 근원 +0.3%",
+   "sources": [
+    {
+     "title": "뉴욕·상하이 증시, 美 어닝시즌 개막…9월 CPI도 발표",
+     "url": "https://www.hankyung.com/article/2026101145081",
+     "publisher": "한국경제"
+    }
+   ],
+   "release_utc": "2026-10-15T12:30:00Z"
+  },
+  {
+   "date": "2026-10-22",
+   "kind": "bok",
+   "name": "BOK 금통위",
+   "note": "8월 3.00% 인상 뒤 첫 회의",
+   "sources": [
+    {
+     "title": "2026년 한국 기준금리 결정 일정 총정리",
+     "url": "https://earlyhong.com/korea-interest-rate-2026-schedule-fomc/",
+     "publisher": "블로그(일정 대조용)"
+    }
+   ]
+  },
+  {
+   "date_start": "2026-10-27",
+   "date": "2026-10-28",
+   "kind": "fomc",
+   "name": "FOMC",
+   "note": "9월 인상 뒤 첫 회의",
+   "sources": [
+    {
+     "title": "뉴욕·상하이 증시, 美 어닝시즌 개막…9월 CPI도 발표 (FOMC 10/27~28)",
+     "url": "https://www.hankyung.com/article/2026101145081",
+     "publisher": "한국경제"
+    }
+   ]
+  },
+  {
+   "date": "2026-10-29",
+   "kind": "ecb",
+   "name": "ECB 통화정책회의",
+   "note": "",
+   "sources": [
+    {
+     "title": "ECB Rate Decision 2026 calendar",
+     "url": "https://www.financecalendar.com/event/ecb-rate-decision-september-2026/",
+     "publisher": "Finance Calendar"
+    }
+   ]
+  },
+  {
+   "date_start": "2026-10-29",
+   "date": "2026-10-30",
+   "kind": "boj",
+   "name": "BOJ 금융정책결정회의",
+   "note": "분기 전망 보고서 동시 발표",
+   "sources": [
+    {
+     "title": "Monetary Policy Meetings",
+     "url": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+     "publisher": "Bank of Japan"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "kind": "us_nfp",
+   "name": "US 고용보고서 (10월)",
+   "note": "",
+   "sources": [
+    {
+     "title": "Employment Situation news release schedule",
+     "url": "https://www.bls.gov/schedule/news_release/empSit.htm",
+     "publisher": "BLS"
+    }
+   ]
+  }
+ ]
+}

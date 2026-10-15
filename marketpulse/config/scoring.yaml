@@ -1,0 +1,252 @@
+# Market Pulse AI — 스코어링 파라미터 (설계서 STEP 5)
+#
+# 모든 가중치와 임계값이 여기 있다. 코드에는 숫자가 없다 (요구 15-9).
+# 이 값들은 매크로 상식에 기반한 초기 제안값이며 통계적으로 추정된 값이
+# 아니다. 실데이터가 붙는 시점에 재검토 대상이다 (요구 15-11).
+
+standardize:
+  # squash(z) = squash_scale * tanh(z / squash_divisor)
+  # ±2σ 부근에서 ±76 으로 부드럽게 포화된다. 선형 스케일링은 극단치에서
+  # 포화되지 않아 한 자산이 전체 점수를 지배한다.
+  squash_scale: 100.0
+  squash_divisor: 2.0
+
+factor:
+  # 가중치 대비 이 비율 미만만 확보되면 factor 를 신뢰하지 않는다.
+  # 결측은 0 으로 채우지 않고 가중치를 재정규화한 뒤 품질을 낮춘다.
+  min_coverage_ok: 0.75
+  min_coverage_partial: 0.40
+
+market_state:
+  # score(label) = base + (1-base) * Σ(w_k · passed_k),  require 통과 시에만
+  require_pass_base: 0.5
+  # 2등이 이 점수 이상일 때만 secondary 로 표시한다
+  secondary_min_score: 0.5
+  # Main Drivers 에 표시할 최대 개수와 최소 |z|
+  driver_limit: 6
+  driver_min_z: 0.5
+  # 지배 축 (GOAL Kickstart Exhibit 4 차용). 후보 중 |z_1d| 최대를 고른다.
+  # 후보는 시장 전체를 흔들 수 있는 매크로 가격이다. 개별 업종 ETF 는
+  # 축이 아니라 피해자·수혜자 쪽이라 넣지 않는다.
+  axis_candidates: [US2Y, US10Y, DXY, BRENT, VIX, US_HY_OAS, USDKRW, GOLD, SPX, KOSPI, USDJPY]
+  axis_min_abs_z: 0.5
+  # 이 |상관| 미만은 연동으로 치지 않는다
+  axis_min_abs_corr: 0.30
+  axis_links_limit: 5
+
+confidence:
+  # 신뢰도는 "얼마나 강한가" 가 아니라 "얼마나 확실한가" 다.
+  # 강도는 factor z 가 이미 표현하므로 여기 다시 넣으면 같은 정보를 두 번
+  # 센다. 대신 서로 독립적인 불확실성의 원천 네 가지를 넣는다.
+  weights:
+    separation: 0.40    # 1등과 2등의 격차. 라벨 자체가 틀릴 가능성
+    confirmation: 0.25  # cross-asset 이 서로를 확인하는가
+    coverage: 0.20      # 데이터가 얼마나 있는가
+    persistence: 0.15   # 직전 틱에도 같은 판정이었는가
+  # separation 을 1.0 으로 보는 점수 격차
+  separation_full_gap: 0.5
+
+confirmation:
+  # 기대와 같은 방향으로 이만큼 움직이면 확인된 것으로 본다
+  confirm_min_abs_z: 0.5
+  # 기대와 반대로 이만큼 움직여야 상충으로 본다.
+  # "기대와 반대로 강하게 움직였다" 는 "기대대로 조금 움직였다" 보다
+  # 강한 주장이므로 더 높은 증거를 요구한다. 의도적 비대칭이다.
+  conflict_min_abs_z: 1.0
+  verdict_high: 0.6
+  verdict_medium: 0.3
+
+sentiment:
+  # LLM 검증을 통과했을 때 LLM 감성에 주는 비중. 나머지는 사전 기반.
+  llm_weight: 0.7
+  # 시간 감쇠 반감기 (시간). 뉴스의 시장 관련성은 지수적으로 줄어든다.
+  half_life_hours: 6.0
+  # 사전 매칭 1건당 점수. 부정어가 앞에 있으면 부호를 뒤집는다.
+  lexicon_unit: 26.0
+  lexicon_max_terms: 4
+  # 출처 가중. 미등록 출처는 default 를 쓴다.
+  source_weights:
+    default: 1.0
+
+theme:
+  # 수급(flow) 신호를 쓰는가. 무료 공급자가 없어 항상 결측이었고, 2026-09-15
+  # 사용자 결정으로 뉴스 감성이 그 자리를 맡는다. false 면 수급 자산을
+  # 매핑에서 없는 것으로 취급한다 — 점수·확인·커버리지·괴리 전부에서.
+  # 수급이 붙는 날 true 로 돌리고 아래 가중치를 되돌리면 된다
+  # (원래: price 0.30 / news 0.25 / flow 0.20 / news_momentum 0.15 / vol -0.10).
+  use_flow: false
+  # 각 component 를 z 단위로 맞춘 뒤 가중 평균하고 squash 한다.
+  weights:
+    price_momentum: 0.30   # 가격은 유일하게 조작 불가능한 실제 체결 정보다
+    news_sentiment: 0.45   # 수급의 0.20 을 흡수했다
+    flow_momentum: 0.00
+    news_momentum: 0.15
+    volatility: -0.10      # 테마 변동성 급등은 건전성이 아니라 불안정성이다
+  confirmation:
+    # 이 절댓값 미만의 신호는 방향이 없다고 보고 합의 계산에서 제외한다
+    signal_min_abs: 20.0
+    high: 60.0
+    medium: 25.0
+    low: -25.0
+  confidence:
+    weights:
+      confirmation: 0.35
+      coverage: 0.25
+      news_sufficiency: 0.20
+      stability: 0.20
+    # 기사 1건으로 만든 +78 과 20건으로 만든 +78 은 같은 확신도가 아니다.
+    news_sufficiency_saturation: 5
+    # 안정성 계산에 쓰는 theme_score 표준편차의 포화점
+    stability_stdev_saturation: 40.0
+
+divergence:
+  # severity = 100·tanh(gap/severity_divisor) · persistence_mult · materiality
+  severity_divisor: 80.0
+  persistence_step: 0.10
+  persistence_max: 1.5
+  # materiality = clamp(max(|A|,|B|) / materiality_divisor, 0, 1)
+  #
+  # 왜 필요한가: A=+3, B=-3 이면 gap 은 6 이고 부호도 반대다. 통계적으로는
+  # divergence 지만 실무적으로는 아무 의미가 없다. 둘 다 사실상 0 이기
+  # 때문이다. 적어도 한쪽은 충분히 커야 괴리가 의미를 갖는다.
+  materiality_divisor: 50.0
+
+  trigger:
+    min_gap: 40.0
+    # 적어도 한쪽은 이만큼 커야 괴리가 의미를 갖는다.
+    min_magnitude: 30.0
+    # 한 틱짜리 노이즈와 며칠 지속되는 구조적 괴리는 다른 것이다.
+    min_duration: 2
+    #
+    # 같은 방향으로 크기만 다른 것은 괴리가 아니다.
+    # 요구 7 의 예시는 전부 (a) 방향이 엇갈리거나 (b) 한쪽이 무반응인 경우다.
+    #   News ↑ / Price ↓        → 방향 엇갈림
+    #   Risk Event ↑ / VIX 무반응 → 무반응
+    # 뉴스 톤 +6 과 가격 +66 은 격차가 60이지만 둘 다 같은 방향이다.
+    # 그것을 "내러티브가 가격으로 확인되지 않는다" 고 말하면 틀린 말이다.
+    #
+    # 부호가 엇갈릴 때 양쪽 모두 최소한 이만큼은 되어야 한다
+    opposing_min_abs: 15.0
+    # 한쪽이 이보다 작으면 '반응 없음' 으로 본다
+    unresponsive_max_abs: 15.0
+
+  bands:
+    critical: 75.0
+    high: 50.0
+    medium: 25.0
+
+alert:
+  # severity = 100·tanh(|delta_z| / divisor) · type_weight
+  severity_divisor: 2.5
+  # 같은 키가 이 시간 안에 다시 뜨면 새 알림을 만들지 않고 fire_count 만 올린다
+  cooldown_minutes: 30
+  # 조건이 해소된 알림도 이 시간 동안은 타임라인에 남긴다.
+  # 알림은 '지금 참인 것' 의 목록이 아니라 '최근에 일어난 일' 의 기록이다.
+  # 괴리 발생 같은 사건은 한 번 일어나면 다음 틱에 조건이 재생성되지 않는데,
+  # 그때마다 화면에서 사라지면 타임라인이 성립하지 않는다.
+  retention_minutes: 120
+  bands:
+    critical: 75.0
+    high: 50.0
+    medium: 25.0
+  # 변화의 종류마다 중요도가 다르다
+  type_weights:
+    STATE_CHANGE: 1.00
+    DIVERGENCE_OPENED: 0.95
+    VOL_SPIKE: 0.90
+    PRICE_ZSCORE_SPIKE: 0.85
+    FLOW_REVERSAL: 0.85
+    THEME_SENTIMENT_SPIKE: 0.80
+    NEWS_VOLUME_SPIKE: 0.75
+    DATA_QUALITY: 0.60
+  thresholds:
+    # |z| 가 이 값을 넘으면 가격 급변으로 본다
+    price_zscore: 2.0
+    # 변동성 자산의 |z|
+    vol_spike_z: 1.5
+    # 테마 점수의 1틱 변화폭
+    theme_change: 25.0
+    # 수급 부호가 뒤집히면서 절댓값이 이만큼은 되어야 한다
+    flow_reversal_z: 0.8
+    # 커버리지가 이 아래로 떨어지면 데이터 품질 경고
+    coverage_floor: 0.85
+
+relationship:
+  # 실측 |z| 가 이 값에 못 미치면 "움직이지 않았다"(muted) 로 본다.
+  # 0.3σ 짜리 움직임을 놓고 내러티브가 맞았다/틀렸다를 말하면 잡음을
+  # 신호로 읽는 것이다.
+  reaction_min_abs_z: 0.5
+  # 대표 경로의 가장 약한 고리가 이 값에 못 미치면 판정하지 않는다.
+  # 사슬은 가장 약한 고리만큼만 버틴다. relationships.yaml 이 스스로
+  # "조달비용과 신용위험이 상쇄한다" 며 strength 0.45 로 적어 둔 관계를
+  # 놓고 "예상과 반대로 움직였다" 고 말하는 것은 과장이다.
+  reaction_min_link_strength: 0.5
+
+calendar:
+  # 이벤트 창 (calendar.yaml). GOAL Kickstart 의 '중앙은행 주간' 프레이밍.
+  window_days_before: 2   # 이벤트 D-2 부터 창
+  window_days_after: 0    # 발표 당일까지
+  # 창 안에서 confidence 의 persistence 가중에 곱하는 배율. 어제와 같은
+  # 판정이라는 사실이 회의 앞에서는 확신의 근거가 되지 못한다.
+  persistence_scale: 0.5
+  # 창 안에서 가격·변동성·테마 급변 알림 임계에 곱하는 배율. 회의 앞 포지션
+  # 정리는 일상이라 그만큼 문턱을 올린다.
+  alert_threshold_scale: 1.25
+  # '다음 이벤트' 로 보여줄 범위 (일)
+  upcoming_days: 14
+
+correlation:
+  # 자산 간 롤링 상관 (GOAL Kickstart 의 상관 모니터 차용).
+  # 사전 정의 관계는 가설이다. 이 상관이 그 가설의 실측 대조다.
+  window: 60           # 현재 창 (봉). z-score 창과 같게 둔다
+  prior_shift: 63      # '한 분기 전 창' 을 몇 봉 전으로 볼지
+  min_observations: 40 # 두 값이 모두 있는 봉이 이 미만이면 상관을 내지 않는다
+  # |상관| 이 이 이상이고 기대 부호와 같으면 관계가 확인된 것으로 본다
+  confirm_min_abs: 0.20
+  # 기대와 반대 부호로 이 이상이면 관계가 뒤집힌 것으로 본다.
+  # 그 사이는 '약화' — 부호를 말할 만큼 크지 않다.
+  # 확인보다 높게 잡는 이유: 60봉 상관의 표본 표준편차가 약 0.13 이라
+  # 0.2 는 서로 무관한 두 시계열에서도 여덟 번에 한 번 나온다. "뒤집혔다"
+  # 는 강한 주장이라 그보다 높은 증거를 요구한다 (confirmation 의 비대칭과
+  # 같은 논리).
+  reverse_min_abs: 0.30
+
+thermometer:
+  # 센티멘트 온도계 — "지금 시장이 얼마나 뜨거운가" 를 -100(결빙) ~ +100(과열)
+  # 한 자로 잰다. 두 개의 온도를 따로 재서 한 눈금 위에 같이 놓는다.
+  #
+  #   가격 온도  이미 계산된 매크로 factor(z) 의 부호·가중 평균을 squash 한 값.
+  #              새 데이터를 쓰지 않는다 — Market State 가 쓴 그 숫자다.
+  #   뉴스 온도  기사 감성의 시간감쇠·영향도·출처 3중 가중 평균 (SentimentEngine).
+  #   종합 온도  둘의 가중 결합. 한쪽이 없으면 나머지로만 재고 그 사실을 남긴다.
+  #
+  # 두 온도의 격차가 곧 "내러티브와 가격이 맞는가" 다. 그래서 종합 하나만
+  # 보여주지 않고 두 바늘을 따로 그린다.
+  blend:
+    price: 0.60   # 가격은 조작 불가능한 실제 체결 정보다
+    news: 0.40
+  price_components:
+    - {factor: RiskAppetite, weight: 0.35, sign: 1}
+    - {factor: Volatility,   weight: 0.25, sign: -1}
+    - {factor: Growth,       weight: 0.15, sign: 1}
+    - {factor: Credit,       weight: 0.15, sign: -1}
+    - {factor: KoreaFlow,    weight: 0.10, sign: 1}
+  # 기사가 이만큼이면 뉴스 온도의 충분성을 1.0 으로 본다. 기사 1건으로 잰
+  # +60 과 8건으로 잰 +60 은 같은 온도가 아니다.
+  news_saturation: 8
+  # |뉴스 - 가격| 이 이 이상이면 내러티브 괴리로 표시한다
+  gap_threshold: 30.0
+  # 직전 틱 대비 종합 변화가 이보다 작으면 화살표를 옆으로 눕힌다
+  trend_min_delta: 5.0
+  # 하한 기준. 위에서부터 검사한다.
+  bands:
+    - {min: 60,   id: overheated, label: 과열}
+    - {min: 20,   id: warm,       label: 온기}
+    - {min: -20,  id: neutral,    label: 중립}
+    - {min: -60,  id: cool,       label: 냉각}
+    - {min: -100, id: frozen,     label: 결빙}
+  confidence:
+    weights:
+      price_coverage: 0.50    # factor 품질 가중 확보율
+      news_sufficiency: 0.30  # 기사 수 / news_saturation
+      agreement: 0.20         # 두 온도가 서로 얼마나 가까운가
