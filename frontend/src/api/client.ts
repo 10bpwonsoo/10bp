@@ -3,6 +3,7 @@ import type {
   DailyHistory,
   HistoryTab,
 } from "./types";
+import { activeArchive, resolveArchived, type ArchiveIndexRow, type DashboardArchive } from "./archive";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -10,6 +11,8 @@ export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** 서버가 detail 에 구조를 담아 보낸 경우(예: archive 404 의 nearest). */
+    readonly detail: unknown = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -17,6 +20,13 @@ export class ApiError extends Error {
 }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+  // ARCHIVE MODE — 네트워크로 가지 않는다. 저장본에 없으면 지금 값으로 메우지 않고 실패한다.
+  const archived = activeArchive();
+  if (archived) return resolveArchived(archived, path) as T;
+  return getNetwork<T>(path, signal);
+}
+
+async function getNetwork<T>(path: string, signal?: AbortSignal): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}`, { signal });
@@ -26,13 +36,15 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   }
   if (!res.ok) {
     let detail = `${res.status} ${res.statusText}`;
+    let extra: unknown = null;
     try {
-      const body = (await res.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
+      const body = (await res.json()) as { detail?: string | { message?: string } };
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (body.detail && typeof body.detail === "object") { extra = body.detail; if (body.detail.message) detail = body.detail.message; }
     } catch {
       /* 본문이 JSON 이 아니면 상태 문자열을 그대로 쓴다 */
     }
-    throw new ApiError(detail, res.status);
+    throw new ApiError(detail, res.status, extra);
   }
   return (await res.json()) as T;
 }
@@ -124,3 +136,9 @@ export const fetchAnalystViews = (scenario: string | undefined, ids: string[], s
   if (ids.length) q.set("ids", ids.join(","));
   return get<AnalystViews>(`/api/v1/analyst-views?${q.toString()}`, signal);
 };
+
+/* ── Daily Full Dashboard Archive (2026-10-21) — 저장본 자체는 늘 네트워크(정적 배포본은 가로채기)에서 받는다 ── */
+export const fetchArchiveIndex = (signal?: AbortSignal) => getNetwork<ArchiveIndexRow[]>("/api/v1/archive/index", signal);
+
+/** 그날 저장된 화면 전체. 없으면 ApiError(404) 의 detail.nearest 에 가장 가까운 저장일. */
+export const fetchArchive = (date: string, signal?: AbortSignal) => getNetwork<DashboardArchive>(`/api/v1/archive/${encodeURIComponent(date)}`, signal);

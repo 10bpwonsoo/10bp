@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { fetchInfo, fetchScenarios, staticBundle } from "./api/client";
+import { useCallback, useEffect, useState } from "react";
+import { fetchArchive, fetchInfo, fetchScenarios, staticBundle } from "./api/client";
+import { setActiveArchive, type DashboardArchive } from "./api/archive";
+import { ArchiveBanner, ArchiveControl, NotArchivedPanel } from "./components/ArchiveControl";
 import type { ApiInfo, DataMode, ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
 import { useStateHistory } from "./api/useStateHistory";
@@ -18,7 +20,36 @@ import { CockpitView } from "./components/CockpitView";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
+const HASH_DATE = /^#(\d{4}-\d{2}-\d{2})$/;
+
+/**
+ * LIVE ↔ ARCHIVE 전환 (2026-10-21). 화면 본체(Dashboard)를 모드별 key 로 다시 마운트한다 —
+ * LIVE 에서 받은 상태가 과거 화면에 섞이지 않고, 과거 화면에서는 모든 하위 패널이 같은 저장본에서 데이터를 받는다.
+ * 선택한 탭(실시간·AI 센티·금리…)은 전환해도 유지한다. 주소의 #2026-10-15 로 그 날짜 화면을 바로 연다.
+ */
 export default function App() {
+  const [archive, setArchive] = useState<DashboardArchive | null>(null);
+  const [checkName, setCheckName] = useState<string | null>(null);
+  const open = useCallback((a: DashboardArchive | null) => {
+    setActiveArchive(a); // 다시 마운트되기 전에 데이터 경로부터 바꾼다
+    setArchive(a);
+    try {
+      const url = a ? `#${a.snapshot_date}` : `${location.pathname}${location.search}`;
+      history.replaceState(null, "", url);
+    } catch { /* 주소를 못 바꿔도 화면은 그대로 */ }
+  }, []);
+  useEffect(() => {
+    const m = HASH_DATE.exec(location.hash);
+    if (!m) return;
+    fetchArchive(m[1]!).then(open).catch(() => { /* 없는 날짜면 LIVE 그대로 — 날짜 선택에서 가까운 날을 고를 수 있다 */ });
+  }, [open]);
+  return <Dashboard key={archive ? `archive-${archive.snapshot_date}` : "live"} archive={archive} onArchive={open} checkName={checkName} setCheckName={setCheckName} />;
+}
+
+/** 대시보드 본체. archive 가 있으면 모든 API 호출이 그 저장본에서 답을 받는다(api/archive.ts) — 폴링·'지금 업데이트' 없음. */
+function Dashboard({ archive, onArchive, checkName, setCheckName }: {
+  archive: DashboardArchive | null; onArchive: (a: DashboardArchive | null) => void; checkName: string | null; setCheckName: (n: string | null) => void;
+}) {
   const [mode, setMode] = useState<DataMode | null>(null);
   const [scenario, setScenario] = useState<string | undefined>(undefined);
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
@@ -34,7 +65,6 @@ export default function App() {
   const { history: stateHistory } = useStateHistory(scenario, snapshot?.as_of ?? null, mode !== null);
   // 시나리오 점검 — 모의 탭을 실데이터로 바꾼 것. 데이터를 바꾸지 않고 '지금 시장이 그 시나리오와 얼마나 닮았나' 를 위에 붙인다.
   const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
-  const [checkName, setCheckName] = useState<string | null>(null);
   const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
   // 실시간 탭은 하나(decision cockpit)다 — 2026-10-07 에 기존 그리드 탭을 지우고 이 탭을 '실시간' 으로 불렀다.
   // 기존 대시보드 그리드(Market State → 히트맵 → … → Investment)는 cockpit 의 Details 안에, 그리고 집계를 못 받을 때의 대체 화면으로 남는다.
@@ -101,14 +131,19 @@ export default function App() {
         {snapshot ? (
           <DataModeBadge health={snapshot.data_health} scenario={snapshot.scenario} />
         ) : null}
-        <RefreshButton
-          onClick={refreshNow}
-          busy={refreshing}
-          lastUpdated={lastUpdated}
-          mode={mode}
-          staticNote={bundle?.collected ?? null}
-        />
+        <ArchiveControl archive={archive} onOpen={onArchive} />
+        {/* 과거 화면에는 '지금 업데이트' 가 없다 — 저장본은 다시 수집하지 않는다 */}
+        {archive ? null : (
+          <RefreshButton
+            onClick={refreshNow}
+            busy={refreshing}
+            lastUpdated={lastUpdated}
+            mode={mode}
+            staticNote={bundle?.collected ?? null}
+          />
+        )}
       </header>
+      {archive ? <ArchiveBanner archive={archive} onLive={() => onArchive(null)} /> : null}
 
       {error ? (
         <div className="banner" role="alert">
@@ -124,7 +159,9 @@ export default function App() {
 
       {snapshot ? (
         <>
-          {activeCheck ? (
+          {activeCheck && archive && archivedTabMissing(archive, activeCheck.focus) ? (
+            <NotArchivedPanel what={activeCheck.title.split(" — ")[0] ?? activeCheck.name} />
+          ) : activeCheck ? (
             /* 시나리오 탭 — 실데이터 화면을 복제하지 않는다. 그 탭에 어울리는 판정만. */
             <ScenarioView check={activeCheck} snapshot={snapshot} history={stateHistory} investment={investmentForView} oilRegime={oilRegime} ratesRegime={ratesRegime} aiRegime={aiRegime} />
           ) : (
@@ -159,4 +196,10 @@ export default function App() {
       )}
     </div>
   );
+}
+
+/** 저장본에 그 탭의 데이터가 없으면 참 — '불러오는 중' 대신 NOT ARCHIVED 를 보인다. */
+function archivedTabMissing(a: DashboardArchive, focus: string | null | undefined): boolean {
+  const need = focus === "oil_regime" ? "oil_regime" : focus === "rates_regime" ? "rates_regime" : focus === "ai_regime" || focus === "ai_regime_full" ? "ai_regime" : null;
+  return need !== null && (a[need] === null || a[need] === undefined);
 }

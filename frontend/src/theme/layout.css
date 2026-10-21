@@ -2556,3 +2556,46 @@
   .ai.ai-ext [data-testid="ai-gap"] .ai-gap-row { grid-template-columns: minmax(120px, 150px) minmax(0, 1fr) 64px minmax(0, 1fr); }
   .ai.ai-ext [data-testid="ai-gap"] .ai-gap-n { grid-column: auto; }
 }
+
+/* ── Daily Archive 날짜 선택 · 과거 화면 띠 (2026-10-21) — 새 클래스만, 기존 상단 바 규칙은 그대로 ── */
+.arc { position: relative; display: inline-flex; }
+.arc-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 9px; border: 1px solid var(--rule-hi); border-radius: var(--radius); background: transparent; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+.arc-btn:hover, .arc-btn:focus-visible { border-color: var(--accent); outline: none; }
+.arc-btn.on { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
+.arc-tag { font-size: 9.5px; letter-spacing: .1em; }
+.arc-date { font-weight: 600; font-variant-numeric: tabular-nums; }
+.arc-live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 5px; vertical-align: 1px; }
+.arc-scrim { position: fixed; inset: 0; z-index: 30; background: transparent; }
+.arc-pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 31; width: 320px; max-height: min(70vh, 520px); overflow: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--rule-hi); border-radius: var(--radius); background: var(--surface); box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+.arc-pop-h { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); }
+.arc-pop-note { font-size: 10.5px; color: var(--muted); }
+.arc-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.arc-nav-b { font-size: 10.5px; padding: 3px 8px; border: 1px solid var(--rule-hi); border-radius: var(--radius); background: transparent; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+.arc-nav-b:hover:not(:disabled), .arc-nav-b:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.arc-nav-b:disabled { color: var(--faint); cursor: default; }
+.arc-input { min-width: 0; width: 100%; font-size: 11px; padding: 2px 4px; border: 1px solid var(--rule-hi); border-radius: var(--radius); background: var(--surface-2); color: var(--ink); }
+.arc-list { display: flex; flex-direction: column; gap: 2px; }
+.arc-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: baseline; width: 100%; text-align: left; font: inherit; font-size: 12px; padding: 5px 6px; border: 1px solid transparent; border-radius: var(--radius); background: transparent; color: var(--ink); cursor: pointer; }
+.arc-row:hover:not(:disabled), .arc-row:focus-visible { border-color: var(--rule-hi); outline: none; }
+.arc-row.cur { border-color: var(--accent); background: var(--accent-wash); }
+.arc-row-live { grid-template-columns: auto minmax(0, 1fr); }
+.arc-row-live > span:last-child { color: var(--muted); font-size: 11px; }
+.arc-row-d { font-variant-numeric: tabular-nums; }
+.arc-row-m { font-size: 10.5px; color: var(--muted); overflow-wrap: anywhere; }
+.arc-chip { font-size: 9.5px; letter-spacing: .06em; color: var(--ok); }
+.arc-chip.partial { color: var(--warn); }
+.arc-empty { font-size: 11px; color: var(--muted); padding: 6px; }
+.arc-missing { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--ink-2); padding: 6px 8px; border-left: 3px solid var(--warn); background: var(--surface-2); border-radius: var(--radius); }
+.arc-missing-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.arc-banner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 6px 18px; border-bottom: 1px solid var(--rule); background: var(--surface-2); font-size: 11px; color: var(--muted); }
+.arc-banner-k { font-size: 10.5px; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
+.arc-banner-miss { color: var(--warn); }
+.arc-banner .arc-nav-b { margin-left: auto; }
+@media (max-width: 640px) {
+  /* 좁은 화면은 아래에서 올라오는 시트 */
+  .arc-scrim { background: rgb(0 0 0 / .28); }
+  .arc-pop { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 72vh; border-radius: 10px 10px 0 0; padding: 12px max(16px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .arc-row { font-size: 13px; padding: 8px 6px; }
+  .arc-banner { padding: 6px 14px; }
+  .arc-banner .arc-nav-b { margin-left: 0; }
+}

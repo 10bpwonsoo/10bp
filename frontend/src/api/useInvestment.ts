@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "./client";
+import { activeArchive, resolveArchived } from "./archive";
 import type { InvestmentIntelligence } from "./investment";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "";
@@ -11,6 +12,9 @@ async function fetchInvestment(scenario?: string, refresh = false, signal?: Abor
   if (scenario) params.set("scenario", scenario);
   if (refresh) params.set("refresh", "true");
   const q = params.toString();
+  // ARCHIVE MODE — 저장본의 investment 만. 없으면 NOT ARCHIVED (지금 값으로 메우지 않는다)
+  const archived = activeArchive();
+  if (archived) return resolveArchived(archived, "/api/v1/investment") as InvestmentIntelligence;
   let res: Response;
   try {
     res = await fetch(`${BASE}/api/v1/investment${q ? `?${q}` : ""}`, { signal });
@@ -49,8 +53,9 @@ export function useInvestment(scenario?: string, enabled = true) {
       }
     };
     void run();
-    const t = window.setInterval(run, POLL_MS);
-    return () => { c.abort(); window.clearInterval(t); };
+    // ARCHIVE MODE 는 한 번 읽고 끝 — 폴링하지 않는다
+    const t = activeArchive() ? undefined : window.setInterval(run, POLL_MS);
+    return () => { c.abort(); if (t) window.clearInterval(t); };
   }, [scenario, enabled]);
 
   const refreshNow = useCallback(async () => {

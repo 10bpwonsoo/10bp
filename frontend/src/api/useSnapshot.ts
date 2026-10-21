@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, fetchSnapshot } from "./client";
+import { activeArchive } from "./archive";
 import type { IntelligenceSnapshot } from "./types";
 
 /** 백엔드 TTL 캐시가 4초라 그보다 짧게 폴링해도 얻는 게 없다. */
@@ -74,7 +75,8 @@ export function useSnapshot(scenario?: string, enabled = true): SnapshotStore {
     };
 
     void run();
-    timer = window.setInterval(run, POLL_MS);
+    // ARCHIVE MODE 는 저장본을 한 번 읽고 끝 — 폴링하지 않는다
+    if (!activeArchive()) timer = window.setInterval(run, POLL_MS);
     return () => {
       controller.abort();
       if (timer) window.clearInterval(timer);
