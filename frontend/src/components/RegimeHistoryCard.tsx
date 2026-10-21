@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CkRegimeDay, CkRegimeHistory } from "../api/types";
+import { duplicateDates, kstTime, maxLabelsFor, md, mergedNote, snapshotLine, thinLabels } from "../lib/historyDates";
 import { sourceLine } from "./DailyHistoryStrip";
 
 /**
@@ -12,7 +13,6 @@ const REGIME_COLOR: Record<string, string> = {
   policy: "var(--lbl-policy)", liquidity_stress: "var(--lbl-liquidity)", geopolitical: "var(--lbl-geopolitical)",
 };
 const color = (k: string) => REGIME_COLOR[k] ?? "var(--rule-hi)";
-const md = (iso: string) => iso.slice(5).replace("-", "/");
 const short = (label: string) => label.split(" / ")[0] ?? label;
 const sg = (v: number | null | undefined, d = 1) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(d)}`);
 
@@ -21,8 +21,17 @@ function isMobile(): boolean {
 }
 
 function Context({ h }: { h: CkRegimeHistory }) {
+  const last = h.days[h.days.length - 1];
+  const kst = h.date_basis === "kst_snapshot";
   return (
     <div className="ck-h-ctx" data-testid="ck-h-ctx">
+      {kst && last ? (
+        <div className="ck-h-snap mono" data-testid="ck-h-snapshot">
+          <span><i>Daily Snapshot</i> <b>{last.date}</b></span>
+          {h.snapshot_time ? <span><i>Cutoff</i> <b>{h.snapshot_time}</b></span> : null}
+          {last.market_date ? <span><i>US data through</i> <b>{last.market_date} close</b></span> : null}
+        </div>
+      ) : null}
       <div className="ck-h-ctx-main">
         <span className="ck-k mono">Current</span>
         <b className="ck-h-cur" style={{ color: color(h.current_regime) }} data-testid="ck-h-current">{h.current_label}</b>
@@ -39,6 +48,14 @@ function Context({ h }: { h: CkRegimeHistory }) {
         <span className="ck-k">Transition</span><b style={{ color: h.transition_status === "CONFIRMED" ? "var(--ok)" : h.transition_status === "CHANGED" ? "var(--accent)" : "var(--warn)" }}>{(h.transition_status || "").replace(/_/g, " ")}</b>
         {h.transition_status_ko ? <span className="ck-h-raw-ko">{h.transition_status_ko}</span> : null}
       </div>
+      {h.intraday ? (
+        <div className="ck-h-intraday mono" data-testid="ck-h-intraday" title="장중 LIVE 값은 daily history 칸을 덮지 않는다 — 다음 Daily Snapshot 에서 고정된다">
+          <span className="ck-k">Intraday LIVE</span><b>{kstTime(h.intraday.as_of) || h.intraday.date}</b>
+          <span>Raw <em style={{ color: color(h.intraday.raw_regime) }}>{short(h.intraday.raw_label || h.intraday.raw_state)}</em></span>
+          <span>장중 공식 <em style={{ color: color(h.intraday.official_regime) }}>{short(h.intraday.official_label)}</em></span>
+          <span className="ck-h-raw-ko">daily history 에 넣지 않음{h.intraday.market_date ? ` · US ${md(h.intraday.market_date)} close 기준` : ""}</span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -47,12 +64,14 @@ function DayTip({ d, palette }: { d: CkRegimeDay; palette: Record<string, string
   return (
     <div className="ck-h-tip mono" role="tooltip" data-testid="ck-h-tip">
       <b>{d.date}</b>
+      {d.market_date ? <span data-testid="ck-h-tip-dates">{snapshotLine(d.date, d.market_date)}{d.data_asof ? ` · data ${kstTime(d.data_asof)}` : ""}</span> : null}
       <span>Dominant <em style={{ color: color(d.dominant_regime) }}>{short(palette[d.dominant_regime] ?? d.dominant_regime)}</em>{d.end_regime !== d.dominant_regime ? <> · End <em style={{ color: color(d.end_regime) }}>{short(palette[d.end_regime] ?? d.end_regime)}</em></> : null}</span>
       <span>Evidence <b className="num">{d.evidence_strength.toFixed(0)}%</b>{d.dominant_regime_dwell !== null ? <> · Dwell <b className="num">{(d.dominant_regime_dwell * 100).toFixed(0)}%</b></> : null}</span>
       {d.dominant_driver ? <span>Driver {d.dominant_driver}</span> : null}
       {d.top_evidence.length > 1 ? <span>{d.top_evidence.slice(0, 2).join(" · ")}</span> : null}
       {d.bridged ? <span className="ck-h-note">raw {d.raw_state} — 하루짜리라 직전 regime 에 이어짐</span> : null}
       <span className="ck-h-src" data-testid="ck-h-tip-source">{sourceLine(d.source, d.calculated_at, d.model_version, "", d.locked)}</span>
+      {d.merged && d.merged.length ? <span className="ck-h-note">{mergedNote(d.merged)}</span> : null}
     </div>
   );
 }
@@ -73,6 +92,8 @@ function DayDetail({ d, h, onClose }: { d: CkRegimeDay; h: CkRegimeHistory; onCl
         <span>Composite <b className="num">{d.composite === null ? "–" : sg(d.composite, 0)}</b></span>
         <span>{d.data_quality}</span>
         <span data-testid="ck-h-detail-source" data-source={d.source}>{sourceLine(d.source, d.calculated_at, d.model_version, d.logic_version, d.locked)}</span>
+        {d.market_date ? <span data-testid="ck-h-detail-dates">{snapshotLine(d.date, d.market_date)}{d.data_asof ? ` · data ${kstTime(d.data_asof)}` : ""}{d.storage_date ? ` · 저장 키 ${d.storage_date}` : ""}</span> : null}
+        {d.merged && d.merged.length ? <span className="ck-h-note">{mergedNote(d.merged)}</span> : null}
       </div>
       {d.top_evidence.length ? <div className="mono ck-h-detail-ev">주도 변수 {d.top_evidence.join(" · ")}</div> : null}
       <div className="ck-h-detail-f mono">{fs.map((f) => <span key={f.label}>{f.label} <b className="num">{f.v === null ? "–" : sg(f.v, 1)}</b></span>)}</div>
@@ -86,7 +107,23 @@ function Band({ h }: { h: CkRegimeHistory }) {
   const n = h.days.length;
   const tipIdx = hover ?? sel;
   const first = h.days[0]; const lastDay = h.days[n - 1];
+  const axisRef = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState<number>(() => (isMobile() ? 320 : 900));
+  useEffect(() => {
+    const el = axisRef.current;
+    if (!el) return;
+    const read = () => { const w = el.getBoundingClientRect().width; if (w > 0) setWidth(w); };
+    read();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(read); ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   if (!first || !lastDay) return null;
+  const dates = h.days.map((d) => d.date);
+  const dupes = duplicateDates(dates);
+  const seen = new Set<string>();
+  // 같은 날짜 라벨은 한 번만 — 중복이 있으면 위에 경고를 띄운다(숨기지 않고 알린다)
+  const shown = thinLabels(n, maxLabelsFor(width, n)).filter((i) => { const k = dates[i] as string; if (seen.has(k)) return false; seen.add(k); return true; });
   const curStart = h.blocks.length ? h.blocks[h.blocks.length - 1]?.start ?? "" : "";
   return (
     <div className="ck-h-bandwrap" data-testid="ck-h-band">
@@ -99,19 +136,24 @@ function Band({ h }: { h: CkRegimeHistory }) {
       </div>
       <div className="ck-h-band" onMouseLeave={() => setHover(null)}>
         {h.days.map((d, i) => (
-          <i key={d.date} className={`ck-h-cell${d.is_transition ? " tr" : ""}${curStart && curStart <= d.date ? " cur" : ""}${sel === i ? " sel" : ""}`}
+          <i key={`${d.date}-${i}`} className={`ck-h-cell${d.is_transition ? " tr" : ""}${curStart && curStart <= d.date ? " cur" : ""}${sel === i ? " sel" : ""}`}
             style={{ background: color(d.display_regime) }} data-testid="ck-h-cell" aria-label={`${d.date} ${d.display_label}`}
             onMouseEnter={() => setHover(i)} onClick={() => setSel(sel === i ? null : i)} />
         ))}
         {tipIdx !== null && h.days[tipIdx] ? <div className="ck-h-tipwrap" style={{ left: `${((tipIdx + 0.5) / n) * 100}%` }}><DayTip d={h.days[tipIdx] as CkRegimeDay} palette={h.palette} /></div> : null}
       </div>
-      <div className="ck-h-axis mono">
-        <span>{md(first.date)}</span>
+      {/* x축 — KST snapshot 날짜 한 기준. 폭이 모자라면 라벨만 솎는다(칸은 그대로, 정확한 날짜는 툴팁). 전환 ▲ 는 날짜 글자 없이 */}
+      <div className="ck-h-axis mono" ref={axisRef} data-testid="ck-h-axis" data-labels={shown.length}>
         <span className="ck-h-marks">
-          {h.days.map((d, i) => d.is_transition ? <em key={d.date} style={{ left: `${(i / n) * 100}%` }} title={`${d.date} ${h.palette[h.days[i - 1]?.display_regime ?? ""] ?? ""} → ${d.display_label}`}>▲{h.days.slice(Math.max(0, i - 2), i).some((x) => x.is_transition) ? null : <small>{md(d.date)}</small>}</em> : null)}
+          {h.days.map((d, i) => d.is_transition ? <em key={`m${i}`} style={{ left: `${(i / n) * 100}%` }} data-testid="ck-h-mark" title={`${d.date} ${h.palette[h.days[i - 1]?.display_regime ?? ""] ?? ""} → ${d.display_label}`}>▲</em> : null)}
         </span>
-        <span>{md(lastDay.date)}</span>
+        {shown.map((i) => {
+          const d = h.days[i] as CkRegimeDay;
+          const edge = i === 0 ? "first" : i === n - 1 ? "last" : undefined;
+          return <span key={`l${i}`} className="ck-h-lbl" data-edge={edge} data-testid="ck-h-axis-label" style={edge ? undefined : { left: `${((i + 0.5) / n) * 100}%` }}>{md(d.date)}</span>;
+        })}
       </div>
+      {dupes.length ? <div className="ck-h-warn mono" data-testid="ck-h-dupes">날짜 중복 {dupes.join(", ")} — 저장 데이터 확인 필요 (라벨은 한 번만)</div> : null}
       {sel !== null && h.days[sel] ? <DayDetail d={h.days[sel] as CkRegimeDay} h={h} onClose={() => setSel(null)} /> : null}
     </div>
   );
@@ -238,7 +280,8 @@ export function RegimeHistoryCard({ h }: { h: CkRegimeHistory }) {
         <div className="ck-h-sharewrap"><Fold label="Show regime share" open={!mobile} testid="ck-h-fold-share"><Share h={h} /></Fold></div>
         <div className="ck-h-foot">
           <Fold label="Show transitions" open={!mobile} testid="ck-h-fold-trans"><Transitions h={h} /></Fold>
-          {h.footnote ? <div className="ck-h-footnote mono" data-testid="ck-h-footnote" data-mode={h.history_mode}>{h.footnote} · Recorded {h.recorded_days} · Backfilled {h.backfilled_days}</div> : null}
+          {h.footnote ? <div className="ck-h-footnote mono" data-testid="ck-h-footnote" data-mode={h.history_mode} data-basis={h.date_basis ?? "storage_utc"}>{h.footnote} · Recorded {h.recorded_days} · Backfilled {h.backfilled_days}{h.date_basis === "kst_snapshot" ? ` · 날짜 = KST Daily Snapshot${h.snapshot_time ? ` (${h.snapshot_time})` : ""}, 미국 장 날짜는 툴팁` : ""}</div> : null}
+          {h.gaps && h.gaps.length ? <div className="ck-h-footnote mono" data-testid="ck-h-gaps">저장된 daily snapshot 이 없는 평일: {h.gaps.map(md).join(", ")} — 값을 채우지 않았다</div> : null}
         </div>
       </div>
     </section>

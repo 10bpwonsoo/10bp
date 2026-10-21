@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DailyHistory, DailyHistoryPoint, HistorySource } from "../api/types";
 import { useDailyHistory as useDailyHistoryLazy } from "../api/useDailyHistory";
+import { duplicateDates, kstTime, mergedNote, snapshotLine } from "../lib/historyDates";
 
 /**
  * Daily snapshot history (2026-10-07) — 모든 탭 공통 1M strip.
@@ -8,7 +9,7 @@ import { useDailyHistory as useDailyHistoryLazy } from "../api/useDailyHistory";
  * 현재 모델이 과거를 다시 분류하지 않는다. 화면은 숫자를 만들지 않는다 — 서버가 준 sequence 를 그대로 그린다.
  */
 export const SOURCE_KO: Record<HistorySource, string> = { RECORDED: "Recorded", BACKFILLED: "Backfilled", LIVE: "Live", RECOMPUTED: "Recomputed" };
-const md = (iso: string) => iso.slice(5).replace("-", "/");
+const md = (iso: string) => iso.slice(5, 10).replace("-", "/");
 const sg = (v: number | null | undefined, d = 0) => (v === null || v === undefined ? "–" : `${v >= 0 && d >= 0 ? (v > 0 ? "+" : "") : ""}${v.toFixed(Math.max(0, d))}`);
 
 /** 툴팁·상세의 출처 줄 — 'Backfilled · calculated 10/07 · model_v4 · rules_v6'. RECORDED 는 'Recorded' 와 시각만. */
@@ -22,7 +23,8 @@ function pointTitle(p: DailyHistoryPoint, h: DailyHistory): string {
   const head = `${p.date} · ${p.label}${p.label_ko ? ` (${p.label_ko})` : ""}${p.score !== null ? ` · ${h.score_label || "score"} ${sg(p.score, 0)}` : ""}${p.confidence !== null ? ` · ${p.confidence.toFixed(0)}%` : ""}`;
   const drv = p.drivers.length ? `주도: ${p.drivers.slice(0, 3).join(" · ")}` : "";
   const miss = p.missing.length ? `결측: ${p.missing.slice(0, 4).join(", ")}${p.missing.length > 4 ? " …" : ""}` : "";
-  return [head, sourceLine(p.source, p.calculated_at, p.model_version, p.logic_version, p.locked), drv, miss].filter(Boolean).join("\n");
+  const dates = p.market_date ? `${snapshotLine(p.date, p.market_date)}${p.data_asof ? ` · data ${kstTime(p.data_asof)}` : ""}` : "";
+  return [head, dates, sourceLine(p.source, p.calculated_at, p.model_version, p.logic_version, p.locked), drv, miss, mergedNote(p.merged)].filter(Boolean).join("\n");
 }
 
 function Detail({ p, h, onClose }: { p: DailyHistoryPoint; h: DailyHistory; onClose: () => void }) {
@@ -32,6 +34,7 @@ function Detail({ p, h, onClose }: { p: DailyHistoryPoint; h: DailyHistory; onCl
     <div className="dh-detail mono" data-testid="dh-detail">
       <div className="dh-detail-head"><b>{p.date}</b> <em style={{ color: h.palette[p.state] ?? "var(--lbl-neutral)" }}>{p.label}</em>{p.label_ko ? <span className="dh-ko">{p.label_ko}</span> : null}
         <span className="dh-src" data-testid="dh-source" data-source={p.source}>{sourceLine(p.source, p.calculated_at, p.model_version, p.logic_version, p.locked)}</span>
+        {p.market_date ? <span className="dh-src" data-testid="dh-dates">{snapshotLine(p.date, p.market_date)}</span> : null}
         <button type="button" className="ck-more" onClick={onClose}>닫기</button></div>
       <div className="dh-detail-grid">
         {p.score !== null ? <span>{h.score_label || "Score"} <b className="num">{sg(p.score, 0)}</b></span> : null}
@@ -65,6 +68,7 @@ export function DailyHistoryStrip({ history, compact = false, layout = "inline" 
   const zeroY = lo < 0 && hi > 0 ? y(0) : null;
   const grid = layout === "grid";
   const fullLegend = Object.keys(h.labels).filter((s) => h.palette[s]);
+  const dupes = duplicateDates(pts.map((p) => p.date));
   return (
     <div className={`dh${compact ? " dh-compact" : ""}${grid ? " dh-gridl" : ""}`} data-testid="daily-history" data-tab={h.tab_id} data-mode="stored">
       {grid ? (
@@ -87,8 +91,8 @@ export function DailyHistoryStrip({ history, compact = false, layout = "inline" 
         <span className="dh-counts" data-testid="dh-counts" title="Recorded = 그날 당시 저장한 판정 · Backfilled = 기록이 없어 그 날짜까지의 데이터로 1회 복원 · Live = 오늘, 확정 전">R {h.recorded_days} · B {h.backfilled_days}{h.live_today ? " · L 1" : ""}</span>
       </div>}
       <div className="dh-band" role="list" aria-label="daily snapshots">
-        {pts.map((p) => (
-          <span key={p.date} role="listitem" className={`dh-cell${p.date === sel ? " dh-sel" : ""}${p.source === "LIVE" ? " dh-live" : ""}`} data-testid="dh-cell" data-state={p.state} data-source={p.source}
+        {pts.map((p, i) => (
+          <span key={`${p.date}-${i}`} role="listitem" className={`dh-cell${p.date === sel ? " dh-sel" : ""}${p.source === "LIVE" ? " dh-live" : ""}`} data-testid="dh-cell" data-state={p.state} data-source={p.source}
             style={{ background: color(p.state) }} title={pointTitle(p, h)} onClick={() => setSel(p.date === sel ? null : p.date)} />
         ))}
       </div>
@@ -96,14 +100,17 @@ export function DailyHistoryStrip({ history, compact = false, layout = "inline" 
         <svg viewBox={`0 0 ${W} ${H}`} className="dh-spark" preserveAspectRatio="none" aria-hidden="true" data-testid="dh-spark">
           {zeroY !== null ? <line x1={0} x2={W} y1={zeroY} y2={zeroY} className="dh-zero" /> : null}
           <polyline points={path} className="dh-line" />
-          {pts.map((p, i) => (p.score === null ? null : <circle key={p.date} cx={x(i)} cy={y(p.score)} r={p.source === "LIVE" ? 2.6 : 1.6} className={`dh-dot dh-dot-${p.source.toLowerCase()}`} />))}
+          {pts.map((p, i) => (p.score === null ? null : <circle key={`${p.date}-${i}`} cx={x(i)} cy={y(p.score)} r={p.source === "LIVE" ? 2.6 : 1.6} className={`dh-dot dh-dot-${p.source.toLowerCase()}`} />))}
         </svg>
       ) : null}
       {grid ? <div className="dh-legend dh-legend-top mono" data-testid="dh-legend">{fullLegend.map((s) => <span key={s} className="dh-leg"><i style={{ background: color(s) }} />{h.labels[s] ?? s}</span>)}</div> : null}
-      <div className="dh-axis mono"><span>{md(pts[0]!.date)}</span><span>{md(pts[Math.floor(pts.length / 2)]!.date)}</span><span>{md(pts[pts.length - 1]!.date)}</span></div>
+      {/* x축 = KST Daily Snapshot 날짜. 처음·가운데·끝 — 같은 칸이 겹치면 한 번만 */}
+      <div className="dh-axis mono" data-testid="dh-axis">{[...new Set([0, Math.floor(pts.length / 2), pts.length - 1])].map((i) => <span key={i}>{md(pts[i]!.date)}</span>)}</div>
+      {dupes.length ? <div className="dh-foot mono dh-warn" data-testid="dh-dupes">날짜 중복 {dupes.join(", ")} — 저장 데이터 확인 필요</div> : null}
+      {h.intraday ? <div className="dh-foot mono dh-intraday" data-testid="dh-intraday" title="장중 LIVE 값은 daily history 칸을 덮지 않는다">Intraday LIVE {kstTime(h.intraday.data_asof) || md(h.intraday.date)} · <b style={{ color: color(h.intraday.state) }}>{h.intraday.label}</b>{h.intraday.score !== null ? ` · ${sg(h.intraday.score, 0)}` : ""} — daily 칸에 넣지 않음</div> : null}
       {grid ? null : <div className="dh-legend mono">{legend.map((s) => <span key={s} className="dh-leg"><i style={{ background: color(s) }} />{h.labels[s] ?? s}</span>)}</div>}
       {selected ? <Detail p={selected} h={h} onClose={() => setSel(null)} /> : null}
-      <div className="dh-foot mono" data-testid="dh-footnote">{h.footnote}</div>
+      <div className="dh-foot mono" data-testid="dh-footnote">{h.footnote}{h.date_basis === "kst_snapshot" ? " · 날짜 = KST Daily Snapshot, 미국 장 날짜는 툴팁" : ""}{h.gaps && h.gaps.length ? ` · 저장 snapshot 없는 평일 ${h.gaps.map(md).join(", ")}` : ""}</div>
     </div>
   );
 }

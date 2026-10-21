@@ -14,6 +14,7 @@ from typing import Literal
 from pydantic import Field
 
 from .common import Base
+from .daily_history import MergedRow
 
 Arrow = Literal["↑↑", "↑", "→", "↓", "↓↓", "?"]
 PathStatus = Literal["CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING"]
@@ -441,6 +442,29 @@ class RegimeDay(Base):
     logic_version: str = ""
     locked: bool = False
     is_transition: bool = Field(default=False, description="display regime 이 이날 바뀌었다")
+    #: 날짜 기준 분리 (2026-10-21) — date 는 KST Daily Snapshot 날짜(history.date_basis='kst_snapshot'), market_date 는 그 snapshot 이 쓴 미국 정규장 날짜
+    market_date: str = ""
+    storage_date: str = Field(default="", description="저장소 키 — as_of 의 UTC 날짜")
+    data_asof: str = ""
+    merged: list[MergedRow] = Field(default_factory=list, description="같은 snapshot 날짜로 이어져 daily 띠에서 빠진 다른 저장 행")
+
+
+class RegimeIntraday(Base):
+    """장중 LIVE — daily 띠의 같은 날짜 값을 덮지 않고 따로 보인다. official_* 는 daily sequence 뒤에 장중 값을 이어 붙여 같은 규칙으로 본 결과다."""
+
+    date: str = Field(description="KST snapshot 날짜")
+    as_of: str = ""
+    market_date: str = ""
+    raw_state: str = ""
+    raw_regime: str = ""
+    raw_label: str = ""
+    evidence_strength: float = 0.0
+    official_regime: str = ""
+    official_label: str = ""
+    transition_status: str = ""
+    transition_status_ko: str = ""
+    calculated_at: str = ""
+    source: str = "LIVE"
 
 
 class RegimeBlock(Base):
@@ -493,6 +517,11 @@ class HistoryRange(Base):
 
 
 class RegimeHistory(Base):
+    #: storage_utc = 저장 키(UTC 날짜) 그대로 · kst_snapshot = KST Daily Snapshot 날짜 (2026-10-21)
+    date_basis: str = "storage_utc"
+    snapshot_time: str = Field(default="", description="Daily Snapshot 기준 시각 — 예: '07:30 KST'")
+    intraday: RegimeIntraday | None = None
+    gaps: list[str] = Field(default_factory=list, description="창 안에서 저장된 daily snapshot 이 없는 평일")
     range: str = "1M"
     ranges: list[HistoryRange] = Field(default_factory=list)
     current_regime: str

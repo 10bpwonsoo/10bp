@@ -134,12 +134,16 @@ class TestMarketSequence:
         inputs = MarketInputs(instruments=ins, series_by_id=r.series_by_id, events=r.snapshot.events, mode=DataMode.MOCK, zscore_window=settings.zscore_window)
         h = sync_market(m, inputs=inputs, snapshot=r.snapshot, as_of=AS_OF, days=10)
         assert h.history_mode == "stored" and h.footnote and h.live_today and h.backfilled_days >= 8
-        assert [p.source for p in h.points][-1] == "LIVE" and all(p.source == "BACKFILLED" and p.locked for p in h.points[:-1])
+        # 2026-10-21: 장중 LIVE 는 daily 띠에 넣지 않고 intraday 로 — daily 점은 전부 고정된 snapshot
+        assert h.date_basis == "kst_snapshot" and h.intraday is not None and h.intraday.source == "LIVE"
+        assert all(p.source == "BACKFILLED" and p.locked for p in h.points)
+        assert len({p.date for p in h.points}) == len(h.points)  # 같은 snapshot 날짜는 한 번
         assert len({p.label for p in h.points}) >= 2 or len({round(p.composite or 0) for p in h.points}) > 2  # 오늘 값을 과거에 복사하지 않았다
         stored = {s.snapshot_date: s for s in m.get_history("market_regime")}
-        for p in h.points:  # 색(label)·선(composite)·확신 모두 같은 snapshot
-            s = stored[p.date]
+        for p in h.points + [h.intraday]:  # 색(label)·선(composite)·확신 모두 같은 snapshot (저장 키로 찾는다)
+            s = stored[p.storage_date]
             assert s.state == p.label.value and s.state_score == p.composite and s.confidence == p.confidence
+            assert p.market_date is not None and p.date > p.market_date  # KST snapshot 날짜는 그 미국 장 다음 평일
         # 파생값은 sequence 에서
         labels = [p.label for p in h.points]
         streak = 1
@@ -149,7 +153,7 @@ class TestMarketSequence:
             else:
                 break
         assert h.current_streak == streak and h.changes == sum(1 for a, b in zip(labels, labels[1:]) if a != b)
-        assert h.points[-1].label == r.snapshot.market_state.primary_label and h.points[-1].confidence == pytest.approx(r.snapshot.market_state.confidence)
+        assert h.intraday.label == r.snapshot.market_state.primary_label and h.intraday.confidence == pytest.approx(r.snapshot.market_state.confidence)
         # 둘째 호출: 아무것도 다시 계산하지 않고 같은 값
         h2 = sync_market(m, inputs=inputs, snapshot=r.snapshot, as_of=AS_OF, days=10)
         assert [(p.date, p.label, p.composite, p.source) for p in h2.points] == [(p.date, p.label, p.composite, p.source) for p in h.points]

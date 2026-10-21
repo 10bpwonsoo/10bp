@@ -15,10 +15,10 @@ state_history 재생(같은 엔진)의 날짜별 raw 판정 위에 두 가지를
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Mapping, Sequence
 
-from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeShare, RegimeTransition
+from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeIntraday, RegimeShare, RegimeTransition
 
 ARROW_TXT = {"↑↑": "↑↑", "↑": "↑", "↓": "↓", "↓↓": "↓↓", "→": "→", "?": "?"}
 
@@ -125,27 +125,64 @@ def build_regime_history(
     as_of: datetime | None = None,
     stored_days: int | None = None,
     horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None,
+    include_intraday: bool = False,
 ) -> RegimeHistory | None:
-    """history = MarketStateHistory(재생). 없거나 비면 None — 카드를 숨긴다."""
+    """
+    history = MarketStateHistory. 없거나 비면 None — 카드를 숨긴다.
+
+    history.date_basis='kst_snapshot' 이면 points 는 KST Daily Snapshot 날짜의 daily 값이고 history.intraday 는 장중 LIVE 다.
+      include_intraday=False (기본) → daily 띠만으로 만든 카드 + intraday 요약(장중 값을 daily 뒤에 이어 같은 규칙으로 본 공식 판정)
+      include_intraday=True         → daily + 장중 LIVE 를 한 sequence 로 본 결과 (실시간 MARKET NOW 의 공식 판정이 쓴다)
+    """
     points = list(getattr(history, "points", []) or [])
     if not points:
         return None
     hcfg = dict(cfg or {})
     days_n = int(hcfg.get("days", 22))
     points = points[-days_n:]
-    hi, lo = [float(x) for x in hcfg.get("heat_arrow", [1.5, 0.5])]
-    drivers_cfg = list(hcfg.get("drivers") or [])
-    driver_keys = [str(d["key"]) for d in drivers_cfg]
+    intr = getattr(history, "intraday", None)
+    basis = str(getattr(history, "date_basis", "storage_utc") or "storage_utc")
 
     by_date: dict[date, list[StateObservation]] = {}
     for o in observations:
-        by_date.setdefault(o.as_of.date(), []).append(o)
+        by_date.setdefault(o.as_of.astimezone(timezone.utc).date() if o.as_of.tzinfo else o.as_of.date(), []).append(o)
 
+    rows, raw_keys, strengths, dwells = _rows(points, by_date, hcfg)
+    keep = dict(history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"), footnote=str(getattr(history, "footnote", "") or ""),
+                stored_days=stored_days, horizon_z=horizon_z)
+    if intr is not None:
+        r2, k2, s2, w2 = _rows([intr], by_date, hcfg)
+        r2[0]["date"] = f"{r2[0]['date']} LIVE"  # 같은 KST 날짜의 daily 칸과 구분 — 장중 값이다
+        full = finish_regime_history(rows + r2, raw_keys + k2, strengths + s2, dwells + w2, hcfg, **keep)
+        if include_intraday:
+            return full.model_copy(update={"date_basis": basis, "gaps": [str(g) for g in getattr(history, "gaps", []) or []]})
+    out = finish_regime_history(rows, raw_keys, strengths, dwells, hcfg, **keep)
+    upd: dict = {"date_basis": basis, "gaps": [g.isoformat() if hasattr(g, "isoformat") else str(g) for g in getattr(history, "gaps", []) or []]}
+    if basis == "kst_snapshot":
+        from ..history.dates import load_rule
+        upd["snapshot_time"] = load_rule().label
+    if intr is not None:
+        upd["intraday"] = intraday_summary(full, r2[0], hcfg)
+    return out.model_copy(update=upd)
+
+
+def intraday_summary(full: RegimeHistory, row: Mapping, hcfg: Mapping) -> RegimeIntraday:
+    labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
+    return RegimeIntraday(date=str(row["date"]).split(" ")[0], as_of=str(row.get("data_asof") or ""), market_date=str(row.get("market_date") or ""), raw_state=str(row["raw_state"]),
+                          raw_regime=str(row["dominant_regime"]), raw_label=labels.get(str(row["dominant_regime"]), str(row["dominant_regime"])), evidence_strength=float(row["evidence_strength"]),
+                          official_regime=full.current_regime, official_label=full.current_label, transition_status=full.transition_status,
+                          transition_status_ko=full.transition_status_ko, calculated_at=str(row.get("calculated_at") or ""), source=str(row.get("source") or "LIVE"))
+
+
+def _rows(points: Sequence, by_date: Mapping[date, list[StateObservation]], hcfg: Mapping) -> tuple[list[dict], list[str], list[float], list[float | None]]:
+    """점 → 하루 한 줄(dict). 장중 관측은 저장 키(UTC 날짜)로 붙는다 — 그 행이 모은 관측이다."""
+    drivers_cfg = list(hcfg.get("drivers") or [])
+    driver_keys = [str(d["key"]) for d in drivers_cfg]
     raw_keys: list[str] = []; strengths: list[float] = []; dwells: list[float | None] = []; rows: list[dict] = []
     for p in points:
         raw_label = p.label.value if hasattr(p.label, "value") else str(p.label)
         end_key, _ = _tax(hcfg, raw_label)
-        obs = by_date.get(p.date, [])
+        obs = by_date.get(getattr(p, "storage_date", None) or p.date, [])
         dom_label, end_label, dwell, n_obs, n_tr = _day_from_observations(obs, p.as_of, hcfg)
         if n_obs == 0:
             dom_key, n_obs = end_key, 1
@@ -168,7 +205,20 @@ def build_regime_history(
             factors={k: (None if p.factors.get(k) is None else round(float(p.factors[k]), 2)) for k in driver_keys},
             source=str(getattr(p, "source", "RECOMPUTED") or "RECOMPUTED"), calculated_at=(getattr(p, "calculated_at", None).isoformat() if getattr(p, "calculated_at", None) else ""),
             model_version=str(getattr(p, "model_version", "") or ""), logic_version=str(getattr(p, "logic_version", "") or ""), locked=bool(getattr(p, "locked", False)),
+            market_date=getattr(p, "market_date", None).isoformat() if getattr(p, "market_date", None) else "",
+            storage_date=getattr(p, "storage_date", None).isoformat() if getattr(p, "storage_date", None) else "",
+            data_asof=p.as_of.isoformat() if getattr(p, "as_of", None) else "", merged=list(getattr(p, "merged", []) or []),
         ))
+    return rows, raw_keys, strengths, dwells
+
+
+def finish_regime_history(rows: Sequence[Mapping], raw_keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[float | None], hcfg: Mapping, *,
+                          history_mode: str = "recomputed", footnote: str = "", stored_days: int | None = None,
+                          horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None) -> RegimeHistory:
+    """하루 한 줄들 → 공식(display) regime · 구간 · 전환 · 비중 · heat. 줄 값은 그대로 쓰고 파생값만 이 sequence 에서 만든다."""
+    rows = [dict(r) for r in rows]
+    hi, lo = [float(x) for x in hcfg.get("heat_arrow", [1.5, 0.5])]
+    drivers_cfg = list(hcfg.get("drivers") or [])
     disp = stabilize(raw_keys, strengths, dwells, hcfg)
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
     days: list[RegimeDay] = []
@@ -286,7 +336,7 @@ def build_regime_history(
         composite=comp, composite_current=comp[-1] if comp and comp[-1] is not None else next((c for c in reversed(comp) if c is not None), None),
         composite_slope=slope, composite_slope_days=sd, drivers=heat, share=share, transitions=transitions, total_transitions=total_tr,
         palette=labels,
-        history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"), footnote=str(getattr(history, "footnote", "") or ""),
+        history_mode=history_mode, footnote=footnote,
         recorded_days=sum(1 for d in days if d.source == "RECORDED"), backfilled_days=sum(1 for d in days if d.source == "BACKFILLED"),
         note=("current_regime 은 대시보드의 유일한 공식(confirmed) regime 이다 — 연속 일수·강한 증거·장중 dwell 규칙(config/cockpit.yaml history.display)을 통과해야 바뀌고, 그 전까지 raw 판정은 후보 신호다. 과거 날짜의 공식 regime 은 그날까지의 raw 만으로 정해져 뒤에 날이 붙어도 바뀌지 않는다. "
               "Raw State 는 days[].raw_state 에 그대로 있다. dominant/end 는 장중 관측이 2회 이상인 날만 갈린다(관측 1회면 dwell None). "

@@ -62,9 +62,20 @@ class DailySnapshot(Base):
         return self.tab_id, self.snapshot_date
 
 
+class MergedRow(Base):
+    """같은 KST snapshot 날짜로 이어져 daily 화면에서 빠진 저장 행 — 숨긴 것이 아니라 여기 남긴다 (2026-10-21)."""
+
+    storage_date: date = Field(description="저장소 키(as_of 의 UTC 날짜)")
+    source: str
+    data_asof: datetime | None = None
+    market_date: date | None = None
+    reason: str = ""
+
+
 class DailyHistoryPoint(Base):
     """화면용 한 날짜 — snapshot 에서 뽑은 값만. 오늘 데이터로 다시 설명하지 않는다."""
 
+    #: date = KST Daily Snapshot 날짜 (date_basis='kst_snapshot'). 예전 저장본(date_basis='storage_utc')은 저장 키 그대로다
     date: date
     state: str
     label: str
@@ -82,6 +93,11 @@ class DailyHistoryPoint(Base):
     missing: list[str] = Field(default_factory=list)
     summary: str = ""
     detail: dict[str, Any] = Field(default_factory=dict, description="탭별 표시용 상세(payload 의 일부)")
+    #: ── 날짜 기준 분리 (2026-10-21) ── snapshot 날짜(date) 와 그 snapshot 이 쓴 미국 정규장 날짜를 따로 둔다
+    market_date: date | None = Field(default=None, description="data_asof 시점에 이미 끝난 미국 정규장 날짜 (US close 기준)")
+    storage_date: date | None = Field(default=None, description="저장소 키 — as_of 의 UTC 날짜")
+    data_asof: datetime | None = None
+    merged: list[MergedRow] = Field(default_factory=list, description="같은 snapshot 날짜로 이어져 daily 에서 빠진 다른 저장 행")
 
 
 class DailyHistorySegment(Base):
@@ -135,3 +151,8 @@ class DailyHistory(Base):
     live_today: bool = False
     footnote: str = ""
     note: str = ""
+    #: storage_utc = 저장 키(UTC 날짜) 그대로 · kst_snapshot = KST Daily Snapshot 날짜 (2026-10-21)
+    date_basis: str = "storage_utc"
+    #: 장중 LIVE — daily 띠에 넣지 않고 따로 둔다 (daily 값을 덮지 않는다)
+    intraday: DailyHistoryPoint | None = None
+    gaps: list[date] = Field(default_factory=list, description="창 안에서 저장된 daily snapshot 이 없는 평일 (KST snapshot 날짜)")

@@ -14,6 +14,7 @@ from typing import Literal
 from pydantic import Field, PrivateAttr
 
 from .common import Base
+from .daily_history import MergedRow
 
 DriverStatus = Literal["CONFIRMED", "UNCONFIRMED", "CONTRADICTED"]
 RegimeKey = Literal["ai_specific_derisking", "macro_dragged", "leadership_narrowing", "narrative_ahead", "confirmed_risk_on", "confirmed_risk_off", "price_resilience", "mixed", "unknown"]
@@ -472,6 +473,11 @@ class SentimentPoint(Base):
     model_version: str = ""
     coverage: float | None = None
     missing: list[str] = Field(default_factory=list)
+    #: 날짜 기준 분리 (2026-10-21) — date 는 KST snapshot 날짜(history.date_basis='kst_snapshot')
+    market_date: str = ""
+    storage_date: str = ""
+    data_asof: str = ""
+    merged: list[MergedRow] = Field(default_factory=list)
 
 
 class SentimentHistory(Base):
@@ -490,6 +496,9 @@ class SentimentHistory(Base):
     recorded_days: int = 0
     backfilled_days: int = 0
     footnote: str = ""
+    date_basis: str = "storage_utc"
+    intraday: SentimentPoint | None = None
+    gaps: list[str] = Field(default_factory=list)
 
 
 class AiSentiment(Base):

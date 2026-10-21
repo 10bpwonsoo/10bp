@@ -9,6 +9,15 @@ window_days: 22            # 1M history window (거래일)
 backfill_days: 22          # 처음 켤 때 / 매일 채우는 과거 날짜 수 (snapshot 이 없는 날만)
 finalize_time: "16:10"     # Daily Finalization 시각 (KST). 이 시각 이후 계산된 오늘 값이 RECORDED 가 된다
 timezone: "Asia/Seoul"
+# 날짜 기준 (2026-10-21). 저장 키(snapshot_date)는 as_of 의 UTC 날짜 그대로 두고, 화면의 history 날짜는 KST Daily Snapshot 날짜로 붙인다.
+#   market_date   = data_asof 시점에 이미 끝난 미국 정규장(market_close, market_tz) 날짜 — 주말 제외
+#   snapshot 날짜 = market_date 다음 평일 (그 종가를 처음 반영하는 KST snapshot_time Daily Snapshot)
+# 같은 snapshot 날짜에 저장 행이 둘 이상이면: 장중 LIVE 는 daily 에서 빼 intraday 로, 그 밖은 RECORDED > BACKFILLED, 같으면 snapshot_time 에 가까운 것.
+date_view:
+  snapshot_tz: "Asia/Seoul"
+  snapshot_time: "07:30"
+  market_tz: "America/New_York"
+  market_close: "16:00"
 weekdays_only: true        # 토·일 날짜의 snapshot 은 새로 만들지 않는다(기록·backfill 모두). 이미 있는 주말 snapshot 은 지우거나 바꾸지 않는다
 ranges:
   - {key: 1M, days: 22}

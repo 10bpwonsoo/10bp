@@ -73,13 +73,13 @@ export function historyPrimaryFor(scenario: string | null | undefined): HistoryP
   return (scenario && HISTORY_PRIMARY_BY_SCENARIO[scenario]) || "label";
 }
 function md(d: string): string {
-  return d.slice(5).replace("-", "/");
+  return d.slice(5, 10).replace("-", "/");
 }
 const sgn = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(0)}`;
 const fmt = (v: number | null) => (v === null ? "–" : sgn(v));
 
 function cellTitle(p: StateHistoryPoint, labels: Record<string, string>, bands: Record<string, string> = {}): string {
-  const head = `${p.date} · 판정 ${LABEL_KO[p.label] ?? p.label}${p.secondary_label ? ` / ${LABEL_KO[p.secondary_label]}` : ""} (확신 ${p.confidence.toFixed(0)}%) · 공포·탐욕 ${bandName(p.band, bands)}`;
+  const head = `${p.date}${p.market_date ? ` (KST snapshot · US ${md(p.market_date)} close)` : ""} · 판정 ${LABEL_KO[p.label] ?? p.label}${p.secondary_label ? ` / ${LABEL_KO[p.secondary_label]}` : ""} (확신 ${p.confidence.toFixed(0)}%) · 공포·탐욕 ${bandName(p.band, bands)}`;
   const temps = `종합 ${fmt(p.composite)} · 가격 ${fmt(p.price_temperature)} · 뉴스 ${fmt(p.news_temperature)}${p.news_events ? ` (${p.news_events}건)` : ""} · 온도계 신뢰도 ${p.thermo_confidence.toFixed(0)}%`;
   const comps = Object.entries(p.components).map(([k, v]) => `${labels[k] ?? k} ${fmt(v)}`).join(" · ");
   const drv = p.drivers.length ? `주도: ${p.drivers.join(" · ")}` : "주도 변수 없음";

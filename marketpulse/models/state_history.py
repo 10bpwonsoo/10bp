@@ -16,6 +16,7 @@ from typing import Literal
 from pydantic import Field
 
 from .common import Base
+from .daily_history import MergedRow
 from .state import StateLabel
 
 
@@ -47,6 +48,10 @@ class StateHistoryPoint(Base):
     model_version: str = ""
     logic_version: str = ""
     locked: bool = False
+    #: 날짜 기준 분리 (2026-10-21) — date 는 KST snapshot 날짜(date_basis='kst_snapshot'), market_date 는 미국 정규장 날짜
+    market_date: date | None = None
+    storage_date: date | None = None
+    merged: list[MergedRow] = Field(default_factory=list)
 
 
 class BandSegment(Base):
@@ -101,5 +106,8 @@ class MarketStateHistory(Base):
     history_mode: Literal["stored", "recomputed"] = "recomputed"
     recorded_days: int = 0
     backfilled_days: int = 0
+    date_basis: str = "storage_utc"
+    intraday: StateHistoryPoint | None = None
+    gaps: list[date] = Field(default_factory=list)
     live_today: bool = False
     footnote: str = ""

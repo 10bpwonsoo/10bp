@@ -155,14 +155,18 @@ def build_cockpit(
 
     # ── 1b. MARKET REGIME HISTORY · 1M (실시간 2 전용) ────────
     hz_ids = [str((d.get("horizon") or {}).get("id")) for d in (cfg.get("history", {}).get("drivers") or []) if d.get("horizon")]
+    _hz = {i: (Z.z1(i), Z.z5(i)) for i in hz_ids}
+    # 카드(띠)는 KST Daily Snapshot 만, 실시간 공식 판정(MARKET NOW)은 daily 뒤에 장중 LIVE 를 이어 본다 (2026-10-21) — 장중 값이 daily 칸을 덮지 않는다
     regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days,
-                                          horizon_z={i: (Z.z1(i), Z.z5(i)) for i in hz_ids}) if history is not None else None
+                                          horizon_z=_hz) if history is not None else None
+    rh_live = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days, horizon_z=_hz,
+                                   include_intraday=True) if history is not None and getattr(history, "intraday", None) is not None else regime_history
 
     # ── CANONICAL CURRENT REGIME (2026-10-07): 대시보드의 공식 판정은 하나다 — 저장 sequence 위의 confirmed(display) regime. raw 는 후보 신호 ──
     raw_label = label
     inv_tax = {str(v["key"]): str(k) for k, v in ((cfg.get("history") or {}).get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
-    if regime_history is not None and regime_history.official_state_label in LABEL_TEXT:
-        label = regime_history.official_state_label
+    if rh_live is not None and rh_live.official_state_label in LABEL_TEXT:
+        label = rh_live.official_state_label
     else:
         label = raw_label
 
@@ -185,7 +189,7 @@ def build_cockpit(
         sentence = fix_particles("뚜렷한 방향의 핵심 변수가 없고 " + tail[len("있지만 "):])
     else:
         sentence = fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
-    rh = regime_history
+    rh = rh_live
     if rh is not None:
         streak = int(rh.duration_days); prev_s = inv_tax.get(rh.previous_regime or "", None)
         t_status, t_ko = rh.transition_status, rh.transition_status_ko
@@ -212,8 +216,8 @@ def build_cockpit(
 
     # ── 1c. MARKET TONE SNAPSHOT (2026-10-07) — 온도계를 그대로, regime 과 대조 ──
     from .market_tone import build_market_tone
-    _rk = regime_history.current_regime if regime_history is not None else _tax_key(cfg, label)
-    _rl = regime_history.current_label if regime_history is not None else LABEL_TEXT.get(label, label)
+    _rk = rh_live.current_regime if rh_live is not None else _tax_key(cfg, label)
+    _rl = rh_live.current_label if rh_live is not None else LABEL_TEXT.get(label, label)
     market_tone = build_market_tone(snapshot.thermometer, cfg.get("tone", {}) or {}, regime_key=_rk, regime_label=_rl, history_points=list(getattr(history, "points", []) or []))
 
     # ── 2. TODAY'S MARKET DRIVERS ────────────────────────────
