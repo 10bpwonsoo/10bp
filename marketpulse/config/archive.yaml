@@ -6,7 +6,9 @@
 schema_version: "1"
 archive_time: "07:30"        # 매일 아침 저장 시각 (timezone 기준). 스케줄러·GitHub Actions 가 이 값을 읽는다
 timezone: "Asia/Seoul"       # snapshot_date 는 저장 시각을 이 시간대로 본 날짜다 (daily history 는 UTC 날짜 — 둘은 하루 어긋날 수 있다)
-weekdays_only: true          # 주말에는 정기 저장을 건너뛴다 (수동 capture 는 언제나 가능)
+weekdays_only: true          # Daily Snapshot 은 월~금만(weekday < 5). 토·일은 정기 저장·backfill·수동 capture 모두 만들지 않는다(기존 파일은 그대로)
+holidays: []                 # 휴장일 캘린더 확장 자리 — YYYY-MM-DD 를 넣으면 그날도 만들지 않는다(지금은 각국 휴장일을 강제하지 않는다)
+cutoff_time: "07:30"         # 과거 재구성(backfill)의 기준 시각 — 그 한국 날짜 07:30 KST 에 이미 공개된 데이터만 쓴다
 # 화면 하나를 그리는 데 쓰는 섹션. snapshot 은 필수 — 이것이 없으면 저장하지 않는다. 나머지는 실패해도 null + errors 로 저장(PARTIAL).
 required: [snapshot]
 sections: [snapshot, cockpit, market_state_history, ai_regime, rates_regime, oil_regime, investment, scenario_checks, analyst_views, daily_history, news]

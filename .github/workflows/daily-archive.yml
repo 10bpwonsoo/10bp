@@ -1,19 +1,20 @@
-# Daily Full Dashboard Archive — 매일 아침 그날 대시보드 화면 전체를 marketpulse/data/archive/YYYY/MM/YYYY-MM-DD.json 으로 저장한다.
-# 저장 시각은 config/archive.yaml 의 archive_time(07:30 Asia/Seoul)이다. cron 은 UTC 라 그 5분 뒤 07:35 KST = 전날 22:35 UTC(일~목 → 한국 월~금).
-# 시각을 바꾸면 이 cron 도 같이 바꾼다 — 실행 자체는 `capture --if-due` 가 설정 시각·주말·기존 저장본을 다시 확인하므로 일찍 돌아도 저장하지 않는다.
-# 같은 날짜 저장본이 이미 있으면 덮어쓰지 않는다. GitHub 의 schedule 은 기본 브랜치에서만 돈다.
-name: daily-archive
+# Daily Market Pulse Archive — 평일 아침 그날 대시보드 화면 전체를 marketpulse/data/archive/YYYY/MM/YYYY-MM-DD.json 으로 저장한다.
+# 저장 시각은 config/archive.yaml 의 archive_time(07:30 Asia/Seoul). cron 은 UTC — 07:30 KST = 전날 22:30 UTC 라 UTC 일~목 = KST 월~금.
+# 주말은 두 곳에서 막는다: cron(일~목 UTC) + 앱 로직(capture --if-due 가 KST 요일을 다시 확인, 토·일이면 SKIPPED).
+# 같은 날짜 저장본이 이미 있으면 아무것도 하지 않는다(no-op · 덮어쓰지 않음). 시각을 바꾸면 이 cron 도 같이 바꾼다.
+# GitHub 의 schedule 은 기본 브랜치에서만 돈다.
+name: daily-market-pulse-archive
 
 on:
   schedule:
-    - cron: "35 22 * * 0-4"
+    - cron: "30 22 * * 0-4"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: daily-archive
+  group: daily-market-pulse-archive
   cancel-in-progress: false
 
 jobs:
@@ -31,15 +32,17 @@ jobs:
           python-version: "3.11"
       - name: Install runtime dependencies
         run: python -m pip install -e . --quiet
-      - name: Capture today's dashboard archive
+      - name: Refresh data and capture today's full archive (weekday check + no overwrite inside)
         run: python -m marketpulse.archive capture --if-due
-      - name: Commit archive
+      - name: Validate today's archive (schema · weekday · no data after cutoff)
+        run: python -m marketpulse.archive validate
+      - name: Commit archive and index
         run: |
           git config user.name "marketpulse-archiver"
           git config user.email "marketpulse-archiver@users.noreply.github.com"
           git add marketpulse/data/archive marketpulse/data/history
           if git diff --cached --quiet; then
-            echo "no new archive"
+            echo "no new archive (already saved, weekend, or before 07:30 KST)"
           else
             git commit -m "data: dashboard archive $(TZ=Asia/Seoul date +%F)"
             git push

@@ -40,6 +40,10 @@ class DailySnapshotManager:
         self.backfill_days = int(cfg.get("backfill_days", self.window_days))
         self.cfg = cfg
 
+    def weekend(self, d: date) -> bool:
+        """history.yaml 의 weekdays_only 면 토·일 snapshot 을 새로 만들지 않는다(이미 있는 것은 그대로 둔다)."""
+        return bool(self.cfg.get("weekdays_only", False)) and d.weekday() >= 5
+
     # ── 읽기 ──────────────────────────────────────────────
     def key(self, tab_id: str) -> str:
         return f"{self.namespace}{tab_id}"
@@ -93,6 +97,9 @@ class DailySnapshotManager:
         existing = self.get_snapshot(snapshot.tab_id, snapshot.snapshot_date)
         if existing is not None and existing.is_locked:
             return existing
+        if self.weekend(snapshot.snapshot_date):
+            # 토·일 날짜(한국 월요일 아침 = UTC 일요일)는 새로 만들지 않는다 — 금요일 장은 다음 계산의 backfill 이 채운다
+            return existing or snapshot
         if self.is_final_time(as_of):
             s = snapshot.model_copy(update={"history_source": "RECORDED", "is_final": True, "is_locked": True, "is_backfilled": False, "finalization": "daily_close"})
         else:
@@ -127,7 +134,7 @@ class DailySnapshotManager:
         """
         created: list[DailySnapshot] = []
         prev = previous_hint
-        for d in sorted(dates):
+        for d in sorted(x for x in dates if not self.weekend(x)):
             existing = self.get_snapshot(tab_id, d)
             if existing is not None:
                 prev = existing

@@ -9,6 +9,7 @@ window_days: 22            # 1M history window (거래일)
 backfill_days: 22          # 처음 켤 때 / 매일 채우는 과거 날짜 수 (snapshot 이 없는 날만)
 finalize_time: "16:10"     # Daily Finalization 시각 (KST). 이 시각 이후 계산된 오늘 값이 RECORDED 가 된다
 timezone: "Asia/Seoul"
+weekdays_only: true        # 토·일 날짜의 snapshot 은 새로 만들지 않는다(기록·backfill 모두). 이미 있는 주말 snapshot 은 지우거나 바꾸지 않는다
 ranges:
   - {key: 1M, days: 22}
   - {key: 3M, days: 63}

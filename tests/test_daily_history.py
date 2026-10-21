@@ -106,10 +106,10 @@ class TestLifecycle:
         assert out[0].state == "INSUFFICIENT_DATA" and out[0].is_locked and out[0].state_score is None
 
     def test_correction_leaves_audit_trail(self, manager):
-        manager.backfill_missing("oil_regime", [date(2026, 9, 20)], lambda d, prev: _snap("oil_regime", d, "supply", 10))
+        manager.backfill_missing("oil_regime", [date(2026, 9, 21)], lambda d, prev: _snap("oil_regime", d, "supply", 10))
         with pytest.raises(ValueError):
-            manager.correct("oil_regime", date(2026, 9, 20), _snap("oil_regime", date(2026, 9, 20), "demand", -5), reason="  ", by="admin")
-        s = manager.correct("oil_regime", date(2026, 9, 20), _snap("oil_regime", date(2026, 9, 20), "demand", -5), reason="잘못된 봉(월물 교체)", by="admin")
+            manager.correct("oil_regime", date(2026, 9, 21), _snap("oil_regime", date(2026, 9, 21), "demand", -5), reason="  ", by="admin")
+        s = manager.correct("oil_regime", date(2026, 9, 21), _snap("oil_regime", date(2026, 9, 21), "demand", -5), reason="잘못된 봉(월물 교체)", by="admin")
         assert s.state == "demand" and s.is_locked and len(s.corrections) == 1
         c = s.corrections[0]
         assert c.original_value["state"] == "supply" and c.corrected_value["state"] == "demand" and c.correction_reason and c.corrected_by == "admin"

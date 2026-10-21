@@ -73,7 +73,7 @@ class ArchiveStore:
         want = [d.isoformat() for d in self.dates()]
         p = self.root / "index.json"
         try:
-            rows = json.loads(p.read_text(encoding="utf-8")).get("dates", [])
+            rows = json.loads(p.read_text(encoding="utf-8")).get("entries", [])
             if [r.get("date") for r in rows] == want:
                 return rows
         except (OSError, ValueError, AttributeError):
@@ -127,7 +127,10 @@ class ArchiveStore:
             meta = a.get("meta") or {}
             rows.append({
                 "date": d.isoformat(),
+                "weekday": d.strftime("%a"),
                 "archive_status": a.get("archive_status"),
+                "cutoff": a.get("cutoff"),
+                "archive_origin": meta.get("archive_origin") or ("capture_import" if str(meta.get("created_by", "")).startswith("capture_import") else None),
                 "schema_version": a.get("schema_version"),
                 "generated_at": a.get("generated_at"),
                 "source_asof": meta.get("source_asof"),
@@ -138,7 +141,9 @@ class ArchiveStore:
         if self.root.is_dir():
             p = self.root / "index.json"
             tmp = p.with_name("index.json.tmp")
-            tmp.write_text(json.dumps({"schema_version": "1", "dates": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
+            asc = [r["date"] for r in reversed(rows)]
+            doc = {"schema_version": "1", "latest": rows[0]["date"] if rows else None, "dates": asc, "entries": rows}
+            tmp.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
             os.replace(tmp, p)
         return rows
 
