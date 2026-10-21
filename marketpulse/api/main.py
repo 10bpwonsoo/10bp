@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config.settings import get_settings
-from .routes import graph, health, investment, news, signals, snapshot, stream
+from .routes import archive, graph, health, investment, news, signals, snapshot, stream
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(graph.router)
     app.include_router(stream.router)
     app.include_router(investment.router)
+    app.include_router(archive.router)
     return app
 
 

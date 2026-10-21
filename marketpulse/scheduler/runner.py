@@ -81,6 +81,19 @@ def run_once(
     )
 
 
+def maybe_archive(settings: Settings, archive=None) -> str | None:
+    """Daily Full Dashboard Archive — config/archive.yaml 의 archive_time 이 지났고 오늘 저장본이 없으면 한 번 저장한다.
+    저장 로직은 marketpulse.archive 에 있다(스케줄러와 분리). 같은 날짜가 있으면 아무것도 하지 않는다."""
+    from datetime import datetime, timezone
+    from ..archive import ArchiveStore, DailyArchiveService
+    from ..archive.collect import live_collectors
+    svc = archive or DailyArchiveService(ArchiveStore(settings.archive_dir))
+    now = datetime.now(timezone.utc)
+    if not svc.due(now):
+        return None
+    return svc.capture(now=now, collectors=live_collectors(settings)).line()
+
+
 def loop(
     settings: Settings,
     repo: SnapshotRepository,
@@ -88,8 +101,9 @@ def loop(
     interval: float,
     stop: threading.Event,
     max_ticks: int | None = None,
+    archive: bool = False,
 ) -> int:
-    """stop 이 설정될 때까지 반복한다. 실행한 틱 수를 돌려준다."""
+    """stop 이 설정될 때까지 반복한다. 실행한 틱 수를 돌려준다. archive 면 매 틱 뒤 정기 저장 시각을 확인한다."""
     ticks = 0
     while not stop.is_set():
         started = time.monotonic()
@@ -100,6 +114,13 @@ def loop(
         except Exception:
             # 한 틱의 실패가 루프를 죽이면 안 된다.
             logger.exception("틱 실행 실패. 다음 주기에 다시 시도한다.")
+        if archive:
+            try:
+                line = maybe_archive(settings)
+                if line:
+                    logger.info("archive: %s", line)
+            except Exception:
+                logger.exception("daily archive 저장 실패 — 다음 틱에 다시 시도한다")
 
         ticks += 1
         if max_ticks is not None and ticks >= max_ticks:
@@ -119,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--scenario", help="MOCK 시나리오 이름")
     p.add_argument("--ticks", type=int, help="이 횟수만 실행하고 종료")
     p.add_argument("--keep", type=int, default=DEFAULT_KEEP, help="스트림당 보관할 스냅샷 수")
+    p.add_argument("--archive", action="store_true", help="config/archive.yaml 의 archive_time 이 지나면 그날 화면 전체를 한 번 저장")
     return p
 
 
@@ -150,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     try:
         ticks = loop(
-            settings, repo, interval=args.interval, stop=stop, max_ticks=args.ticks
+            settings, repo, interval=args.interval, stop=stop, max_ticks=args.ticks, archive=args.archive
         )
     finally:
         repo.close()

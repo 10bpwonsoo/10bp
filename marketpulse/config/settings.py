@@ -56,6 +56,8 @@ class Settings(BaseSettings):
     #: Daily snapshot 저장소 (2026-10-07). 기본은 패키지 안의 JSON 디렉터리(커밋되어 기록이 남는다). history_db 를 주면 그 SQLite 파일을 쓴다.
     history_dir: Path = Field(default=PACKAGE_ROOT / "data" / "history")
     history_db: str | None = None
+    #: Daily Full Dashboard Archive (2026-10-21). 그날 화면 전체를 재현하는 날짜별 JSON — data/archive/YYYY/MM/YYYY-MM-DD.json. 생성 후 불변.
+    archive_dir: Path = Field(default=PACKAGE_ROOT / "data" / "archive")
 
     #: Anthropic API 키. 보통은 SDK 가 ANTHROPIC_API_KEY 에서 직접 읽는다.
     #: 이 필드(MARKETPULSE_ANTHROPIC_API_KEY)는 실행 환경이 ANTHROPIC_API_KEY
