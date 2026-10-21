@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchArchive, fetchInfo, fetchScenarios, staticBundle } from "./api/client";
-import { setActiveArchive, type DashboardArchive } from "./api/archive";
-import { ArchiveBanner, ArchiveControl, NotArchivedPanel } from "./components/ArchiveControl";
+import { fetchArchive, fetchArchiveIndex, fetchInfo, fetchScenarios, staticBundle } from "./api/client";
+import { setActiveArchive, type ArchiveIndexRow, type DashboardArchive } from "./api/archive";
+import { ArchiveBanner, ArchiveControl, NotArchivedPanel, kstDate } from "./components/ArchiveControl";
 import type { ApiInfo, DataMode, ScenarioInfo } from "./api/types";
 import { useSnapshot } from "./api/useSnapshot";
 import { useStateHistory } from "./api/useStateHistory";
@@ -20,35 +20,75 @@ import { CockpitView } from "./components/CockpitView";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
-const HASH_DATE = /^#(\d{4}-\d{2}-\d{2})$/;
+const DATE_Q = /^\d{4}-\d{2}-\d{2}$/;
+
+/** 주소의 날짜 — ?date=YYYY-MM-DD (예전 링크의 #YYYY-MM-DD 도 읽는다). LIVE 는 date 없음. */
+function urlDate(): string | null {
+  try {
+    const q = new URLSearchParams(location.search).get("date");
+    if (q && DATE_Q.test(q)) return q;
+    const h = location.hash.replace(/^#/, "");
+    return DATE_Q.test(h) ? h : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeUrl(date: string | null, push: boolean) {
+  try {
+    const u = new URL(location.href);
+    if (date) u.searchParams.set("date", date); else u.searchParams.delete("date");
+    u.hash = "";
+    if (push) history.pushState({ date }, "", u.toString()); else history.replaceState({ date }, "", u.toString());
+  } catch { /* 주소를 못 바꿔도 화면은 그대로 */ }
+}
 
 /**
- * LIVE ↔ ARCHIVE 전환 (2026-10-21). 화면 본체(Dashboard)를 모드별 key 로 다시 마운트한다 —
- * LIVE 에서 받은 상태가 과거 화면에 섞이지 않고, 과거 화면에서는 모든 하위 패널이 같은 저장본에서 데이터를 받는다.
- * 선택한 탭(실시간·AI 센티·금리…)은 전환해도 유지한다. 주소의 #2026-10-15 로 그 날짜 화면을 바로 연다.
+ * LIVE ↔ ARCHIVE 전환 (2026-10-21). 선택한 날짜(selectedDate)는 앱 최상위 상태 하나다 — 모든 탭이 그 날짜의 저장본 하나만 쓴다.
+ * 화면 본체(Dashboard)를 모드별 key 로 다시 마운트해 LIVE 상태가 과거 화면에 섞이지 않게 하고, 과거 화면은 폴링하지 않는다.
+ * 선택한 탭(실시간·AI 센티·금리…)은 전환해도 유지한다. 주소 ?date= 로 새로고침·공유·뒤로가기에서도 날짜가 남는다.
  */
 export default function App() {
   const [archive, setArchive] = useState<DashboardArchive | null>(null);
   const [checkName, setCheckName] = useState<string | null>(null);
-  const open = useCallback((a: DashboardArchive | null) => {
+  const [rows, setRows] = useState<ArchiveIndexRow[] | null>(null);
+  const [liveDate, setLiveDate] = useState<string | null>(null);
+  const apply = useCallback((a: DashboardArchive | null) => {
     setActiveArchive(a); // 다시 마운트되기 전에 데이터 경로부터 바꾼다
     setArchive(a);
-    try {
-      const url = a ? `#${a.snapshot_date}` : `${location.pathname}${location.search}`;
-      history.replaceState(null, "", url);
-    } catch { /* 주소를 못 바꿔도 화면은 그대로 */ }
+  }, []);
+  const select = useCallback(async (date: string, push = true) => {
+    const a = await fetchArchive(date);
+    apply(a);
+    writeUrl(a.snapshot_date, push);
+  }, [apply]);
+  const live = useCallback((push = true) => {
+    apply(null);
+    writeUrl(null, push);
+  }, [apply]);
+  useEffect(() => {
+    const c = new AbortController();
+    fetchArchiveIndex(c.signal).then(setRows).catch((e) => { if ((e as Error)?.name !== "AbortError") setRows([]); });
+    return () => c.abort();
   }, []);
   useEffect(() => {
-    const m = HASH_DATE.exec(location.hash);
-    if (!m) return;
-    fetchArchive(m[1]!).then(open).catch(() => { /* 없는 날짜면 LIVE 그대로 — 날짜 선택에서 가까운 날을 고를 수 있다 */ });
-  }, [open]);
-  return <Dashboard key={archive ? `archive-${archive.snapshot_date}` : "live"} archive={archive} onArchive={open} checkName={checkName} setCheckName={setCheckName} />;
+    const d = urlDate();
+    if (d) select(d, false).catch(() => writeUrl(null, false)); // 없는 날짜면 LIVE — 날짜 탐색에서 가까운 저장일을 고를 수 있다
+    const onPop = () => {
+      const x = urlDate();
+      if (x) select(x, false).catch(() => live(false)); else live(false);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [select, live]);
+  return <Dashboard key={archive ? `archive-${archive.snapshot_date}` : "live"} archive={archive} rows={rows} liveDate={liveDate} onLiveDate={setLiveDate}
+    onSelect={(d) => select(d)} onLive={() => live()} checkName={checkName} setCheckName={setCheckName} />;
 }
 
 /** 대시보드 본체. archive 가 있으면 모든 API 호출이 그 저장본에서 답을 받는다(api/archive.ts) — 폴링·'지금 업데이트' 없음. */
-function Dashboard({ archive, onArchive, checkName, setCheckName }: {
-  archive: DashboardArchive | null; onArchive: (a: DashboardArchive | null) => void; checkName: string | null; setCheckName: (n: string | null) => void;
+function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, checkName, setCheckName }: {
+  archive: DashboardArchive | null; rows: ArchiveIndexRow[] | null; liveDate: string | null; onLiveDate: (d: string | null) => void;
+  onSelect: (date: string) => Promise<void>; onLive: () => void; checkName: string | null; setCheckName: (n: string | null) => void;
 }) {
   const [mode, setMode] = useState<DataMode | null>(null);
   const [scenario, setScenario] = useState<string | undefined>(undefined);
@@ -76,6 +116,10 @@ function Dashboard({ archive, onArchive, checkName, setCheckName }: {
   const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
   // '실시간 2' 탭 — decision cockpit. 집계를 못 받으면 기존 대시보드 그리드로 떨어진다(기능 삭제 아님, 기존 화면은 Details 로도 열린다).
   const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null);
+
+  // LIVE 화면의 날짜를 위로 알린다 — 과거 화면에서도 'LIVE · 날짜' 를 보이고 ◀ 기준으로 쓴다
+  const asOf = snapshot?.as_of ?? null;
+  useEffect(() => { if (!archive && asOf) onLiveDate(kstDate(asOf)); }, [archive, asOf, onLiveDate]);
 
   useEffect(() => {
     const c = new AbortController();
@@ -131,7 +175,7 @@ function Dashboard({ archive, onArchive, checkName, setCheckName }: {
         {snapshot ? (
           <DataModeBadge health={snapshot.data_health} scenario={snapshot.scenario} />
         ) : null}
-        <ArchiveControl archive={archive} onOpen={onArchive} />
+        <ArchiveControl archive={archive} rows={rows} liveDate={archive ? liveDate : kstDate(snapshot?.as_of) ?? liveDate} onSelect={onSelect} onLive={onLive} />
         {/* 과거 화면에는 '지금 업데이트' 가 없다 — 저장본은 다시 수집하지 않는다 */}
         {archive ? null : (
           <RefreshButton
@@ -143,7 +187,7 @@ function Dashboard({ archive, onArchive, checkName, setCheckName }: {
           />
         )}
       </header>
-      {archive ? <ArchiveBanner archive={archive} onLive={() => onArchive(null)} /> : null}
+      {archive ? <ArchiveBanner archive={archive} onLive={onLive} /> : null}
 
       {error ? (
         <div className="banner" role="alert">
