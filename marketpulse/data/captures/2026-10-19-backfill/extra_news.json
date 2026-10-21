@@ -1,0 +1,30 @@
+[
+ {
+  "url": "https://www.goodreturns.in/news/us-stock-market-reaction-kevin-warsh-speech-nasdaq-falls-386-pts-dow-jones-s-p-500-down-wall-street-1542115.html",
+  "title": "US Market Reaction To Kevin Warsh's Speech: Nasdaq Falls 386 Pts; Dow, S&P 500 Down; Why Wall Street Is Down?",
+  "publisher": "goodreturns.in",
+  "published_at": "2026-10-17T03:59:00+00:00",
+  "timestamp_quality": "DATE_ONLY",
+  "themes": [
+   "ai",
+   "semiconductor",
+   "rates"
+  ],
+  "theme_sentiment": {
+   "ai": -25,
+   "semiconductor": -15,
+   "rates": 10
+  },
+  "theme_direction": {
+   "ai": "down",
+   "semiconductor": "down",
+   "rates": "up"
+  },
+  "sentiment": -30,
+  "impact": 55,
+  "novelty": 45,
+  "horizon": "short",
+  "event_type": "flow",
+  "reason": "10/16(금) Warsh 연준 의장의 IMF 방콕 대담 뒤 나스닥 하락(보도 시점 장중 −1.38%) — AI 트레이드 매도와 이번 주 높은 CPI·PPI 가 배경으로 거론. 발언이 하락의 원인인지는 확인되지 않음. 발행 시각 미확인 — 날짜만 확인돼 그날 미국 동부 자정(10/17 03:59Z)으로 보수적으로 두었다."
+ }
+]

@@ -2438,6 +2438,444 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-15",
+   "tab_id": "market_regime",
+   "state": "LIQUIDITY_STRESS",
+   "state_label": "Liquidity Stress",
+   "state_label_ko": "",
+   "state_score": -21.204244627471553,
+   "confidence": 85.45454545454547,
+   "component_scores": {
+    "RiskAppetite": 5.772204110622613,
+    "Volatility": -3.2911215755394094,
+    "Growth": -37.32696473167162,
+    "Credit": -68.91635852792503,
+    "KoreaFlow": null,
+    "news": -24.399975009383283,
+    "factor:Growth": -0.784,
+    "factor:Inflation": 0.13,
+    "factor:Rates": -0.216,
+    "factor:USD": -0.698,
+    "factor:Liquidity": -1.278,
+    "factor:RiskAppetite": 0.116,
+    "factor:Credit": 1.693,
+    "factor:Volatility": 0.066,
+    "factor:China": -0.915
+   },
+   "key_drivers": [
+    "달러 인덱스 -1.8σ",
+    "US HY OAS +1.7σ",
+    "MOVE 채권변동성 +0.6σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-15T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-21T06:44:11.666633Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "LIQUIDITY_STRESS 85% · 온도 -21",
+   "payload": {
+    "date": "2026-10-15",
+    "as_of": "2026-10-15T22:30:00Z",
+    "label": "LIQUIDITY_STRESS",
+    "secondary_label": null,
+    "confidence": 85.45454545454547,
+    "price_temperature": -19.073757706197068,
+    "news_temperature": -24.399975009383283,
+    "composite": -21.204244627471553,
+    "news_events": 6,
+    "thermo_confidence": 86.96737826968139,
+    "components": {
+     "RiskAppetite": 5.772204110622613,
+     "Volatility": -3.2911215755394094,
+     "Growth": -37.32696473167162,
+     "Credit": -68.91635852792503,
+     "KoreaFlow": null,
+     "news": -24.399975009383283
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.784,
+     "Inflation": 0.13,
+     "Rates": -0.216,
+     "USD": -0.698,
+     "Liquidity": -1.278,
+     "RiskAppetite": 0.116,
+     "Credit": 1.693,
+     "Volatility": 0.066,
+     "China": -0.915
+    },
+    "hypotheses": {
+     "LIQUIDITY_STRESS": 0.675
+    },
+    "drivers": [
+     "달러 인덱스 -1.8σ",
+     "US HY OAS +1.7σ",
+     "MOVE 채권변동성 +0.6σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-16",
+   "tab_id": "market_regime",
+   "state": "GEOPOLITICAL_RISK",
+   "state_label": "Geopolitical Risk",
+   "state_label_ko": "",
+   "state_score": -40.00208900961587,
+   "confidence": 48.883116883116884,
+   "component_scores": {
+    "RiskAppetite": -73.24740606427042,
+    "Volatility": -78.96607573083334,
+    "Growth": -35.625155743691124,
+    "Credit": 28.87850497427499,
+    "KoreaFlow": null,
+    "news": -11.946372019608305,
+    "factor:Growth": -0.745,
+    "factor:Inflation": 0.402,
+    "factor:Rates": -1.702,
+    "factor:USD": -0.151,
+    "factor:Liquidity": 0.516,
+    "factor:RiskAppetite": -1.868,
+    "factor:Credit": -0.594,
+    "factor:Volatility": 2.141,
+    "factor:China": 0.262
+   },
+   "key_drivers": [
+    "VIX +3.4σ",
+    "Airlines -1.4σ",
+    "브렌트 원유 +1.1σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-16T23:59:59Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-21T06:45:15.100646Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GEOPOLITICAL_RISK 49% · 온도 -40",
+   "payload": {
+    "date": "2026-10-16",
+    "as_of": "2026-10-16T23:59:59Z",
+    "label": "GEOPOLITICAL_RISK",
+    "secondary_label": "POLICY_DRIVEN",
+    "confidence": 48.883116883116884,
+    "price_temperature": -58.705900336287584,
+    "news_temperature": -11.946372019608305,
+    "composite": -40.00208900961587,
+    "news_events": 545,
+    "thermo_confidence": 90.32404716833207,
+    "components": {
+     "RiskAppetite": -73.24740606427042,
+     "Volatility": -78.96607573083334,
+     "Growth": -35.625155743691124,
+     "Credit": 28.87850497427499,
+     "KoreaFlow": null,
+     "news": -11.946372019608305
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.745,
+     "Inflation": 0.402,
+     "Rates": -1.702,
+     "USD": -0.151,
+     "Liquidity": 0.516,
+     "RiskAppetite": -1.868,
+     "Credit": -0.594,
+     "Volatility": 2.141,
+     "China": 0.262
+    },
+    "hypotheses": {
+     "GEOPOLITICAL_RISK": 0.85,
+     "POLICY_DRIVEN": 0.7,
+     "RISK_OFF": 0.7
+    },
+    "drivers": [
+     "VIX +3.4σ",
+     "Airlines -1.4σ",
+     "브렌트 원유 +1.1σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-19",
+   "tab_id": "market_regime",
+   "state": "RISK_ON",
+   "state_label": "Risk-On",
+   "state_label_ko": "",
+   "state_score": 5.022553848981853,
+   "confidence": 89.20454545454545,
+   "component_scores": {
+    "RiskAppetite": 39.59159649899737,
+    "Volatility": 13.513762012957816,
+    "Growth": 24.071934763987418,
+    "Credit": -63.146924536168946,
+    "KoreaFlow": null,
+    "news": -5.0,
+    "factor:Growth": 0.491,
+    "factor:Inflation": 0.401,
+    "factor:Rates": -0.519,
+    "factor:USD": 0.42,
+    "factor:Liquidity": -0.909,
+    "factor:RiskAppetite": 0.838,
+    "factor:Credit": 1.488,
+    "factor:Volatility": -0.272,
+    "factor:China": 0.209
+   },
+   "key_drivers": [
+    "US HY OAS +1.5σ",
+    "VIX -1.3σ",
+    "Nasdaq 100 +1.0σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-19T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-21T06:45:56.813269Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "RISK_ON 89% · 온도 +5",
+   "payload": {
+    "date": "2026-10-19",
+    "as_of": "2026-10-19T22:30:00Z",
+    "label": "RISK_ON",
+    "secondary_label": null,
+    "confidence": 89.20454545454545,
+    "price_temperature": 11.704256414969755,
+    "news_temperature": -5.0,
+    "composite": 5.022553848981853,
+    "news_events": 1,
+    "thermo_confidence": 67.07957435850302,
+    "components": {
+     "RiskAppetite": 39.59159649899737,
+     "Volatility": 13.513762012957816,
+     "Growth": 24.071934763987418,
+     "Credit": -63.146924536168946,
+     "KoreaFlow": null,
+     "news": -5.0
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 0.491,
+     "Inflation": 0.401,
+     "Rates": -0.519,
+     "USD": 0.42,
+     "Liquidity": -0.909,
+     "RiskAppetite": 0.838,
+     "Credit": 1.488,
+     "Volatility": -0.272,
+     "China": 0.209
+    },
+    "hypotheses": {
+     "RISK_ON": 0.667
+    },
+    "drivers": [
+     "US HY OAS +1.5σ",
+     "VIX -1.3σ",
+     "Nasdaq 100 +1.0σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-20",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 13.098239053017622,
+   "confidence": 22.895622895622893,
+   "component_scores": {
+    "RiskAppetite": 15.42179232308091,
+    "Volatility": 34.32546499440305,
+    "Growth": 40.54716152256936,
+    "Credit": 28.179776389061832,
+    "KoreaFlow": null,
+    "news": -8.163439399662405,
+    "factor:Growth": 0.86,
+    "factor:Inflation": -0.235,
+    "factor:Rates": 0.809,
+    "factor:USD": -0.548,
+    "factor:Liquidity": 0.362,
+    "factor:RiskAppetite": 0.311,
+    "factor:Credit": -0.579,
+    "factor:Volatility": -0.716,
+    "factor:China": -0.605
+   },
+   "key_drivers": [
+    "Russell 2000 +2.0σ",
+    "Financials +1.5σ",
+    "Airlines +1.5σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-20T23:59:59Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-21T07:04:17.865980Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 23% · 온도 +13",
+   "payload": {
+    "date": "2026-10-20",
+    "as_of": "2026-10-20T23:59:59Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 22.895622895622893,
+    "price_temperature": 27.27269135480431,
+    "news_temperature": -8.163439399662405,
+    "composite": 13.098239053017622,
+    "news_events": 558,
+    "thermo_confidence": 91.45638692455333,
+    "components": {
+     "RiskAppetite": 15.42179232308091,
+     "Volatility": 34.32546499440305,
+     "Growth": 40.54716152256936,
+     "Credit": 28.179776389061832,
+     "KoreaFlow": null,
+     "news": -8.163439399662405
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 0.86,
+     "Inflation": -0.235,
+     "Rates": 0.809,
+     "USD": -0.548,
+     "Liquidity": 0.362,
+     "RiskAppetite": 0.311,
+     "Credit": -0.579,
+     "Volatility": -0.716,
+     "China": -0.605
+    },
+    "hypotheses": {},
+    "drivers": [
+     "Russell 2000 +2.0σ",
+     "Financials +1.5σ",
+     "Airlines +1.5σ"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-21",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 19.188665969382676,
+   "confidence": 34.00673400673401,
+   "component_scores": {
+    "RiskAppetite": 15.42179232308091,
+    "Volatility": 34.32546499440305,
+    "Growth": 51.36889890246118,
+    "Credit": 28.179776389061832,
+    "KoreaFlow": null,
+    "news": 3.9000152039638416,
+    "factor:Growth": 1.135,
+    "factor:Inflation": -0.235,
+    "factor:Rates": 0.809,
+    "factor:USD": -0.548,
+    "factor:Liquidity": 0.362,
+    "factor:RiskAppetite": 0.311,
+    "factor:Credit": -0.579,
+    "factor:Volatility": -0.716,
+    "factor:China": -0.605
+   },
+   "key_drivers": [
+    "Russell 2000 +2.0σ",
+    "Financials +1.5σ",
+    "Airlines +1.5σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-21T07:00:21Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "LIVE",
+   "calculated_at": "2026-10-21T07:04:17.789811Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": false,
+   "is_locked": false,
+   "is_backfilled": false,
+   "finalization": "live",
+   "summary": "NEUTRAL 34% · 온도 +19",
+   "payload": {
+    "date": "2026-10-21",
+    "as_of": "2026-10-21T07:00:21Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 34.00673400673401,
+    "price_temperature": 29.38109981299523,
+    "news_temperature": 3.9000152039638416,
+    "composite": 19.188665969382676,
+    "news_events": 22,
+    "thermo_confidence": 92.45189153909686,
+    "components": {
+     "RiskAppetite": 15.42179232308091,
+     "Volatility": 34.32546499440305,
+     "Growth": 51.36889890246118,
+     "Credit": 28.179776389061832,
+     "KoreaFlow": null,
+     "news": 3.9000152039638416
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 1.135,
+     "Inflation": -0.235,
+     "Rates": 0.809,
+     "USD": -0.548,
+     "Liquidity": 0.362,
+     "RiskAppetite": 0.311,
+     "Credit": -0.579,
+     "Volatility": -0.716,
+     "China": -0.605
+    },
+    "hypotheses": {},
+    "drivers": [
+     "Russell 2000 +2.0σ",
+     "Financials +1.5σ",
+     "Airlines +1.5σ"
+    ]
+   },
+   "corrections": []
   }
  ]
 }
