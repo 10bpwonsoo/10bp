@@ -435,3 +435,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 10/22 07:30 KST cutoff 재구성(`build_one`, latest=False → historical_backfill · `data/captures/2026-10-22-backfill/`): 미국 10/21 종가 · 한국 10/21 종가 · 미국채/TIPS/BE/HY OAS 는 FRED 다음 평일 22:00Z 규칙으로 10/20 관측까지. RSS 창 10/21 07:00Z~10/21 22:30Z 53건 중 19건 수기 태깅. 금리 MARKET READ · 물가 해석은 API 401 이라 같은 컨텍스트·검증의 세션 생성본.
 - 결과: 시장 NEUTRAL 34%(온도 +11) · 10/21·10/22 두 Daily Snapshot 연속 Neutral → 공식 Risk-On → Neutral / Mixed 전환(MARKET NOW 와 History 같은 값 — 07:30 저장이라 장중 LIVE 없음). AI LEADERSHIP NARROWING(센티 61), 금리 LONG-END RATE / TERM PREMIUM SHOCK(물가 리프라이싱 미확인, 강세 평탄화), 물가 압력 MIXED, 유가 Supply UNCONFIRMED.
 - history: 10/21 LIVE 6행이 07:30 기록으로 RECORDED·잠금(data_asof 10/21 22:30Z = 10/22 07:30 KST → 화면 날짜 10/22). 그 밖의 잠긴 행 · 기존 아카이브 9개 바이트 동일. 아카이브 COMPLETE · validate 통과 · 미래 데이터 검증 통과. 감사용 스크린샷 `data/archive/screenshots/2026-10-22.jpg`.
+
+### 2026-10-22 — History 는 저장 당시 그대로 (KST 날짜 view 철회)
+- 사용자 확인: 10/15 화면의 History 가 발표 자료(PPT)의 원래 화면과 달랐다(9월 말 Liquidity Stress 구간이 Risk-On 으로). 원인은 10/21 의 KST 날짜 view — 같은 미국 장을 쓴 저장 행 6쌍 중 하나를 버리면서(예: 9/28 칸에서 미국 9/25 종가 Liquidity 80% 대신 그날 오후 기록 Neutral) 이틀 연속 조건이 깨졌고, 화면마다 계산 시작일도 달랐다.
+- 결정(옵션 1): History 는 저장 키(as_of 의 UTC 날짜 — 대부분 미국 장 날짜) 기준, 저장 당시 판정 그대로. 853fa1d 의 백엔드(assemble · integrate · regime_history · cockpit · history.yaml date_view · legacy_view · dates)를 그 이전으로 되돌렸다. 프론트의 x축 정리(폭 기반 라벨 솎기 · ▲ 글자 제거 · 중복 라벨 경고)는 유지 — KST 전용 칸(Daily Snapshot 줄 · 장중 줄 · 공백 각주)은 date_basis 가 kst_snapshot 일 때만 보여서 지금은 나오지 않는다.
+- 10/22 저장본(그 사이 KST view 로 저장됨)은 파일을 고치지 않고, 읽을 때 같은 날짜까지의 잠긴 저장 기록으로 예전 방식 history 를 다시 조립한다(`history/storage_view.py` — API `/api/v1/archive/*` 와 정적 배포본, `?view=stored` 면 파일 그대로). MARKET NOW 등 나머지 섹션은 저장본 그대로.
+- 결과: 10/15 = 발표 자료와 같은 화면(Liquidity Stress · 전환 6 · 비중 36%). 10/20 끝 10/19, 10/21 · 10/22 끝 10/21(10/22 07:30 기록 = 미국 10/21 종가). 같은 날짜의 판정은 화면 사이에 같고, 다른 것은 각 화면 첫 칸뿐(계산 시작점). 테스트 `test_storage_view.py`.

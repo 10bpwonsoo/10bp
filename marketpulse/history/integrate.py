@@ -28,10 +28,9 @@ def past_dates(series_by_id: Mapping, as_of: datetime, days: int) -> list[date]:
 
 
 def _window(manager: DailySnapshotManager, tab_id: str, as_of: datetime, days: int) -> list[DailySnapshot]:
-    """저장 키 순서의 마지막 행들. 화면 view 는 KST snapshot 날짜로 다시 묶어(같은 날짜의 저장 행은 하나로) days 개를 고르므로 여유분을 더 읽는다."""
     today = manager.snapshot_date_of(as_of)
     rows = manager.get_history(tab_id, None, today)
-    return rows[-(days + days // 2 + 5):]
+    return rows[-days:]
 
 
 def _run(manager: DailySnapshotManager, tab_id: str, *, dates: Sequence[date], calc, live: DailySnapshot | None, as_of: datetime, backfill: bool = True) -> None:
@@ -59,15 +58,10 @@ def market_context(manager: DailySnapshotManager) -> dict[date, tuple[str, float
 
 
 # ── ai_sentiment / ai_regime (같은 AiRegime 에서) ──────────
-def sentiment_cfg(cfg_all: Mapping) -> dict:
-    cfg = dict(cfg_all.get("sentiment") or {})
-    cfg["_narrative_drivers"] = [s for s in cfg_all.get("narrative_drivers", []) if any(i.get("source") == "narrative" and i.get("key") == s.get("key") for c in cfg.get("components", []) for i in c.get("inputs", []))]
-    return cfg
-
-
 def sync_sentiment(manager: DailySnapshotManager, regime, *, cfg_all: Mapping, dv, bench_dates: Sequence[date], as_of: datetime, days: int | None = None, config_dir=None, backfill: bool = True):
     """regime.sentiment.history 를 저장 sequence 로 바꿔 끼운다. dv = DayValues(backfill 입력)."""
-    cfg = sentiment_cfg(cfg_all)
+    cfg = dict(cfg_all.get("sentiment") or {})
+    cfg["_narrative_drivers"] = [s for s in cfg_all.get("narrative_drivers", []) if any(i.get("source") == "narrative" and i.get("key") == s.get("key") for c in cfg.get("components", []) for i in c.get("inputs", []))]
     days = days or int((cfg.get("history") or {}).get("days", manager.window_days))
     today = manager.snapshot_date_of(as_of)
     dates = [d for d in bench_dates if d < today][-manager.backfill_days:]
