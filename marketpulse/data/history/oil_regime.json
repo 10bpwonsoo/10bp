@@ -2760,68 +2760,68 @@
    "state": "supply",
    "state_label": "Supply — UNCONFIRMED",
    "state_label_ko": "",
-   "state_score": -23.8,
-   "confidence": 23.8,
+   "state_score": -24.6,
+   "confidence": 24.6,
    "component_scores": {
-    "driver:macro_liquidity": -22.4,
-    "driver:demand": -12.8,
-    "driver:supply": -23.8,
-    "driver:geopolitical": -7.4,
-    "brent_z": -0.30071223102080596,
-    "wti_z": -0.7114135680959407,
-    "oil_z": -0.5060628995583734
+    "driver:macro_liquidity": 19.5,
+    "driver:demand": 5.1,
+    "driver:supply": -24.6,
+    "driver:geopolitical": 20.7,
+    "brent_z": -0.11622995277577228,
+    "wti_z": -1.8403482161455849,
+    "oil_z": -0.9782890844606785
    },
    "key_drivers": [
-    "Supply -24 UNCONFIRMED",
-    "Macro / Liquidity -22 UNCONFIRMED",
-    "Demand -13 UNCONFIRMED"
+    "Supply -25 UNCONFIRMED",
+    "Geopolitical Premium +21 UNCONFIRMED",
+    "Macro / Liquidity +20 UNCONFIRMED"
    ],
-   "data_coverage": 0.9715,
-   "data_asof": "2026-10-21T07:00:21Z",
+   "data_coverage": 0.93175,
+   "data_asof": "2026-10-21T22:30:00Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-21T07:04:17.653584Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-22T04:52:02.970163Z",
    "model_version": "oil_regime_v0.1.0",
    "logic_version": "rules_76e6ad14",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
-   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-24, WEAK) — 거시·유동성 (위험회피) -22 보다 1 앞선다. 상태 미확인: 증거가 약하다(|-24| < 25).",
+   "finalization": "daily_close",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-25, WEAK) — 지정학 프리미엄 +21 보다 4 앞선다. 상태 미확인: 증거가 약하다(|-25| < 25).",
    "payload": {
     "regime_label": "Supply — UNCONFIRMED",
     "dominant": "supply",
-    "runner_up": "macro_liquidity",
-    "margin": 1.4,
+    "runner_up": "geopolitical",
+    "margin": 3.9,
     "signal_strength_label": "WEAK",
     "drivers": {
      "macro_liquidity": {
       "label": "Macro / Liquidity",
-      "score": -22.4,
+      "score": 19.5,
       "status": "UNCONFIRMED",
       "coverage": 1.0
      },
      "demand": {
       "label": "Demand",
-      "score": -12.8,
+      "score": 5.1,
       "status": "UNCONFIRMED",
       "coverage": 1.0
      },
      "supply": {
       "label": "Supply",
-      "score": -23.8,
+      "score": -24.6,
       "status": "UNCONFIRMED",
-      "coverage": 0.886
+      "coverage": 0.727
      },
      "geopolitical": {
       "label": "Geopolitical Premium",
-      "score": -7.4,
+      "score": 20.7,
       "status": "UNCONFIRMED",
       "coverage": 1.0
      }
     },
     "confirmations": {
-     "Brent / WTI": "confirms",
+     "Brent / WTI": "neutral",
      "원유 커브 (기간 구조)": "missing",
      "원유 변동성 (OVX)": "missing",
      "정제 마진 (휘발유·디젤)": "contradicts",
@@ -2836,7 +2836,7 @@
     },
     "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
     "oil_direction": "down",
-    "suspect": false
+    "suspect": true
    },
    "corrections": []
   }

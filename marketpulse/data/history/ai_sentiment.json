@@ -2271,106 +2271,106 @@
   {
    "snapshot_date": "2026-10-21",
    "tab_id": "ai_sentiment",
-   "state": "FEAR",
-   "state_label": "FEAR",
-   "state_label_ko": "불안한 투자심리",
-   "state_score": 36.2,
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 60.8,
    "confidence": 100.0,
    "component_scores": {
-    "narrative": 54.7,
-    "price": 3.1,
-    "breadth": 24.5,
-    "fundamentals": 57.8,
-    "macro": 54.4
+    "narrative": 76.3,
+    "price": 52.8,
+    "breadth": 50.8,
+    "fundamentals": 58.1,
+    "macro": 67.2
    },
    "key_drivers": [
     "Real Yield",
+    "Advancing",
     "Long-End Rates",
-    "HBM / Memory Fundamentals",
-    "−AI Relative Strength",
-    "−AI Basket Price",
-    "−AI Basket 1M"
+    "−AI Basket 1M",
+    "−Breadth >20DMA",
+    "−Credit Stress"
    ],
    "data_coverage": 1.0,
-   "data_asof": "2026-10-21T07:00:21Z",
+   "data_asof": "2026-10-21T22:30:00Z",
    "missing_components": [],
-   "history_source": "LIVE",
-   "calculated_at": "2026-10-21T07:04:15.995567Z",
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-22T04:52:02.077643Z",
    "model_version": "ai_sentiment_v0.1.0",
    "logic_version": "rules_db9f30c3",
-   "is_final": false,
-   "is_locked": false,
+   "is_final": true,
+   "is_locked": true,
    "is_backfilled": false,
-   "finalization": "live",
-   "summary": "FEAR 36",
+   "finalization": "daily_close",
+   "summary": "GREED 61",
    "payload": {
     "components": {
-     "narrative": 54.7,
-     "price": 3.1,
-     "breadth": 24.5,
-     "fundamentals": 57.8,
-     "macro": 54.4
+     "narrative": 76.3,
+     "price": 52.8,
+     "breadth": 50.8,
+     "fundamentals": 58.1,
+     "macro": 67.2
     },
     "component_states": {
-     "narrative": "NEUTRAL",
-     "price": "EXTREME_FEAR",
-     "breadth": "FEAR",
+     "narrative": "GREED",
+     "price": "NEUTRAL",
+     "breadth": "NEUTRAL",
      "fundamentals": "NEUTRAL",
-     "macro": "NEUTRAL"
+     "macro": "GREED"
     },
-    "key_tension": "가격 · 확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
-    "read": "Real Yield · Long-End Rates는 여전히 지지적입니다. 그러나 가격 · 확산도가 따라오지 않고 AI Relative Strength · AI Basket Price가 sentiment 를 압박하고 있습니다.",
-    "secondary": "FUNDAMENTALS > PRICE",
+    "key_tension": "내러티브 · 매크로가 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "Real Yield · Advancing는 여전히 지지적입니다. 그러나 AI Basket 1M · Breadth >20DMA가 sentiment 를 압박하고 있습니다.",
+    "secondary": "NARRATIVE AHEAD OF PRICE",
     "support": [
      {
       "id": "real_yield",
       "label": "Real Yield",
       "label_ko": "실질금리",
       "component": "macro",
-      "score": 90.8,
+      "score": 89.0,
       "display": "-1.6σ (5일)"
+     },
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 84.0,
+      "display": "84%"
      },
      {
       "id": "rates",
       "label": "Long-End Rates",
       "label_ko": "장기금리",
       "component": "macro",
-      "score": 84.8,
-      "display": "-1.4σ (5일)"
-     },
-     {
-      "id": "hbm",
-      "label": "HBM / Memory Fundamentals",
-      "label_ko": "HBM · 메모리 데이터",
-      "component": "fundamentals",
-      "score": 80.0,
-      "display": "+60 · STRONG"
+      "score": 83.5,
+      "display": "-1.3σ (5일)"
      }
     ],
     "pressure": [
-     {
-      "id": "relative_strength",
-      "label": "AI Relative Strength",
-      "label_ko": "Nasdaq 대비 상대강도(z)",
-      "component": "price",
-      "score": 0.0,
-      "display": "-2.1σ vs NDX"
-     },
-     {
-      "id": "basket_price",
-      "label": "AI Basket Price",
-      "label_ko": "AI 바스켓 가격(z)",
-      "component": "price",
-      "score": 4.8,
-      "display": "-1.8σ (5일)"
-     },
      {
       "id": "basket_1m",
       "label": "AI Basket 1M",
       "label_ko": "AI 바스켓 1개월 수익",
       "component": "price",
-      "score": 6.0,
-      "display": "-8.8%"
+      "score": 15.8,
+      "display": "-6.8%"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 22.0,
+      "display": "22%"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 25.2,
+      "display": "+1.0σ (5일)"
      }
     ],
     "basis": [

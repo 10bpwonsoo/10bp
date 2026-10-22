@@ -428,3 +428,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 화면: Market Regime History 에 `Daily Snapshot 2026-10-21 · Cutoff 07:30 KST · US data through 2026-10-20 close`, 장중 LIVE 줄(시각 · raw · 장중 공식 · daily 에 넣지 않음), 저장 snapshot 없는 평일 각주. x축은 KST 날짜 한 기준 — 칸이 30px 라벨보다 넉넉하면 모든 날짜, 아니면 첫·끝을 두고 고르게 솎음(라벨만, 칸은 그대로), 전환 ▲ 는 글자 없이, 같은 날짜 라벨은 한 번(데이터에 중복이 오면 경고 줄). 툴팁·상세에 `Snapshot 10/21 KST · US 10/20 close · data 10/21 08:59 KST · 저장 키`. 공용 strip 들도 같은 날짜·intraday·각주.
 - 결과: 10/20 화면 …10/15 · 10/16 · 10/19 · 10/20, 10/21 화면 …10/16 · 10/19 · 10/20 · 10/21(+ 장중 LIVE 16:00 KST 별도). 테스트 pytest `test_history_dates.py` 12개(전체 835 통과), vitest `historyDates.test.tsx` 6개(전체 111 통과).
 - 남은 것(승인 전 미실행): 10/21 아카이브는 cutoff 16:00:21 KST 의 latest_update — Daily Snapshot 규칙(07:30 KST)과 다르다(correction 후보). 저장 키가 UTC 날짜라 KST 낮의 기록이 잠기면 다음 날 07:30 snapshot 이 빠지는 구조(09/21 · 09/24 · 09/30 · 10/08 · 10/14 공백의 원인) — 저장 키를 KST snapshot 날짜로 바꾸는 것은 별도 결정.
+
+### 2026-10-22 — 되돌림(V79) + 10/22 Daily Snapshot
+- 되돌림: 대시보드를 V79 화면(853fa1d 빌드)으로 되돌리고(아티팩트 V81), 저장소도 af6b486 을 revert(7aecf23)해 화면과 코드를 맞췄다. 10/22 는 V79 코드로 만들었다.
+- FRED 점검(04:22~04:48 UTC 무렵 응답 HTML 점검 페이지)으로 기대인플레·TIPS·HY OAS·거시 발표값을 받을 수 없어, 복구를 기다린 뒤 입력을 다시 받았다(기본 41/54 · 종목 94 · AI 바스켓 52 · RSS 123).
+- 10/22 07:30 KST cutoff 재구성(`build_one`, latest=False → historical_backfill · `data/captures/2026-10-22-backfill/`): 미국 10/21 종가 · 한국 10/21 종가 · 미국채/TIPS/BE/HY OAS 는 FRED 다음 평일 22:00Z 규칙으로 10/20 관측까지. RSS 창 10/21 07:00Z~10/21 22:30Z 53건 중 19건 수기 태깅. 금리 MARKET READ · 물가 해석은 API 401 이라 같은 컨텍스트·검증의 세션 생성본.
+- 결과: 시장 NEUTRAL 34%(온도 +11) · 10/21·10/22 두 Daily Snapshot 연속 Neutral → 공식 Risk-On → Neutral / Mixed 전환(MARKET NOW 와 History 같은 값 — 07:30 저장이라 장중 LIVE 없음). AI LEADERSHIP NARROWING(센티 61), 금리 LONG-END RATE / TERM PREMIUM SHOCK(물가 리프라이싱 미확인, 강세 평탄화), 물가 압력 MIXED, 유가 Supply UNCONFIRMED.
+- history: 10/21 LIVE 6행이 07:30 기록으로 RECORDED·잠금(data_asof 10/21 22:30Z = 10/22 07:30 KST → 화면 날짜 10/22). 그 밖의 잠긴 행 · 기존 아카이브 9개 바이트 동일. 아카이브 COMPLETE · validate 통과 · 미래 데이터 검증 통과. 감사용 스크린샷 `data/archive/screenshots/2026-10-22.jpg`.

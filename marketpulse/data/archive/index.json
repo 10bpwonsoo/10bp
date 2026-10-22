@@ -1,6 +1,6 @@
 {
  "schema_version": "1",
- "latest": "2026-10-21",
+ "latest": "2026-10-22",
  "dates": [
   "2026-10-12",
   "2026-10-13",
@@ -9,9 +9,23 @@
   "2026-10-16",
   "2026-10-19",
   "2026-10-20",
-  "2026-10-21"
+  "2026-10-21",
+  "2026-10-22"
  ],
  "entries": [
+  {
+   "date": "2026-10-22",
+   "weekday": "Thu",
+   "archive_status": "COMPLETE",
+   "cutoff": "2026-10-22T07:30:00+09:00",
+   "archive_origin": "historical_backfill",
+   "schema_version": "1",
+   "generated_at": "2026-10-22T04:52:03.258486Z",
+   "source_asof": "2026-10-21T22:30:00Z",
+   "data_mode": "DELAYED",
+   "created_by": "historical_backfill",
+   "missing": []
+  },
   {
    "date": "2026-10-21",
    "weekday": "Wed",
