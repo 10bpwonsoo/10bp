@@ -105,7 +105,8 @@ class TestArchiveView:
         h = _view("2026-10-21")["cockpit"]["history"]
         last = h["days"][-1]
         assert last["date"] == "2026-10-21" and last["market_date"] == "2026-10-20" and last["source"] == "BACKFILLED" and last["locked"]
-        assert h["intraday"]["date"] == "2026-10-21" and h["intraday"]["source"] == "LIVE" and h["intraday"]["official_label"] == _doc("2026-10-21")["cockpit"]["history"]["current_label"]
+        # 2026-10-22: 장중 LIVE 는 공식 판정을 바꾸지 않는다 — intraday 의 official 은 daily 공식 판정 그대로
+        assert h["intraday"]["date"] == "2026-10-21" and h["intraday"]["source"] == "LIVE" and h["intraday"]["official_label"] == h["current_label"] == "Risk-On"
 
     def test_values_per_day_are_the_stored_ones(self):
         """날짜만 다시 붙는다 — 판정·확신·factor 는 저장본의 그 저장 행 그대로."""
@@ -143,3 +144,80 @@ class TestArchiveApi:
             assert raw == _doc("2026-10-21")
         finally:
             use_archive_service(None); use_history_rows(None)
+
+
+# ── 2026-10-22: 공식 regime 판정 단일 기준 — Daily Snapshot · 같은 미국 장은 한 번 · 장중 LIVE 는 후보 신호 ──
+from datetime import timedelta  # noqa: E402
+
+from marketpulse.engines.cockpit import LABEL_TEXT, load_cockpit_config  # noqa: E402
+from marketpulse.engines.regime_history import build_regime_history  # noqa: E402
+from marketpulse.models.state import StateLabel  # noqa: E402
+from marketpulse.models.state_history import MarketStateHistory, StateHistoryPoint  # noqa: E402
+
+
+def _pt(snap: str, mkt: str, label: str, conf: float, source: str = "RECORDED") -> StateHistoryPoint:
+    asof = datetime.fromisoformat(f"{snap}T07:30:00+09:00") if source != "LIVE" else datetime.fromisoformat(f"{snap}T16:00:00+09:00")
+    return StateHistoryPoint(date=date.fromisoformat(snap), as_of=asof, label=StateLabel(label), confidence=conf, coverage=0.8, composite=0.0, band="neutral", band_label="중립",
+                             factors={}, drivers=[], source=source, locked=source != "LIVE", market_date=date.fromisoformat(mkt), storage_date=date.fromisoformat(mkt))
+
+
+def _hist(daily: list[StateHistoryPoint], live: StateHistoryPoint | None = None) -> MarketStateHistory:
+    return MarketStateHistory(as_of=daily[-1].as_of, days_requested=len(daily), points=daily, history_mode="stored", date_basis="kst_snapshot", intraday=live)
+
+
+def _state(daily, live=None):
+    h = build_regime_history(_hist(daily, live), load_cockpit_config().get("history") or {})
+    return h, h.state
+
+
+BASE = [_pt("2026-10-15", "2026-10-14", "RISK_ON", 60), _pt("2026-10-16", "2026-10-15", "RISK_ON", 60)]
+
+
+class TestRegimeState:
+    def test_a_risk_on_then_neutral_is_pending_1_of_2(self):
+        h, st = _state(BASE + [_pt("2026-10-19", "2026-10-16", "NEUTRAL", 30)])
+        assert st.official_regime == "risk_on" and st.official_state == "RISK_ON" and h.current_regime == "risk_on"
+        assert st.transition_status == "PENDING" and st.transition_text == "PENDING · 1 / 2" and st.candidate_regime == "neutral" and st.transition_days == 1
+
+    def test_b_two_neutral_snapshots_on_different_market_dates_confirm(self):
+        h, st = _state(BASE + [_pt("2026-10-19", "2026-10-16", "NEUTRAL", 30), _pt("2026-10-20", "2026-10-19", "NEUTRAL", 30)])
+        assert st.official_regime == "neutral" and st.official_label == "Neutral / Mixed" and st.transition_status == "CONFIRMED" and st.transition_text == "CONFIRMED · 2 / 2"
+        assert st.previous_regime == "risk_on" and st.confirmed_by == "persistence"
+
+    def test_c_intraday_live_on_same_market_date_stays_pending(self):
+        """10/21 Daily Snapshot(US 10/20) Neutral + 10/21 장중 LIVE(US 10/20) Neutral — 같은 미국 장이라 여전히 1/2."""
+        daily = BASE + [_pt("2026-10-20", "2026-10-19", "RISK_ON", 60), _pt("2026-10-21", "2026-10-20", "NEUTRAL", 23)]
+        h, st = _state(daily, _pt("2026-10-21", "2026-10-20", "NEUTRAL", 34, source="LIVE"))
+        assert st.official_regime == "risk_on" and st.transition_text == "PENDING · 1 / 2" and st.transition_days == 1
+        assert st.live_signal is not None and st.live_signal.state == "NEUTRAL" and st.live_signal.same_market_date
+        assert len(h.days) == len(daily) and all(d.source != "LIVE" for d in h.days)  # 장중 LIVE 는 daily 칸에 없다
+
+    def test_same_us_close_in_two_snapshots_counts_once(self):
+        """동일 미국장 종가가 두 KST snapshot 에 들어가도 persistence 는 한 번 — 예전 저장 키(UTC)로 겹친 행 흉내."""
+        daily = BASE + [_pt("2026-10-19", "2026-10-16", "NEUTRAL", 30), _pt("2026-10-20", "2026-10-16", "NEUTRAL", 30)]
+        h, st = _state(daily)
+        assert st.transition_days == 1 and st.official_regime == "risk_on" and st.transition_status == "PENDING"
+
+    def test_strong_evidence_still_confirms_in_one_day(self):
+        """강한 증거(확신 ≥ strong_evidence) 규칙은 그대로 — 10/20 Liquidity Stress → Risk-On(89%) 이 그 예."""
+        h, st = _state(BASE[:1] + [_pt("2026-10-16", "2026-10-15", "LIQUIDITY_STRESS", 60), _pt("2026-10-19", "2026-10-16", "LIQUIDITY_STRESS", 60), _pt("2026-10-20", "2026-10-19", "RISK_ON", 89)])
+        assert st.official_regime == "risk_on" and st.transition_status == "CONFIRMED" and st.confirmed_by == "strong_evidence"
+
+    def test_d_archive_market_now_and_history_share_one_state(self):
+        for d in ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21"):
+            ck = _view(d)["cockpit"]
+            n, h = ck["market_now"], ck["history"]
+            assert n["state"] == h["state"], d
+            assert n["label"] == h["state"]["official_state"] and n["transition_status"] == h["state"]["transition_status"] == h["transition_status"], d
+            assert n["persistence_days"] == h["duration_days"] and n["raw_persistence_days"] == h["raw_persistence_days"], d
+            assert ck["tone"]["regime_key"] == h["current_regime"], d
+
+    def test_1021_archive_reads_official_risk_on_pending(self):
+        n = _view("2026-10-21")["cockpit"]["market_now"]
+        assert n["label_text"] == "RISK-ON" and n["raw_text"] == "NEUTRAL / MIXED" and n["state"]["transition_text"] == "PENDING · 1 / 2"
+        assert n["state"]["live_signal"]["state"] == "NEUTRAL" and n["change_text"] == "" and n["potential_change_text"] == "RISK-ON → NEUTRAL / MIXED"
+
+    def test_e_no_regime_string_is_gone(self):
+        assert "NO REGIME" not in LABEL_TEXT.values() and LABEL_TEXT["NEUTRAL"] == "NEUTRAL / MIXED"
+        for d in ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-19", "2026-10-20", "2026-10-21"):
+            assert "NO REGIME" not in json.dumps(_view(d), ensure_ascii=False), d

@@ -42,18 +42,17 @@ function Context({ h }: { h: CkRegimeHistory }) {
         <div><dt>1M Transitions</dt><dd className="num">{h.transitions_1m}</dd></div>
         <div><dt>1M Share</dt><dd className="num">{h.share_pct.toFixed(0)}%</dd></div>
       </dl>
-      {/* RAW SIGNAL — 오늘 룰이 가리키는 후보. 공식 CURRENT 와 다르면 전환 상태를 적는다 */}
-      <div className="ck-h-rawbox mono" data-testid="ck-h-raw" data-status={h.transition_status}>
-        <span className="ck-k">Raw signal</span><b style={{ color: h.pending_regime ? color(h.raw_regime) : "var(--muted)" }}>{short(h.raw_label || h.current_label)}</b><span className="num">{h.raw_persistence_days}D</span>
-        <span className="ck-k">Transition</span><b style={{ color: h.transition_status === "CONFIRMED" ? "var(--ok)" : h.transition_status === "CHANGED" ? "var(--accent)" : "var(--warn)" }}>{(h.transition_status || "").replace(/_/g, " ")}</b>
+      {/* CURRENT SIGNAL · TRANSITION — MARKET NOW 와 같은 state (2026-10-22). 일수는 서로 다른 미국 장(Daily Snapshot)만 센다 */}
+      <div className="ck-h-rawbox mono" data-testid="ck-h-raw" data-status={h.state?.transition_status ?? h.transition_status}>
+        <span className="ck-k">Current signal</span><b style={{ color: h.pending_regime ? color(h.raw_regime) : "var(--muted)" }}>{short(h.raw_label || h.current_label)}</b><span className="num">{h.raw_persistence_days}D</span>
+        <span className="ck-k">Transition</span><b style={{ color: h.transition_status === "STABLE" ? "var(--ok)" : h.transition_status === "CONFIRMED" ? "var(--accent)" : "var(--warn)" }} data-testid="ck-h-tstatus">{h.state?.transition_text || (h.transition_status || "").replace(/_/g, " ")}</b>
         {h.transition_status_ko ? <span className="ck-h-raw-ko">{h.transition_status_ko}</span> : null}
       </div>
       {h.intraday ? (
-        <div className="ck-h-intraday mono" data-testid="ck-h-intraday" title="장중 LIVE 값은 daily history 칸을 덮지 않는다 — 다음 Daily Snapshot 에서 고정된다">
-          <span className="ck-k">Intraday LIVE</span><b>{kstTime(h.intraday.as_of) || h.intraday.date}</b>
-          <span>Raw <em style={{ color: color(h.intraday.raw_regime) }}>{short(h.intraday.raw_label || h.intraday.raw_state)}</em></span>
-          <span>장중 공식 <em style={{ color: color(h.intraday.official_regime) }}>{short(h.intraday.official_label)}</em></span>
-          <span className="ck-h-raw-ko">daily history 에 넣지 않음{h.intraday.market_date ? ` · US ${md(h.intraday.market_date)} close 기준` : ""}</span>
+        <div className="ck-h-intraday mono" data-testid="ck-h-intraday" title="장중 LIVE 신호는 daily history 칸을 덮지 않고 공식 연속일수에도 넣지 않는다 — 다음 Daily Snapshot 에서 확인된다">
+          <span className="ck-k">Live signal</span><b>{kstTime(h.intraday.as_of) || h.intraday.date}</b>
+          <span><em style={{ color: color(h.intraday.raw_regime) }}>{short(h.intraday.raw_label || h.intraday.raw_state)}</em></span>
+          <span className="ck-h-raw-ko">공식 연속일수 제외{h.intraday.market_date ? ` · US ${md(h.intraday.market_date)} close 기준` : ""}</span>
         </div>
       ) : null}
     </div>

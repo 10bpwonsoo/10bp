@@ -27,11 +27,12 @@ clauses:
 #: clauses 는 [양수 z 문장, 음수 z 문장]. 문장 = "A·B에 C까지 {tail}" / "A·B가 {tail}"
 #: MARKET NOW 의 MARKET READ (2026-10-07) — 공식 regime 과 raw 신호의 관계. 숫자를 다시 읽지 않는다
 now_read:
-  confirmed: "{official}은(는) 유지되고 있고 현재 raw signal 도 같은 방향입니다."
+  confirmed: "{official}은(는) 유지되고 있고 Daily Snapshot 신호도 같은 방향입니다."
   unconfirmed: "{official}은(는) 유지되고 있지만 현재 raw signal 은 {raw} 방향으로 약화되고 있습니다. 추가 확인 시 regime 전환 가능성이 있습니다."
-  watch: "{official}은(는) 유지되고 있지만 raw signal 이 {raw} 쪽으로 {n}거래일째 이어지고 있습니다. 다음 거래일에도 같으면 공식 regime 이 전환됩니다."
-  changed: "공식 regime 이 전환됐습니다: {prev} → {official}. raw signal 이 전환 조건을 충족했습니다."   # 영문 라벨 뒤 조사를 정할 수 없어 화살표로 쓴다(2026-10-12)
+  watch: "공식 regime 은 {official}입니다. Daily Snapshot 신호는 {raw} — {n}/{need}일 확인으로, 다른 Daily Snapshot 에서 한 번 더 확인되면 공식 regime 이 전환됩니다."
+  changed: "공식 regime 이 전환됐습니다: {prev} → {official}. Daily Snapshot 신호가 전환 조건을 충족했습니다."   # 영문 라벨 뒤 조사를 정할 수 없어 화살표로 쓴다(2026-10-12)
   no_history: "저장된 판정 sequence 가 없어 오늘 raw 판정을 그대로 공식 regime 으로 씁니다."
+  live: "장중 신호는 {live} — 공식 연속일수에는 넣지 않습니다."
 conviction_trend: {delta: 10}
 
 regime_tail:
@@ -691,6 +692,13 @@ history:
     unconfirmed: "{raw} 신호가 나타났지만 아직 전환 조건 미충족 (raw {n}D / 필요 {need}D)"
     watch: "{raw} 신호 {n}D — 다음 거래일에도 이어지면 공식 regime 이 전환된다 (필요 {need}D)"
     changed: "공식 regime 전환 확정: {prev} → {cur}"   # 영문 라벨 뒤 조사를 정할 수 없어 화살표로 쓴다(2026-10-12)
+  #: 공식 regime 판정 상태 문구 (2026-10-22) — MARKET NOW 와 History 가 같은 regime_state 를 쓴다. 일수는 서로 다른 미국 장(Daily Snapshot)만 센다.
+  #: {cur}=공식 regime, {raw}=Daily Snapshot raw 신호, {prev}=직전 공식, {n}=raw 연속 일수, {need}=확정에 필요한 일수, {conf}=확신 %, {strong}=강한 증거 문턱
+  state_text:
+    pending: "{raw} 신호 {n}/{need}일 — 다른 Daily Snapshot 에서 한 번 더 확인되면 공식 regime 전환({cur} → {raw}). 그 전까지 공식은 {cur}"
+    confirmed: "공식 regime 전환 확정: {prev} → {cur} ({n}/{need}일 연속)"
+    confirmed_strong: "공식 regime 전환 확정: {prev} → {cur} (확신 {conf}% ≥ {strong}% 강한 증거)"
+    stable: "{cur} 유지 {n}일째 — Daily Snapshot raw 신호도 같은 방향"
   #: DRIVER HEAT STRIP — 판정 엔진 factor 점수(z 단위) 다섯 개. heat_ref 에서 색이 포화한다. 화살표 문턱은 factor z 기준.
   #: factor 점수의 부호를 그대로 번역하지 않는다 — 각 factor 의 경제적 의미로 현재 상태를 말한다. horizon 은 대표 계열의 1D / 5D z(부호 = factor 방향).
   drivers:

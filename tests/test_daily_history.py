@@ -195,8 +195,11 @@ class TestApi:
         get_history_service().use(DailySnapshotManager(SqliteDailyStore(":memory:"), namespace="test-"))
         with TestClient(create_app()) as c:
             body = c.get("/api/v1/market-state/history").json()
-            assert body["history_mode"] == "stored" and body["footnote"] and body["points"][-1]["source"] in ("LIVE", "RECORDED")
-            assert all(p["source"] == "BACKFILLED" and p["locked"] for p in body["points"][:-1])
+            # 2026-10-21: daily 점은 고정된 snapshot 만, 장중 LIVE 는 intraday 로 따로
+            assert body["history_mode"] == "stored" and body["footnote"] and body["date_basis"] == "kst_snapshot"
+            assert all(p["source"] in ("BACKFILLED", "RECORDED") and p["locked"] for p in body["points"])
+            assert (body["intraday"] or {}).get("source", "LIVE") == "LIVE"
+            assert len({p["date"] for p in body["points"]}) == len(body["points"])
             again = c.get("/api/v1/market-state/history").json()
             assert [p["label"] for p in again["points"]] == [p["label"] for p in body["points"]]
             rec = c.get("/api/v1/market-state/history?mode=recomputed").json()
@@ -214,5 +217,5 @@ class TestApi:
             assert sh["history_mode"] == "stored" and sh["footnote"] and all(p["source"] in ("BACKFILLED", "LIVE", "RECORDED") for p in sh["points"])
             for tab in ("ai_sentiment", "ai_regime", "rates_regime", "oil_regime", "memory_cycle"):
                 hh = c.get(f"/api/v1/history/{tab}").json()
-                assert hh["tab_id"] == tab and hh["footnote"] and hh["points"] and hh["points"][-1]["source"] in ("LIVE", "RECORDED")
+                assert hh["tab_id"] == tab and hh["footnote"] and hh["points"] and all(p["source"] in ("BACKFILLED", "RECORDED") for p in hh["points"]) and hh["date_basis"] == "kst_snapshot"
         get_history_service().clear(); get_service().clear(); get_state_history_service().clear()
