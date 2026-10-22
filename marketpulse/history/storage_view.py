@@ -3,7 +3,8 @@
 
 2026-10-21~22 사이 잠깐 KST Daily Snapshot 날짜로 다시 묶은 view(date_basis='kst_snapshot')로 만든 저장본(10/22 아카이브·캡처)이 있다.
 파일은 고치지 않는다(아카이브는 불변). 읽을 때만 같은 날짜까지의 저장 기록(LOCKED 행 — 값이 바뀌지 않는다)으로
-예전 방식의 history 섹션을 다시 조립해 다른 날짜 화면과 같은 기준으로 보인다. 그 밖의 섹션(MARKET NOW 등)은 저장본 그대로.
+예전 방식의 history 섹션을 다시 조립해 다른 날짜 화면과 같은 기준으로 보인다. MARKET NOW 는 history 에서 나오는 칸(Official regime 띠 · 지속 · 직전 · 전환 문장)만 같은 sequence 로 맞추고(cockpit.now_history_fields),
+판정 라벨·핵심 변수·해석 등 나머지는 저장본 그대로. 공식 판정이 저장본과 달라지면 MARKET NOW 는 손대지 않는다.
 """
 
 from __future__ import annotations
@@ -52,7 +53,14 @@ def storage_view(doc: Mapping[str, Any], *, as_of: datetime, manager, config_dir
                 if o:
                     d.update({k: o.get(k) for k in ("horizons", "horizon_read", "horizon_label") if k in o})
             new["ranges"] = old.get("ranges", new.get("ranges"))
-            out["cockpit"] = {**ck, "history": new}
+            ck2 = {**ck, "history": new}
+            now = ck.get("market_now")
+            if isinstance(now, Mapping) and now.get("label") == rh.official_state_label:
+                from ..engines.cockpit import now_history_fields
+                hf = now_history_fields(load_cockpit_config(config_dir), rh, label=str(now["label"]), raw_label=str(now.get("raw_label") or now["label"]))
+                hf["spark"] = [sp.model_dump(mode="json") for sp in hf["spark"]]
+                ck2["market_now"] = {**now, **hf}
+            out["cockpit"] = ck2
     dh = out.get("daily_history")
     if isinstance(dh, Mapping):
         out["daily_history"] = {tab: (history_of(manager, tab, as_of=as_of, days=days, config_dir=config_dir).model_dump(mode="json") if _kst(h) else h) for tab, h in dh.items()}

@@ -120,6 +120,30 @@ class _Z:
         return ""
 
 
+def now_history_fields(cfg: Mapping, rh: object | None, *, label: str, raw_label: str) -> dict:
+    """MARKET NOW 의 history 파생 칸(지속 · 직전 · 전환 · 띠 · 문장) — Market Regime History 와 같은 sequence 에서만 만든다.
+    아카이브 화면이 history 를 다시 조립할 때(history/storage_view.py)도 이 함수로 MARKET NOW 띠를 맞춘다(2026-10-22)."""
+    inv_tax = {str(v["key"]): str(k) for k, v in ((cfg.get("history") or {}).get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
+    if rh is not None:
+        streak = int(rh.duration_days); prev_s = inv_tax.get(rh.previous_regime or "", None)
+        t_status, t_ko = rh.transition_status, rh.transition_status_ko
+        raw_run_days = int(rh.raw_persistence_days); need = int(rh.required_days)
+        change_text = f"{LABEL_TEXT.get(prev_s, prev_s)} → {LABEL_TEXT[label]}" if (rh.changed_today and prev_s) else ""
+        potential = f"{LABEL_TEXT[label]} → {LABEL_TEXT.get(raw_label, raw_label)}" if raw_label != label else ""
+        ev = [d.evidence_strength for d in rh.days]
+        dlt = float((cfg.get("conviction_trend") or {}).get("delta", 10))
+        c_trend = "STABLE" if len(ev) < 2 else ("WEAKENING" if ev[-1] - ev[-2] <= -dlt else "STRENGTHENING" if ev[-1] - ev[-2] >= dlt else "STABLE")
+        spark = [SparkPoint(date=d.date, label=inv_tax.get(d.display_regime, d.raw_state)) for d in rh.days][-22:]  # 공식(confirmed) regime 의 띠
+    else:
+        streak = 0; prev_s = None; t_status, t_ko = "NO_HISTORY", "저장된 판정 sequence 가 없어 raw 판정을 그대로 공식 regime 으로 쓴다"
+        raw_run_days = 0; need = 0; change_text = ""; potential = ""; c_trend = "STABLE"; spark = []
+    nr = cfg.get("now_read", {}) or {}
+    key = {"CONFIRMED": "confirmed", "UNCONFIRMED_TRANSITION": "unconfirmed", "TRANSITION_WATCH": "watch", "CHANGED": "changed", "NO_HISTORY": "no_history"}.get(t_status, "confirmed")
+    read = fix_particles(str(nr.get(key, "")).format(official=LABEL_TEXT[label], raw=LABEL_TEXT.get(raw_label, raw_label), prev=LABEL_TEXT.get(prev_s or "", prev_s or ""), n=raw_run_days))
+    return dict(persistence_days=streak, previous_label=prev_s, change_text=change_text, raw_persistence_days=raw_run_days, transition_status=t_status, transition_status_ko=t_ko,
+                potential_change_text=potential, required_days=need, conviction_trend=c_trend, read=read, spark=spark)
+
+
 def build_cockpit(
     snapshot: IntelligenceSnapshot,
     market: MarketSnapshot,
@@ -185,29 +209,12 @@ def build_cockpit(
         sentence = fix_particles("뚜렷한 방향의 핵심 변수가 없고 " + tail[len("있지만 "):])
     else:
         sentence = fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
-    rh = regime_history
-    if rh is not None:
-        streak = int(rh.duration_days); prev_s = inv_tax.get(rh.previous_regime or "", None)
-        t_status, t_ko = rh.transition_status, rh.transition_status_ko
-        raw_run_days = int(rh.raw_persistence_days); need = int(rh.required_days)
-        change_text = f"{LABEL_TEXT.get(prev_s, prev_s)} → {LABEL_TEXT[label]}" if (rh.changed_today and prev_s) else ""
-        potential = f"{LABEL_TEXT[label]} → {LABEL_TEXT.get(raw_label, raw_label)}" if raw_label != label else ""
-        ev = [d.evidence_strength for d in rh.days]
-        dlt = float((cfg.get("conviction_trend") or {}).get("delta", 10))
-        c_trend = "STABLE" if len(ev) < 2 else ("WEAKENING" if ev[-1] - ev[-2] <= -dlt else "STRENGTHENING" if ev[-1] - ev[-2] >= dlt else "STABLE")
-        spark = [SparkPoint(date=d.date, label=inv_tax.get(d.display_regime, d.raw_state)) for d in rh.days][-22:]  # 공식(confirmed) regime 의 띠
-    else:
-        streak = 0; prev_s = None; t_status, t_ko = "NO_HISTORY", "저장된 판정 sequence 가 없어 raw 판정을 그대로 공식 regime 으로 쓴다"
-        raw_run_days = 0; need = 0; change_text = ""; potential = ""; c_trend = "STABLE"; spark = []
-    nr = cfg.get("now_read", {}) or {}
-    key = {"CONFIRMED": "confirmed", "UNCONFIRMED_TRANSITION": "unconfirmed", "TRANSITION_WATCH": "watch", "CHANGED": "changed", "NO_HISTORY": "no_history"}.get(t_status, "confirmed")
-    read = fix_particles(str(nr.get(key, "")).format(official=LABEL_TEXT[label], raw=LABEL_TEXT.get(raw_label, raw_label), prev=LABEL_TEXT.get(prev_s or "", prev_s or ""), n=raw_run_days))
+    hf = now_history_fields(cfg, regime_history, label=label, raw_label=raw_label)
     dh = snapshot.data_health
     now = MarketNow(label=label, secondary=None, label_text=LABEL_TEXT[label], conviction=conv, confidence=round(ms.confidence, 1),  # type: ignore[arg-type]
-                    persistence_days=streak, previous_label=prev_s, change_text=change_text, key_variables=keyvars, sentence=sentence,
+                    key_variables=keyvars, sentence=sentence,
                     interpretation=ms.narrative or "", raw_label=raw_label, raw_text=LABEL_TEXT.get(raw_label, raw_label), raw_secondary=ms.secondary_label.value if ms.secondary_label else None,
-                    raw_persistence_days=raw_run_days, transition_status=t_status, transition_status_ko=t_ko, potential_change_text=potential, required_days=need,
-                    conviction_trend=c_trend, read=read, spark=spark, last_update=snapshot.as_of, coverage=f"{dh.available_instruments}/{dh.expected_instruments}",
+                    **hf, last_update=snapshot.as_of, coverage=f"{dh.available_instruments}/{dh.expected_instruments}",
                     latency=f"최대 {dh.max_freshness_trading_days}거래일 지연" if dh.max_freshness_trading_days else "")
 
     # ── 1c. MARKET TONE SNAPSHOT (2026-10-07) — 온도계를 그대로, regime 과 대조 ──

@@ -49,6 +49,11 @@ def test_1022_uses_the_same_storage_dates_as_other_days():
     # MARKET NOW(저장본)와 History 의 공식 판정이 같다
     doc = _view("2026-10-22")
     assert doc["cockpit"]["market_now"]["label"] == "NEUTRAL" and v["official_state_label"] == "NEUTRAL"
+    # MARKET NOW 의 Official regime 띠도 History 와 같은 sequence — 10/21 화면과 같은 날짜는 같은 판정
+    spark = doc["cockpit"]["market_now"]["spark"]
+    assert [p["date"] for p in spark] == [d["date"] for d in v["days"]]
+    s21 = {p["date"]: p["label"] for p in _doc("2026-10-21")["cockpit"]["market_now"]["spark"]}
+    assert all(s21[p["date"]] == p["label"] for p in spark if p["date"] in s21)
     for tab, h in doc["daily_history"].items():
         assert h.get("date_basis", "storage_utc") != "kst_snapshot" and h["points"][-1]["date"] == "2026-10-21", tab
 
