@@ -3466,6 +3466,111 @@
     }
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-22",
+   "tab_id": "rates_regime",
+   "state": "growth",
+   "state_label": "GROWTH-LED RATES — Inflation Repricing Contradicted",
+   "state_label_ko": "",
+   "state_score": -70.2,
+   "confidence": 70.2,
+   "component_scores": {
+    "driver:inflation_repricing": 27.4,
+    "driver:fed_policy": -0.6,
+    "driver:growth": -70.2,
+    "driver:term_premium": -21.7,
+    "driver:risk_liquidity": -18.7,
+    "rate_move_z": -0.99,
+    "rate_change_5d_bp": -6.0,
+    "inflation:realized": -24.6,
+    "inflation:implied": 36.2,
+    "inflation:energy": 3.7,
+    "inflation:wages": -26.0,
+    "inflation:fx": -4.2
+   },
+   "key_drivers": [
+    "Growth -70 CONFIRMED",
+    "Inflation Repricing +27 CONTRADICTED",
+    "Term Premium / Supply -22 UNCONFIRMED"
+   ],
+   "data_coverage": 0.9698,
+   "data_asof": "2026-10-22T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-22T23:57:53.092162Z",
+   "model_version": "rates_regime_v0.1.0",
+   "logic_version": "rules_f27eae24",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "금리를 움직이는 증거는 성장 쪽이 가장 크다(-70, STRONG) — 물가 리프라이싱 +27 보다 43 앞선다. 물가 리프라이싱은 반박됨(+27). 상태: driver 방향(하락)과 10년 금리(-1.0σ)가 같다.",
+   "payload": {
+    "regime_label": "GROWTH-LED RATES — Inflation Repricing Contradicted",
+    "dominant": "growth",
+    "runner_up": "inflation_repricing",
+    "margin": 42.8,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "inflation_repricing": {
+      "label": "Inflation Repricing",
+      "score": 27.4,
+      "status": "CONTRADICTED",
+      "coverage": 0.849
+     },
+     "fed_policy": {
+      "label": "Fed Policy",
+      "score": -0.6,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "growth": {
+      "label": "Growth",
+      "score": -70.2,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "term_premium": {
+      "label": "Term Premium / Supply",
+      "score": -21.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "risk_liquidity": {
+      "label": "Risk / Liquidity",
+      "score": -18.7,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Breakeven (기대인플레)": "CONFIRMED",
+     "Oil": "CONFIRMED",
+     "Commodities (구리)": "NOT_CONFIRMED",
+     "USD": "MIXED",
+     "Rates — 2Y": "MIXED",
+     "Rates — 10Y / 30Y": "NOT_CONFIRMED",
+     "Equities (S&P)": "NOT_CONFIRMED",
+     "Growth / Tech (Nasdaq)": "NOT_CONFIRMED",
+     "Banks (XLF)": "CONFIRMED",
+     "HY OAS": "CONFIRMED",
+     "VIX": "NOT_CONFIRMED",
+     "Gold": "MIXED"
+    },
+    "implication": "성장 기대가 금리를 올리는 국면 — 주식·경기민감주·구리가 같이 오르면 '좋은 금리 상승'.",
+    "inflation_status": "CONTRADICTED",
+    "rate_direction": "down",
+    "curve": "bull_flattening",
+    "inflation_components": {
+     "realized": "flat",
+     "implied": "up",
+     "energy": "flat",
+     "wages": "down",
+     "fx": "flat"
+    }
+   },
+   "corrections": []
   }
  ]
 }

@@ -1,0 +1,343 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/23 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "b3fe03934f2d1337": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -45
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -45,
+   "impact": 70,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 3.5% 급락 마감, 코스닥 3.6% 하락(속보 제목)."
+  },
+  "1a8ed457863f6d70": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -45
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 60,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 5500선 후퇴, 삼성전자·SK하이닉스 4~5% 급락(제목)."
+  },
+  "af03e5dc97e47b08": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "반등 하루 만에 코스피 3% 넘게 하락, 삼전닉스 동반 하락·코스닥 760선(요약)."
+  },
+  "590f485f352569a0": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "나스닥 상승에도 코스피 급락 — 한·미 증시 디커플링(제목)."
+  },
+  "aa1c5741fe4d4835": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -35
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "소프트뱅크 도쿄 증시 시총 반토막 — AI 투자 과도 불안(제목)."
+  },
+  "4eb7340733bfe7a2": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "AI 실적이 거품론을 잠재웠다는 평가, 다음 시험대는 클라우드 빅3(제목)."
+  },
+  "406f9c202c931908": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "금융위원장, 솔리다임 상장은 중복상장 규제 대상 — SK하이닉스 등 모회사 의무 발생(제목)."
+  },
+  "55089a2c3cf65fd3": {
+   "themes": [
+    "oil",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "oil": 20,
+    "consumer": -20
+   },
+   "theme_direction": {
+    "oil": "up",
+    "consumer": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "사우스웨스트항공, 고유가로 연간 실적 전망 하향(제목)."
+  },
+  "6e27deec417207eb": {
+   "themes": [
+    "oil",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "oil": 15,
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "oil": "up",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -10,
+   "impact": 20,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "유류비 부담·전쟁 여파 장기화로 여행주 이익 추정 하향(요약)."
+  },
+  "52d4d527d70211a1": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "머스크, 테슬라·스페이스X 합병 공식화(요약)."
+  },
+  "2601c45f5a32e2b7": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -15
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": -15,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "CNBC 조사: 트럼프 경제 지지율 사상 최저, 미국인 80%가 경제를 보통 이하로 평가(요약)."
+  },
+  "e513798864c4ae30": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 신규 실업수당 청구 19.4만 건 — 1960년대 이후 최저권, 해고 적은 고용 흐름 지속(CNBC 요약)."
+  },
+  "c8cfc601395f5d9d": {
+   "themes": [
+    "usd"
+   ],
+   "theme_sentiment": {
+    "usd": -25
+   },
+   "theme_direction": {
+    "usd": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "원화 3개월 새 10% 넘게 강세 — 자동차·석유화학 실적 전망 하향(요약)."
+  },
+  "45e7a3110417d1ce": {
+   "themes": [
+    "usd"
+   ],
+   "theme_sentiment": {
+    "usd": -20
+   },
+   "theme_direction": {
+    "usd": "down"
+   },
+   "sentiment": 0,
+   "impact": 20,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "달러당 원화값 1480원대→1320원대 — 환헤지 ETF 수익률 차이(요약)."
+  },
+  "3e00564acc26bef7": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "증시 약세에 투자자예탁금 90조원 아래로(요약)."
+  },
+  "d3bf8a1a80e248bf": {
+   "themes": [
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 25
+   },
+   "theme_direction": {
+    "shareholder_return": "up"
+   },
+   "sentiment": 20,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "삼성E&A 3분기 영업익 184% 증가·7800억 자사주 매입, 주가 16% 상승(요약)."
+  },
+  "826fddaad3fa538d": {
+   "themes": [
+    "oil",
+    "china"
+   ],
+   "theme_sentiment": {
+    "oil": 10,
+    "china": -20
+   },
+   "theme_direction": {
+    "oil": "up",
+    "china": "down"
+   },
+   "sentiment": -20,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "롯데케미칼 눈높이 하향 — 유가·중국 공급과잉(제목)."
+  },
+  "4e149c52a2071c14": {
+   "themes": [
+    "china"
+   ],
+   "theme_sentiment": {
+    "china": -10
+   },
+   "theme_direction": {
+    "china": "down"
+   },
+   "sentiment": -10,
+   "impact": 25,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "GM, 미국 신규 희토류 자석 공장 계약 취소(로이터 단독, 제목)."
+  },
+  "3105ed4a8c4a6347": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -45,
+    "semiconductor": -55
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -50,
+   "impact": 75,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 투자 불안에 나스닥 2.6% 급락, 반도체지수 6.7% 하락(10/22 뉴욕 마감 브리핑, 제목)."
+  }
+ }
+}
