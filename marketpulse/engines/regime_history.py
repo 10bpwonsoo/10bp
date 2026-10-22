@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Mapping, Sequence
 
-from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeIntraday, RegimeLiveSignal, RegimeShare, RegimeState, RegimeTransition
+from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeIntraday, RegimeShare, RegimeTransition
 
 ARROW_TXT = {"↑↑": "↑↑", "↑": "↑", "↓": "↓", "↓↓": "↓↓", "→": "→", "?": "?"}
 
@@ -73,18 +73,11 @@ def _day_from_observations(obs: Sequence[StateObservation], day_end: datetime, c
     return dominant, obs[-1].label, (dwell[dominant] / total if total > 0 else None), len(obs), transitions
 
 
-def _distinct(idx: Sequence[int], markets: Sequence[str] | None) -> int:
-    """연속 구간의 일수 — 같은 미국 장(market_date)은 한 번만 센다(2026-10-22). market_date 를 모르면 행마다 하루."""
-    if not markets:
-        return len(idx)
-    return len({(markets[i] or f"#{i}") for i in idx})
-
-
-def stabilize(keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[float | None], cfg: Mapping, markets: Sequence[str] | None = None) -> list[str]:
+def stabilize(keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[float | None], cfg: Mapping) -> list[str]:
     """
     OFFICIAL (confirmed) regime — 인과적(causal) 상태 기계. 날짜 i 의 공식 regime 은 i 까지의 raw 만 본다(미래를 보지 않는다 → 과거 값은 뒤에 날이
     붙어도 바뀌지 않는다). 새 regime K 로 바뀌는 조건(둘 중 하나):
-      (a) 오늘까지 연속 min_dwell_days 거래일이 raw K (dwell 이 있으면 min_dwell_share 이상인 날만 센다) — 같은 미국 장(markets)은 하루로 센다
+      (a) 오늘까지 연속 min_dwell_days 거래일이 raw K (dwell 이 있으면 min_dwell_share 이상인 날만 센다)
       (b) 오늘 확신 ≥ strong_evidence
     그 외의 날은 직전 공식 regime 이 이어진다(raw 는 '후보 신호' 로만 남는다). 첫날은 raw 그대로.
     """
@@ -101,76 +94,27 @@ def stabilize(keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[
         if cur is None:
             cur = k
         elif k != cur:
-            idx: list[int] = []
+            run = 0
             j = i
             while j >= 0 and counts(j, k):
-                idx.append(j); j -= 1
-            if _distinct(idx, markets) >= min_days or (strengths[i] >= strong and counts(i, k)):
+                run += 1; j -= 1
+            if run >= min_days or (strengths[i] >= strong and counts(i, k)):
                 cur = k
         out.append(cur)
     return out
 
 
-def raw_run(keys: Sequence[str], markets: Sequence[str] | None = None) -> int:
-    """오늘까지 같은 raw 가 이어진 거래일 수 (RAW SIGNAL PERSISTENCE) — 같은 미국 장(markets)은 한 번만 센다."""
+def raw_run(keys: Sequence[str]) -> int:
+    """오늘까지 같은 raw 가 이어진 거래일 수 (RAW SIGNAL PERSISTENCE)."""
     if not keys:
         return 0
-    idx = [len(keys) - 1]
-    for i in range(len(keys) - 2, -1, -1):
-        if keys[i] == keys[-1]:
-            idx.append(i)
+    n = 1
+    for a, b in zip(reversed(keys[:-1]), reversed(keys[1:])):
+        if a == b:
+            n += 1
         else:
             break
-    return _distinct(idx, markets)
-
-
-def regime_state(days: Sequence[RegimeDay], hcfg: Mapping, *, live: RegimeLiveSignal | None = None) -> RegimeState:
-    """
-    공식 regime 판정 — MARKET NOW 와 MARKET REGIME HISTORY 가 함께 쓰는 하나의 계산 (2026-10-22).
-    days = Daily Snapshot 만(장중 LIVE 제외). 연속일수는 서로 다른 미국 장(market_date)만 센다. 장중 LIVE 는 live_signal 로 붙일 뿐 공식 판정·일수에 넣지 않는다.
-      CONFIRMED  마지막 Daily Snapshot 에서 공식 regime 이 바뀌었다 (연속 required_days 또는 강한 증거)
-      PENDING    마지막 Daily Snapshot 의 raw 가 공식과 다르다 — 후보, transition_days / required_days
-      STABLE     raw 가 공식과 같다
-    """
-    labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
-    inv_tax = {str(v["key"]): str(k) for k, v in (hcfg.get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
-    dcfg = hcfg.get("display") or {}; need = int(dcfg.get("min_dwell_days", 2)); strong = float(dcfg.get("strong_evidence", 80))
-    tcfg = hcfg.get("state_text") or {}
-    last = days[-1]
-    markets = [d.market_date for d in days]
-    keys = [d.dominant_regime for d in days]
-    n = raw_run(keys, markets)
-    off = last.display_regime
-    # 공식 regime 이 이어진 Daily Snapshot 수 (같은 미국 장은 한 번)
-    idx = [len(days) - 1]
-    for i in range(len(days) - 2, -1, -1):
-        if days[i].display_regime == off:
-            idx.append(i)
-        else:
-            break
-    off_days = _distinct(idx, markets)
-    prev = next((d.display_regime for d in reversed(days[: len(days) - len(idx)])), None)
-    raw = last.dominant_regime
-    if last.is_transition:
-        by = "persistence" if n >= need else "strong_evidence"
-        status = "CONFIRMED"
-        text = f"CONFIRMED · {min(n, need)} / {need}" if by == "persistence" else f"CONFIRMED · 강한 증거 {last.evidence_strength:.0f}%"
-        ko = str(tcfg.get("confirmed" if by == "persistence" else "confirmed_strong", "")).format(prev=labels.get(prev or "", prev or ""), cur=labels.get(off, off), n=min(n, need), need=need,
-                                                                                                    conf=f"{last.evidence_strength:.0f}", strong=f"{strong:.0f}")
-    elif raw != off:
-        by = ""
-        status, text = "PENDING", f"PENDING · {n} / {need}"
-        ko = str(tcfg.get("pending", "")).format(raw=labels.get(raw, raw), cur=labels.get(off, off), n=n, need=need)
-    else:
-        by = ""
-        status, text = "STABLE", f"STABLE · {off_days}D"
-        ko = str(tcfg.get("stable", "")).format(cur=labels.get(off, off), n=off_days)
-    return RegimeState(official_regime=off, official_state=inv_tax.get(off, last.raw_state), official_label=labels.get(off, off), official_days=off_days,
-                       previous_regime=prev, previous_label=labels.get(prev, prev) if prev else None,
-                       raw_signal=raw, raw_state=last.raw_state if _tax(hcfg, last.raw_state)[0] == raw else inv_tax.get(raw, last.raw_state), raw_label=labels.get(raw, raw),
-                       candidate_regime=raw if raw != off else None, candidate_label=labels.get(raw, raw) if raw != off else None,
-                       transition_days=n, required_days=need, transition_status=status, transition_text=text, transition_status_ko=ko,  # type: ignore[arg-type]
-                       confirmed_by=by, evidence_strength=last.evidence_strength, snapshot_date=last.date, market_date=last.market_date, live_signal=live)
+    return n
 
 
 def build_regime_history(
@@ -181,12 +125,14 @@ def build_regime_history(
     as_of: datetime | None = None,
     stored_days: int | None = None,
     horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None,
+    include_intraday: bool = False,
 ) -> RegimeHistory | None:
     """
     history = MarketStateHistory. 없거나 비면 None — 카드를 숨긴다.
 
     history.date_basis='kst_snapshot' 이면 points 는 KST Daily Snapshot 날짜의 daily 값이고 history.intraday 는 장중 LIVE 다.
-    공식 판정(state)은 daily 값만으로 정하고, 장중 LIVE 는 state.live_signal(후보 신호)로만 붙인다 — MARKET NOW 도 같은 state 를 쓴다(2026-10-22).
+      include_intraday=False (기본) → daily 띠만으로 만든 카드 + intraday 요약(장중 값을 daily 뒤에 이어 같은 규칙으로 본 공식 판정)
+      include_intraday=True         → daily + 장중 LIVE 를 한 sequence 로 본 결과 (실시간 MARKET NOW 의 공식 판정이 쓴다)
     """
     points = list(getattr(history, "points", []) or [])
     if not points:
@@ -202,39 +148,30 @@ def build_regime_history(
         by_date.setdefault(o.as_of.astimezone(timezone.utc).date() if o.as_of.tzinfo else o.as_of.date(), []).append(o)
 
     rows, raw_keys, strengths, dwells = _rows(points, by_date, hcfg)
-    live_row = _rows([intr], by_date, hcfg)[0][0] if intr is not None else None
-    out = finish_regime_history(rows, raw_keys, strengths, dwells, hcfg, history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"),
-                                footnote=str(getattr(history, "footnote", "") or ""), stored_days=stored_days, horizon_z=horizon_z,
-                                live=live_signal_of(live_row, out_days_market(rows), hcfg) if live_row is not None else None)
+    keep = dict(history_mode=str(getattr(history, "history_mode", "recomputed") or "recomputed"), footnote=str(getattr(history, "footnote", "") or ""),
+                stored_days=stored_days, horizon_z=horizon_z)
+    if intr is not None:
+        r2, k2, s2, w2 = _rows([intr], by_date, hcfg)
+        r2[0]["date"] = f"{r2[0]['date']} LIVE"  # 같은 KST 날짜의 daily 칸과 구분 — 장중 값이다
+        full = finish_regime_history(rows + r2, raw_keys + k2, strengths + s2, dwells + w2, hcfg, **keep)
+        if include_intraday:
+            return full.model_copy(update={"date_basis": basis, "gaps": [str(g) for g in getattr(history, "gaps", []) or []]})
+    out = finish_regime_history(rows, raw_keys, strengths, dwells, hcfg, **keep)
     upd: dict = {"date_basis": basis, "gaps": [g.isoformat() if hasattr(g, "isoformat") else str(g) for g in getattr(history, "gaps", []) or []]}
     if basis == "kst_snapshot":
         from ..history.dates import load_rule
         upd["snapshot_time"] = load_rule().label
-    if live_row is not None:
-        upd["intraday"] = intraday_summary(out, live_row, hcfg)
+    if intr is not None:
+        upd["intraday"] = intraday_summary(full, r2[0], hcfg)
     return out.model_copy(update=upd)
 
 
-def out_days_market(rows: Sequence[Mapping]) -> str:
-    return str(rows[-1].get("market_date") or "") if rows else ""
-
-
-def live_signal_of(row: Mapping, last_market: str, hcfg: Mapping) -> RegimeLiveSignal:
+def intraday_summary(full: RegimeHistory, row: Mapping, hcfg: Mapping) -> RegimeIntraday:
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
-    key = str(row.get("dominant_regime") or "")
-    mk = str(row.get("market_date") or "")
-    return RegimeLiveSignal(state=str(row.get("raw_state") or ""), regime=key, label=labels.get(key, key), as_of=str(row.get("data_asof") or ""), market_date=mk,
-                            same_market_date=(not mk or not last_market or mk <= last_market), evidence_strength=row.get("evidence_strength"))
-
-
-def intraday_summary(daily: RegimeHistory, row: Mapping, hcfg: Mapping) -> RegimeIntraday:
-    """장중 LIVE 요약 — official_* 는 daily 공식 판정 그대로(장중 값이 공식을 바꾸지 않는다)."""
-    labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
-    st = daily.state
     return RegimeIntraday(date=str(row["date"]).split(" ")[0], as_of=str(row.get("data_asof") or ""), market_date=str(row.get("market_date") or ""), raw_state=str(row["raw_state"]),
                           raw_regime=str(row["dominant_regime"]), raw_label=labels.get(str(row["dominant_regime"]), str(row["dominant_regime"])), evidence_strength=float(row["evidence_strength"]),
-                          official_regime=daily.current_regime, official_label=daily.current_label, transition_status=st.transition_status if st else daily.transition_status,
-                          transition_status_ko=st.transition_status_ko if st else daily.transition_status_ko, calculated_at=str(row.get("calculated_at") or ""), source=str(row.get("source") or "LIVE"))
+                          official_regime=full.current_regime, official_label=full.current_label, transition_status=full.transition_status,
+                          transition_status_ko=full.transition_status_ko, calculated_at=str(row.get("calculated_at") or ""), source=str(row.get("source") or "LIVE"))
 
 
 def _rows(points: Sequence, by_date: Mapping[date, list[StateObservation]], hcfg: Mapping) -> tuple[list[dict], list[str], list[float], list[float | None]]:
@@ -277,13 +214,12 @@ def _rows(points: Sequence, by_date: Mapping[date, list[StateObservation]], hcfg
 
 def finish_regime_history(rows: Sequence[Mapping], raw_keys: Sequence[str], strengths: Sequence[float], dwells: Sequence[float | None], hcfg: Mapping, *,
                           history_mode: str = "recomputed", footnote: str = "", stored_days: int | None = None,
-                          horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None, live: RegimeLiveSignal | None = None) -> RegimeHistory:
+                          horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None) -> RegimeHistory:
     """하루 한 줄들 → 공식(display) regime · 구간 · 전환 · 비중 · heat. 줄 값은 그대로 쓰고 파생값만 이 sequence 에서 만든다."""
     rows = [dict(r) for r in rows]
     hi, lo = [float(x) for x in hcfg.get("heat_arrow", [1.5, 0.5])]
     drivers_cfg = list(hcfg.get("drivers") or [])
-    markets = [str(r.get("market_date") or "") for r in rows]
-    disp = stabilize(raw_keys, strengths, dwells, hcfg, markets if any(markets) else None)
+    disp = stabilize(raw_keys, strengths, dwells, hcfg)
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
     days: list[RegimeDay] = []
     for i, r in enumerate(rows):
@@ -370,8 +306,19 @@ def finish_regime_history(rows: Sequence[Mapping], raw_keys: Sequence[str], stre
     cur = blocks[-1]; prev_b = blocks[-2] if len(blocks) >= 2 else None
     last = days[-1]
     raw_today = None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime)
-    # ── CANONICAL CURRENT REGIME (2026-10-22): MARKET NOW 와 같은 regime_state — 공식 = Daily Snapshot 의 확정 상태, raw = 후보, 장중 LIVE 는 live_signal ──
-    st = regime_state(days, hcfg, live=live)
+    # ── CANONICAL CURRENT REGIME: 공식 = display(확정) · raw = 오늘 후보 · 전환 상태 ──
+    dcfg = hcfg.get("display") or {}; need_days = int(dcfg.get("min_dwell_days", 2))
+    rrun = raw_run(raw_keys)
+    inv_tax = {str(v["key"]): str(k) for k, v in (hcfg.get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
+    tcfg = hcfg.get("transition") or {}
+    if last.is_transition:
+        t_status, t_ko = "CHANGED", str(tcfg.get("changed", "")).format(prev=prev_b.label if prev_b else "", cur=cur.label)
+    elif last.dominant_regime == last.display_regime:
+        t_status, t_ko = "CONFIRMED", str(tcfg.get("confirmed", "")).format(cur=cur.label)
+    elif rrun >= need_days - 1:
+        t_status, t_ko = "TRANSITION_WATCH", str(tcfg.get("watch", "")).format(raw=labels.get(last.dominant_regime, last.dominant_regime), n=rrun, need=need_days)
+    else:
+        t_status, t_ko = "UNCONFIRMED_TRANSITION", str(tcfg.get("unconfirmed", "")).format(raw=labels.get(last.dominant_regime, last.dominant_regime), n=rrun, need=need_days)
     ranges = []
     for r in hcfg.get("ranges") or []:
         need = int(r["days"]); key = str(r["key"])
@@ -379,12 +326,13 @@ def finish_regime_history(rows: Sequence[Mapping], raw_keys: Sequence[str], stre
         ok = key == "1M" or have >= need  # 1M 은 재생으로 나온다; 나머지는 저장된 일별 스냅샷이 그만큼 있어야
         ranges.append(HistoryRange(key=key, days=need, available=ok, reason="" if ok else f"일별 스냅샷 {have}/{need}일 — 쌓이면 켜진다"))
     return RegimeHistory(
-        range="1M", ranges=ranges, current_regime=cur.regime, current_label=cur.label, duration_days=st.official_days, state=st,
+        range="1M", ranges=ranges, current_regime=cur.regime, current_label=cur.label, duration_days=cur.days,
         previous_regime=prev_b.regime if prev_b else None, previous_label=prev_b.label if prev_b else None, transitions_1m=total_tr,
         share_pct=next((s.share for s in share if s.regime == cur.regime), 0.0), raw_today=raw_today, days=days, blocks=blocks,
-        official_state_label=st.official_state, raw_regime=st.raw_signal, raw_label=st.raw_label,
-        raw_persistence_days=st.transition_days, required_days=st.required_days, transition_status=st.transition_status, transition_status_ko=st.transition_status_ko,
-        pending_regime=st.candidate_regime, pending_label=st.candidate_label, changed_today=bool(last.is_transition),
+        official_state_label=inv_tax.get(cur.regime, last.raw_state), raw_regime=last.dominant_regime, raw_label=labels.get(last.dominant_regime, last.dominant_regime),
+        raw_persistence_days=rrun, required_days=need_days, transition_status=t_status, transition_status_ko=t_ko,
+        pending_regime=None if last.dominant_regime == last.display_regime else last.dominant_regime,
+        pending_label=None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime), changed_today=bool(last.is_transition),
         composite=comp, composite_current=comp[-1] if comp and comp[-1] is not None else next((c for c in reversed(comp) if c is not None), None),
         composite_slope=slope, composite_slope_days=sd, drivers=heat, share=share, transitions=transitions, total_transitions=total_tr,
         palette=labels,

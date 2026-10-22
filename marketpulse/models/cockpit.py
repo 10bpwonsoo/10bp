@@ -33,47 +33,6 @@ class SparkPoint(Base):
     label: str
 
 
-class RegimeLiveSignal(Base):
-    """장중 LIVE 신호 — 공식 연속일수에 넣지 않는다. 같은 미국 장(market_date)이면 daily 신호와 같은 날로 본다."""
-
-    state: str = Field(description="StateLabel (RISK_ON …)")
-    regime: str = Field(default="", description="taxonomy key")
-    label: str = ""
-    as_of: str = ""
-    market_date: str = ""
-    same_market_date: bool = Field(default=True, description="마지막 Daily Snapshot 과 같은 미국 장 — 연속일수에 더하지 않는다")
-    evidence_strength: float | None = None
-
-
-class RegimeState(Base):
-    """
-    공식 regime 판정 (2026-10-22) — MARKET NOW 와 MARKET REGIME HISTORY 가 같은 이 값을 쓴다(engines/regime_history.regime_state).
-    official = Daily Snapshot sequence 에서 확정된 상태. 연속일수는 서로 다른 미국 장(market_date)만 센다. 장중 LIVE 는 live_signal 로만.
-    """
-
-    official_regime: str = Field(description="taxonomy key — 예: risk_on")
-    official_state: str = Field(default="", description="StateLabel — 예: RISK_ON")
-    official_label: str = Field(default="", description="화면 이름 — 예: Risk-On, Neutral / Mixed")
-    official_days: int = Field(default=0, description="공식 regime 이 이어진 Daily Snapshot 수")
-    previous_regime: str | None = None
-    previous_label: str | None = None
-    raw_signal: str = Field(default="", description="마지막 Daily Snapshot 의 raw 신호(taxonomy key)")
-    raw_state: str = ""
-    raw_label: str = ""
-    candidate_regime: str | None = Field(default=None, description="raw 신호가 공식과 다를 때 그 후보")
-    candidate_label: str | None = None
-    transition_days: int = Field(default=0, description="raw 신호가 이어진 서로 다른 미국 장 수")
-    required_days: int = 0
-    transition_status: Literal["PENDING", "CONFIRMED", "STABLE", "NO_HISTORY"] = "STABLE"
-    transition_text: str = Field(default="", description="예: 'PENDING · 1 / 2', 'CONFIRMED · 2 / 2'")
-    transition_status_ko: str = ""
-    confirmed_by: str = Field(default="", description="persistence · strong_evidence (CONFIRMED 일 때)")
-    evidence_strength: float | None = None
-    snapshot_date: str = ""
-    market_date: str = ""
-    live_signal: RegimeLiveSignal | None = None
-
-
 class MarketNow(Base):
     label: str
     secondary: str | None = None
@@ -98,8 +57,6 @@ class MarketNow(Base):
     conviction_trend: str = Field(default="STABLE", description="WEAKENING · STRENGTHENING · STABLE — 전일 대비 확신 변화")
     read: str = Field(default="", description="MARKET READ — 공식 regime 과 raw 신호의 관계 1~2문장")
     spark: list[SparkPoint] = Field(default_factory=list)
-    #: 공식 regime 판정 — MARKET REGIME HISTORY 의 state 와 같은 값 (2026-10-22)
-    state: RegimeState | None = None
     last_update: datetime
     coverage: str = ""
     latency: str = ""
@@ -565,8 +522,6 @@ class RegimeHistory(Base):
     snapshot_time: str = Field(default="", description="Daily Snapshot 기준 시각 — 예: '07:30 KST'")
     intraday: RegimeIntraday | None = None
     gaps: list[str] = Field(default_factory=list, description="창 안에서 저장된 daily snapshot 이 없는 평일")
-    #: 공식 regime 판정 — MARKET NOW 와 같은 값 (2026-10-22)
-    state: RegimeState | None = None
     range: str = "1M"
     ranges: list[HistoryRange] = Field(default_factory=list)
     current_regime: str

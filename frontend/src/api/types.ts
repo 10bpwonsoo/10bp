@@ -761,20 +761,8 @@ export type CkArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
 export interface CkKeyVariable { id: string; label: string; z: number; arrow: CkArrow; change_display: string }
 export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
   /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */
-  raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: CkTransitionStatus;
+  raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: "CONFIRMED" | "UNCONFIRMED_TRANSITION" | "TRANSITION_WATCH" | "CHANGED" | "NO_HISTORY";
   transition_status_ko: string; potential_change_text: string; required_days: number; conviction_trend: "WEAKENING" | "STRENGTHENING" | "STABLE"; read: string;
-  /** 공식 regime 판정 — History 의 state 와 같은 값 (2026-10-22) */
-  state?: CkRegimeState | null;
-}
-/** PENDING · CONFIRMED · STABLE (2026-10-22). 예전 저장본 값(CHANGED · TRANSITION_WATCH …)은 서버가 읽을 때 새 값으로 바꿔 보낸다 */
-export type CkTransitionStatus = "PENDING" | "CONFIRMED" | "STABLE" | "NO_HISTORY" | "CHANGED" | "TRANSITION_WATCH" | "UNCONFIRMED_TRANSITION";
-export interface CkRegimeLiveSignal { state: string; regime: string; label: string; as_of: string; market_date: string; same_market_date: boolean; evidence_strength: number | null }
-/** 공식 regime 판정 하나 — MARKET NOW 와 MARKET REGIME HISTORY 가 함께 쓴다. 연속일수는 서로 다른 미국 장(Daily Snapshot)만 센다 */
-export interface CkRegimeState {
-  official_regime: string; official_state: string; official_label: string; official_days: number; previous_regime: string | null; previous_label: string | null;
-  raw_signal: string; raw_state: string; raw_label: string; candidate_regime: string | null; candidate_label: string | null; transition_days: number; required_days: number;
-  transition_status: "PENDING" | "CONFIRMED" | "STABLE" | "NO_HISTORY"; transition_text: string; transition_status_ko: string; confirmed_by: string; evidence_strength: number | null;
-  snapshot_date: string; market_date: string; live_signal: CkRegimeLiveSignal | null;
 }
 export interface CkEvidence { id: string; label: string; z: number | null; display: string; context: boolean; available: boolean }
 export interface CkDriver { key: string; label: string; label_ko: string; direction: "up" | "down"; arrow: CkArrow; strength: number; importance: number; coverage: number; confirmed_by_regime: boolean; persistent: boolean; news_tone: number | null; evidence: CkEvidence[]; why: string; source: "market" | "alternative" }
@@ -823,7 +811,7 @@ export interface CkDriverHeat { key: string; label: string; values: (number | nu
 export interface CkRegimeShare { regime: string; label: string; days: number; share: number }
 export interface CkHistoryRange { key: string; days: number; available: boolean; reason: string }
 export interface CkRegimeHistory {
-  date_basis?: HistoryDateBasis; snapshot_time?: string; intraday?: CkRegimeIntraday | null; gaps?: string[]; state?: CkRegimeState | null;
+  date_basis?: HistoryDateBasis; snapshot_time?: string; intraday?: CkRegimeIntraday | null; gaps?: string[];
   range: string; ranges: CkHistoryRange[]; current_regime: string; current_label: string; duration_days: number; previous_regime: string | null; previous_label: string | null;
   transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
   composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;

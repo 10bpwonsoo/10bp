@@ -43,26 +43,6 @@ def _join(names: Sequence[str]) -> str:
     return "·".join(names)
 
 
-def tone_confirmation(cfg: Mapping, composite: float | None, regime_key: str | None, regime_label: str | None) -> tuple[str, str]:
-    """공식 regime 과 지금 tone 의 방향 비교 — 아카이브 화면도 저장된 composite 로 이 함수를 다시 쓴다(2026-10-22)."""
-    st = _state(cfg, composite)
-    conf_cfg = cfg.get("confirmation", {}) or {}
-    expected = (conf_cfg.get("expected") or {})
-    tone_dir = int(st.get("dir", 0))
-    if composite is None or not regime_key:
-        return "UNKNOWN", str(conf_cfg.get("unknown", ""))
-    exp = int(expected.get(regime_key, 0))
-    if exp == tone_dir:
-        confirmation, key = "CONFIRMED", "confirmed"
-    elif exp != 0 and tone_dir == 0:
-        confirmation, key = "PARTIAL", "partial_regime_ahead"
-    elif exp == 0 and tone_dir != 0:
-        confirmation, key = "PARTIAL", "partial_tone_ahead"
-    else:
-        confirmation, key = "DIVERGING", "diverging"
-    return confirmation, fix_particles(str(conf_cfg.get(key, "")).format(regime=regime_label or regime_key, tone_ko=st.get("ko", "")))
-
-
 def build_market_tone(thermo: SentimentThermometer | None, cfg: Mapping, *, regime_key: str | None, regime_label: str | None, history_points: Sequence[object] = ()) -> MarketTone | None:
     """history_points = 저장된 daily snapshot sequence(StateHistoryPoint, 날짜순). composite 1주 전의 보조 출처 — 재계산이 아니라 저장된 값이다."""
     if thermo is None:
@@ -141,7 +121,22 @@ def build_market_tone(thermo: SentimentThermometer | None, cfg: Mapping, *, regi
             key = "flat"
         change_read = fix_particles(str(ccfg.get(key, "")).format(**{"from": prev_st.get("ko", ""), "to": st.get("ko", "")}))
     # ── regime 확인 ─────────────────────────────────────────
-    confirmation, cread = tone_confirmation(cfg, thermo.composite, regime_key, regime_label)
+    conf_cfg = cfg.get("confirmation", {}) or {}
+    expected = (conf_cfg.get("expected") or {})
+    tone_dir = int(st.get("dir", 0))
+    if thermo.composite is None or not regime_key:
+        confirmation, cread = "UNKNOWN", str(conf_cfg.get("unknown", ""))
+    else:
+        exp = int(expected.get(regime_key, 0))
+        if exp == tone_dir:
+            confirmation, key = "CONFIRMED", "confirmed"
+        elif exp != 0 and tone_dir == 0:
+            confirmation, key = "PARTIAL", "partial_regime_ahead"
+        elif exp == 0 and tone_dir != 0:
+            confirmation, key = "PARTIAL", "partial_tone_ahead"
+        else:
+            confirmation, key = "DIVERGING", "diverging"
+        cread = fix_particles(str(conf_cfg.get(key, "")).format(regime=regime_label or regime_key, tone_ko=st.get("ko", "")))
     # ── MARKET TONE READ (≤2문장, 숫자 재낭독 없음) ─────────
     rcfg = cfg.get("read", {}) or {}
     supports = [c for c in comps if c.value is not None and c.value >= float(cfg["component_bands"]["mild"])]
@@ -150,7 +145,7 @@ def build_market_tone(thermo: SentimentThermometer | None, cfg: Mapping, *, regi
     sup = _join([c.label_ko or c.label for c in supports[:2]]); pre = _join([c.label_ko or c.label for c in pressures[:2]])
     sup_chg = [c.change_1w for c in supports[:2] if c.change_1w is not None]
     sup_trend = "changed_up" if sup_chg and sum(sup_chg) / len(sup_chg) >= float(ccfg.get("small", 8)) else "changed_down" if sup_chg and sum(sup_chg) / len(sup_chg) <= -float(ccfg.get("small", 8)) else "changed_flat"
-    d = int(st.get("dir", 0))
+    d = tone_dir
     if thermo.composite is None:
         first = ""
     elif d > 0:

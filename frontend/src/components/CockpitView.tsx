@@ -37,40 +37,28 @@ function Card({ title, note, area, children, testid, accent }: { title: string; 
   );
 }
 
-const TR_LABEL: Record<string, string> = { PENDING: "PENDING", CONFIRMED: "CONFIRMED", STABLE: "STABLE", NO_HISTORY: "NO HISTORY" };
-export const TR_COLOR: Record<string, string> = { PENDING: "var(--warn)", CONFIRMED: "var(--accent)", STABLE: "var(--ok)", NO_HISTORY: "var(--faint)" };
-const kstHM = (iso: string) => { const t = new Date(iso); return Number.isNaN(t.getTime()) ? "" : t.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }); };
+const TR_LABEL: Record<string, string> = { CONFIRMED: "CONFIRMED", UNCONFIRMED_TRANSITION: "UNCONFIRMED TRANSITION", TRANSITION_WATCH: "TRANSITION WATCH", CHANGED: "CHANGED", NO_HISTORY: "NO HISTORY" };
+const TR_COLOR: Record<string, string> = { CONFIRMED: "var(--ok)", UNCONFIRMED_TRANSITION: "var(--warn)", TRANSITION_WATCH: "var(--warn)", CHANGED: "var(--accent)", NO_HISTORY: "var(--faint)" };
 const TREND_KO: Record<string, string> = { WEAKENING: "약화", STRENGTHENING: "강화", STABLE: "유지" };
 
 function MarketNow({ c }: { c: Cockpit }) {
   const n = c.market_now; const col = LABEL_COLOR[n.label] ?? "var(--ink)";
   const last = new Date(n.last_update).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" });
   const rawDiffers = n.raw_label !== n.label;
-  const st = n.state ?? null;
   return (
     <Card title="Market Now" area="now" testid="ck-now" accent>
-      {/* 공식(confirmed) regime — MARKET REGIME HISTORY 와 같은 state(Daily Snapshot 기준). 현재 신호·장중 신호는 아래 칸 (2026-10-22) */}
-      <span className="ck-k mono">Official regime</span>
+      {/* 공식(confirmed) regime — MARKET REGIME HISTORY 의 CURRENT 와 같은 source. raw 는 아래 보조 줄 */}
       <div className="ck-now-label" style={{ color: col }} data-testid="ck-now-label">{n.label_text}</div>
       <div className="ck-now-meta mono">
         <span>Conviction <b style={{ color: CONV_COLOR[n.conviction] }}>{n.conviction}</b> <small>{n.confidence.toFixed(0)}%{n.conviction_trend !== "STABLE" ? ` · ${n.conviction_trend}` : ""}</small></span>
-        <span title="공식 regime 이 이어진 Daily Snapshot 수 — 같은 미국 장은 한 번">Regime Duration <b data-testid="ck-now-duration">{n.persistence_days}D</b></span>
-        {n.change_text ? <span>Change <b data-testid="ck-now-change">{n.change_text}</b></span> : n.potential_change_text ? <span title="Daily Snapshot 신호가 가리키는 방향 — 확정 전">Pending <b data-testid="ck-now-potential">{n.potential_change_text}</b></span> : null}
+        <span title="공식 regime 이 이어진 거래일 수">Regime Duration <b data-testid="ck-now-duration">{n.persistence_days}D</b></span>
+        {n.change_text ? <span>Change <b data-testid="ck-now-change">{n.change_text}</b></span> : n.potential_change_text ? <span title="raw 신호가 가리키는 방향 — 확정 전">{n.transition_status === "TRANSITION_WATCH" ? "Transition watch" : "Potential change"} <b data-testid="ck-now-potential">{n.potential_change_text}</b></span> : null}
       </div>
       <div className="ck-now-raw mono" data-testid="ck-now-raw" data-status={n.transition_status}>
-        <span className="ck-k">Current signal</span>
+        <span className="ck-k">RAW SIGNAL</span>
         <b style={{ color: rawDiffers ? LABEL_COLOR[n.raw_label] ?? "var(--ink)" : "var(--muted)" }}>{n.raw_text}{n.raw_secondary ? ` / ${LABEL_KO[n.raw_secondary] ?? n.raw_secondary}` : ""}</b>
-        {st?.snapshot_date ? <span className="ck-now-raw-src">Daily Snapshot {st.snapshot_date.slice(5).replace("-", "/")}{st.market_date ? ` · US ${st.market_date.slice(5).replace("-", "/")} close` : ""}</span> : <span />}
-        {st?.live_signal ? (
-          <>
-            <span className="ck-k">Live signal</span>
-            <b style={{ color: LABEL_COLOR[st.live_signal.state] ?? "var(--muted)" }} data-testid="ck-now-live">{st.live_signal.label.toUpperCase()}</b>
-            <span className="ck-now-raw-src">장중 {kstHM(st.live_signal.as_of)} · 공식 연속일수 제외</span>
-          </>
-        ) : null}
-        <span className="ck-k">Transition</span>
-        <b style={{ color: TR_COLOR[n.transition_status] ?? "var(--ink)" }} data-testid="ck-now-status">{st?.transition_text || (TR_LABEL[n.transition_status] ?? n.transition_status)}</b>
-        <span />
+        <span className="ck-k">Raw persistence</span><b>{n.raw_persistence_days}D</b>
+        <span className="ck-k">Status</span><b style={{ color: TR_COLOR[n.transition_status] ?? "var(--ink)" }} data-testid="ck-now-status">{TR_LABEL[n.transition_status] ?? n.transition_status}</b>
         {n.transition_status_ko ? <span className="ck-now-raw-ko">{n.transition_status_ko}</span> : null}
       </div>
       <div className="ck-kv" data-testid="ck-key-variables">
