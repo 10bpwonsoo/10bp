@@ -1,0 +1,71 @@
+# 조사용(2026-10-23) — Internet Archive 에 보존된 DRAMeXchange / TrendForce '공개' 가격 페이지 스냅샷이 2025-07 이후 얼마나 있는지 센다.
+# 유료 과거 다운로드 · 회원 전용 페이지 · 로그인은 쓰지 않는다(공개 홈·가격 페이지의 보존본만). 로그만 출력하고 아무것도 커밋하지 않는다. 조사가 끝나면 지운다.
+name: probe-archive-snapshots
+on:
+  push:
+    branches: [claude/market-pulse-ai-design-r7pmsm]
+    paths: [.github/workflows/probe-archive-snapshots.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: CDX counts per month
+        shell: bash
+        run: |
+          set +e
+          python3 - <<'PY'
+          import collections, json, time, urllib.request, urllib.parse
+          UA = {"User-Agent": "marketpulse-research/0.1 (public snapshot coverage check)"}
+          def get(u, t=90):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=t) as r:
+                      return r.status, r.read().decode("utf-8", "ignore")
+              except Exception as e:
+                  return getattr(e, "code", 0), str(e)[:200]
+          urls = ["dramexchange.com/", "www.dramexchange.com/", "www.dramexchange.com/Home/HomePrice*",
+                  "www.trendforce.com/price/dram/dram_spot", "www.trendforce.com/price/flash/wafer_spot", "www.trendforce.com/price/flash/flash_spot",
+                  "www.trendforce.com/price", "trendforce.com/price/dram/dram_spot"]
+          for u in urls:
+              q = urllib.parse.urlencode({"url": u, "from": "20250701", "to": "20261023", "output": "json", "fl": "timestamp,statuscode,mimetype,length", "filter": "statuscode:200", "collapse": "timestamp:8"})
+              st, b = get("https://web.archive.org/cdx/search/cdx?" + q)
+              try:
+                  rows = json.loads(b)[1:]
+              except Exception:
+                  print(f"== {u}: HTTP {st} {b[:150]}"); continue
+              days = sorted({r[0][:8] for r in rows})
+              per = collections.Counter(d[:6] for d in days)
+              print(f"== {u}: HTTP {st} days={len(days)} first={days[:1]} last={days[-1:]}")
+              print("   per month:", dict(sorted(per.items())))
+              time.sleep(2)
+          PY
+      - name: sample snapshots parse check
+        shell: bash
+        run: |
+          set +e
+          python3 - <<'PY'
+          import json, re, html, urllib.request, urllib.parse
+          UA = {"User-Agent": "marketpulse-research/0.1 (public snapshot coverage check)"}
+          def get(u):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=90) as r:
+                      return r.status, r.read().decode("utf-8", "ignore")
+              except Exception as e:
+                  return getattr(e, "code", 0), ""
+          for u in ["dramexchange.com/", "www.dramexchange.com/", "www.trendforce.com/price/dram/dram_spot", "www.trendforce.com/price/flash/wafer_spot"]:
+              q = urllib.parse.urlencode({"url": u, "from": "20251001", "to": "20251031", "output": "json", "fl": "timestamp", "filter": "statuscode:200", "limit": "3"})
+              st, b = get("https://web.archive.org/cdx/search/cdx?" + q)
+              try:
+                  ts = [r[0] for r in json.loads(b)[1:]]
+              except Exception:
+                  ts = []
+              for t in ts[:1]:
+                  st, page = get(f"https://web.archive.org/web/{t}id_/https://{u}")
+                  x = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<script.*?</script>|<style.*?</style>", "", page, flags=re.S))).split())
+                  print(f"== {u} @ {t}: HTTP {st} len={len(page)}")
+                  for k in ("Last Update", "DDR5 16Gb", "512Gb TLC", "256Gb TLC", "128Gb TLC"):
+                      i = x.find(k)
+                      print(f"   {k!r}:", x[i:i+170] if i >= 0 else "-")
+          PY
