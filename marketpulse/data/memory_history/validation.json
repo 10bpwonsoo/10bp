@@ -1,0 +1,48 @@
+{
+ "generated_at": "2026-10-23T01:35:51+00:00",
+ "spot": {
+  "DDR4_8G_ETT_SPOT": {
+   "dramexchange_daily_express": {
+    "first": "2025-08-11",
+    "last": "2026-10-22",
+    "obs": 296,
+    "duplicates": 0,
+    "gaps": [
+     [
+      "2026-02-13",
+      "2026-02-23",
+      10
+     ]
+    ],
+    "outliers": [],
+    "frequency": "daily"
+   }
+  },
+  "DDR4_8G_SPOT": {
+   "dramexchange_daily_express": {
+    "first": "2025-08-11",
+    "last": "2026-10-22",
+    "obs": 296,
+    "duplicates": 0,
+    "gaps": [
+     [
+      "2026-02-13",
+      "2026-02-23",
+      10
+     ]
+    ],
+    "outliers": [],
+    "frequency": "daily"
+   }
+  }
+ },
+ "contract": {
+  "DDR4_8G_CONTRACT": {
+   "first": "2025-07",
+   "last": "2026-09",
+   "obs": 14,
+   "outliers": [],
+   "duplicates": 0
+  }
+ }
+}
