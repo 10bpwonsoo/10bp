@@ -1,0 +1,2502 @@
+{
+ "tab_id": "ai_sentiment",
+ "note": "append-only daily snapshots — locked rows are never rewritten by routine updates",
+ "snapshots": [
+  {
+   "snapshot_date": "2026-09-04",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 59.6,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 67.3,
+    "breadth": 67.2,
+    "fundamentals": null,
+    "macro": 42.4
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-04T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.434443Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 60",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 67.3,
+     "breadth": 67.2,
+     "fundamentals": null,
+     "macro": 42.4
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-08",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 61.6,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 67.4,
+    "breadth": 68.8,
+    "fundamentals": null,
+    "macro": 47.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-08T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.451994Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 62",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 67.4,
+     "breadth": 68.8,
+     "fundamentals": null,
+     "macro": 47.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-09",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 54.3,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 73.0,
+    "breadth": 50.8,
+    "fundamentals": null,
+    "macro": 34.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-09T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.467979Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 54",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 73.0,
+     "breadth": 50.8,
+     "fundamentals": null,
+     "macro": 34.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-10",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 33.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 50.7,
+    "breadth": 32.8,
+    "fundamentals": null,
+    "macro": 12.8
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-10T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.484060Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 34",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 50.7,
+     "breadth": 32.8,
+     "fundamentals": null,
+     "macro": 12.8
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-11",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 59.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 67.9,
+    "breadth": 60.2,
+    "fundamentals": null,
+    "macro": 48.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-11T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.500502Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 60",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 67.9,
+     "breadth": 60.2,
+     "fundamentals": null,
+     "macro": 48.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-14",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 20.7,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 22.5,
+    "breadth": 29.6,
+    "fundamentals": null,
+    "macro": 9.4
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-14T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.515985Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 21",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 22.5,
+     "breadth": 29.6,
+     "fundamentals": null,
+     "macro": 9.4
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-15",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 23.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 24.1,
+    "breadth": 33.5,
+    "fundamentals": null,
+    "macro": 12.9
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-15T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.535040Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 24",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 24.1,
+     "breadth": 33.5,
+     "fundamentals": null,
+     "macro": 12.9
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-16",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 36.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 34.4,
+    "breadth": 46.9,
+    "fundamentals": null,
+    "macro": 28.8
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-16T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.551920Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 36",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 34.4,
+     "breadth": 46.9,
+     "fundamentals": null,
+     "macro": 28.8
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "FEAR",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-17",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 71.7,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 64.5,
+    "breadth": 75.0,
+    "fundamentals": null,
+    "macro": 77.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-17T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.568583Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 72",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 64.5,
+     "breadth": 75.0,
+     "fundamentals": null,
+     "macro": 77.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-18",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 50.6,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 55.2,
+    "breadth": 61.7,
+    "fundamentals": null,
+    "macro": 33.6
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-18T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.587363Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 51",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 55.2,
+     "breadth": 61.7,
+     "fundamentals": null,
+     "macro": 33.6
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-21",
+   "tab_id": "ai_sentiment",
+   "state": "EXTREME_GREED",
+   "state_label": "EXTREME GREED",
+   "state_label_ko": "과열된 투자심리",
+   "state_score": 82.4,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 84.6,
+    "breadth": 85.1,
+    "fundamentals": null,
+    "macro": 77.0
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-21T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.604243Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "EXTREME GREED 82",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 84.6,
+     "breadth": 85.1,
+     "fundamentals": null,
+     "macro": 77.0
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_GREED",
+     "breadth": "EXTREME_GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-22",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 75.6,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 83.5,
+    "breadth": 71.9,
+    "fundamentals": null,
+    "macro": 69.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-22T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.620313Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 76",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 83.5,
+     "breadth": 71.9,
+     "fundamentals": null,
+     "macro": 69.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-23",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 53.3,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 76.3,
+    "breadth": 59.4,
+    "fundamentals": null,
+    "macro": 18.5
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-23T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.637240Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 53",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 76.3,
+     "breadth": 59.4,
+     "fundamentals": null,
+     "macro": 18.5
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-24",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 47.0,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 63.6,
+    "breadth": 59.3,
+    "fundamentals": null,
+    "macro": 14.1
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-24T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.654796Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 47",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 63.6,
+     "breadth": 59.3,
+     "fundamentals": null,
+     "macro": 14.1
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-25",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 54.0,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 65.7,
+    "breadth": 66.4,
+    "fundamentals": null,
+    "macro": 27.1
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-25T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.672540Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 54",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 65.7,
+     "breadth": 66.4,
+     "fundamentals": null,
+     "macro": 27.1
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-28",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 26.1,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 31.9,
+    "breadth": 36.7,
+    "fundamentals": null,
+    "macro": 8.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-28T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.690274Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 26",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 31.9,
+     "breadth": 36.7,
+     "fundamentals": null,
+     "macro": 8.3
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-29",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 40.2,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 62.3,
+    "price": 32.0,
+    "breadth": 35.5,
+    "fundamentals": 66.1,
+    "macro": 13.4
+   },
+   "key_drivers": [
+    "AI Capex",
+    "HBM / Memory Fundamentals",
+    "Semi Fundamental Confirmation",
+    "−Credit Stress",
+    "−Real Yield",
+    "−Breadth >5DMA"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-09-29T00:45:02.311551Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-09-29T00:45:02.311551Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "NEUTRAL 40",
+   "payload": {
+    "components": {
+     "narrative": 62.3,
+     "price": 32.0,
+     "breadth": 35.5,
+     "fundamentals": 66.1,
+     "macro": 13.4
+    },
+    "component_states": {
+     "narrative": "GREED",
+     "price": "FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "GREED",
+     "macro": "EXTREME_FEAR"
+    },
+    "key_tension": "내러티브 · 펀더멘털은 투자심리를 지지하고 있지만 가격 · 확산도 · 매크로는 아직 이를 확인하지 못하고 있습니다.",
+    "read": "AI Capex · HBM / Memory Fundamentals는 여전히 지지적입니다. 그러나 가격 · 확산도 · 매크로가 따라오지 않고 Credit Stress · Real Yield가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "capex",
+      "label": "AI Capex",
+      "label_ko": "AI 설비투자 뉴스",
+      "component": "narrative",
+      "score": 72.1,
+      "display": "+18 · 2건"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 69.4,
+      "display": "+39 · POSITIVE"
+     },
+     {
+      "id": "semi_confirmation",
+      "label": "Semi Fundamental Confirmation",
+      "label_ko": "반도체 펀더멘털 확인",
+      "component": "fundamentals",
+      "score": 62.0,
+      "display": "PARTIAL"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 0.0,
+      "display": "+3.9σ"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 11.8,
+      "display": "+1.5σ (5일)"
+     },
+     {
+      "id": "above_ma5",
+      "label": "Breadth >5DMA",
+      "label_ko": "5일선 상회 비율",
+      "component": "breadth",
+      "score": 12.0,
+      "display": "12%"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-09-30",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 39.0,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 42.6,
+    "breadth": 53.9,
+    "fundamentals": null,
+    "macro": 19.7
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-09-30T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.707892Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 39",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 42.6,
+     "breadth": 53.9,
+     "fundamentals": null,
+     "macro": 19.7
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "EXTREME_FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-01",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 60.8,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 64.5,
+    "breadth": 71.9,
+    "fundamentals": null,
+    "macro": 45.1
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-01T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.726707Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 61",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 64.5,
+     "breadth": 71.9,
+     "fundamentals": null,
+     "macro": 45.1
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-02",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 63.8,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 59.8,
+    "breadth": 75.8,
+    "fundamentals": null,
+    "macro": 56.7
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-02T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.746062Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 64",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 59.8,
+     "breadth": 75.8,
+     "fundamentals": null,
+     "macro": 56.7
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-05",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 62.0,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 65.7,
+    "breadth": 75.8,
+    "fundamentals": null,
+    "macro": 43.6
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-05T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-07T05:27:39.763205Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 62",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 65.7,
+     "breadth": 75.8,
+     "fundamentals": null,
+     "macro": 43.6
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-06",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 66.8,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 70.8,
+    "price": 65.7,
+    "breadth": 71.8,
+    "fundamentals": 73.3,
+    "macro": 54.2
+   },
+   "key_drivers": [
+    "Credit Stress",
+    "AI Basket 1M",
+    "GPU Demand",
+    "−USD",
+    "−Real Yield",
+    "−Long-End Rates"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-06T07:40:10.261908Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-06T07:40:10.261908Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "GREED 67",
+   "payload": {
+    "components": {
+     "narrative": 70.8,
+     "price": 65.7,
+     "breadth": 71.8,
+     "fundamentals": 73.3,
+     "macro": 54.2
+    },
+    "component_states": {
+     "narrative": "GREED",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "GREED",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "내러티브 · 가격 · 확산도 · 펀더멘털이 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "Credit Stress · AI Basket 1M은 여전히 지지적입니다. 그러나 USD · Real Yield가 sentiment 를 압박하고 있습니다.",
+    "secondary": "BALANCED",
+    "support": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 100.0,
+      "display": "-3.6σ"
+     },
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 88.8,
+      "display": "+7.8%"
+     },
+     {
+      "id": "gpu_demand",
+      "label": "GPU Demand",
+      "label_ko": "GPU 수요 뉴스",
+      "component": "narrative",
+      "score": 84.9,
+      "display": "+28 · 5건"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "usd",
+      "label": "USD",
+      "label_ko": "달러",
+      "component": "macro",
+      "score": 25.5,
+      "display": "+1.0σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 31.2,
+      "display": "+0.8σ"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 34.8,
+      "display": "+0.6σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-07",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 68.2,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 69.5,
+    "price": 74.1,
+    "breadth": 80.0,
+    "fundamentals": 69.0,
+    "macro": 47.1
+   },
+   "key_drivers": [
+    "AI Basket 1M",
+    "Breadth >20DMA",
+    "S&P 500",
+    "−USD",
+    "−Credit Stress",
+    "−Real Yield"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-07T04:23:51.509390Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-07T04:23:51.509390Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "GREED 68",
+   "payload": {
+    "components": {
+     "narrative": 69.5,
+     "price": 74.1,
+     "breadth": 80.0,
+     "fundamentals": 69.0,
+     "macro": 47.1
+    },
+    "component_states": {
+     "narrative": "GREED",
+     "price": "GREED",
+     "breadth": "EXTREME_GREED",
+     "fundamentals": "GREED",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "내러티브 · 가격 · 확산도 · 펀더멘털이 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "AI Basket 1M · Breadth >20DMA는 여전히 지지적입니다. 그러나 USD · Credit Stress가 sentiment 를 압박하고 있습니다.",
+    "secondary": "BALANCED",
+    "support": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 89.3,
+      "display": "+7.9%"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 88.0,
+      "display": "88%"
+     },
+     {
+      "id": "spx",
+      "label": "S&P 500",
+      "label_ko": "S&P 500",
+      "component": "macro",
+      "score": 78.5,
+      "display": "+1.1σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "usd",
+      "label": "USD",
+      "label_ko": "달러",
+      "component": "macro",
+      "score": 33.2,
+      "display": "+0.7σ (5일)"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 36.8,
+      "display": "+0.5σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 37.8,
+      "display": "+0.5σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-08",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 50.1,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 42.8,
+    "breadth": 48.5,
+    "fundamentals": null,
+    "macro": 60.7
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-08T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:16:11.666906Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 50",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 42.8,
+     "breadth": 48.5,
+     "fundamentals": null,
+     "macro": 60.7
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "NEUTRAL",
+     "breadth": "NEUTRAL",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-09",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 65.5,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 68.9,
+    "breadth": 63.3,
+    "fundamentals": null,
+    "macro": 63.5
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-09T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-12T06:16:11.682201Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "GREED 66",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 68.9,
+     "breadth": 63.3,
+     "fundamentals": null,
+     "macro": 63.5
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-12",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 60.6,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 49.8,
+    "price": 68.9,
+    "breadth": 63.2,
+    "fundamentals": 52.9,
+    "macro": 64.4
+   },
+   "key_drivers": [
+    "AI Basket 1M",
+    "Long-End Rates",
+    "Real Yield",
+    "−Credit Stress",
+    "−Semi Fundamental Confirmation",
+    "−AI News Tone"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-12T06:09:54.750991Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-12T06:09:54.750991Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "GREED 61",
+   "payload": {
+    "components": {
+     "narrative": 49.8,
+     "price": 68.9,
+     "breadth": 63.2,
+     "fundamentals": 52.9,
+     "macro": 64.4
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "NEUTRAL",
+     "macro": "GREED"
+    },
+    "key_tension": "가격 · 확산도 · 매크로가 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "AI Basket 1M · Long-End Rates는 여전히 지지적입니다. 그러나 Credit Stress · Semi Fundamental Confirmation이 sentiment 를 압박하고 있습니다.",
+    "secondary": "PRICE AHEAD OF NARRATIVE",
+    "support": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 92.5,
+      "display": "+8.5%"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 88.8,
+      "display": "-1.6σ"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 86.8,
+      "display": "-1.5σ"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 22.0,
+      "display": "+1.1σ"
+     },
+     {
+      "id": "semi_confirmation",
+      "label": "Semi Fundamental Confirmation",
+      "label_ko": "반도체 펀더멘털 확인",
+      "component": "fundamentals",
+      "score": 30.0,
+      "display": "WEAK"
+     },
+     {
+      "id": "ai_news_tone",
+      "label": "AI News Tone",
+      "label_ko": "AI 뉴스 톤",
+      "component": "narrative",
+      "score": 39.7,
+      "display": "-8 · 12건"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-13",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 43.4,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 40.9,
+    "price": 40.9,
+    "breadth": 36.5,
+    "fundamentals": 46.0,
+    "macro": 54.1
+   },
+   "key_drivers": [
+    "Long-End Rates",
+    "Real Yield",
+    "AI Basket 1M",
+    "−Advancing",
+    "−AI Basket Price",
+    "−Credit Stress"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-13T00:12:16.061019Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-13T00:12:16.061019Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "migrated",
+   "summary": "NEUTRAL 43",
+   "payload": {
+    "components": {
+     "narrative": 40.9,
+     "price": 40.9,
+     "breadth": 36.5,
+     "fundamentals": 46.0,
+     "macro": 54.1
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "NEUTRAL",
+     "breadth": "FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Long-End Rates · Real Yield는 여전히 지지적입니다. 그러나 확산도가 따라오지 않고 Advancing · AI Basket Price가 sentiment 를 압박하고 있습니다.",
+    "secondary": "BALANCED",
+    "support": [
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 88.8,
+      "display": "-1.6σ"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 86.8,
+      "display": "-1.5σ"
+     },
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 71.2,
+      "display": "+4.2%"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 12.0,
+      "display": "12%"
+     },
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 18.8,
+      "display": "-1.2σ"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 22.0,
+      "display": "+1.1σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-14",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 32.3,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 38.1,
+    "price": 12.3,
+    "breadth": 18.5,
+    "fundamentals": 57.8,
+    "macro": 46.2
+   },
+   "key_drivers": [
+    "Long-End Rates",
+    "Real Yield",
+    "HBM / Memory Fundamentals",
+    "−AI Basket Price",
+    "−AI Relative Strength",
+    "−Advancing"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-14T23:31:59.950733Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-14T23:36:54.021621Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "FEAR 32",
+   "payload": {
+    "components": {
+     "narrative": 38.1,
+     "price": 12.3,
+     "breadth": 18.5,
+     "fundamentals": 57.8,
+     "macro": 46.2
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "EXTREME_FEAR",
+     "breadth": "EXTREME_FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "내러티브 · 가격 · 확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Long-End Rates · Real Yield는 여전히 지지적입니다. 그러나 내러티브 · 가격 · 확산도가 따라오지 않고 AI Basket Price · AI Relative Strength가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 94.8,
+      "display": "-1.8σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 85.0,
+      "display": "-1.4σ (5일)"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 80.0,
+      "display": "+60 · STRONG"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 0.0,
+      "display": "-2.6σ"
+     },
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 0.0,
+      "display": "-2.4σ vs NDX"
+     },
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 3.0,
+      "display": "3%"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-15",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 36.5,
+   "confidence": 80.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 12.9,
+    "breadth": 27.0,
+    "fundamentals": 57.8,
+    "macro": 59.4
+   },
+   "key_drivers": [
+    "USD",
+    "Long-End Rates",
+    "Real Yield",
+    "−AI Relative Strength",
+    "−AI Basket Price",
+    "−Credit Stress"
+   ],
+   "data_coverage": 0.8,
+   "data_asof": "2026-10-15T22:30:00Z",
+   "missing_components": [
+    "narrative"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-21T06:44:10.461702Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "FEAR 36",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 12.9,
+     "breadth": 27.0,
+     "fundamentals": 57.8,
+     "macro": 59.4
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "가격 · 확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "USD · Long-End Rates는 여전히 지지적입니다. 그러나 가격 · 확산도가 따라오지 않고 AI Relative Strength · AI Basket Price가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "usd",
+      "label": "USD",
+      "label_ko": "달러",
+      "component": "macro",
+      "score": 95.2,
+      "display": "-1.8σ"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 87.8,
+      "display": "-1.5σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 84.5,
+      "display": "-1.4σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 0.0,
+      "display": "-2.2σ vs NDX"
+     },
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 6.5,
+      "display": "-1.7σ (5일)"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 7.8,
+      "display": "+1.7σ"
+     }
+    ],
+    "basis": [
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-16",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 24.3,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 4.2,
+    "breadth": 11.7,
+    "fundamentals": null,
+    "macro": 61.9
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-10-16T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-21T06:45:13.230131Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 24",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 4.2,
+     "breadth": 11.7,
+     "fundamentals": null,
+     "macro": 61.9
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_FEAR",
+     "breadth": "EXTREME_FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "GREED"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-19",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 33.9,
+   "confidence": 80.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 6.0,
+    "breadth": 32.0,
+    "fundamentals": 57.8,
+    "macro": 52.9
+   },
+   "key_drivers": [
+    "Real Yield",
+    "Long-End Rates",
+    "Advancing",
+    "−AI Relative Strength",
+    "−Volatility (VIX)",
+    "−AI Basket Price"
+   ],
+   "data_coverage": 0.8,
+   "data_asof": "2026-10-19T22:30:00Z",
+   "missing_components": [
+    "narrative"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-21T06:45:55.885285Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "FEAR 34",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 6.0,
+     "breadth": 32.0,
+     "fundamentals": 57.8,
+     "macro": 52.9
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "가격 · 확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Real Yield · Long-End Rates는 여전히 지지적입니다. 그러나 가격 · 확산도가 따라오지 않고 AI Relative Strength · Volatility (VIX)가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 98.5,
+      "display": "-1.9σ (5일)"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 97.0,
+      "display": "-1.9σ (5일)"
+     },
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 81.0,
+      "display": "81%"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 0.0,
+      "display": "-2.1σ vs NDX"
+     },
+     {
+      "id": "vix",
+      "label": "Volatility (VIX)",
+      "label_ko": "변동성",
+      "component": "macro",
+      "score": 1.0,
+      "display": "+2.0σ (5일)"
+     },
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 3.0,
+      "display": "-1.9σ (5일)"
+     }
+    ],
+    "basis": [
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-20",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 28.8,
+   "confidence": 85.0,
+   "component_scores": {
+    "narrative": 43.2,
+    "price": 3.2,
+    "breadth": 21.1,
+    "fundamentals": null,
+    "macro": 54.3
+   },
+   "key_drivers": [],
+   "data_coverage": 0.85,
+   "data_asof": "2026-10-20T23:59:59Z",
+   "missing_components": [
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-21T07:04:16.014907Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 29",
+   "payload": {
+    "components": {
+     "narrative": 43.2,
+     "price": 3.2,
+     "breadth": 21.1,
+     "fundamentals": null,
+     "macro": 54.3
+    },
+    "component_states": {
+     "narrative": "NEUTRAL",
+     "price": "EXTREME_FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-21",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 60.8,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 76.3,
+    "price": 52.8,
+    "breadth": 50.8,
+    "fundamentals": 58.1,
+    "macro": 67.2
+   },
+   "key_drivers": [
+    "Real Yield",
+    "Advancing",
+    "Long-End Rates",
+    "−AI Basket 1M",
+    "−Breadth >20DMA",
+    "−Credit Stress"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-21T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-22T04:52:02.077643Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "GREED 61",
+   "payload": {
+    "components": {
+     "narrative": 76.3,
+     "price": 52.8,
+     "breadth": 50.8,
+     "fundamentals": 58.1,
+     "macro": 67.2
+    },
+    "component_states": {
+     "narrative": "GREED",
+     "price": "NEUTRAL",
+     "breadth": "NEUTRAL",
+     "fundamentals": "NEUTRAL",
+     "macro": "GREED"
+    },
+    "key_tension": "내러티브 · 매크로가 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "Real Yield · Advancing는 여전히 지지적입니다. 그러나 AI Basket 1M · Breadth >20DMA가 sentiment 를 압박하고 있습니다.",
+    "secondary": "NARRATIVE AHEAD OF PRICE",
+    "support": [
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 89.0,
+      "display": "-1.6σ (5일)"
+     },
+     {
+      "id": "advancing",
+      "label": "Advancing",
+      "label_ko": "상승 종목 비율",
+      "component": "breadth",
+      "score": 84.0,
+      "display": "84%"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 83.5,
+      "display": "-1.3σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 15.8,
+      "display": "-6.8%"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 22.0,
+      "display": "22%"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 25.2,
+      "display": "+1.0σ (5일)"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-22",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 30.4,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 28.9,
+    "price": 10.0,
+    "breadth": 10.8,
+    "fundamentals": 57.8,
+    "macro": 56.2
+   },
+   "key_drivers": [
+    "Credit Stress",
+    "HBM / Memory Fundamentals",
+    "Real Yield",
+    "−AI Basket Price",
+    "−AI Basket 1M",
+    "−Volatility (VIX)"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-22T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-10-22T23:57:52.276850Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "FEAR 30",
+   "payload": {
+    "components": {
+     "narrative": 28.9,
+     "price": 10.0,
+     "breadth": 10.8,
+     "fundamentals": 57.8,
+     "macro": 56.2
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "EXTREME_FEAR",
+     "breadth": "EXTREME_FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "내러티브 · 가격 · 확산도가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Credit Stress · HBM / Memory Fundamentals는 여전히 지지적입니다. 그러나 내러티브 · 가격 · 확산도가 따라오지 않고 AI Basket Price · AI Basket 1M이 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 84.2,
+      "display": "-1.4σ"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 80.0,
+      "display": "+60 · STRONG"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 79.5,
+      "display": "-1.2σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 0.0,
+      "display": "-2.6σ"
+     },
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 0.0,
+      "display": "-11.2%"
+     },
+     {
+      "id": "vix",
+      "label": "Volatility (VIX)",
+      "label_ko": "변동성",
+      "component": "macro",
+      "score": 0.0,
+      "display": "+2.2σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
+  }
+ ]
+}

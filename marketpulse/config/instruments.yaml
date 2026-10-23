@@ -1,0 +1,136 @@
+# Market Pulse AI — Instrument 레지스트리 (요구 3)
+#
+# 이 파일이 관측 대상의 단일 정의다. 어댑터도 엔진도 이 id 로만 서로를 참조한다.
+#
+# unit          : price | percent | index | bp | krw_bn | count | ratio
+# series_kind   : price(로그수익률 기반) | level(레벨 차분 기반)
+#                 금리는 level 이다. 4.20% -> 4.35% 를 "3.6% 상승" 이라 쓰면 안 된다.
+# higher_is_risk_on : 상승이 위험선호 강화를 뜻하는가. VIX 는 false.
+# calendar      : KRX | NYSE | 24H. 휴장 중인 시장의 factor 는 confidence 에서 제외한다.
+
+instruments:
+  # ── Equity ────────────────────────────────────────────
+  - {id: KOSPI,    name: KOSPI,            asset_class: equity, unit: index, series_kind: price, region: KR,     currency: KRW, higher_is_risk_on: true,  calendar: KRX,  tags: [korea, benchmark]}
+  - {id: KOSPI200, name: KOSPI 200,        asset_class: equity, unit: index, series_kind: price, region: KR,     currency: KRW, higher_is_risk_on: true,  calendar: KRX,  tags: [korea, largecap]}
+  - {id: KOSDAQ,   name: KOSDAQ,           asset_class: equity, unit: index, series_kind: price, region: KR,     currency: KRW, higher_is_risk_on: true,  calendar: KRX,  tags: [korea, smallcap]}
+  - {id: SPX,      name: S&P 500,          asset_class: equity, unit: index, series_kind: price, region: US,     currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [us, benchmark]}
+  - {id: NDX,      name: Nasdaq 100,       asset_class: equity, unit: index, series_kind: price, region: US,     currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [us, growth, tech]}
+  - {id: RUT,      name: Russell 2000,     asset_class: equity, unit: index, series_kind: price, region: US,     currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [us, smallcap, cyclical]}
+  - {id: HSCEI,    name: Hang Seng China,  asset_class: equity, unit: index, series_kind: price, region: CN,     currency: HKD, higher_is_risk_on: true,  calendar: NYSE, tags: [china]}
+  - {id: NIKKEI,   name: Nikkei 225,       asset_class: equity, unit: index, series_kind: price, region: JP,     currency: JPY, higher_is_risk_on: true,  calendar: NYSE, tags: [japan]}
+  - {id: SX5E,     name: Euro Stoxx 50,    asset_class: equity, unit: index, series_kind: price, region: EU,     currency: EUR, higher_is_risk_on: true,  calendar: NYSE, tags: [europe]}
+
+  # ── Sector / Theme proxy (upbit_cursor.py SectorReport 의 GICS 매핑을 승계) ──
+  - {id: XLK,  name: Information Technology, asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, tech]}
+  - {id: XLE,  name: Energy,                 asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, energy]}
+  - {id: XLF,  name: Financials,             asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, financials]}
+  - {id: XLU,  name: Utilities,              asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: false, calendar: NYSE, tags: [sector, defensive]}
+  - {id: XLY,  name: Consumer Discretionary, asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, consumer]}
+  - {id: SOXX, name: Semiconductors,         asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, semiconductor, ai]}
+  - {id: ITA,  name: Aerospace & Defense,    asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: false, calendar: NYSE, tags: [sector, defense]}
+  - {id: JETS, name: Airlines,               asset_class: equity, unit: price, series_kind: price, region: US, currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [sector, airlines]}
+  - {id: KRX_SEMI, name: KRX 반도체,         asset_class: equity, unit: index, series_kind: price, region: KR, currency: KRW, higher_is_risk_on: true,  calendar: KRX,  tags: [korea, sector, semiconductor]}
+  # 경기민감 vs 방어. GS 위험선호 지표(RAI)의 주식 하위 성분 중 하나인
+  # "Cyclicals vs Defensives" 를 ETF 비율로 옮긴 것이다. 비율이 오르면 시장이
+  # 경기 민감 쪽을 사고 있다는 뜻이라 위험선호의 재료가 된다.
+  - id: CYC_DEF
+    name: 경기민감/방어 (XLY/XLU)
+    asset_class: equity
+    unit: ratio
+    series_kind: price
+    region: US
+    currency: USD
+    higher_is_risk_on: true
+    calendar: NYSE
+    tags: [risk_appetite, derived]
+    derived_from: {op: ratio, a: XLY, b: XLU}
+
+  # ── Rates (단위는 percent, 변화는 bp 로 표시한다) ────────
+  - {id: US2Y,  name: US 2Y Yield,     asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, front]}
+  - {id: US10Y, name: US 10Y Yield,    asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, benchmark]}
+  - {id: US30Y, name: US 30Y Yield,    asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, long]}
+  - {id: KR3Y,  name: 국고 3년,         asset_class: rate, unit: percent, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX,  tags: [rates, korea]}
+  - {id: KR10Y, name: 국고 10년,        asset_class: rate, unit: percent, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX,  tags: [rates, korea]}
+  - {id: US5Y,  name: US 5Y Yield,     asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, us, belly]}
+  - {id: BE10Y, name: US 10Y Breakeven, asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, inflation_expectation]}
+  - {id: BE5Y,  name: US 5Y Breakeven,  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, inflation_expectation]}
+  # TIPS 실질금리 — 명목 = 실질 + 기대인플레이션 분해의 실측 쪽. FRED 일간(하루 지연)
+  - {id: TIPS10Y, name: US 10Y Real Yield (TIPS), asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, real_yield]}
+  - {id: TIPS5Y,  name: US 5Y Real Yield (TIPS),  asset_class: rate, unit: percent, series_kind: level, region: US, higher_is_risk_on: null, calendar: NYSE, tags: [rates, real_yield]}
+  - id: CURVE_2S10S
+    name: US 2s10s Curve
+    asset_class: rate
+    unit: bp
+    series_kind: level
+    region: US
+    higher_is_risk_on: true
+    calendar: NYSE
+    tags: [rates, curve, derived]
+    derived_from: {op: spread, a: US10Y, b: US2Y}
+
+  # ── FX ───────────────────────────────────────────────
+  - {id: USDKRW, name: USD/KRW, asset_class: fx, unit: price, series_kind: price, region: KR,     higher_is_risk_on: false, calendar: 24H, tags: [fx, korea]}
+  - {id: DXY,    name: 달러 인덱스, asset_class: fx, unit: index, series_kind: price, region: GLOBAL, higher_is_risk_on: false, calendar: 24H, tags: [fx, usd]}
+  - {id: USDJPY, name: USD/JPY, asset_class: fx, unit: price, series_kind: price, region: JP,     higher_is_risk_on: true,  calendar: 24H, tags: [fx, carry]}
+  - {id: EURUSD, name: EUR/USD, asset_class: fx, unit: price, series_kind: price, region: EU,     higher_is_risk_on: true,  calendar: 24H, tags: [fx]}
+  - {id: USDCNH, name: USD/CNH, asset_class: fx, unit: price, series_kind: price, region: CN,     higher_is_risk_on: false, calendar: 24H, tags: [fx, china]}
+
+  # ── Commodity ────────────────────────────────────────
+  - {id: WTI,    name: WTI 원유,   asset_class: commodity, unit: price, series_kind: price, region: GLOBAL, currency: USD, higher_is_risk_on: null, calendar: 24H, tags: [energy, oil]}
+  - {id: BRENT,  name: 브렌트 원유, asset_class: commodity, unit: price, series_kind: price, region: GLOBAL, currency: USD, higher_is_risk_on: null, calendar: 24H, tags: [energy, oil]}
+  - {id: GOLD,   name: 금,         asset_class: commodity, unit: price, series_kind: price, region: GLOBAL, currency: USD, higher_is_risk_on: false, calendar: 24H, tags: [metal, haven]}
+  - {id: COPPER, name: 구리,       asset_class: commodity, unit: price, series_kind: price, region: GLOBAL, currency: USD, higher_is_risk_on: true,  calendar: 24H, tags: [metal, cyclical, china]}
+  - {id: NATGAS, name: 천연가스,   asset_class: commodity, unit: price, series_kind: price, region: GLOBAL, currency: USD, higher_is_risk_on: null, calendar: 24H, tags: [energy]}
+  - id: COPPER_GOLD
+    name: Copper/Gold Ratio
+    asset_class: commodity
+    unit: ratio
+    series_kind: price
+    region: GLOBAL
+    higher_is_risk_on: true
+    calendar: 24H
+    tags: [growth_proxy, derived]
+    derived_from: {op: ratio, a: COPPER, b: GOLD}
+
+  # ── Volatility ───────────────────────────────────────
+  - {id: VIX,  name: VIX,            asset_class: volatility, unit: index, series_kind: price, region: US,     higher_is_risk_on: false, calendar: NYSE, tags: [vol, equity]}
+  - {id: MOVE, name: MOVE 채권변동성, asset_class: volatility, unit: index, series_kind: price, region: US,     higher_is_risk_on: false, calendar: NYSE, tags: [vol, rates]}
+  - {id: VKOSPI, name: V-KOSPI,      asset_class: volatility, unit: index, series_kind: price, region: KR,     higher_is_risk_on: false, calendar: KRX,  tags: [vol, korea]}
+  # 내재 − 실현 변동성 (변동성 프리미엄). 단위는 연율 변동성 %p 라 레벨
+  # 차분(level)으로 다룬다. 양수면 시장이 실현된 것보다 큰 변동을 값으로
+  # 치르고 있고(공포 프리미엄), 음수면 실현된 변동조차 반영하지 않는
+  # 안일함이다. 지정학 뉴스가 뜨거운데 이 값이 조용하면 그것이 괴리다.
+  - id: VIX_RV_SPX
+    name: VIX − S&P 실현변동성
+    asset_class: volatility
+    unit: index
+    series_kind: level
+    region: US
+    higher_is_risk_on: false
+    calendar: NYSE
+    tags: [vol, vol_premium, derived]
+    derived_from: {op: vol_premium, a: VIX, b: SPX}
+  - id: VKOSPI_RV_KOSPI
+    name: V-KOSPI − KOSPI 실현변동성
+    asset_class: volatility
+    unit: index
+    series_kind: level
+    region: KR
+    higher_is_risk_on: false
+    calendar: KRX
+    tags: [vol, vol_premium, korea, derived]
+    derived_from: {op: vol_premium, a: VKOSPI, b: KOSPI}
+
+  # ── Credit ───────────────────────────────────────────
+  - {id: US_HY_OAS, name: US HY OAS, asset_class: credit, unit: bp, series_kind: level, region: US, higher_is_risk_on: false, calendar: NYSE, tags: [credit, spread]}
+
+  # ── Flow (요구 3. 무료 API 가 사실상 없어 MOCK 의존도가 가장 높은 영역) ──
+  - {id: KR_FOREIGN_NET,     name: 외국인 순매수, asset_class: flow, unit: krw_bn, series_kind: level, region: KR, higher_is_risk_on: true, calendar: KRX, tags: [korea, flow]}
+  - {id: KR_INSTITUTION_NET, name: 기관 순매수,   asset_class: flow, unit: krw_bn, series_kind: level, region: KR, higher_is_risk_on: true, calendar: KRX, tags: [korea, flow]}
+  - {id: KR_RETAIL_NET,      name: 개인 순매수,   asset_class: flow, unit: krw_bn, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX, tags: [korea, flow]}
+  - {id: KR_TRADING_VALUE,   name: 거래대금,      asset_class: flow, unit: krw_bn, series_kind: level, region: KR, higher_is_risk_on: null, calendar: KRX, tags: [korea, liquidity]}
+
+  # ── Breadth ──────────────────────────────────────────
+  - {id: KOSPI_ADV_RATIO, name: KOSPI 상승종목 비율,   asset_class: breadth, unit: ratio, series_kind: level, region: KR, higher_is_risk_on: true, calendar: KRX, tags: [korea, breadth]}
+  - {id: KOSPI_NHNL,      name: KOSPI 신고가-신저가,   asset_class: breadth, unit: count, series_kind: level, region: KR, higher_is_risk_on: true, calendar: KRX, tags: [korea, breadth]}
+  - {id: SPX_ADV_RATIO,   name: S&P500 상승종목 비율,  asset_class: breadth, unit: ratio, series_kind: level, region: US, higher_is_risk_on: true, calendar: NYSE, tags: [us, breadth]}

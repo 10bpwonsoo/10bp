@@ -1,0 +1,20 @@
+{
+  "note": "한국 반도체 수출 — 관세청(1~10일·1~20일 잠정)·산업통상부(월간) 발표를 인용 보도로 확인해 적은 수기 파일(2026-10-23). 이 실행 환경은 관세청·산업부·KITA·ECOS 사이트에 직접 접속할 수 없다(네트워크 정책). 값은 보도에 실린 공식 발표 수치이고 출처를 남긴다. release_at 은 발표 시각(KST) — 그 시각 이전 화면에는 쓰지 않는다. 금액 단위: 억 달러.",
+  "unit": "100M USD",
+  "releases": [
+    {"period": "2025-10", "scope": "full", "release_at": "2025-11-01T09:00:00+09:00", "semis": 157.3, "semis_yoy": 25.4, "days": 20.0, "days_note": "총수출 595.7 / 일평균 29.8 으로 역산(보도에 조업일수 수치 깨짐)",
+     "tier": "TIER1_VIA_PRESS", "source": "산업통상자원부 2025년 10월 수출입동향(2025.11.1) — 뉴데일리·보도자료 인용", "url": "https://biz.newdaily.co.kr/site/data/html/2025/11/01/2025110100030.html"},
+    {"period": "2026-09", "scope": "1-20", "release_at": "2026-09-21T09:00:00+09:00", "semis": 341.2, "semis_yoy": 259.4, "days": 15.5, "days_prev": 16.5,
+     "tier": "TIER1_VIA_PRESS", "source": "관세청 9월 1~20일 수출입 현황(2026.9.21) — MTN 인용", "url": "https://news.mtn.co.kr/news-detail/2026092110234362698"},
+    {"period": "2026-09", "scope": "full", "release_at": "2026-10-01T09:00:00+09:00", "semis": 603.0, "semis_yoy": 263.0, "days": 21.5, "days_note": "총수출 1209.4 / 일평균 56.3 으로 역산",
+     "tier": "TIER1_VIA_PRESS", "source": "산업통상부 2026년 9월 수출입동향(2026.10.1) — MTN 인용", "url": "https://news.mtn.co.kr/news-detail/2026100109075980661"},
+    {"period": "2026-10", "scope": "1-10", "release_at": "2026-10-12T09:00:00+09:00", "semis": 122.0, "semis_yoy": 170.9, "days": 5.5, "days_prev": 3.5,
+     "tier": "TIER1_VIA_PRESS", "source": "관세청 10월 1~10일 수출입 현황(2026.10.12) — SBS Biz 인용", "url": "https://biz.sbs.co.kr/amp/article/20000339279"},
+    {"period": "2026-10", "scope": "1-20", "release_at": "2026-10-21T09:00:00+09:00", "semis": 275.16, "semis_yoy": 222.5, "days": 13.0, "days_prev": 10.5,
+     "tier": "TIER1_VIA_PRESS", "source": "관세청 10월 1~20일 수출입 현황(2026.10.21) — 이투데이·넥스트데일리 인용", "url": "https://www.etoday.co.kr/news/view/2638214"}
+  ],
+  "working_days": {
+    "2026-10": {"days": 22.0, "basis": "달력 계산(평일 1 · 토요일 0.5 · 10/3 개천절·10/5 대체공휴일·10/9 한글날 제외) — 1~20일 13일이 관세청 발표와 일치", "official": false},
+    "2026-09": {"days": 21.5, "basis": "산업통상부 발표(총수출/일평균 역산)", "official": true}
+  }
+}

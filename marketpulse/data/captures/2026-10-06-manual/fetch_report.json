@@ -1,0 +1,35 @@
+{
+ "as_of": "2026-10-06T07:40:10.261908+00:00",
+ "coverage": 0.7592592592592593,
+ "missing": [
+  "KOSPI200",
+  "KRX_SEMI",
+  "KR3Y",
+  "KR10Y",
+  "VKOSPI",
+  "VKOSPI_RV_KOSPI",
+  "KR_FOREIGN_NET",
+  "KR_INSTITUTION_NET",
+  "KR_RETAIL_NET",
+  "KR_TRADING_VALUE",
+  "KOSPI_ADV_RATIO",
+  "KOSPI_NHNL",
+  "SPX_ADV_RATIO"
+ ],
+ "failed": [
+  [
+   "KOSPI200",
+   "yahoo 1개뿐 — 최소 20개 필요"
+  ]
+ ],
+ "fred_key_present": true,
+ "extra_rates": {
+  "got": [
+   "BE5Y",
+   "TIPS10Y",
+   "TIPS5Y",
+   "US5Y"
+  ],
+  "failed": []
+ }
+}

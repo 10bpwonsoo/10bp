@@ -1,0 +1,94 @@
+# 유가 탭 — 시장 원인 판별. 유가를 지금 움직이는 driver 를 네 후보(거시·유동성 / 수요 / 공급 / 지정학 프리미엄)로
+# 나누고, 각 후보의 '발자국' 이 시장 데이터에 얼마나 찍혀 있는지를 점수로 잰다. 판정 룰이 아니라 증거 집계다.
+#
+# 부호(sign)는 '그 계열이 + 로 움직일 때 유가에 주는 방향' 이다. 예: HY 스프레드 상승(+) 은 위험회피 → 유가 하락(-1).
+# 점수 = 100 × Σ w·clip(sign·z / z_ref, −1, 1) / Σ w  (확보된 계열만, 결측은 분모에서 뺀다). −100 = 유가 하락 압력, +100 = 상승 압력.
+# 뉴스 항목은 테마 뉴스 톤(−100~+100)을 news_ref 로 나눠 같은 저울에 올린다.
+z_ref: 2.0
+news_ref: 40.0
+window: "max"          # 하루 z 와 5일 z 중 절댓값이 큰 쪽을 쓴다 — 유가 driver 는 며칠에 걸쳐 찍힌다
+strength_bands: [{min: 50, label: STRONG}, {min: 25, label: MODERATE}, {min: 0, label: WEAK}]
+#: 유가 관측 — 브렌트·WTI 하루 z 평균. 둘의 차가 suspect_gap 이상이면 계약 교체·봉 오류를 의심해 확인(CONFIRMED)을 보류한다
+oil_move: {instruments: [BRENT, WTI], suspect_gap: 1.5, flat_abs: 0.5}
+#: 상태 — 유가 관측과 driver 방향이 같고 |driver| ≥ min_score 면 CONFIRMED, 반대면 CONTRADICTED, 그 밖(약함·평탄·의심)은 UNCONFIRMED
+status: {min_score: 25}
+
+drivers:
+  macro_liquidity:
+    label: "Macro / Liquidity"
+    label_ko: "거시·유동성 (위험회피)"
+    implication: "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다."
+    evidence:
+      - {id: US_HY_OAS, sign: -1, weight: 1.5}
+      - {id: VIX,       sign: -1, weight: 1.0}
+      - {id: MOVE,      sign: -1, weight: 0.8}
+      - {id: SPX,       sign:  1, weight: 1.0}
+      - {id: DXY,       sign: -1, weight: 0.6}
+      - {id: US10Y,     sign: -1, weight: 0.5}
+      - {id: GOLD,      sign:  1, weight: 0.5, note: "금까지 같이 빠지면 디레버리징(현금화) — 위험회피가 아니라 유동성 경색"}
+  demand:
+    label: "Demand"
+    label_ko: "수요 (경기)"
+    implication: "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다."
+    evidence:
+      - {id: COPPER,       sign: 1, weight: 1.0}
+      - {id: CYC_DEF,      sign: 1, weight: 0.8}
+      - {id: HSCEI,        sign: 1, weight: 0.5}
+      - {id: XLY,          sign: 1, weight: 0.5}
+      - {id: COPPER_GOLD,  sign: 1, weight: 0.4}
+      - {id: DRY_BULK_ETF, sign: 1, weight: 0.6, layer: alternative}
+      - {id: CSI300,       sign: 1, weight: 0.4, layer: alternative}
+  supply:
+    label: "Supply"
+    label_ko: "공급 (물리적 타이트)"
+    implication: "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다."
+    evidence:
+      - {id: XLE,            sign: 1, weight: 0.8}
+      - {id: GASOLINE,       sign: 1, weight: 0.6, layer: alternative}
+      - {id: DIESEL_PROXY,   sign: 1, weight: 0.6, layer: alternative}
+      - {id: JET_FUEL_PROXY, sign: 1, weight: 0.4, layer: alternative}
+      - {id: NATGAS,         sign: 1, weight: 0.3}
+      - {theme: oil,    field: news_sentiment, sign: 1, weight: 1.2, label: "유가 뉴스 톤(공급 우려)"}
+      - {theme: energy, field: news_sentiment, sign: 1, weight: 0.5, label: "에너지 뉴스 톤"}
+  geopolitical:
+    label: "Geopolitical Premium"
+    label_ko: "지정학 프리미엄"
+    implication: "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다."
+    evidence:
+      - {theme: geopolitical_risk, field: news_sentiment, sign: 1, weight: 1.5, label: "지정학 뉴스 톤(긴장 고조)"}
+      - {id: ITA,  sign:  1, weight: 0.6}
+      - {id: JETS, sign: -1, weight: 0.5}
+      - {id: GOLD, sign:  1, weight: 0.4, note: "안전자산 매수면 +"}
+      - {id: VIX,  sign:  1, weight: 0.3}
+
+#: 시장 확인 — dominant driver 아래서 각 줄이 어느 방향이면 '확인' 인가 (driver → 기대 부호). 없는 driver 키는 중립
+confirmations:
+  - {key: crude,     label: "Brent / WTI",           instruments: [BRENT, WTI],            expect: {macro_liquidity: -1, demand: 1, supply: 1, geopolitical: 1}}
+  - {key: curve,     label: "원유 커브 (기간 구조)",  instruments: [],                      expect: {}, missing_note: "커브 데이터 없음 — 월물 간 스프레드 계열이 없다"}
+  - {key: oil_vol,   label: "원유 변동성 (OVX)",      instruments: [],                      expect: {}, missing_note: "OVX 계열 없음"}
+  - {key: crack,     label: "정제 마진 (휘발유·디젤)", instruments: [GASOLINE, DIESEL_PROXY], expect: {supply: 1, demand: 1, macro_liquidity: -1}, layer: alternative}
+  - {key: breakeven, label: "기대인플레이션 (BE10Y)",  instruments: [BE10Y],                 expect: {supply: 1, geopolitical: 1, macro_liquidity: -1}}
+  - {key: usd_rates, label: "달러 / 금리",            instruments: [DXY, US10Y],            expect: {macro_liquidity: 1, demand: -1}}
+  - {key: credit_vol, label: "HY OAS / VIX",          instruments: [US_HY_OAS, VIX],        expect: {macro_liquidity: 1, geopolitical: 1, demand: -1}}
+  - {key: energy_eq, label: "에너지 주식 (XLE)",       instruments: [XLE],                   expect: {supply: 1, geopolitical: 1, macro_liquidity: -1, demand: 1}}
+  - {key: airlines,  label: "항공 (JETS)",            instruments: [JETS],                  expect: {supply: -1, geopolitical: -1, macro_liquidity: -1}}
+  - {key: defense,   label: "방산 (ITA)",             instruments: [ITA],                   expect: {geopolitical: 1}}
+  - {key: copper,    label: "구리 / 경기민감",         instruments: [COPPER, CYC_DEF],       expect: {demand: 1, macro_liquidity: -1}}
+  - {key: gold,      label: "금",                     instruments: [GOLD],                  expect: {geopolitical: 1, macro_liquidity: -1}}
+confirm_min_abs: 0.5   # |z| 가 이보다 작으면 '중립'
+
+#: 내러티브 vs 가격 — 테마별 한 문장. noun 은 뉴스가 말하는 것
+narrative:
+  themes:
+    - {theme: oil,               noun: "공급 우려"}
+    - {theme: geopolitical_risk, noun: "긴장 고조"}
+    - {theme: energy,            noun: "에너지 강세"}
+  min_abs: 10
+
+#: 무엇이 바뀌면 판단이 바뀌나 — 임계는 여기서만 온다
+watch:
+  driver_release_abs: 25     # dominant driver 점수가 이 아래로 내려오면 우세 해제
+  runner_up_takeover_margin: 10
+  oil_confirm_abs: 1.0       # 브렌트·WTI 둘 다 이 z 를 같은 방향으로 넘으면 driver 확인
+  news_release_abs: 10       # 지정학·공급 뉴스 톤이 이 아래면 그 driver 후보 제거
+  hy_release_abs: 1.0
