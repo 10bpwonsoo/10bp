@@ -44,7 +44,7 @@ def data(tmp_path):
 
 
 def _build(data, as_of=AS_OF, **kw):
-    return build_semiconductor_cycle(as_of=as_of, data_dir=data, replay_dir=data / "none", **kw)
+    return build_semiconductor_cycle(as_of=as_of, data_dir=data, replay_dir=data / "none", hist_dir=data / "hist", **kw)
 
 
 class TestPremium:
@@ -53,7 +53,7 @@ class TestPremium:
         p = next(x for x in out["spot_premium"] if x["spot"] == "DDR4_16G_SPOT")
         assert p["available"] and p["comparability"] == "HIGH" and not p["proxy"]
         assert p["current"] == pytest.approx((90 / 50 - 1) * 100, abs=0.01)  # 마지막 현물 90 / 계약 50
-        assert p["contract_anchor"] == "2026-09-30" and p["contract_anchor_label"] == "Sep-2026"
+        assert p["contract_anchor"] == "2026-09" and p["contract_anchor_label"] == "Sep-2026"
         assert p["state"] == "STRONG_PREMIUM"
 
     def test_premium_uses_only_contract_published_before_each_spot(self, data):
@@ -71,11 +71,16 @@ class TestPremium:
         p = next(x for x in _build(data)["spot_premium"] if x["spot"] == "NAND_512G_TLC_WAFER")
         assert p["available"] is False and "current" not in p
 
-    def test_zscore_needs_min_observations(self, data):
+    def test_zscore_counts_raw_observations_not_carried_days(self, data):
+        """z-score 는 RAW premium 이 20개 이상일 때만 — 17개면 NOT ENOUGH HISTORY."""
         p = next(x for x in _build(data)["spot_premium"] if x["spot"] == "DDR4_16G_SPOT")
-        assert p["observations"] >= 20 and p["zscore"] is not None
-        q = next(x for x in _build(data, as_of=datetime(2026, 10, 10, tzinfo=timezone.utc))["spot_premium"] if x["spot"] == "DDR4_16G_SPOT")
-        assert q["observations"] < 20 and q["zscore"] is None and q["percentile_1y"] is None
+        assert p["raw_premium_obs"] == 17  # 9/30~10/22 평일
+        assert p["z_status"] == "NOT ENOUGH HISTORY" and p["zscore"] is None and p["percentile_1y"] is None
+        # 계약가가 더 일찍 공개됐다면 RAW 가 20개를 넘어 계산된다
+        _write(data / "contract" / "DDR4_16G_CONTRACT.csv", CON_FIELDS, [{"updated_at": "2026-09-01T18:00:00+08:00", "avg": 48, "item": "DDR4 16Gb 2Gx8"},
+                                                                           {"updated_at": "2026-09-30T18:00:00+08:00", "avg": 50, "item": "DDR4 16Gb 2Gx8"}])
+        q = next(x for x in _build(data)["spot_premium"] if x["spot"] == "DDR4_16G_SPOT")
+        assert q["raw_premium_obs"] >= 20 and q["z_status"] == "OK" and q["zscore"] is not None and 0 <= q["percentile_1y"] <= 100
 
 
 class TestMissingAndPit:
@@ -120,7 +125,7 @@ class TestMomentum:
 
     def test_insufficient_evidence_does_not_pick_a_regime(self, tmp_path):
         d = tmp_path / "empty"; d.mkdir()
-        out = build_semiconductor_cycle(as_of=AS_OF, data_dir=d, replay_dir=d)
+        out = build_semiconductor_cycle(as_of=AS_OF, data_dir=d, replay_dir=d, hist_dir=d)
         assert out["regime"]["state"] in ("NO DATA", "INSUFFICIENT_DATA")
 
 

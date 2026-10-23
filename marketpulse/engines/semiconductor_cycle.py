@@ -20,12 +20,14 @@ from typing import Any, Mapping, Sequence
 import yaml
 
 from ..config.settings import PACKAGE_ROOT
+from .memory_history import (HIST, TPE, anchor_state, compact, daily_state, freshness, load_contract_raw, load_spot_raw, months_between, moving_avg,
+                             state_change, turning_point, weekdays, window_coverage, zstats)
 
 CONFIG = PACKAGE_ROOT / "config" / "semiconductor_cycle.yaml"
 DATA = PACKAGE_ROOT / "data" / "semiconductor"
 REPLAY = PACKAGE_ROOT / "data" / "replay" / "alternative"
 NO_DATA = "NO DATA"
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"  # 0.2: 1년 과거 DB(RAW) · 평일 Daily State · premium 이력 · 1Y z/percentile · coverage
 
 
 @lru_cache(maxsize=2)
@@ -181,66 +183,101 @@ def _tone(score: float | None) -> str:
 # ── 본체 ──────────────────────────────────────────────────────────
 def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any] | None = None, events: Sequence[Mapping] = (),
                               session_read: Mapping | None = None, memory_history: Mapping | None = None, client: Any = None,
-                              data_dir: Path = DATA, replay_dir: Path = REPLAY, cfg: Mapping | None = None) -> dict:
+                              data_dir: Path = DATA, replay_dir: Path = REPLAY, hist_dir: Path = HIST, cfg: Mapping | None = None) -> dict:
     cfg = cfg or load_config()
     series_by_id = series_by_id or {}
     spot = load_spot(as_of, data_dir, cfg); contract = load_contract(as_of, data_dir, cfg); hbm_obs = load_hbm(as_of, replay_dir, cfg)
     exports = load_exports(as_of, data_dir / "exports.json")
     pcfg = {p["id"]: p for p in cfg.get("products", [])}
 
-    # 1) 제품 카드 · 모멘텀
+    # 1) 제품 카드 · 모멘텀 — RAW 이력(과거 DB + 홈 수집기) → 평일 Daily State(그날까지 알려진 최근 RAW). 변화율·모멘텀은 Daily State 로,
+    #    관측 수·z-score·coverage 는 RAW 로 센다(반복값을 관측으로 세지 않는다).
+    hc = cfg.get("history") or {}
+    end_d = as_of.astimezone(timezone.utc).date()  # 저장 키와 같은 날짜 — 07:30 KST 저장이면 전날(대만 세션이 이미 끝난 날)까지
+    days = weekdays(end_d - timedelta(days=int(hc.get("lookback_days", 400))), end_d)
+    raws = {pid: load_spot_raw(pid, p["family"], as_of, hist=hist_dir, semi=data_dir) for pid, p in pcfg.items()}
+    states = {pid: daily_state(raws[pid].raw, days, as_of) for pid in pcfg}
+    cov_windows = {k: int(v) for k, v in (hc.get("coverage_windows") or {"1M": 30, "3M": 91, "6M": 182, "1Y": 365}).items()}
     products: list[dict] = []
     for pid, p in pcfg.items():
-        obs = spot.get(pid) or []
-        ch = changes(obs, cfg) if obs else {}
-        score, basis = momentum_score(ch, cfg.get("momentum") or {}) if obs else (None, "NONE")
+        rw = raws[pid].raw; st = states[pid]; weekly = p["family"] == "NAND"
+        mra = int(hc.get("max_ref_age_weekly" if weekly else "max_ref_age_daily", 14 if weekly else 7))
+        ch: dict[str, Any] = {}
+        for k, d in {**(cfg.get("windows") or {}), "6M": 182}.items():
+            ch[k], ch[f"{k}_ref"] = state_change(st, int(d), max_ref_age=mra)
+        if len(rw) >= 2:
+            ch["since_first"] = round((rw[-1].v / rw[0].v - 1.0) * 100.0, 2); ch["since_first_from"] = rw[0].obs.isoformat(); ch["since_first_days"] = (rw[-1].obs - rw[0].obs).days
+        else:
+            ch["since_first"] = None; ch["since_first_from"] = None; ch["since_first_days"] = 0
+        score, basis = momentum_score(ch, cfg.get("momentum") or {}) if rw else (None, "NONE")
+        fr = freshness(rw, as_of, weekly=weekly)
+        cov = {k: window_coverage(rw, end_d, d, max_gap=int(hc.get("max_gap_weekly" if weekly else "max_gap_daily", 16 if weekly else 10))) for k, d in cov_windows.items()}
+        raw_1m = sum(1 for r in rw if (end_d - r.obs).days <= 30)
+        dense = raw_1m >= int(hc.get("dense_raw_1m_weekly" if weekly else "dense_raw_1m_daily", 3 if weekly else 15))
+        conf = "LOW" if basis != "WINDOWS" or fr["state"] == "VERY STALE" else "HIGH" if fr["state"] == "FRESH" and dense else "MEDIUM"
+        raw_90 = sum(1 for r in rw if (end_d - r.obs).days <= 90)
+        ma20 = moving_avg(st, 20) if raw_1m >= (3 if weekly else 10) else None
+        ma60 = moving_avg(st, 60) if raw_90 >= (8 if weekly else 30) else None
+        last = rw[-1] if rw else None
         products.append({
             "id": pid, "label": p["label"], "spec": p["spec"], "family": p["family"], "tier": p["tier"], "selector": bool(p.get("selector")),
-            "available": bool(obs), "current": obs[-1].v if obs else None, "updated_at": obs[-1].t.isoformat() if obs else None,
-            "change_1d": ch.get("1D"), "change_1w": ch.get("1W"), "change_1m": ch.get("1M"), "change_3m": ch.get("3M"), "change_1y": ch.get("1Y"),
-            "since_first": ch.get("since_first"), "since_first_from": ch.get("since_first_from"), "observations": len(obs),
-            "momentum": score, "momentum_basis": basis, "momentum_state": _state(score, (cfg.get("momentum") or {}).get("states") or []),
-            "history": [{"t": o.t.isoformat(), "v": round(o.v, 4)} for o in obs],
+            "available": bool(st), "current": st[-1]["v"] if st else None, "updated_at": last.known.isoformat() if last else None, "source_date": last.obs.isoformat() if last else None,
+            "current_origin": st[-1]["origin"] if st else None,
+            "change_1d": ch.get("1D"), "change_1w": ch.get("1W"), "change_1m": ch.get("1M"), "change_3m": ch.get("3M"), "change_6m": ch.get("6M"), "change_1y": ch.get("1Y"),
+            "since_first": ch.get("since_first"), "since_first_from": ch.get("since_first_from"), "observations": len(rw),
+            "raw_obs_1y": sum(1 for r in rw if (end_d - r.obs).days <= 365), "raw_obs_1m": raw_1m, "frequency": "weekly" if weekly else "daily",
+            "momentum": score, "momentum_basis": basis, "momentum_state": _state(score, (cfg.get("momentum") or {}).get("states") or []), "momentum_confidence": conf,
+            "freshness": fr, "ma20": ma20, "ma60": ma60, "coverage": cov, "turning": turning_point(st, max_ref_age=mra),
+            "sources": raws[pid].sources, "conflicts": raws[pid].conflicts[:5],
+            "history": [{"t": r.obs.isoformat(), "v": round(r.v, 4)} for r in rw],
+            "daily": compact(st),
         })
     by_pid = {p["id"]: p for p in products}
 
-    # 2) Spot Premium
+    # 2) Spot Premium — 날짜마다 그날 알려진 현물 ÷ 그날 알려진 계약가(공개 뒤부터 다음 공개 전까지) − 1
     zmin = int(cfg.get("zscore_min_obs", 20)); dpp = float(cfg.get("premium_direction_pp", 2.0)); stale_days = int(cfg.get("contract_stale_days", 45))
     premiums: list[dict] = []
+    anchors_by: dict[str, list] = {}
     for m in cfg.get("premium_map", []):
-        sp = spot.get(m["spot"]) or []
         base = {"spot": m["spot"], "spot_label": pcfg.get(m["spot"], {}).get("label", m["spot"]), "contract": m.get("contract"), "contract_label": m.get("contract_label"),
-                "comparability": m.get("comparability", "NONE"), "weight": float(m.get("weight", 0.0)), "note": m.get("note", "")}
+                "comparability": m.get("comparability", "NONE"), "weight": float(m.get("weight", 0.0)), "note": m.get("note", ""),
+                "conversion": m.get("conversion") or (f"contract ÷ {m.get('units')}" if m.get("units") not in (None, 1) else "")}
         if not m.get("contract") or m.get("comparability") == "NONE":
             premiums.append({**base, "available": False, "reason": m.get("note") or "비교 가능한 계약가 없음"}); continue
-        co = contract.get(m["contract"]) or []
+        anchors = anchors_by.setdefault(m["contract"], load_contract_raw(m["contract"], as_of, hist=hist_dir, semi=data_dir))
+        ast = anchor_state(anchors, days, as_of)
         units = float(m.get("units", 1))
         series = []
-        for o in sp:
-            anchor = next((c for c in reversed(co) if c.t <= o.t), None)
-            if anchor is None:
+        for x in states.get(m["spot"]) or []:
+            a = ast.get(x["d"])
+            if a is None:
                 continue
-            ceq = anchor.v / units
-            series.append({"t": o.t.isoformat(), "spot": round(o.v, 4), "contract": round(ceq, 4), "anchor": anchor.t.date().isoformat(), "premium": round((o.v / ceq - 1.0) * 100.0, 2)})
+            ceq = a.v / units
+            series.append({"t": x["d"], "spot": round(x["v"], 4), "contract": round(ceq, 4), "anchor": a.period, "premium": round((x["v"] / ceq - 1.0) * 100.0, 2),
+                           "origin": x["origin"], "src": x["src"]})
         if not series:
             premiums.append({**base, "available": False, "reason": "그 시점에 공개된 계약가가 없다"}); continue
-        vals = [s["premium"] for s in series]
-        pobs = [Obs(_dt(s["t"]) or as_of, s["premium"], {}) for s in series]
-        w1 = window_ref(pobs, 7, 3); m1 = window_ref(pobs, 30, 7)
-        d1w = None if w1 is None else round(vals[-1] - w1.v, 2); d1m = None if m1 is None else round(vals[-1] - m1.v, 2)
-        dsf = round(vals[-1] - vals[0], 2) if len(vals) >= 2 else None
-        ref_change = d1w if d1w is not None else d1m if d1m is not None else dsf
+        cur = series[-1]
+        raw_prem = [x["premium"] for x in series if x["origin"] == "RAW" and (end_d - date.fromisoformat(x["t"])).days <= 365]
+        zs = zstats(raw_prem + ([cur["premium"]] if cur["origin"] != "RAW" else []), zmin) if raw_prem else zstats([], zmin)
+        pst = [{"d": x["t"], "v": x["premium"], "age": (date.fromisoformat(x["t"]) - date.fromisoformat(x["src"])).days} for x in series]
+        d1w = _pp_change(pst, 7); d1m = _pp_change(pst, 30)
+        ref_change = d1w if d1w is not None else d1m
         direction = "UNKNOWN" if ref_change is None else "EXPANDING" if ref_change > dpp else "COMPRESSING" if ref_change < -dpp else "STABLE"
-        z, pct = zscore_pct(vals, zmin)
-        last_anchor = next((c for c in reversed(co) if c.t <= as_of), None)
-        age = (as_of - last_anchor.t).days if last_anchor else None
-        premiums.append({**base, "available": True, "current": vals[-1], "spot_price": series[-1]["spot"], "contract_equiv": series[-1]["contract"],
-                         "spot_date": series[-1]["t"][:10], "contract_anchor": series[-1]["anchor"], "contract_anchor_label": (_dt(series[-1]["anchor"] + "T00:00:00+00:00") or as_of).strftime("%b-%Y"),
+        last_anchor = anchors[-1] if anchors else None
+        age = (as_of - last_anchor.known).days if last_anchor else None
+        raw_days = [date.fromisoformat(x["t"]) for x in series if x["origin"] == "RAW"]
+        prem_months = months_between(raw_days[0], end_d) if raw_days else 0
+        z_cross = _z_cross([x["premium"] for x in series if x["origin"] == "RAW"], zs)
+        premiums.append({**base, "available": True, "current": cur["premium"], "spot_price": cur["spot"], "contract_equiv": cur["contract"],
+                         "spot_date": cur["src"], "contract_anchor": cur["anchor"], "contract_anchor_label": datetime.strptime(cur["anchor"], "%Y-%m").strftime("%b-%Y"),
+                         "contract_published": last_anchor.known.isoformat() if last_anchor else None, "contract_source": last_anchor.source if last_anchor else None,
                          "contract_age_days": age, "contract_stale": age is not None and age > stale_days,
-                         "change_1w_pp": d1w, "change_1m_pp": d1m, "change_since_first_pp": dsf, "direction": direction,
-                         "zscore": z, "percentile_1y": pct, "observations": len(vals), "zscore_min_obs": zmin,
-                         "state": _state(vals[-1], cfg.get("premium_states") or []), "series": series,
-                         "proxy": m.get("comparability") == "LOW"})
+                         "change_1w_pp": d1w, "change_1m_pp": d1m, "change_since_first_pp": round(cur["premium"] - series[0]["premium"], 2) if len(series) >= 2 else None,
+                         "direction": direction, "zscore": zs["z"], "percentile_1y": zs["percentile"], "z_status": zs["status"], "mean_1y": zs["mean"],
+                         "raw_premium_obs": len(raw_prem), "observations": len(raw_prem), "zscore_min_obs": zmin, "z_cross": z_cross,
+                         "premium_history_months": prem_months, "contract_months": len({a.period for a in anchors if (end_d - a.known.date()).days <= 400}),
+                         "state": _state(cur["premium"], cfg.get("premium_states") or []), "series": series, "proxy": m.get("comparability") in ("LOW", "MEDIUM") and m.get("units", 1) != 1})
 
     # 3) Breadth
     prem_ok = [p for p in premiums if p.get("available")]
@@ -252,20 +289,63 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
                "state": _state(frac, cfg.get("breadth_states") or []) if frac is not None else NO_DATA,
                "note": "모멘텀은 표준 등급(main) 제품만 센다. 표준 창(1W·1M·3M)이 없으면 첫 관측 이후 변화로 대신한다."}
 
-    # 4) 정규화 비교 (기간 시작 = 100)
+    # 3b) 전환점 — 1M 현물 모멘텀 부호 전환 · premium 의 1Y 평균(z=0) 통과 · breadth 개선/악화. 두 개 이상 같은 방향이면 EARLY TIGHTENING / SOFTENING
+    def _frac_pos(cut: str) -> float | None:
+        vals = []
+        for p in products:
+            if p["tier"] != "main":
+                continue
+            c, _ = state_change([x for x in states[p["id"]] if x["d"] <= cut], 30, max_ref_age=14 if p["family"] == "NAND" else 7)
+            if c is not None:
+                vals.append(c > 0)
+        return sum(vals) / len(vals) if len(vals) >= 2 else None
+    b_now, b_then = _frac_pos(end_d.isoformat()), _frac_pos((end_d - timedelta(days=20)).isoformat())
+    breadth_trend = None if b_now is None or b_then is None else "IMPROVING" if b_now > b_then else "DETERIORATING" if b_now < b_then else "UNCHANGED"
+    t_ev = [f"{p['label']} 1M 모멘텀 음→양" for p in products if p["tier"] == "main" and p["turning"].get("spot_momentum") == "NEGATIVE→POSITIVE"]
+    t_ev += [f"{x['spot_label']} premium 1Y 평균 위로" for x in prem_ok if x.get("z_cross") == "UP"]
+    s_ev = [f"{p['label']} 1M 모멘텀 양→음" for p in products if p["tier"] == "main" and p["turning"].get("spot_momentum") == "POSITIVE→NEGATIVE"]
+    s_ev += [f"{x['spot_label']} premium 1Y 평균 아래로" for x in prem_ok if x.get("z_cross") == "DOWN"]
+    if breadth_trend == "IMPROVING":
+        t_ev.append("breadth 개선(20일 전 대비 1M 상승 제품 비중 ↑)")
+    elif breadth_trend == "DETERIORATING":
+        s_ev.append("breadth 악화(20일 전 대비 1M 상승 제품 비중 ↓)")
+    t_sig = "EARLY TIGHTENING" if len(t_ev) >= 2 and len(t_ev) > len(s_ev) else "EARLY SOFTENING" if len(s_ev) >= 2 and len(s_ev) > len(t_ev) else "NONE"
+    turning = {"signal": t_sig, "tightening": t_ev, "softening": s_ev, "breadth_trend": breadth_trend,
+               "note": "1M 현물 모멘텀(Daily State)의 부호 전환(최근 14일) · premium 의 1Y 평균 통과(최근 RAW 10개) · breadth 변화(20일). 신호 두 개 이상이 같은 방향일 때만."}
+
+    # 3c) 제품별 과거 이력 coverage — Data Quality 표
+    reasons = (cfg.get("history") or {}).get("partial_reasons") or {}
+    coverage_table = []
+    for p in products:
+        rw = raws[p["id"]].raw
+        pr = next((x for x in premiums if x["spot"] == p["id"]), None)
+        cov1y = p["coverage"].get("1Y") or {}
+        coverage_table.append({
+            "id": p["id"], "label": p["label"], "frequency": p["frequency"], "spot_history_months": months_between(rw[0].obs, end_d) if rw else 0,
+            "spot_from": rw[0].obs.isoformat() if rw else None,
+            "contract_history_months": pr.get("contract_months") if pr and pr.get("available") else None,
+            "premium_history_months": pr.get("premium_history_months") if pr and pr.get("available") else None,
+            "premium_type": "NONE" if not pr or not pr.get("available") else ("PROXY " if pr.get("proxy") else "") + str(pr.get("comparability")),
+            "raw_obs": p["raw_obs_1y"], "latest_update": p["source_date"], "days_since": (p["freshness"] or {}).get("days_since_source"),
+            "windows": {k: v["status"] for k, v in p["coverage"].items()}, "coverage": cov1y.get("status", "UNAVAILABLE"),
+            "available_from": cov1y.get("available_from"), "sources": p["sources"],
+            "reason": None if cov1y.get("status") == "GOOD" else reasons.get(p["id"], "1년 이력 부족")})
+
+    # 4) 정규화 비교 (기간 시작 = 100) — Daily State 기준. 그 기간 이력이 PARTIAL 인 제품은 표시하되 coverage 를 붙인다
     normalized: dict[str, list] = {}
-    for key, days in (("1M", 30), ("3M", 91), ("6M", 182)):
+    for key, ndays in (("1M", 30), ("3M", 91), ("6M", 182), ("1Y", 365)):
         rows = []
         for p in products:
-            if p["tier"] != "main" or not p["history"]:
+            st = states[p["id"]]
+            if p["tier"] != "main" or not st:
                 continue
-            start = (_dt(p["history"][-1]["t"]) or as_of) - timedelta(days=days)
-            pts = [h for h in p["history"] if (_dt(h["t"]) or as_of) >= start]
-            if len(pts) < 2:
+            start = (end_d - timedelta(days=ndays)).isoformat()
+            pts = [x for x in st if x["d"] >= start]
+            if len(pts) < 2 or not pts[0]["v"]:
                 continue
             b = pts[0]["v"]
-            rows.append({"id": p["id"], "label": p["label"], "base_date": pts[0]["t"][:10], "points": [{"t": h["t"], "v": round(h["v"] / b * 100.0, 2)} for h in pts],
-                         "last": round(pts[-1]["v"] / b * 100.0, 1)})
+            rows.append({"id": p["id"], "label": p["label"], "base_date": pts[0]["d"], "points": [{"t": x["d"], "v": round(x["v"] / b * 100.0, 2)} for x in pts],
+                         "last": round(pts[-1]["v"] / b * 100.0, 1), "coverage": (p["coverage"].get(key) or {}).get("status")})
         normalized[key] = sorted(rows, key=lambda r: -r["last"])
 
     # 5) 제품 맵
@@ -281,14 +361,18 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
                         "strength": p["momentum_state"] or NO_DATA})
         return out
 
-    # 6) 계약가 추세
+    # 6) 계약가 추세 — 과거 DB(월간) + 홈 표. 변화율은 직전 기준월 대비(없으면 홈 표의 변화율)
     con_rows = []
     for cid, co in contract.items():
-        if not co:
+        anchors = anchors_by.get(cid) or load_contract_raw(cid, as_of, hist=hist_dir, semi=data_dir)
+        if not anchors:
             continue
-        last = co[-1]; age = (as_of - last.t).days
-        con_rows.append({"id": cid, "label": (last.meta.get("item") or cid), "avg": last.v, "period": last.t.date().isoformat(), "change_pct": float(last.meta.get("avg_change_pct") or 0.0),
-                         "age_days": age, "stale": age > stale_days})
+        last = anchors[-1]; age = (as_of - last.known).days
+        prev = anchors[-2] if len(anchors) >= 2 else None
+        chg = round((last.v / prev.v - 1.0) * 100.0, 2) if prev and prev.v else (float(co[-1].meta.get("avg_change_pct") or 0.0) if co else 0.0)
+        con_rows.append({"id": cid, "label": (co[-1].meta.get("item") if co else None) or cid, "avg": last.v, "period": last.period, "published": last.known.isoformat(),
+                         "source": last.source, "change_pct": chg, "age_days": age, "stale": age > stale_days, "months": len(anchors),
+                         "history": [{"period": a.period, "v": a.v, "published": a.known.isoformat()[:10]} for a in anchors]})
     con_changes = [r["change_pct"] for r in con_rows]
     con_trend = None if not con_changes else sum(con_changes) / len(con_changes)
     con_state = NO_DATA if con_trend is None else ("RISING" if con_trend > 1 else "FALLING" if con_trend < -1 else "FLAT")
@@ -377,6 +461,7 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
                   {"key": "export", "label": "Export Nowcast", "value": export.get("momentum") or NO_DATA},
                   {"key": "eps", "label": "EPS Revision", "value": NO_DATA},
                   {"key": "equity", "label": "Equity Confirm", "value": equity.get("status") or NO_DATA},
+                  {"key": "turning", "label": "Turning Point", "value": turning["signal"]},
               ],
               "has_core": has_core, "min_coverage": float(rcfg.get("min_coverage", 0.0)),
               "note": "증거 점수(−100~+100)의 가중 평균. 없는 증거는 분모에서 뺀다 — 신뢰도는 확보 비율·증거 방향의 일치·현물 이력 깊이로 낮아진다. 확보 비율이 기준 미만이거나 메모리 가격 증거가 없으면 국면을 정하지 않는다. 점수는 증거의 크기다."}
@@ -440,10 +525,29 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
            "contract": {"rows": con_rows, "trend": con_state, "stale": con_stale},
            "memory_history": memory_history, "spot_to_contract": spot_to_contract, "hbm_supply": hbm, "export_nowcast": export, "price_to_export": price_to_export,
            "fundamental_confirmation": fundamental, "equity_confirmation": equity, "stock_impact": stock_impact, "news": news[: int((cfg.get("news") or {}).get("max_items", 8))],
-           "what_matters_next": wmn, "data_quality": dq, "not_supported": list(cfg.get("not_supported") or [])}
+           "what_matters_next": wmn, "data_quality": dq, "coverage_table": coverage_table, "turning": turning,
+           "history_note": "Spot·Premium 차트 = 평일 Daily State(그날까지 알려진 최근 원천 값, 갱신 사이는 CARRIED_FORWARD). 관측 수·z-score·coverage = RAW 원천 관측만.",
+           "not_supported": list(cfg.get("not_supported") or [])}
     from ..ai.semi_read import attach_read
     attach_read(out, session_read, client=client)
     return out
+
+
+def _pp_change(pst: Sequence[Mapping], days: int) -> float | None:
+    """premium Daily State 의 days 전 대비 변화(%p). 기준일의 현물 관측이 10일보다 오래면 None."""
+    if len(pst) < 2:
+        return None
+    end = date.fromisoformat(pst[-1]["d"]); target = end - timedelta(days=days)
+    ref = next((x for x in reversed(pst) if date.fromisoformat(x["d"]) <= target), None)
+    return None if ref is None or ref["age"] > 10 else round(pst[-1]["v"] - ref["v"], 2)
+
+
+def _z_cross(raw_prem: Sequence[float], zs: Mapping, look: int = 10) -> str | None:
+    """최근 look 개 RAW premium 사이에 1Y 평균(z=0)을 건넜는가 — UP(평균 위로) · DOWN · None."""
+    if zs.get("status") != "OK" or len(raw_prem) < look + 1:
+        return None
+    mu = zs["mean"]; a = raw_prem[-look - 1] - mu; b = raw_prem[-1] - mu
+    return "UP" if a < 0 <= b else "DOWN" if a > 0 >= b else None
 
 
 COMP_LABEL = {"memory_pricing": "Memory Pricing", "spot_premium": "Spot Premium", "contract": "Contract Price", "premium_breadth": "Breadth", "hbm": "HBM",

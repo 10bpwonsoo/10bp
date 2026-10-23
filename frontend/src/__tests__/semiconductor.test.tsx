@@ -112,6 +112,80 @@ describe("SemiconductorCycleView", () => {
   });
 });
 
+describe("1년 과거 이력 차트 (2026-10-23)", () => {
+  it("기본은 1Y 이력이 GOOD 인 제품(DDR4 8Gb) · 1Y 범위 — 1년치 Daily State 를 그린다", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    expect((within(chart).getByTestId("semi-product-select") as HTMLSelectElement).value).toBe("DDR4_8G_SPOT");
+    expect(within(chart).getByRole("button", { name: "1Y" }).getAttribute("aria-pressed")).toBe("true");
+    const cov = within(chart).getByTestId("semi-chart-coverage");
+    expect(cov.getAttribute("data-status")).toBe("GOOD");
+    const d4 = cycle.memory_prices.find((p) => p.id === "DDR4_8G_SPOT")!;
+    expect(d4.daily!.length).toBeGreaterThanOrEqual(250);
+    const first = d4.daily!.filter((r) => r[0] >= "2025-10-22")[0]![0];
+    expect(chart.textContent).toContain(first);   // x축 시작 = 1년 전 첫 평일
+    expect(within(chart).getByTestId("semi-contract-line")).toBeTruthy();
+    expect(within(chart).getByTestId("semi-premium-area")).toBeTruthy();
+  });
+
+  it("툴팁에 원천 관측일과 RAW / CARRIED_FORWARD 를 보인다", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    fireEvent.pointerMove(within(chart).getByTestId("semi-price-svg"), { clientX: 10, clientY: 50 });
+    const tip = within(chart).getByTestId("semi-tooltip");
+    expect(tip.textContent).toMatch(/Latest Source Observation \d{4}-\d{2}-\d{2}/);
+    expect(tip.textContent).toMatch(/Origin (RAW|CARRIED_FORWARD)/);
+    expect(tip.textContent).toMatch(/Contract \$[\d.]+ \([A-Z][a-z]{2}-\d{4}\)/);
+  });
+
+  it("1Y 이력이 없는 제품은 PARTIAL 과 Available From · 이유를 말하고 z-score 는 NOT ENOUGH HISTORY", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    fireEvent.change(within(chart).getByTestId("semi-product-select"), { target: { value: "DDR5_16G_SPOT" } });
+    const cov = within(chart).getByTestId("semi-chart-coverage");
+    expect(cov.getAttribute("data-status")).toBe("PARTIAL");
+    expect(cov.textContent).toContain("Available From 2026-09-29");
+    expect(cov.textContent).toContain("공개 과거 출처 없음");
+    expect(within(chart).getByTestId("semi-premium-stats").textContent).toContain("NOT ENOUGH HISTORY");
+    expect(chart.textContent).toContain("PROXY PREMIUM");
+  });
+
+  it("DDR4 8Gb premium 의 1Y z-score · percentile 은 RAW 관측 기준으로 표시", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const prem = cycle.spot_premium.find((x) => x.spot === "DDR4_8G_SPOT")!;
+    expect(prem.z_status).toBe("OK");
+    expect(prem.raw_premium_obs!).toBeGreaterThanOrEqual(200);
+    expect(screen.getByTestId("semi-premium-stats").textContent).toContain(`percentile ${prem.percentile_1y}%`);
+  });
+
+  it("Contract 는 토글로 끌 수 있다", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    fireEvent.click(within(chart).getByTestId("semi-contract-toggle"));
+    expect(within(chart).queryByTestId("semi-contract-line")).toBeNull();
+  });
+
+  it("Data Quality 의 제품별 coverage 표 — GOOD / PARTIAL 과 RAW 관측 수", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const rows = screen.getAllByTestId("semi-coverage-row");
+    expect(rows.length).toBe(cycle.coverage_table!.length);
+    const d4 = rows.find((r) => r.getAttribute("data-id") === "DDR4_8G_SPOT")!;
+    expect(d4.getAttribute("data-coverage")).toBe("GOOD");
+    const d5 = rows.find((r) => r.getAttribute("data-id") === "DDR5_16G_SPOT")!;
+    expect(d5.getAttribute("data-coverage")).toBe("PARTIAL");
+    expect(d5.textContent).toContain("Available From");
+  });
+
+  it("Daily State 칸은 평일만, 'R'/'C' 로 구분된다", () => {
+    const d4 = cycle.memory_prices.find((p) => p.id === "DDR4_8G_SPOT")!;
+    for (const [d, , o] of d4.daily!) {
+      expect([1, 2, 3, 4, 5]).toContain(new Date(`${d}T00:00:00Z`).getUTCDay());
+      expect(["R", "C"]).toContain(o);
+    }
+    expect(d4.daily![d4.daily!.length - 1]![0]).toBe("2026-10-22");   // 저장 시각(10/23 07:30 KST) 이후 날짜 없음
+  });
+});
+
 describe("반도체 사이클 — 저장본 · 탭 위치", () => {
   it("저장본에 섹션이 없으면 NOT ARCHIVED — 지금 값으로 메우지 않는다", () => {
     const a = { schema_version: "1", snapshot_date: "2026-10-22", generated_at: "", archive_status: "COMPLETE", snapshot: { mode: "DELAYED" } } as unknown as DashboardArchive;

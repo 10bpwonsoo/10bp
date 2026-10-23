@@ -106,3 +106,12 @@
 .sm-next-grid small { display: block; font-size: 9px; color: var(--faint); letter-spacing: 0.06em; }
 @media (max-width: 640px) { .sm-next-grid { grid-template-columns: minmax(0, 1fr); } .sm-ev-row { grid-template-columns: minmax(0, 110px) minmax(0, 1fr); } .sm-regime-label { font-size: 22px; } }
 .sm-base-line { stroke: var(--rule-hi); stroke-width: 1; stroke-dasharray: 2 3; }
+.sm-area-prem { fill: var(--lbl-growth); opacity: 0.16; }
+.sm-cov { font-size: 10.5px; color: var(--muted); margin: 0 0 6px; overflow-wrap: anywhere; }
+.sm-segbtn.sm-partial { border-style: dashed; }
+.sm-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); }
+.sm-tip { width: 190px; }
+.sm-sub { margin: 14px 0 4px; font-size: 10px; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.sm-covtab .sm-tr { grid-template-columns: minmax(0, 2.6fr) repeat(6, minmax(0, 1fr)); }
+.sm-reason { display: block; color: var(--warn); font-size: 10px; }
+@media (max-width: 640px) { .sm-covtab .sm-tr { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

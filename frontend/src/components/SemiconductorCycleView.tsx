@@ -134,31 +134,52 @@ function PriceSnapshot({ c }: { c: SemiconductorCycle }) {
 }
 
 // ── 4. PRICE + SPOT PREMIUM CHART ──────────────────────────
-interface ChartPt { t: number; iso: string; spot: number; contract: number | null; premium: number | null }
+// 선 = 평일 Daily State(그날까지 알려진 최근 원천 값 — 갱신 사이는 수평선). 툴팁에 원천 관측일과 RAW / CARRIED_FORWARD 를 보인다.
+// 계약가 = 공개 뒤부터 다음 공개 전까지의 anchor(점선 계단). Premium = 우축 옅은 면. 계산용 값은 서버 그대로 — 그릴 때만 솎는다(점이 많을 때).
+interface ChartPt { t: number; iso: string; spot: number; origin: "R" | "C"; src: string; contract: number | null; anchor: string | null; premium: number | null }
+const RENDER_MAX = 520;
 
-function buildPts(p: SemiProduct, prem: SemiPremium | undefined): ChartPt[] {
-  const byT = new Map((prem?.series ?? []).map((s) => [s.t, s]));
-  return p.history.map((h) => {
-    const s = byT.get(h.t);
-    return { t: Date.parse(h.t), iso: h.t, spot: h.v, contract: s ? s.contract : null, premium: s ? s.premium : null };
+export function buildPts(p: SemiProduct, prem: SemiPremium | undefined): ChartPt[] {
+  const byT = new Map((prem?.available ? prem.series ?? [] : []).map((s) => [s.t.slice(0, 10), s]));
+  const rows: [string, number, "R" | "C", string][] = p.daily?.length ? p.daily : p.history.map((h) => [h.t.slice(0, 10), h.v, "R", h.t.slice(0, 10)]);
+  return rows.map(([d, v, o, src]) => {
+    const s = byT.get(d);
+    return { t: Date.parse(`${d}T00:00:00Z`), iso: d, spot: v, origin: o, src, contract: s ? s.contract : null, anchor: s ? s.anchor : null, premium: s ? s.premium : null };
   });
 }
 
+/** 그릴 때만 솎는다(마지막 점은 남긴다). 툴팁·계산은 원본 배열. */
+function thin<T>(pts: T[]): T[] {
+  if (pts.length <= RENDER_MAX) return pts;
+  const k = Math.ceil(pts.length / RENDER_MAX);
+  return pts.filter((_x, i) => i % k === 0 || i === pts.length - 1);
+}
+
+const anchorLabel = (a: string | null) => {
+  if (!a) return "";
+  const [y, m] = a.split("-");
+  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(m) - 1]}-${y}`;
+};
+
 function PriceChart({ c }: { c: SemiconductorCycle }) {
   const choices = c.memory_prices.filter((p) => p.selector && p.available);
-  const [sel, setSel] = useState(choices[0]?.id ?? "");
-  const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("3M");
+  const best = choices.find((p) => p.coverage?.["1Y"]?.status === "GOOD") ?? choices[0];
+  const [sel, setSel] = useState(best?.id ?? "");
+  const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("1Y");
+  const [showContract, setShowContract] = useState(true);
   const [hover, setHover] = useState<number | null>(null);
   const [ref, width] = useWidth<HTMLDivElement>();
-  const p = choices.find((x) => x.id === sel) ?? choices[0];
+  const p = choices.find((x) => x.id === sel) ?? best;
   const prem = c.spot_premium.find((x) => x.spot === p?.id);
-  const all = p ? buildPts(p, prem?.available ? prem : undefined) : [];
+  const all = p ? buildPts(p, prem) : [];
   const last = all.length ? all[all.length - 1]!.t : 0;
   const days = RANGES.find((r) => r.key === range)!.days;
   const pts = all.filter((x) => x.t >= last - days * 86400000);
-  const H = 220, L = 46, R = 46, T = 12, B = 26;
+  const draw = thin(pts);
+  const cov = p?.coverage?.[range];
+  const H = 240, L = 48, R = 48, T = 12, B = 26;
   const W = Math.max(280, width);
-  const prices = pts.flatMap((x) => [x.spot, ...(x.contract !== null ? [x.contract] : [])]);
+  const prices = pts.flatMap((x) => [x.spot, ...(showContract && x.contract !== null ? [x.contract] : [])]);
   // 가격 축은 $0 부터 — 현물과 계약가의 격차(= premium)가 눈에 그대로 보이게
   const pmax = prices.length ? Math.max(...prices) : 1;
   const pad = pmax * 0.08 || 1;
@@ -169,61 +190,95 @@ function PriceChart({ c }: { c: SemiconductorCycle }) {
   const yQ = (v: number) => T + (H - T - B) * (1 - (v - (qmin - qpad)) / ((qmax + qpad) - (qmin - qpad)));
   const t0 = pts.length ? pts[0]!.t : 0, t1 = pts.length ? pts[pts.length - 1]!.t : 1;
   const xT = (t: number) => (t1 === t0 ? L + (W - L - R) / 2 : L + (W - L - R) * ((t - t0) / (t1 - t0)));
-  const line = (f: (x: ChartPt) => number | null, y: (v: number) => number) => {
+  const line = (f: (x: ChartPt) => number | null, y: (v: number) => number, step = false) => {
     let d = ""; let pen = false;
-    for (const x of pts) { const v = f(x); if (v === null) { pen = false; continue; } d += `${pen ? "L" : "M"}${xT(x.t).toFixed(1)},${y(v).toFixed(1)} `; pen = true; }
+    for (const x of draw) {
+      const v = f(x);
+      if (v === null) { pen = false; continue; }
+      const X = xT(x.t).toFixed(1), Y = y(v);
+      d += pen ? (step ? `H${X} V${Y.toFixed(1)} ` : `L${X},${Y.toFixed(1)} `) : `M${X},${Y.toFixed(1)} `;
+      pen = true;
+    }
     return d.trim();
   };
-  const barW = Math.max(3, Math.min(14, (W - L - R) / Math.max(1, pts.length) * 0.5));
+  const area = () => {
+    const seg = draw.filter((x) => x.premium !== null);
+    if (seg.length < 2) return "";
+    const z = yQ(0).toFixed(1);
+    return `M${xT(seg[0]!.t).toFixed(1)},${z} ` + seg.map((x) => `L${xT(x.t).toFixed(1)},${yQ(x.premium!).toFixed(1)}`).join(" ") + ` L${xT(seg[seg.length - 1]!.t).toFixed(1)},${z} Z`;
+  };
   const h = hover !== null ? pts[hover] : null;
   const onMove = (ev: React.PointerEvent<SVGSVGElement>) => {
     if (!pts.length) return;
     const box = ev.currentTarget.getBoundingClientRect();
     const x = ev.clientX - box.left;
-    let best = 0, bd = Infinity;
-    pts.forEach((q, i) => { const d = Math.abs(xT(q.t) - x); if (d < bd) { bd = d; best = i; } });
-    setHover(best);
+    let bi = 0, bd = Infinity;
+    pts.forEach((q, i) => { const d = Math.abs(xT(q.t) - x); if (d < bd) { bd = d; bi = i; } });
+    setHover(bi);
   };
+  const rawDots = pts.length <= 70 ? draw.filter((x) => x.origin === "R") : [];
+  const note = prem?.available ? `계약 기준 ${prem.contract_anchor_label} · ${prem.proxy ? `PROXY PREMIUM (${prem.comparability})` : `${prem.comparability} · 같은 칩 비교`}` : "Spot Premium 없음";
   return (
-    <Panel title="Product Price & Spot Premium" note={prem?.available ? `계약 기준 ${prem.contract_anchor_label} · ${prem.comparability === "LOW" ? "PROXY PREMIUM" : "같은 칩 비교"}` : "Spot Premium 없음"} wide testid="semi-chart">
+    <Panel title="Product Price & Spot Premium" note={note} wide testid="semi-chart">
       <div className="sm-controls">
         <select className="sm-select mono" aria-label="제품 선택" value={p?.id ?? ""} onChange={(e) => { setSel(e.target.value); setHover(null); }} data-testid="semi-product-select">
-          {choices.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+          {choices.map((x) => <option key={x.id} value={x.id}>{x.label}{x.coverage?.["1Y"]?.status === "GOOD" ? "" : " · 1Y PARTIAL"}</option>)}
         </select>
         <div className="sm-seg sm-product-btns" role="group" aria-label="제품">
           {choices.map((x) => <button key={x.id} type="button" className="sm-segbtn mono" aria-pressed={x.id === p?.id} onClick={() => { setSel(x.id); setHover(null); }}>{x.label}</button>)}
         </div>
         <div className="sm-seg" role="group" aria-label="기간">
-          {RANGES.map((r) => <button key={r.key} type="button" className="sm-segbtn mono" aria-pressed={r.key === range} onClick={() => { setRange(r.key); setHover(null); }}>{r.key}</button>)}
+          {RANGES.map((r) => {
+            const st = p?.coverage?.[r.key]?.status;
+            return <button key={r.key} type="button" className={`sm-segbtn mono${st && st !== "GOOD" ? " sm-partial" : ""}`} aria-pressed={r.key === range} title={st ? `${r.key} coverage ${st}` : undefined}
+              onClick={() => { setRange(r.key); setHover(null); }}>{r.key}</button>;
+          })}
         </div>
+        {prem?.available ? <label className="sm-toggle mono"><input type="checkbox" checked={showContract} onChange={(e) => setShowContract(e.target.checked)} data-testid="semi-contract-toggle" /> Contract</label> : null}
+      </div>
+      <div className="sm-cov mono" data-testid="semi-chart-coverage" data-status={cov?.status ?? "UNAVAILABLE"}>
+        {cov?.status === "GOOD"
+          ? <>HISTORY COVERAGE <b style={{ color: "var(--ok)" }}>{range} GOOD</b> · RAW {cov.raw} · 원천 {Object.entries(p?.sources ?? {}).map(([k, v]) => `${k.replace("dramexchange_", "DX ").replace("trendforce_", "TF ")} ${v}`).join(" / ")}</>
+          : <>HISTORY COVERAGE <b style={{ color: "var(--warn)" }}>{range} PARTIAL</b> · Available From {cov?.available_from ?? "–"} · RAW {cov?.raw ?? 0}{(c.coverage_table ?? []).find((r) => r.id === p?.id)?.reason ? ` — ${(c.coverage_table ?? []).find((r) => r.id === p?.id)!.reason}` : ""}</>}
       </div>
       <div ref={ref} className="sm-chart-wrap">
         {pts.length === 0 ? <div className="sm-empty mono">{NO}</div> : (
           <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p?.label} 현물 가격과 Spot Premium`} onPointerMove={onMove} onPointerLeave={() => setHover(null)} data-testid="semi-price-svg">
+            {prs.length ? <path d={area()} className="sm-area-prem" data-testid="semi-premium-area" /> : null}
             {prs.length ? <line x1={L} x2={W - R} y1={yQ(0)} y2={yQ(0)} className="sm-zero-line" data-testid="semi-zero-line" /> : null}
-            {pts.map((x, i) => x.premium === null ? null : (
-              <rect key={`q${i}`} className="sm-bar-prem" x={xT(x.t) - barW / 2} width={barW} y={Math.min(yQ(0), yQ(x.premium))} height={Math.max(1, Math.abs(yQ(x.premium) - yQ(0)))} />
-            ))}
-            <path d={line((x) => x.contract, yP)} className="sm-l-con" />
-            <path d={line((x) => x.spot, yP)} className="sm-l-spot" />
-            {pts.map((x, i) => <circle key={i} cx={xT(x.t)} cy={yP(x.spot)} r={pts.length <= 40 ? 2.6 : 0} className="sm-dot" />)}
+            {showContract ? <path d={line((x) => x.contract, yP, true)} className="sm-l-con" data-testid="semi-contract-line" /> : null}
+            <path d={line((x) => x.spot, yP)} className="sm-l-spot" data-testid="semi-spot-line" />
+            {rawDots.map((x, i) => <circle key={i} cx={xT(x.t)} cy={yP(x.spot)} r={2.4} className="sm-dot" />)}
             <text x={4} y={T + 8} className="sm-ax mono">{px(pmax + pad, 1)}</text>
             <text x={4} y={H - B} className="sm-ax mono">$0</text>
             {prs.length ? <><text x={W - 4} y={T + 8} className="sm-ax mono" textAnchor="end">{sg(qmax + qpad, 0)}</text><text x={W - 4} y={yQ(0) - 3} className="sm-ax mono" textAnchor="end">0%</text></> : null}
-            <text x={L} y={H - 6} className="sm-ax mono">{md(pts[0]!.iso)}</text>
-            <text x={W - R} y={H - 6} className="sm-ax mono" textAnchor="end">{md(pts[pts.length - 1]!.iso)}</text>
+            <text x={L} y={H - 6} className="sm-ax mono">{pts[0]!.iso}</text>
+            <text x={W - R} y={H - 6} className="sm-ax mono" textAnchor="end">{pts[pts.length - 1]!.iso}</text>
             {h ? <line x1={xT(h.t)} x2={xT(h.t)} y1={T} y2={H - B} className="sm-hover-line" /> : null}
           </svg>
         )}
         {h ? (
-          <div className="sm-tip mono" data-testid="semi-tooltip" style={{ left: Math.min(Math.max(0, xT(h.t) - 80), W - 170) }}>
-            <b>{h.iso.slice(0, 10)}</b><br />Spot {px(h.spot)}<br />Contract {h.contract !== null ? px(h.contract) : "–"}{h.contract !== null && prem ? ` (${prem.contract_anchor_label})` : ""}<br />Premium {h.premium !== null ? sg(h.premium) : "–"}
+          <div className="sm-tip mono" data-testid="semi-tooltip" data-origin={h.origin} style={{ left: Math.min(Math.max(0, xT(h.t) - 90), W - 200) }}>
+            <b>{h.iso}</b><br />Spot {px(h.spot)}<br />Latest Source Observation {h.src}<br />Origin {h.origin === "R" ? "RAW" : "CARRIED_FORWARD"}
+            <br />Contract {h.contract !== null ? `${px(h.contract)} (${anchorLabel(h.anchor)})` : "–"}<br />Premium {h.premium !== null ? sg(h.premium) : "–"}
           </div>
         ) : null}
       </div>
-      <div className="sm-legend mono"><span className="sm-lg-spot">— Spot</span><span className="sm-lg-con">-- Contract{prem?.comparability === "LOW" ? " (proxy, 칩 환산)" : ""}</span>{prs.length ? <span className="sm-lg-prem">▮ Premium (우축)</span> : null}</div>
+      <div className="sm-legend mono">
+        <span className="sm-lg-spot">— Spot (Daily State)</span>
+        {prem?.available && showContract ? <span className="sm-lg-con">-- Contract anchor{prem.proxy ? " (proxy, 칩 환산)" : ""}</span> : null}
+        {prs.length ? <span className="sm-lg-prem">▒ Premium (우축)</span> : null}
+        {rawDots.length ? <span className="sm-lg-spot">● RAW 관측일</span> : null}
+      </div>
       {prem && !prem.available ? <p className="sm-note">Spot Premium 계산 안 함 — {prem.reason}</p> : null}
-      {prem?.available ? <p className="sm-note">Premium = Spot ÷ 같은 시점까지 공개된 계약가 − 1. {prem.note} 관측 {prem.observations}개{(prem.observations ?? 0) < (prem.zscore_min_obs ?? 20) ? ` — z-score 는 ${prem.zscore_min_obs}개부터` : ""}.</p> : null}
+      {prem?.available ? (
+        <p className="sm-note" data-testid="semi-premium-stats">
+          Premium = 그날 알려진 Spot ÷ 그날 알려진 계약가 − 1(미래 계약가를 과거에 쓰지 않는다). 1Y z-score{" "}
+          {prem.z_status === "OK" ? <b>{prem.zscore ?? "–"} · percentile {prem.percentile_1y ?? "–"}% (RAW {prem.raw_premium_obs}개, 평균 {sg(prem.mean_1y, 1)})</b> : <b>NOT ENOUGH HISTORY (RAW {prem.raw_premium_obs ?? 0}/{prem.zscore_min_obs})</b>}
+          . {prem.conversion ? `환산: ${prem.conversion}. ` : ""}{prem.note}
+        </p>
+      ) : null}
+      {p ? <p className="sm-note mono">MA20 {px(p.ma20, 2)} · MA60 {px(p.ma60, 2)} · 6M {sg(p.change_6m)} · 1Y {sg(p.change_1y)} · {c.history_note ?? ""}</p> : null}
     </Panel>
   );
 }
@@ -240,7 +295,8 @@ function PremiumTable({ c }: { c: SemiconductorCycle }) {
           </div>
           {x.available ? (
             <div className="sm-prem-meta mono">
-              {x.state?.replace("_", " ")} · {x.direction} · 계약 {x.contract_anchor_label}{x.contract_stale ? <b style={{ color: "var(--warn)" }}> STALE</b> : null} · 1W {sg(x.change_1w_pp, 1, "pp")} · z {x.zscore ?? "–"}
+              {x.state?.replace("_", " ")} · {x.direction} · 계약 {x.contract_anchor_label}{x.contract_stale ? <b style={{ color: "var(--warn)" }}> STALE</b> : null} · 1W {sg(x.change_1w_pp, 1, "pp")} · 1M {sg(x.change_1m_pp, 1, "pp")}
+              {" · "}{x.z_status === "OK" ? <>1Y z {x.zscore ?? "–"} · pct {x.percentile_1y ?? "–"}%</> : <span data-testid="semi-not-enough">NOT ENOUGH HISTORY</span>} · RAW {x.raw_premium_obs ?? x.observations ?? 0}
             </div>
           ) : <div className="sm-prem-meta">{x.reason}</div>}
         </div>
@@ -260,21 +316,23 @@ function Momentum({ c }: { c: SemiconductorCycle }) {
       </div>
       {rows.map((p) => (
         <div key={p.id} className="sm-ev-row" data-testid="semi-momentum-row" data-id={p.id}>
-          <span className="sm-ev-name">{p.label}<small className="mono"> {p.momentum_basis === "SINCE_FIRST" ? `SINCE ${md(p.since_first_from)}` : p.momentum_basis === "NONE" ? "" : "1W·1M·3M"}</small></span>
+          <span className="sm-ev-name">{p.label}<small className="mono"> {p.momentum_basis === "SINCE_FIRST" ? `SINCE ${md(p.since_first_from)}` : p.momentum_basis === "NONE" ? "" : "1W·1M·3M"}
+            {p.momentum_confidence ? <> · conf <b data-testid="semi-mom-conf" style={{ color: p.momentum_confidence === "HIGH" ? "var(--ok)" : p.momentum_confidence === "MEDIUM" ? "var(--warn)" : "var(--faint)" }}>{p.momentum_confidence}</b></> : null}
+            {p.freshness?.days_since_source !== null && p.freshness?.days_since_source !== undefined ? ` · 원천 ${p.freshness.days_since_source}일 전 · RAW 1M ${p.raw_obs_1m ?? 0}` : ""}</small></span>
           {p.momentum === null ? <span className="sm-ev-bar mono sm-nd">{NO}</span> : (
             <span className="sm-ev-bar"><i className="sm-zero" /><i className="sm-fill" style={{ width: `${Math.min(100, Math.abs(p.momentum)) / 2}%`, [p.momentum >= 0 ? "left" : "right"]: "50%", background: p.momentum >= 0 ? "var(--up)" : "var(--down)" } as React.CSSProperties} />
               <b className="num mono">{sg(p.momentum, 0, "")}</b></span>
           )}
         </div>
       ))}
-      <p className="sm-note">−100 … +100. {b.note}</p>
+      <p className="sm-note">−100 … +100. 변화율은 Daily State 로, confidence 는 원천 갱신 간격·최근 30일 RAW 수로 정한다(같은 값 반복을 관측으로 세지 않는다). {b.note}</p>
     </Panel>
   );
 }
 
 // ── 6. NORMALIZED ────────────────────────────────────────
 function Normalized({ c }: { c: SemiconductorCycle }) {
-  const [range, setRange] = useState<"1M" | "3M" | "6M">("3M");
+  const [range, setRange] = useState<"1M" | "3M" | "6M" | "1Y">("1Y");
   const [ref, width] = useWidth<HTMLDivElement>();
   const rows: SemiNormalized[] = c.normalized[range] ?? [];
   const H = 200, L = 38, R = 12, T = 10, B = 22, W = Math.max(280, width);
@@ -287,7 +345,7 @@ function Normalized({ c }: { c: SemiconductorCycle }) {
   return (
     <Panel title="Normalized Comparison" note="기간 시작 = 100" wide testid="semi-normalized">
       <div className="sm-controls"><div className="sm-seg" role="group" aria-label="기간">
-        {(["1M", "3M", "6M"] as const).map((k) => <button key={k} type="button" className="sm-segbtn mono" aria-pressed={k === range} onClick={() => setRange(k)}>{k}</button>)}
+        {(["1M", "3M", "6M", "1Y"] as const).map((k) => <button key={k} type="button" className="sm-segbtn mono" aria-pressed={k === range} onClick={() => setRange(k)}>{k}</button>)}
       </div></div>
       <div ref={ref} className="sm-chart-wrap">
         {rows.length === 0 ? <div className="sm-empty mono">{NO} — 비교할 이력(2개 이상 관측)이 없다</div> : (
@@ -300,7 +358,7 @@ function Normalized({ c }: { c: SemiconductorCycle }) {
           </svg>
         )}
       </div>
-      <div className="sm-legend mono">{rows.map((r, i) => <span key={r.id} style={{ color: SERIES_COLORS[i % SERIES_COLORS.length] }}>— {r.label} {r.last.toFixed(1)} <small>(from {md(r.base_date)})</small></span>)}</div>
+      <div className="sm-legend mono">{rows.map((r, i) => <span key={r.id} style={{ color: SERIES_COLORS[i % SERIES_COLORS.length] }}>— {r.label} {r.last.toFixed(1)} <small>(from {r.base_date}{r.coverage && r.coverage !== "GOOD" ? ` · ${range} ${r.coverage}` : ""})</small></span>)}</div>
     </Panel>
   );
 }
@@ -522,6 +580,27 @@ function Quality({ c }: { c: SemiconductorCycle }) {
           </div>
         ))}
       </div>
+      {c.coverage_table?.length ? (
+        <>
+          <h3 className="sm-sub mono">PRODUCT HISTORY COVERAGE</h3>
+          <div className="sm-table sm-covtab" role="table" data-testid="semi-coverage-table">
+            <div className="sm-tr sm-th mono" role="row"><span>PRODUCT</span><span>SPOT</span><span>CONTRACT</span><span>PREMIUM</span><span>RAW OBS</span><span>LATEST</span><span>COVERAGE</span></div>
+            {c.coverage_table.map((r) => (
+              <div key={r.id} className="sm-tr" role="row" data-testid="semi-coverage-row" data-id={r.id} data-coverage={r.coverage}>
+                <span className="sm-name">{r.label}<small className="mono"> {r.frequency} · {Object.entries(r.windows).map(([k, v]) => `${k} ${v === "GOOD" ? "✓" : "P"}`).join(" ")}</small>
+                  {r.reason ? <small className="sm-reason"> {r.coverage} · Available From {r.available_from ?? "–"} — {r.reason}</small> : null}</span>
+                <span className="mono" data-label="SPOT">{r.spot_history_months}M</span>
+                <span className="mono" data-label="CONTRACT">{r.contract_history_months === null ? "–" : `${r.contract_history_months}M`}</span>
+                <span className="mono" data-label="PREMIUM">{r.premium_history_months === null ? "–" : `${r.premium_history_months}M`}<small> {r.premium_type}</small></span>
+                <span className="mono" data-label="RAW OBS">{r.raw_obs}</span>
+                <span className="mono" data-label="LATEST">{r.days_since === 0 ? "Today" : r.days_since === null ? "–" : `${r.days_since}D AGO`}</span>
+                <b className="mono" data-label="COVERAGE" style={{ color: r.coverage === "GOOD" ? "var(--ok)" : r.coverage === "PARTIAL" ? "var(--warn)" : "var(--faint)" }}>{r.coverage}</b>
+              </div>
+            ))}
+          </div>
+          <p className="sm-note">SPOT/CONTRACT/PREMIUM = 실제 원천 이력 개월 수(1년 기준). RAW OBS = 최근 1년 원천 관측 수(Daily State 반복값 제외). PARTIAL 제품은 다른 제품 값으로 메우지 않는다.</p>
+        </>
+      ) : null}
       {c.not_supported?.length ? <p className="sm-note">지원 안 함: {c.not_supported.join(" · ")}</p> : null}
     </Panel>
   );

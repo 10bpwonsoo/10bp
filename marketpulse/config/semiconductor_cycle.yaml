@@ -25,11 +25,32 @@ not_supported: ["DDR5 8Gb 현물 — DRAMeXchange 공개 표에 없다", "NAND �
 # comparability HIGH = 같은 칩끼리 · LOW = 모듈 환산 등 proxy(PROXY PREMIUM 으로 표시, 종합 판단 가중 낮게) · NONE = 계산하지 않는다
 premium_map:
   - {spot: DDR4_16G_SPOT, contract: DDR4_16G_CONTRACT,        contract_label: "DDR4 16Gb 2Gx8 계약",        units: 1, comparability: HIGH, weight: 1.0}
-  - {spot: DDR4_8G_SPOT,  contract: DDR4_8G_CONTRACT,         contract_label: "DDR4 8Gb 1Gx8 계약",         units: 1, comparability: HIGH, weight: 1.0}
+  - {spot: DDR4_8G_SPOT,  contract: DDR4_8G_CONTRACT,         contract_label: "DDR4 8Gb 1Gx8 계약",         units: 1, comparability: HIGH, weight: 1.0,
+     note: "같은 8Gb 1Gx8 칩. 현물은 3200 등급, 계약가는 DRAMeXchange PC DRAM 범용 평균(속도 등급 미표기) — 월간 계약가 2025-07~ 보도 인용(출처 링크)"}
   - {spot: DDR5_16G_SPOT, contract: DDR5_8GB_SODIMM_CONTRACT, contract_label: "DDR5 8GB SO-DIMM 계약 ÷ 4칩", units: 4, comparability: LOW,  weight: 0.4,
+     conversion: "chip-equivalent contract = 8GB SO-DIMM contract (USD/module) ÷ 4 (16Gb chips per 8GB module)",
      note: "DDR5 칩 계약가가 공개되지 않아 8GB SO-DIMM(16Gb 칩 4개) 모듈 계약가를 칩 단위로 나눈 proxy — 모듈 조립·PCB 비용이 섞여 있다"}
   - {spot: NAND_512G_TLC_WAFER, contract: null, comparability: NONE, note: "공개 NAND 계약가는 옛 MLC 칩뿐 — TLC 웨이퍼와 비교하지 않는다"}
-contract_stale_days: 45      # 계약가 공개 시각이 이보다 오래되면 STALE (월간 · 공개 지연)
+contract_stale_days: 45
+# ── 과거 DB · Daily State (2026-10-23) ─────────────────
+# RAW = data/memory_history(Daily Express 일간 · TrendForce 주간 · 월간 계약가) + data/semiconductor(홈 수집기). Daily State = 평일마다 그날까지 알려진 최근 RAW.
+history:
+  lookback_days: 400            # 13개월 남짓 — 1Y z-score · percentile · 이동평균 여유
+  coverage_windows: {"1M": 30, "3M": 91, "6M": 182, "1Y": 365}
+  max_gap_daily: 10             # 창 안 RAW 간격이 이보다 길면 PARTIAL(대만 설 연휴 9일까지는 허용)
+  max_gap_weekly: 16
+  max_ref_age_daily: 7          # 변화율 기준일의 원천 관측이 이보다 오래면 그 창은 계산하지 않는다
+  max_ref_age_weekly: 14
+  dense_raw_1m_daily: 15        # 최근 30일 RAW 가 이만큼 있어야 momentum confidence HIGH
+  dense_raw_1m_weekly: 3
+  partial_reasons:
+    DDR5_16G_SPOT: "공개 과거 출처 없음 — Daily Express 는 DDR4 주력 칩만 싣고, 공식 과거 차트는 MI 회원 전용. 2026-09-29 수집 시작분만"
+    DDR5_16G_ETT_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만"
+    DDR4_16G_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만(Daily Express 미수록)"
+    DDR4_16G_ETT_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만"
+    NAND_256G_TLC_WAFER: "공개 과거 출처 없음 — TrendForce 주간 기사는 512Gb 웨이퍼만 싣는다"
+    NAND_128G_TLC_WAFER: "공개 과거 출처 없음 — TrendForce 주간 기사는 512Gb 웨이퍼만 싣는다"
+    DDR5_8G_SPOT: "DRAMeXchange 공개 표·시황 어디에도 없다"      # 계약가 공개 시각이 이보다 오래되면 STALE (월간 · 공개 지연)
 premium_states:              # 현재 premium(%) → 상태. 위에서부터 첫 min 이상
   - {min: 30,   key: STRONG_PREMIUM, label: "STRONG PREMIUM"}
   - {min: 10,   key: PREMIUM,        label: "PREMIUM"}

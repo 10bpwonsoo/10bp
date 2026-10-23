@@ -63,12 +63,14 @@ def build_context(cyc: Mapping[str, Any]) -> dict:
     reg = cyc.get("regime") or {}
     prices = [{"product": p["label"], "tier": p["tier"], "price_usd": _r(p.get("current"), 3), "updated": (p.get("updated_at") or "")[:10],
                "chg_1w_pct": _r(p.get("change_1w")), "chg_1m_pct": _r(p.get("change_1m")), "chg_3m_pct": _r(p.get("change_3m")),
+               "chg_6m_pct": _r(p.get("change_6m")), "chg_1y_pct": _r(p.get("change_1y")),
                "chg_since_first_pct": _r(p.get("since_first")), "since": p.get("since_first_from"), "observations": p.get("observations"),
-               "momentum_state": p.get("momentum_state") or "NO DATA"}
+               "history_1y": ((p.get("coverage") or {}).get("1Y") or {}).get("status"), "momentum_state": p.get("momentum_state") or "NO DATA"}
               for p in cyc.get("memory_prices") or [] if p.get("available")]
     prem = [{"spot": x["spot_label"], "contract": x.get("contract_label"), "comparability": x.get("comparability"), "premium_pct": _r(x.get("current")),
              "direction": x.get("direction"), "contract_anchor_month": x.get("contract_anchor_label"), "contract_stale": x.get("contract_stale"),
-             "proxy": x.get("proxy", False)} if x.get("available") else {"spot": x["spot_label"], "status": "NOT COMPUTED", "reason": x.get("reason")}
+             "proxy": x.get("proxy", False), "zscore_1y": x.get("zscore"), "percentile_1y": x.get("percentile_1y"), "mean_1y_pct": _r(x.get("mean_1y")),
+             "z_status": x.get("z_status"), "raw_premium_obs": x.get("raw_premium_obs")} if x.get("available") else {"spot": x["spot_label"], "status": "NOT COMPUTED", "reason": x.get("reason")}
             for x in cyc.get("spot_premium") or []]
     ex = cyc.get("export_nowcast") or {}
     now = ex.get("nowcast") or {}
@@ -92,6 +94,7 @@ def build_context(cyc: Mapping[str, Any]) -> dict:
                 "anchors": [{"item": a["label"], "value": a.get("value"), "date": a.get("date"), "chg_pct": a.get("change_pct")} for a in hbm.get("anchors") or [] if a.get("available")]},
         "export": export,
         "equity": {"status": eq.get("status"), "stocks": [{"name": s["label"], "ret_1m_pct": _r(s.get("ret_1m"), 1), "confirmation": s.get("confirmation")} for s in eq.get("stocks") or []]},
+        "turning_point": (cyc.get("turning") or {}).get("signal"),
         "headlines": news,
         "data_gaps": [d["item"] for d in cyc.get("data_quality") or [] if d.get("status") == "UNAVAILABLE"],
         "displayed_elsewhere": {"numbers": displayed, "note": "화면 상단에 이미 보이는 숫자 — MARKET READ 에서 반복하지 않는다"},
