@@ -1,5 +1,5 @@
-# 조사용(2026-10-23) — DRAMeXchange 공식 Historical Price Chart(chart.dramexchange.com)가 제품별로 얼마나 과거까지 나오는지 확인한다.
-# Claude 세션의 네트워크 정책이 이 호스트를 막고 있어 러너에서 확인한다. 결과는 로그에만 출력하고 아무것도 커밋하지 않는다. 조사가 끝나면 지운다.
+# 조사용(2026-10-23) — TrendForce 주간 'Memory Spot Price Update' 기사(공개)가 2025-08 이후 몇 편이고, 제품별 가격 문장이 몇 개인지 센다.
+# Claude 세션의 네트워크 정책이 trendforce.com 을 막고 있어 러너에서 확인한다. 결과는 로그에만 출력하고 아무것도 커밋하지 않는다. 조사가 끝나면 지운다.
 name: probe-memory-history
 on:
   push:
@@ -10,34 +10,44 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: probe chart.dramexchange.com
+      - name: enumerate TrendForce weekly spot articles
         shell: bash
         run: |
           set +e
-          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-          mkdir -p /tmp/p
-          fetch() {  # $1 = name, $2 = query
-            f="/tmp/p/$1.html"
-            code=$(curl -sS -L -m 60 -A "$UA" -e "https://www.dramexchange.com/" -o "$f" -w "%{http_code} %{content_type}" "https://chart.dramexchange.com/chart.php?$2")
-            echo "== $1 [$2] -> $code size=$(wc -c < "$f")"
-            python3 - "$f" <<'PY'
-          import re, sys
-          t = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
-          dates = re.findall(r"20\d\d[-/.]\d{1,2}[-/.]\d{1,2}", t)
-          print("  dates:", len(dates), "first:", dates[:3], "last:", dates[-3:])
-          srcs = sorted(set(re.findall(r'(?:src|href|url)\s*[=:]\s*["\']([^"\']+)["\']', t)))
-          print("  refs:", [s for s in srcs if not s.startswith("data:")][:15])
-          body = re.sub(r"\s+", " ", t)
-          i = max(body.find("data"), 0)
-          print("  head:", body[:700])
-          for m in list(re.finditer(r"(\[\s*\[?[^\]]{0,40}20\d\d[^\]]{0,200}\])", body))[:2]:
-              print("  arr:", m.group(1)[:300])
+          python3 - <<'PY'
+          import html, json, re, time, urllib.parse, urllib.request
+          UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+          def get(u):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=60) as r:
+                      return r.status, r.read().decode("utf-8", "ignore")
+              except Exception as e:
+                  return getattr(e, "code", 0), str(e)
+          posts = []
+          for page in range(1, 6):
+              q = urllib.parse.urlencode({"search": "Memory Spot Price Update", "per_page": 100, "page": page, "after": "2025-07-01T00:00:00", "_fields": "id,date,link,title,content"})
+              st, body = get(f"https://www.trendforce.com/news/wp-json/wp/v2/posts?{q}")
+              print("page", page, "HTTP", st, "len", len(body))
+              if st != 200:
+                  print(body[:300]); break
+              rows = json.loads(body)
+              if not rows: break
+              posts += rows
+              time.sleep(1)
+          posts = [p for p in posts if "spot price update" in html.unescape(p["title"]["rendered"]).lower()]
+          posts.sort(key=lambda p: p["date"])
+          print("ARTICLES", len(posts), posts[0]["date"] if posts else None, posts[-1]["date"] if posts else None)
+          keys = {"DDR4_8G": r"DDR4 1Gx8|DDR4 8Gb|mainstream chips", "DDR4_16G": r"DDR4 16Gb|2Gx8", "DDR5_16G": r"DDR5 16Gb|DDR5", "NAND_512": r"512Gb TLC", "NAND_256": r"256Gb TLC"}
+          cnt = {k: 0 for k in keys}
+          for p in posts:
+              txt = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", p["content"]["rendered"])).split())
+              sents = [s for s in re.split(r"(?<=[.])\s+", txt) if "US$" in s]
+              hit = {k for k, rx in keys.items() if any(re.search(rx, s) for s in sents)}
+              for k in hit: cnt[k] += 1
+              print(f"## {p['date'][:10]} {p['link']}")
+              for s in sents[:4]:
+                  print("   ", s[:260])
+          print("COUNTS", json.dumps(cnt))
           PY
-          }
-          curl -sS -L -m 60 -A "$UA" -e "https://www.dramexchange.com/" "https://chart.dramexchange.com/chart.php?class=spot&item=dram&type=475&days=400" -o /tmp/p/a.html
-          python3 -c "import re,html;t=open('/tmp/p/a.html',encoding='utf-8',errors='ignore').read();t=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S|re.I);print('TEXT:',' '.join(html.unescape(re.sub(r'<[^>]+>',' ',t)).split())[:2000])"
-          grep -oiE '<(form|iframe|img)[^>]*>' /tmp/p/a.html | head -10
-          for u in js/Calendar.js; do :; done
-          curl -sS -L -m 60 -A "$UA" -e "https://chart.dramexchange.com/" "https://chart.dramexchange.com/chart.php?class=spot&item=dram&type=475&days=400&from=2025-09-01" | wc -c
