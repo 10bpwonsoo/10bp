@@ -45,6 +45,8 @@ def model_version(tab_id: str) -> str:
             from ..engines.oil_regime import ENGINE_VERSION as v  # noqa: F811
         elif tab_id == "memory_cycle":
             from ..engines.semiconductor import ENGINE_VERSION as v  # noqa: F811
+        elif tab_id == "semiconductor_cycle":
+            from ..engines.semiconductor_cycle import ENGINE_VERSION as v  # noqa: F811
     except Exception:
         v = "0"
     _MODEL[tab_id] = f"{tab_id}_v{v}"

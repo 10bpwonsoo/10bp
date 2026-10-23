@@ -11,7 +11,8 @@ holidays: []                 # 휴장일 캘린더 확장 자리 — YYYY-MM-DD 
 cutoff_time: "07:30"         # 과거 재구성(backfill)의 기준 시각 — 그 한국 날짜 07:30 KST 에 이미 공개된 데이터만 쓴다
 # 화면 하나를 그리는 데 쓰는 섹션. snapshot 은 필수 — 이것이 없으면 저장하지 않는다. 나머지는 실패해도 null + errors 로 저장(PARTIAL).
 required: [snapshot]
-sections: [snapshot, cockpit, market_state_history, ai_regime, rates_regime, oil_regime, investment, scenario_checks, analyst_views, daily_history, news]
+sections: [snapshot, cockpit, market_state_history, ai_regime, rates_regime, oil_regime, investment, scenario_checks, analyst_views, daily_history, news, semiconductor_cycle]
+# semiconductor_cycle(2026-10-23~): 반도체 사이클 탭 전체. 이 섹션이 없는 과거 저장본은 'NOT ARCHIVED' 로 보이고 현재 값으로 메우지 않는다
 # 하위 섹션의 as_of 는 snapshot.as_of 와 같아야 한다(같은 snapshot 위에서 계산). 아래 섹션은 자기 계산 시각을 as_of 로 갖는다 —
 # Investment 는 종목 시계열을 따로 받아 계산한 시각이라 snapshot 뒤 as_of_window_sec 안이면 같은 저장 회차로 본다.
 as_of_independent: [analyst_views, news, daily_history, scenario_checks]

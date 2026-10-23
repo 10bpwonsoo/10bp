@@ -28,6 +28,7 @@ logic_files:
   rates_regime: [rates_regime.yaml, themes.yaml, scoring.yaml]
   oil_regime: [oil_regime.yaml, themes.yaml, scoring.yaml]
   memory_cycle: [intelligence.yaml]
+  semiconductor_cycle: [semiconductor_cycle.yaml]
 tabs:
   market_regime:
     label: "Market Regime"
@@ -109,3 +110,17 @@ tabs:
       DOWNCYCLE:         {label: "Downcycle signals", color: "--lbl-risk-off"}
       MIXED:             {label: "Mixed",             color: "--lbl-policy"}
       INSUFFICIENT_DATA: {label: "Insufficient data", color: "--lbl-neutral"}
+  # 반도체 사이클 탭(2026-10-23) — 기록은 이 탭이 생긴 날부터. 그 전 날짜는 그 날짜까지 공개된 가격·수출·주가만으로 1회 계산(BACKFILLED, 뉴스 제외) 후 고정
+  semiconductor_cycle:
+    label: "Semiconductor Cycle"
+    label_ko: "반도체 사이클"
+    kind: label
+    score_label: "Cycle composite"
+    score_range: [-100, 100]
+    states:
+      STRONG_UPSWING: {label: "Strong Upswing", color: "--lbl-risk-on"}
+      UPSWING:        {label: "Upswing",        color: "--lbl-growth"}
+      EARLY_RECOVERY: {label: "Early Recovery", color: "--lbl-policy"}
+      NEUTRAL:        {label: "Neutral",        color: "--lbl-neutral"}
+      DOWNTURN:       {label: "Downturn",       color: "--lbl-inflation"}
+      DEEP_DOWNTURN:  {label: "Deep Downturn",  color: "--lbl-risk-off"}

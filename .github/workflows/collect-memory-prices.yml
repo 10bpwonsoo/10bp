@@ -1,5 +1,5 @@
 # 메모리 가격 일일 수집 — DRAMeXchange 현물(DRAM · DDR5 · NAND · DXI)과 Silicon Analysts HBM 계약가 앵커를
-# marketpulse/data/replay/alternative/*.csv 에 하루 한 줄씩 쌓는다. 키·비밀 없음(공개 페이지 · 무료 익명 API).
+# marketpulse/data/replay/alternative/*.csv 에 하루 한 줄씩 쌓는다. 반도체 사이클 탭용 전 제품 현물·계약가는 data/semiconductor/ (2026-10-23). 키·비밀 없음(공개 페이지 · 무료 익명 API).
 # DRAMeXchange 는 공개 이력이 없어 이렇게 쌓아야 Commodity Memory 의 변화율·z(20봉)가 생긴다.
 # 수집 시각: DRAMeXchange 갱신(11:00 GMT+8) 뒤인 03:40 UTC(12:40 KST). 같은 날 다시 돌리면 그 날 줄을 덮어쓴다.
 name: collect-memory-prices
@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "marketpulse-collector"
           git config user.email "marketpulse-collector@users.noreply.github.com"
-          git add marketpulse/data/replay/alternative/*.csv
+          git add marketpulse/data/replay/alternative/*.csv marketpulse/data/semiconductor/spot/*.csv marketpulse/data/semiconductor/contract/*.csv
           if git diff --cached --quiet; then
             echo "no new rows"
           else

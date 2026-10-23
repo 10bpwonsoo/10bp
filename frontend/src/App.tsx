@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { fetchArchive, fetchArchiveIndex, fetchInfo, fetchScenarios, staticBundle } from "./api/client";
 import { setActiveArchive, type ArchiveIndexRow, type DashboardArchive } from "./api/archive";
 import { ArchiveBanner, ArchiveControl, NotArchivedPanel, kstDate } from "./components/ArchiveControl";
@@ -16,11 +16,15 @@ import { useOilRegime } from "./api/useOilRegime";
 import { useRatesRegime } from "./api/useRatesRegime";
 import { useAiRegime } from "./api/useAiRegime";
 import { useCockpit } from "./api/useCockpit";
+import { useSemiconductorCycle } from "./api/semiconductor";
+import { SemiconductorCycleView, SemiconductorNotArchived } from "./components/SemiconductorCycleView";
 import { CockpitView } from "./components/CockpitView";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
 const DATE_Q = /^\d{4}-\d{2}-\d{2}$/;
+/** 반도체 사이클 탭(2026-10-23) — 시나리오 점검 탭이 아니라 별도 화면. AI 센티 탭 바로 뒤에 놓는다. */
+const SEMI_TAB = "__semiconductor_cycle__";
 
 /** 주소의 날짜 — ?date=YYYY-MM-DD (예전 링크의 #YYYY-MM-DD 도 읽는다). LIVE 는 date 없음. */
 function urlDate(): string | null {
@@ -106,6 +110,8 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
   // 시나리오 점검 — 모의 탭을 실데이터로 바꾼 것. 데이터를 바꾸지 않고 '지금 시장이 그 시나리오와 얼마나 닮았나' 를 위에 붙인다.
   const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
   const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
+  const semiOpen = checkName === SEMI_TAB;
+  const { cycle: semiCycle, error: semiError } = useSemiconductorCycle(scenario, snapshot?.as_of ?? null, mode !== null && semiOpen && !(archive && archive.semiconductor_cycle == null));
   // 실시간 탭은 하나(decision cockpit)다 — 2026-10-07 에 기존 그리드 탭을 지우고 이 탭을 '실시간' 으로 불렀다.
   // 기존 대시보드 그리드(Market State → 히트맵 → … → Investment)는 cockpit 의 Details 안에, 그리고 집계를 못 받을 때의 대체 화면으로 남는다.
   const liveLabel = mode === "MOCK" ? "판정만" : "실시간";
@@ -115,7 +121,7 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
   const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
   const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
   // '실시간 2' 탭 — decision cockpit. 집계를 못 받으면 기존 대시보드 그리드로 떨어진다(기능 삭제 아님, 기존 화면은 Details 로도 열린다).
-  const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null);
+  const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null && !semiOpen);
 
   // LIVE 화면의 날짜를 위로 알린다 — 과거 화면에서도 'LIVE · 날짜' 를 보이고 ◀ 기준으로 쓴다
   const asOf = snapshot?.as_of ?? null;
@@ -164,12 +170,16 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
             <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
               {liveLabel}
             </button>
-            {checks.map((c) => (
-              <button key={c.name} type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
-                {c.title.split(" — ")[0]}
-                <span className="num" style={{ color: scoreColor(c.match_score) }}>{c.match_score.toFixed(0)}%</span>
-              </button>
+            {checks.map((c, i) => (
+              <Fragment key={c.name}>
+                <button type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
+                  {c.title.split(" — ")[0]}
+                  <span className="num" style={{ color: scoreColor(c.match_score) }}>{c.match_score.toFixed(0)}%</span>
+                </button>
+                {i === semiAfter(checks) ? <SemiTabButton on={semiOpen} onClick={() => setCheckName(SEMI_TAB)} /> : null}
+              </Fragment>
             ))}
+            {semiAfter(checks) < 0 ? <SemiTabButton on={semiOpen} onClick={() => setCheckName(SEMI_TAB)} /> : null}
           </div>
         ) : null}
         {snapshot ? (
@@ -203,7 +213,11 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
 
       {snapshot ? (
         <>
-          {activeCheck && archive && archivedTabMissing(archive, activeCheck.focus) ? (
+          {semiOpen ? (
+            archive && archive.semiconductor_cycle == null ? <SemiconductorNotArchived />
+              : semiCycle ? <SemiconductorCycleView cycle={semiCycle} />
+              : <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }} data-testid="semi-loading">{semiError ? semiError.message : "반도체 사이클을 불러오는 중…"}</div></section></div>
+          ) : activeCheck && archive && archivedTabMissing(archive, activeCheck.focus) ? (
             <NotArchivedPanel what={activeCheck.title.split(" — ")[0] ?? activeCheck.name} />
           ) : activeCheck ? (
             /* 시나리오 탭 — 실데이터 화면을 복제하지 않는다. 그 탭에 어울리는 판정만. */
@@ -246,4 +260,17 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
 function archivedTabMissing(a: DashboardArchive, focus: string | null | undefined): boolean {
   const need = focus === "oil_regime" ? "oil_regime" : focus === "rates_regime" ? "rates_regime" : focus === "ai_regime" || focus === "ai_regime_full" ? "ai_regime" : null;
   return need !== null && (a[need] === null || a[need] === undefined);
+}
+
+/** 반도체 사이클 탭 버튼 — AI 센티(ai_regime*) 탭 바로 뒤. 없으면 시나리오 탭 맨 끝(-1). */
+export function semiAfter(checks: { focus?: string | null }[]): number {
+  return checks.findIndex((c) => c.focus === "ai_regime" || c.focus === "ai_regime_full");
+}
+
+function SemiTabButton({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className="sc-tab mono" aria-pressed={on} onClick={onClick} data-testid="semi-tab" title="반도체 사이클 — 메모리 가격 → Spot Premium → 계약가 → HBM → 수출 → 주가">
+      반도체 사이클
+    </button>
+  );
 }

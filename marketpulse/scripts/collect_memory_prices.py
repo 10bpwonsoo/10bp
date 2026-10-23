@@ -3,6 +3,7 @@
 
   python -m marketpulse.scripts.collect_memory_prices            # 둘 다
   python -m marketpulse.scripts.collect_memory_prices --only dramx
+  python -m marketpulse.scripts.collect_memory_prices --only semi    # 반도체 사이클 탭 저장소만 (2026-10-23)
 
 DRAMeXchange 는 공개 이력이 없어 **하루 한 줄씩 쌓는다**(같은 날 두 번 돌리면 덮어쓴다). 키·비밀 없음.
 개인 참고 용도의 표를 읽는 것이라 재배포하지 않는다. Silicon Analysts 는 무료 익명 API — 최신 조각만 온다.
@@ -20,11 +21,18 @@ import urllib.request
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from ..adapters.alternative.memory_sources import hbm_rows, parse_dramexchange_home
+from ..adapters.alternative.memory_sources import hbm_rows, parse_contract_json, parse_dramexchange_home, parse_dramexchange_tables
 from ..config.settings import PACKAGE_ROOT
 
 logger = logging.getLogger("collect_memory_prices")
 REPLAY = PACKAGE_ROOT / "data" / "replay" / "alternative"
+#: 반도체 사이클 탭 저장소(2026-10-23) — 다른 탭이 읽는 replay CSV 와 섞지 않는다. 제품·계약가마다 한 파일, 공개 시각(updated_at) 한 줄.
+SEMI = PACKAGE_ROOT / "data" / "semiconductor"
+CONTRACT_URLS = {"dram": "https://dramexchange.com/Home/HomePrice?Source=NationalDramContract", "flash": "https://dramexchange.com/Home/HomePrice?Source=NationalFlashContract"}
+#: 계약가 표의 이름 → 저장 id. 표에 없는 제품(DDR5 칩 · TLC NAND)은 만들지 않는다
+CONTRACT_IDS = {"DDR4 16Gb 2Gx8": "DDR4_16G_CONTRACT", "DDR4 8Gb 1Gx8": "DDR4_8G_CONTRACT", "DDR4 4Gb 256Mx16": "DDR4_4G_CONTRACT", "DDR3 4Gb 256Mx16": "DDR3_4G_CONTRACT",
+                "DDR5 8GB SO-DIMM": "DDR5_8GB_SODIMM_CONTRACT", "DDR4 16GB SO-DIMM": "DDR4_16GB_SODIMM_CONTRACT", "DDR4 8GB SO-DIMM": "DDR4_8GB_SODIMM_CONTRACT",
+                "NAND 128Gb 16Gx8 Speedns": "NAND_MLC_128G_CONTRACT", "NAND 64Gb 8Gx8 Speedns": "NAND_MLC_64G_CONTRACT", "NAND 32Gb 4Gx8 Speedns": "NAND_MLC_32G_CONTRACT"}
 DRAMX_URL = "https://dramexchange.com/"  # www. 는 다른 호스트로 취급되니 붙이지 않는다
 SA_HBM_URL = "https://siliconanalysts.com/api/v1/market-data/hbm-pricing"
 #: 화면 항목 → Silicon Analysts series_key. 계약가($/GB)만 쓴다 — per-stack 환산·TAM 역산 계열은 뺀다
@@ -90,9 +98,48 @@ def collect_hbm(doc: dict | None = None) -> dict[str, int]:
     return out
 
 
+def collect_semiconductor(page: str | None = None, contracts: dict[str, list] | None = None, collected: datetime | None = None) -> dict[str, int]:
+    """반도체 사이클 탭: 현물 전 제품 + DRAM·NAND 계약가 → data/semiconductor/{spot,contract}/<id>.csv.
+    한 줄 = 공개 시각(updated_at) 하나. 같은 공개 시각이 다시 오면(갱신 전 재수집) 덮어쓰지 않고 그대로 둔다."""
+    page = page if page is not None else _get(DRAMX_URL).decode("utf-8", errors="ignore")
+    collected = collected or datetime.now(timezone.utc)
+    out: dict[str, int] = {}
+    fields = ["updated_at", "close", "change_pct", "high", "low", "item", "collected_at", "source"]
+    for iid, row in parse_dramexchange_tables(page).items():
+        if row.get("updated_at") is None:
+            logger.warning("%s: 갱신 시각을 못 읽어 저장하지 않는다", iid); continue
+        path = SEMI / "spot" / f"{iid}.csv"
+        rows = _read_csv(path); stamp = row["updated_at"].isoformat()
+        if not any(r.get("updated_at") == stamp for r in rows):
+            rows.append({"updated_at": stamp, "close": f"{row['value']:.4f}", "change_pct": row["change_pct"], "high": row["high"], "low": row["low"], "item": row["item"],
+                         "collected_at": collected.isoformat(timespec="seconds"), "source": "dramexchange.com home"})
+        rows.sort(key=lambda r: r["updated_at"])
+        _write_csv(path, rows, fields); out[iid] = len(rows)
+    cfields = ["updated_at", "avg", "high", "low", "avg_change_pct", "item", "collected_at", "source"]
+    for kind, url in CONTRACT_URLS.items():
+        doc = (contracts or {}).get(kind)
+        if doc is None:
+            try:
+                doc = json.loads(_get(url))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("계약가(%s) 수집 실패: %s", kind, exc); continue
+        for name, row in parse_contract_json(doc).items():
+            iid = CONTRACT_IDS.get(name)
+            if iid is None:
+                continue
+            path = SEMI / "contract" / f"{iid}.csv"
+            rows = _read_csv(path); stamp = row["updated_at"].isoformat()
+            if not any(r.get("updated_at") == stamp for r in rows):
+                rows.append({"updated_at": stamp, "avg": row["avg"], "high": row["high"], "low": row["low"], "avg_change_pct": row["avg_change_pct"], "item": name,
+                             "collected_at": collected.isoformat(timespec="seconds"), "source": f"dramexchange.com {kind} contract"})
+            rows.sort(key=lambda r: r["updated_at"])
+            _write_csv(path, rows, cfields); out[iid] = len(rows)
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("--only", choices=["dramx", "hbm"], default=None)
+    ap.add_argument("--only", choices=["dramx", "hbm", "semi"], default=None)
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     rc = 0
@@ -102,6 +149,11 @@ def main(argv: list[str] | None = None) -> int:
             print("dramexchange:", {k: v["value"] for k, v in got.items()})
         except Exception as exc:  # noqa: BLE001
             logger.error("DRAMeXchange 수집 실패: %s", exc); rc = 1
+    if args.only in (None, "semi"):
+        try:
+            print("semiconductor:", collect_semiconductor())
+        except Exception as exc:  # noqa: BLE001
+            logger.error("반도체 사이클 수집 실패: %s", exc); rc = 1
     if args.only in (None, "hbm"):
         try:
             print("hbm:", collect_hbm())

@@ -113,6 +113,12 @@ export const fetchRatesRegime = (scenario?: string, signal?: AbortSignal) => {
   return get<RatesRegime>(`/api/v1/rates-regime${q}`, signal);
 };
 
+/** 반도체 사이클 탭(2026-10-23). 과거 날짜는 저장본의 semiconductor_cycle 섹션만 — 없으면 NOT ARCHIVED(지금 값으로 메우지 않는다). */
+export const fetchSemiconductorCycle = (scenario?: string, signal?: AbortSignal) => {
+  const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
+  return get<import("./semiconductor").SemiconductorCycle>(`/api/v1/semiconductor-cycle${q}`, signal);
+};
+
 export const fetchAiRegime = (scenario?: string, signal?: AbortSignal) => {
   const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
   return get<AiRegime>(`/api/v1/ai-regime${q}`, signal);

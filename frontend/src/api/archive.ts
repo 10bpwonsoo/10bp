@@ -45,7 +45,7 @@ export const ARCHIVE_SECTIONS = [
 export const SECTION_LABEL: Record<string, string> = {
   snapshot: "스냅샷", cockpit: "실시간 cockpit", market_state_history: "Market Regime History", ai_regime: "AI 센티",
   rates_regime: "금리", oil_regime: "유가", investment: "Investment", scenario_checks: "시나리오 탭",
-  analyst_views: "Analyst View", daily_history: "Daily History", news: "뉴스 원문",
+  analyst_views: "Analyst View", daily_history: "Daily History", news: "뉴스 원문", semiconductor_cycle: "반도체 사이클",
 };
 
 let active: DashboardArchive | null = null;
@@ -96,6 +96,7 @@ export function resolveArchived(a: DashboardArchive, rawPath: string): unknown {
   if (path === "/api/v1/oil-regime") return section(a, "oil_regime");
   if (path === "/api/v1/rates-regime") return section(a, "rates_regime");
   if (path === "/api/v1/ai-regime") return section(a, "ai_regime");
+  if (path === "/api/v1/semiconductor-cycle") return section(a, "semiconductor_cycle"); // 2026-10-23~ · 그 전 저장본은 NOT ARCHIVED
   if (path === "/api/v1/cockpit") return section(a, "cockpit");
   if (path === "/api/v1/analyst-views") return section(a, "analyst_views");
   if (path === "/api/v1/news") return section(a, "news");

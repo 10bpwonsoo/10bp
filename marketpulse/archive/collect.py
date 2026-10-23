@@ -30,6 +30,7 @@ CAPTURE_FILES = {
     "analyst_views": "analyst_views.json",
     "daily_history": "daily_history.json",
     "news": "news_live.json",
+    "semiconductor_cycle": "semiconductor_cycle.json",
 }
 
 
@@ -61,7 +62,13 @@ def live_collectors(settings) -> dict[str, Collector]:
         "analyst_views": lambda: deps.get_analyst_view_service().get(settings, None),
         "daily_history": daily_history,
         "news": lambda: build_news_adapter(settings).fetch_news(limit=50),
+        "semiconductor_cycle": lambda: _semi(settings),
     }
+
+
+def _semi(settings):
+    from ..api.semi_service import get_semiconductor_cycle_service
+    return get_semiconductor_cycle_service().get(settings)
 
 
 def capture_dir_collectors(directory: Path) -> dict[str, Collector]:

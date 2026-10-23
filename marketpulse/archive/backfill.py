@@ -69,7 +69,7 @@ def build_one(svc: DailyArchiveService, day: date, *, inputs: Path, cutoff: date
         fetch_macro_vintage(out / "macro_raw.json", cutoff)
     tags = json.loads((out / "manual_tags.json").read_text(encoding="utf-8"))["tags"] if (out / "manual_tags.json").exists() else {}
     extra = json.loads((out / "extra_news.json").read_text(encoding="utf-8")) if (out / "extra_news.json").exists() else []
-    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read") if (out / f"{k}_session.json").exists()}
+    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read", "semiconductor_read") if (out / f"{k}_session.json").exists()}
     prev = _previous_archive(svc, day)
     since = _ts(((prev or {}).get("meta") or {}).get("source_asof")) if prev else None
     hist_dir = get_settings().history_dir
@@ -94,6 +94,7 @@ def build_one(svc: DailyArchiveService, day: date, *, inputs: Path, cutoff: date
         "data_vintage": manifest.get("vintage"),
         "news_coverage": manifest.get("news"),
         "llm": {"rates_market_read": manifest.get("rates", {}).get("market_read"), "inflation_read": manifest.get("rates", {}).get("inflation_read"),
+                "semiconductor_market_read": (manifest.get("semiconductor_cycle") or {}).get("market_read"),
                 "api_status": "API 호출 실패 시 같은 컨텍스트·프롬프트·검증의 세션 생성본 → 없으면 규칙 문장(화면에 출처 표시)"},
         "capture_dir": str(out.relative_to(PKG)),
         "policy_events_file": "data/policy_events — 그 날짜 이하 가장 최근 수기 파일(일정은 as_of 로 다시 거름)",

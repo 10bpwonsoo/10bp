@@ -353,6 +353,18 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
           for tab in ("market_regime", "ai_sentiment", "ai_regime", "rates_regime", "oil_regime", "memory_cycle")}
     (out / "daily_history.json").write_text(json.dumps(dh, ensure_ascii=False), encoding="utf-8")
 
+    # 13) SEMICONDUCTOR CYCLE (2026-10-23~) — 같은 cutoff 의 종목·지수 계열 + 그날 기사. 현물·계약가·수출은 공개 시각 <= cutoff 만(엔진이 자른다)
+    from ..engines.semiconductor_cycle import build_semiconductor_cycle
+    from ..history.semi import sync_semiconductor
+    semi_series = {**base, **uni}
+    semi = build_semiconductor_cycle(as_of=live.as_of, series_by_id=semi_series, events=[e.model_dump(mode="json") for e in live.events],
+                                     session_read=reads.get("semiconductor_read"), client=client)
+    semi["memory_history"] = sync_semiconductor(manager, semi, series_by_id=semi_series, as_of=live.as_of).model_dump(mode="json")
+    (out / "semiconductor_cycle.json").write_text(json.dumps(semi, ensure_ascii=False), encoding="utf-8")
+    from ..ai.semi_read import build_context as semi_context
+    (out / "semiconductor_read_context.json").write_text(json.dumps(semi_context(semi), ensure_ascii=False, indent=1), encoding="utf-8")
+    summary["semiconductor_cycle"] = {"regime": semi["regime"]["label"], "composite": semi["regime"]["composite"], "market_read": semi["market_read"]["source"] + "/" + semi["market_read"]["generator"]}
+
     summary["vintage"] = {
         "market_series": {"data_vintage": "CURRENT_SERIES", "vintage_guaranteed": False,
                           "note": "Yahoo 일봉(수정종가)·FRED 시장금리를 지금 받아 cutoff 에 이미 끝난 봉만 남겼다 — 사후 수정은 드물지만 vintage 가 보장되지는 않는다"},

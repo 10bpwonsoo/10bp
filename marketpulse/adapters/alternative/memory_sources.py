@@ -21,6 +21,18 @@ DRAMX_ITEMS: dict[str, str] = {
     "DDR5_SPOT": "DDR5 16Gb (2Gx8) 4800/5600",
     "NAND_SPOT": "512Gb TLC",
 }
+#: 반도체 사이클 탭(2026-10-23) — 홈페이지 표의 제품 전체. id → (표의 행 이름, 표 종류). 표 종류마다 갱신 시각 줄이 따로 있다.
+SEMI_SPOT_ITEMS: dict[str, tuple[str, str]] = {
+    "DDR5_16G_SPOT": ("DDR5 16Gb (2Gx8) 4800/5600", "dram"),
+    "DDR5_16G_ETT_SPOT": ("DDR5 16Gb (2Gx8) eTT", "dram"),
+    "DDR4_16G_SPOT": ("DDR4 16Gb (2Gx8) 3200", "dram"),
+    "DDR4_16G_ETT_SPOT": ("DDR4 16Gb (2Gx8) eTT", "dram"),
+    "DDR4_8G_SPOT": ("DDR4 8Gb (1Gx8) 3200", "dram"),
+    "DDR4_8G_ETT_SPOT": ("DDR4 8Gb (1Gx8) eTT", "dram"),
+    "NAND_512G_TLC_WAFER": ("512Gb TLC", "wafer"),
+    "NAND_256G_TLC_WAFER": ("256Gb TLC", "wafer"),
+    "NAND_128G_TLC_WAFER": ("128Gb TLC", "wafer"),
+}
 _MON = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
 
 
@@ -71,6 +83,55 @@ def parse_dramexchange_home(page: str) -> dict[str, dict]:
         yr = stamp_dates[0].year if stamp_dates else date.today().year
         out["DXI"] = {"item": "DXI", "value": float(val.replace(",", "")), "change_abs": float(chg_abs.replace(",", "")),
                       "change_pct": float(chg_pct), "session_date": date(yr, _MON[mon], int(dd)) if mon in _MON else None}
+    return out
+
+
+def parse_dramexchange_tables(page: str) -> dict[str, dict]:
+    """홈페이지 HTML → 반도체 사이클 탭 제품 전체 {id: {item, value(세션 평균), change_pct, high, low, updated_at}}.
+
+    표마다 'Last Update: Oct.22 2026 18:10 (GMT+8)' 가 표 제목 바로 뒤에 있다 — 그 시각을 그 표 값의 공개 시각(updated_at, +08:00)으로 쓴다.
+    못 읽은 제품은 빠진다(0 으로 채우지 않는다).
+    """
+    from datetime import datetime, timedelta, timezone
+    body = re.sub(r"<script.*?</script>|<style.*?</style>", " ", page, flags=re.S)
+    tz8 = timezone(timedelta(hours=8))
+    stamps: dict[str, datetime] = {}
+    for title, key in (("DRAM Spot Price", "dram"), ("Wafer Spot Price", "wafer")):
+        for mm in re.finditer(re.escape(title), body):  # 메뉴에도 같은 이름이 있다 — 바로 뒤에 갱신 시각이 붙은 것이 표 제목
+            t = _html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body[mm.start():mm.start() + 800])))
+            m = re.search(r"^.{0,80}?Last Update:?\s*([A-Z][a-z]{2})\.(\d{1,2}) (\d{4})\s+(\d{2}):(\d{2}) \(GMT\+8\)", t)
+            if m and m.group(1) in _MON:
+                stamps[key] = datetime(int(m.group(3)), _MON[m.group(1)], int(m.group(2)), int(m.group(4)), int(m.group(5)), tzinfo=tz8)
+                break
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", body, flags=re.S)
+    out: dict[str, dict] = {}
+    for iid, (item, table) in SEMI_SPOT_ITEMS.items():
+        for r in rows:
+            c = [x for x in _cells(r) if x]
+            if not c or re.sub(r"\s+", " ", c[0]) != item or len(c) < 7:
+                continue
+            try:
+                value = float(c[5].replace(",", "")); chg = float(c[6].replace("%", "").replace(",", "").strip())
+                hi, lo = float(c[1].replace(",", "")), float(c[2].replace(",", ""))
+            except ValueError:
+                continue
+            out[iid] = {"item": item, "table": table, "value": value, "change_pct": chg, "high": hi, "low": lo, "updated_at": stamps.get(table)}
+            break
+    return out
+
+
+def parse_contract_json(rows: Iterable[dict]) -> dict[str, dict]:
+    """DRAMeXchange 홈의 계약가 JSON(Source=NationalDramContract · NationalFlashContract) → {show_name: {...}}.
+    show_day 는 그 계약가 기간(월말 · GMT+8) — 공개 시각으로도 쓴다."""
+    from datetime import datetime, timedelta, timezone
+    out: dict[str, dict] = {}
+    for x in rows:
+        try:
+            day = datetime.fromisoformat(str(x["show_day"])).replace(tzinfo=timezone(timedelta(hours=8)))
+            out[re.sub(r"\s+", " ", str(x["show_name"]).strip())] = {"listid": x.get("show_listid"), "updated_at": day, "avg": float(x["show_avg"]), "high": float(x["show_hi"]),
+                                                                     "low": float(x["show_lo"]), "avg_change_pct": float(x.get("show_avg_change") or 0.0)}
+        except (KeyError, TypeError, ValueError):
+            continue
     return out
 
 

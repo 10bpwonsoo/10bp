@@ -447,3 +447,13 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 입력: 23:53Z 수집(기본 41/54 · 종목 94 · AI 바스켓 52 · RSS 138, FRED 정상). 07:30 KST cutoff 재구성(`data/captures/2026-10-23-backfill/`) — 미국 10/22 종가 · 한국 10/22 종가 · 미국채/TIPS/BE/HY OAS 10/21 관측까지. RSS 창(10/22 07:30~10/23 07:30 KST) 88건 중 19건 수기 태깅. 금리 MARKET READ · 물가 해석은 API 401 이라 같은 컨텍스트·검증의 세션 생성본.
 - 결과: 시장 raw RISK_OFF 49%(온도 −34) — 나스닥 −2.9% · 반도체(SOXX) −6.8% · VIX +14% · 코스피 −3.5%. 공식 regime 은 Neutral / Mixed 유지(2일째), Liquidity Stress / Risk-Off 후보 1일(TRANSITION WATCH) — MARKET NOW 와 History 같은 값. AI-SPECIFIC DE-RISKING(센티 30), 금리 GROWTH-LED RATES(물가 리프라이싱 반박), 물가 압력 MIXED, 유가 Demand CONTRADICTED(브렌트 +4%).
 - history: 10/22 LIVE 없이 07:30 기록으로 6개 탭 RECORDED·잠금(data_asof 10/22 22:30Z). 다른 잠긴 행 · 기존 아카이브 10개 바이트 동일. 아카이브 COMPLETE · validate · 미래 데이터 검증 통과. 10/22 · 10/23 화면의 같은 날짜 History · Official regime 띠 차이 0. 스크린샷 `data/archive/screenshots/2026-10-23.jpg`.
+
+### 2026-10-23 — 반도체 사이클 탭 (P1)
+- 새 탭 '반도체 사이클'(AI 센티 다음). 다른 탭의 계산·화면은 손대지 않았다 — 별도 엔진(`engines/semiconductor_cycle.py`) · 설정(`config/semiconductor_cycle.yaml`) · 서비스(`api/semi_service.py`) · 라우트(`GET /api/v1/semiconductor-cycle`) · 화면(`SemiconductorCycleView.tsx` · `theme/semiconductor.css`).
+- 데이터: DRAMeXchange 공개 홈 현물(DDR5 16Gb · DDR4 16/8Gb · eTT 3종 · NAND TLC 웨이퍼 3종)과 계약가(DRAM 칩·모듈, NAND MLC)를 기존 수집기에 `--only semi` 로 붙였다(`data/semiconductor/{spot,contract}`, 공개 시각 updated_at 기준 PIT). HBM3E/HBM4 앵커는 기존 replay CSV, 한국 반도체 수출은 관세청·산업부 발표의 인용 보도(`data/semiconductor/exports.json` — 공식 사이트는 이 환경에서 막혀 있다). EPS·ASP·재고·가동률은 공급원이 없어 NO DATA.
+- Spot Premium = 현물 ÷ 그 시점까지 공개된 비교 가능 계약가 − 1. DDR4 16/8Gb = 같은 칩(HIGH), DDR5 16Gb = 8GB SO-DIMM 계약가 ÷ 4칩(LOW → PROXY PREMIUM, 가중 0.4), NAND TLC = 비교 계약 없음(계산 안 함). 계약 기준월 표시 · 45일 넘으면 STALE.
+- 수출 나우캐스트: 1~20일(또는 1~10일) 누적 + 남은 조업일 × 일평균 페이스 × 월말 배수(작년 같은 달·직전 확정 달의 21일~말일/1~20일 일평균 비, 평균=중심 · 최소~최대=범위). 10월: 중심 552.7억$(YoY +251%, 범위 +188~+315%), 1~20일 일평균 YoY +160.5%, 1~10일 기준 대비 수정 −16.8pp. 단가·물량 분해는 공식 통계가 없어 정성 표시만.
+- 국면: 증거 9개(−100~+100)의 가중 평균. 없는 증거는 분모에서 빼고, 확보 비율 < 0.4 이거나 메모리 가격 증거가 없으면 INSUFFICIENT DATA. 10/23: UPSWING(composite +37, 신뢰도 45) — 현물 프리미엄 큼·HBM 앵커 상승·수출 강세 vs 메모리주 1M −22~−34%(DIVERGENCE)·계약가 STALE.
+- Market Read: API 401 → 같은 컨텍스트·프롬프트·검증(숫자 대조·금지어·2~4문장)의 세션 생성본, 없으면 규칙 문장. History: 새 daily snapshot 탭 `semiconductor_cycle` — 10/22(=10/23 07:30) RECORDED, 그 전 21거래일은 그 날짜까지 공개된 가격·수출·주가로 1회 BACKFILLED(뉴스 제외) 후 잠금.
+- Archive: `semiconductor_cycle` 섹션 추가(07:30 재구성 13단계 · live collector). 기존 저장본 10개는 그대로 — 그 날짜들은 'SEMICONDUCTOR CYCLE NOT ARCHIVED FOR THIS DATE'(지금 값으로 메우지 않는다). 10/23 저장본에 넣으려면 승인 후 correction 경로로만.
+- 테스트: 백엔드 `test_semiconductor_cycle.py` 25개(+ archive 픽스처에 새 섹션), 프론트 `semiconductor.test.tsx` 13개. 데스크톱 2열 · 모바일 1열(제품 드롭다운), 가로 넘침 0.
