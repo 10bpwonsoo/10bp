@@ -207,6 +207,17 @@ def _cdx_days(original: str, since: date, until: date) -> list[tuple[str, str]]:
     return [last[k] for k in sorted(last)]
 
 
+def _flush_archived(rows: dict[str, list[dict]], root: Path, report: dict) -> None:
+    for pid, rs in rows.items():
+        # 같은 관측일의 여러 스냅샷(같은 갱신)은 하나 — 가장 이른 캡처를 남긴다
+        uniq: dict[str, dict] = {}
+        for r in sorted(rs, key=lambda r: r["snapshot_timestamp"]):
+            uniq.setdefault(r["date"], r)
+        a, c = merge_rows(spot_path(pid, root), SPOT_FIELDS, list(uniq.values()), ("date", "source"))
+        report["added"][pid] = report["added"].get(pid, 0) + a
+        report["conflicts"][pid] = report["conflicts"].get(pid, []) + c
+
+
 def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | None = None, root: Path = ROOT, sleep: float = 1.5,
                                targets: list | None = None) -> dict:
     """보존본마다 표를 읽어 행의 'Last Update' 시각을 관측일·공개 시각으로 쓴다. 같은 관측일은 한 번만(append-only)."""
@@ -217,15 +228,15 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
     seen = {r.get("snapshot_timestamp", "")[:19] for f in root.glob("*/*.csv") for r in read_rows(f) if r.get("snapshot_timestamp")}
     for original, source, freq in targets or ARCHIVE_TARGETS:
         snaps = _cdx_days(original, since, until)
-        got = 0
+        got = done = 0
         for ts, orig in snaps:
             if datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc).isoformat()[:19] in seen:
                 continue   # 이미 읽은 보존본
             arch = f"https://web.archive.org/web/{ts}id_/{orig}"
             page = ""
-            for attempt in range(3):
+            for attempt in range(2):
                 try:
-                    with urllib.request.urlopen(urllib.request.Request(arch, headers=ARCHIVE_UA), timeout=90) as r:
+                    with urllib.request.urlopen(urllib.request.Request(arch, headers=ARCHIVE_UA), timeout=45) as r:
                         page = r.read().decode("utf-8", "ignore")
                     break
                 except Exception:  # noqa: BLE001
@@ -249,15 +260,12 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
                     "snapshot_timestamp": snap_at.isoformat(),
                     "quote": f"{it['item']} | session avg {it['value']} | high {it['high']} | low {it['low']} | chg {it['change_pct']}% | Last Update {stamp.isoformat()}"})
                 got += 1
+            done += 1
+            if done % 25 == 0:   # 25개마다 저장 — 실행이 끊겨도 받은 만큼은 남는다
+                _flush_archived(rows, root, report); rows = {}
         report["targets"][original] = {"snapshots": len(snaps), "rows": got}
-    for pid, rs in rows.items():
-        # 같은 관측일의 여러 스냅샷(같은 갱신)은 하나 — 가장 이른 캡처를 남긴다
-        uniq: dict[str, dict] = {}
-        for r in sorted(rs, key=lambda r: r["snapshot_timestamp"]):
-            uniq.setdefault(r["date"], r)
-        a, c = merge_rows(spot_path(pid, root), SPOT_FIELDS, list(uniq.values()), ("date", "source"))
-        report["added"][pid] = a
-        report["conflicts"][pid] = c
+        _flush_archived(rows, root, report)   # 대상마다 저장 — 실행이 중간에 끊겨도 받은 만큼은 남는다
+        rows = {}
     _append_log(root, "archived_snapshots", report)
     return report
 
@@ -310,6 +318,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("trendforce-weekly").add_argument("--since", default="2025-08-01")
     ar = sub.add_parser("archived-snapshots", help="Internet Archive 에 보존된 공개 가격 페이지(러너에서 — 이 세션은 web.archive.org 차단)")
     ar.add_argument("--since", default="2025-07-01")
+    ar.add_argument("--target", type=int, default=None, help="ARCHIVE_TARGETS 의 순번 하나만(workflow 단계마다 따로 돌린다)")
     sub.add_parser("validate")
     a = ap.parse_args(argv)
     if a.cmd == "daily-express":
@@ -321,7 +330,7 @@ def main(argv: list[str] | None = None) -> int:
             ap.error("--from-id/--to-id 또는 --latest")
         rep = collect_daily_express(lo, hi, cache=a.cache)
     elif a.cmd == "archived-snapshots":
-        rep = collect_archived_snapshots(since=date.fromisoformat(a.since))
+        rep = collect_archived_snapshots(since=date.fromisoformat(a.since), targets=[ARCHIVE_TARGETS[a.target]] if a.target is not None else None)
     elif a.cmd == "trendforce-weekly":
         rep = collect_trendforce_weekly(since=date.fromisoformat(a.since))
     else:

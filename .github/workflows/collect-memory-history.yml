@@ -38,8 +38,19 @@ jobs:
         run: python -m marketpulse.scripts.collect_memory_history daily-express --latest
       - name: TrendForce weekly articles (since 2025-08)
         run: python -m marketpulse.scripts.collect_memory_history trendforce-weekly --since 2025-08-01
-      - name: Internet Archive public snapshots (DRAMeXchange home, TrendForce price pages)
-        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01
+      # Internet Archive 응답이 느려 대상마다 단계를 나누고 시간 제한을 둔다. 25개마다 저장하므로 끊겨도 받은 만큼은 커밋된다(이미 읽은 보존본은 다시 받지 않는다).
+      - name: Internet Archive — DRAMeXchange public home
+        continue-on-error: true
+        timeout-minutes: 25
+        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01 --target 0
+      - name: Internet Archive — TrendForce DRAM spot page
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01 --target 1
+      - name: Internet Archive — TrendForce wafer spot page
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01 --target 2
       - name: Validate
         run: python -m marketpulse.scripts.collect_memory_history validate
       - name: Commit CSV changes
