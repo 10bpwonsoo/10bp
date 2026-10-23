@@ -1,11 +1,11 @@
 {
- "generated_at": "2026-10-23T01:40:23+00:00",
+ "generated_at": "2026-10-23T01:42:25+00:00",
  "spot": {
   "DDR4_8G_ETT_SPOT": {
    "dramexchange_daily_express": {
-    "first": "2025-08-11",
+    "first": "2025-03-04",
     "last": "2026-10-22",
-    "obs": 296,
+    "obs": 407,
     "duplicates": 0,
     "gaps": [
      [
@@ -20,9 +20,9 @@
   },
   "DDR4_8G_SPOT": {
    "dramexchange_daily_express": {
-    "first": "2025-08-11",
+    "first": "2025-03-04",
     "last": "2026-10-22",
-    "obs": 296,
+    "obs": 407,
     "duplicates": 0,
     "gaps": [
      [

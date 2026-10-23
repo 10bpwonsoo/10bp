@@ -49,44 +49,50 @@ def parse_daily_express(page: str) -> dict | None:
 # ── TrendForce 주간 기사 ─────────────────────────────────
 _MONTHS = {m: i for i, m in enumerate(["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
 TF_ITEMS = {
-    "NAND_512G_TLC_WAFER": r"512Gb(?: TLC)?(?: NAND)?(?: wafer)?s?\b[^.]{0,160}?(?:arriving at|to|reaching|exceeding)[^$]{0,40}?US\$\s*\$?\s*([\d.]+)",
-    "DDR4_8G_SPOT": r"DDR4 1Gx8 3200(?:0)?MT/s\)?[^.]{0,200}?(?:to|at)\s+US\$\s*([\d.]+)\s+this week",
+    # 한 문장 안에서 찾는다(문장 안의 소수점 '1.69%' 때문에 [^.] 로 자르지 않는다)
+    "NAND_512G_TLC_WAFER": r"512Gb(?: TLC)?(?: NAND)?(?: wafers?)?\b.*?(?:arriving at|to|reaching|exceeding)\D{0,40}?US\$+\s*([\d]+(?:\.\d+)?)",
+    "DDR4_8G_SPOT": r"DDR4 1Gx8 3200+MT/s\)?.*?(?:to|at)\s+US\$\s*([\d]+(?:\.\d+)?)\s*(?:this week|\(|\))",
 }
+_SENT = re.compile(r"(?<=[.])\s+(?=[A-Z\[])")
 
 
 def _obs_date(fragment: str, article: date) -> date | None:
     """'(October 19)' · '(Oct.19)' · '(Sept. 7)' · '(10/19)' → 날짜. 연도는 기사 날짜에서(1월 기사의 12월 관측은 전년)."""
-    m = re.search(r"\(\s*([A-Za-z]{3,9})\.?\s*(\d{1,2})\s*\)", fragment)
-    mo = d = None
-    if m and m.group(1)[:3].lower() in _MONTHS:
-        mo, d = _MONTHS[m.group(1)[:3].lower()], int(m.group(2))
-    else:
-        m = re.search(r"\(\s*(\d{1,2})/(\d{1,2})\s*\)", fragment)
-        if m:
-            mo, d = int(m.group(1)), int(m.group(2))
-    if mo is None:
+    found = []
+    for m in re.finditer(r"\(\s*([A-Za-z]{3,9})\.?\s*(\d{1,2})\s*\)", fragment):
+        if m.group(1)[:3].lower() in _MONTHS:
+            found.append((_MONTHS[m.group(1)[:3].lower()], int(m.group(2))))
+    for m in re.finditer(r"\(\s*(\d{1,2})/(\d{1,2})\s*\)", fragment):
+        found.append((int(m.group(1)), int(m.group(2))))
+    if not found:
         return None
+    mo, d = found[-1]
     y = article.year - (1 if mo > article.month + 1 else 0)
     try:
         od = date(y, mo, d)
     except ValueError:
         return None
-    return od if (article - od).days in range(0, 15) else None
+    return od if 0 <= (article - od).days <= 14 else None
 
 
 def parse_trendforce_weekly(page: str, article: date) -> dict:
-    """{id: {price, obs_date, obs_date_basis, quote}} — 이번 주 값만(지난주 값은 다시 세지 않는다)."""
+    """{id: {price, obs_date, obs_date_basis, quote}} — 이번 주 값만(지난주 값은 다시 세지 않는다). 처음 맞는 문장을 쓴다."""
     x = page_text(page)
+    sents = _SENT.split(x)
     out = {}
     for pid, rx in TF_ITEMS.items():
-        for mm in re.finditer(rx, x):
-            s = x.rfind(".", 0, mm.start()) + 1
-            e = x.find(".", mm.end())
-            frag = x[mm.end(): (e if e > 0 else mm.end() + 60) + 30]
-            od = _obs_date(x[mm.start(): mm.end() + 40], article)
-            out[pid] = {"price": float(mm.group(1)), "obs_date": od or article, "obs_date_basis": "TEXT" if od else "ARTICLE_DATE",
-                        "quote": x[s:mm.end() + 30].strip()[:260]}
-            break
+        hits = []
+        for k, sent in enumerate(sents):
+            mm = re.search(rx, sent)
+            if not mm:
+                continue
+            # 관측일 괄호는 값 바로 뒤(this week (October 19)) 또는 문장 끝에 온다. 'Dec.' 처럼 문장이 잘린 경우 다음 조각까지 본다
+            tail = sent[mm.start(): mm.end() + 40] + (" " + sents[k + 1][:20] if k + 1 < len(sents) else "")
+            od = _obs_date(tail, article)
+            hits.append({"price": float(mm.group(1)), "obs_date": od or article, "obs_date_basis": "TEXT" if od else "ARTICLE_DATE", "quote": sent.strip()[:260]})
+        if hits:
+            # 관측일이 적힌 문장을 우선(같은 값을 요약 문장 · 본문 문장에서 두 번 말하는 기사)
+            out[pid] = next((h for h in hits if h["obs_date_basis"] == "TEXT"), hits[0])
     return out
 
 
