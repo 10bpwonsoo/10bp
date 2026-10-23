@@ -103,3 +103,65 @@ def is_weekly_article_url(url: str) -> date | None:
 
 def now_iso() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+# ── 공개 가격 페이지 스냅샷(현재 · Internet Archive 보존본) ───────────────
+# DRAMeXchange 공개 홈과 TrendForce 공개 가격 페이지(price/dram/dram_spot · price/flash/wafer_spot)는 같은 표 형식이다:
+#   품목 | Daily High | Daily Low | Session High | Session Low | Session Average | Session Change
+# 행의 공개 시각 = 그 행 앞에 가장 가까이 있는 'Last Update' 시각(표마다 하나). 시각을 못 읽은 행은 버린다(값을 만들지 않는다).
+SNAPSHOT_ITEMS = {
+    # 해마다 표기 차이(16G/16Gb)가 있어 정규식으로 맞춘다. 다른 등급(eTT)·다른 칩과는 섞이지 않게 끝까지 맞춘다
+    "DDR5_16G_SPOT": r"DDR5 16Gb? \(2Gx8\) 4800/5600",
+    "DDR5_16G_ETT_SPOT": r"DDR5 16Gb? \(2Gx8\) eTT",
+    "DDR4_16G_SPOT": r"DDR4 16Gb? \(2Gx8\) 3200",
+    "DDR4_8G_SPOT": r"DDR4 8Gb? \(1Gx8\) 3200",
+    "NAND_512G_TLC_WAFER": r"512Gb TLC(?: Wafer)?",
+    "NAND_256G_TLC_WAFER": r"256Gb TLC(?: Wafer)?",
+    "NAND_128G_TLC_WAFER": r"128Gb TLC(?: Wafer)?",
+}
+_STAMP = re.compile(r"Last Update:?\s*(?:(?P<mon>[A-Z][a-z]{2})\.\s?(?P<d>\d{1,2})\s+(?P<y>\d{4})|(?P<iso>\d{4}-\d{2}-\d{2}))\s+(?P<hh>\d{2}):(?P<mm>\d{2})\s*\(GMT\+8\)")
+_MON3 = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
+
+
+def _num(s: str) -> float | None:
+    s = s.replace(",", "").replace("%", "").replace("▲", "").replace("▼", "-").replace("—", "").strip()
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def parse_price_snapshot(page: str) -> dict:
+    """{id: {item, value(session avg), high, low, change_pct, stamp(datetime +08:00)}}."""
+    from datetime import timedelta, timezone
+    tz8 = timezone(timedelta(hours=8))
+    body = _JUNK.sub(" ", page)
+    stamps = []
+    # 위치를 맞추려고 원문(태그 포함)에서 직접 찾는다 — 태그 사이 공백·&nbsp; 를 허용
+    flat = re.sub(r"<[^>]+>", lambda t: " " * len(t.group(0)), body).replace("&nbsp;", "      ")
+    for m in _STAMP.finditer(flat):
+        try:
+            if m.group("iso"):
+                y, mo, d = (int(x) for x in m.group("iso").split("-"))
+            else:
+                y, mo, d = int(m.group("y")), _MON3[m.group("mon")], int(m.group("d"))
+            stamps.append((m.start(), datetime(y, mo, d, int(m.group("hh")), int(m.group("mm")), tzinfo=tz8)))
+        except (KeyError, ValueError):
+            continue
+    out: dict = {}
+    for tr in re.finditer(r"<tr[^>]*>(.*?)</tr>", body, flags=re.S):
+        cells = [" ".join(html.unescape(_TAGS.sub(" ", c)).split()) for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr.group(1), flags=re.S)]
+        cells = [c for c in cells if c]
+        if len(cells) < 7:
+            continue
+        pid = next((k for k, rx in SNAPSHOT_ITEMS.items() if re.fullmatch(rx, cells[0])), None)
+        if pid is None or pid in out:
+            continue
+        vals = [_num(c) for c in cells[1:7]]
+        if vals[4] is None:
+            continue
+        prior = [s for pos, s in stamps if pos < tr.start()]
+        if not prior:
+            continue
+        out[pid] = {"item": cells[0], "value": vals[4], "high": vals[0], "low": vals[1], "change_pct": vals[5], "stamp": prior[-1]}
+    return out

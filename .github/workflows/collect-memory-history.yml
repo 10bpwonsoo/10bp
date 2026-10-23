@@ -1,5 +1,6 @@
 # 메모리 가격 과거 DB(2026-10-23) — data/memory_history/ 에 RAW 관측을 쌓는다(일별 state · premium 은 엔진이 만든다).
-#   DRAMeXchange Daily Express(매 거래일 공개 시황) · TrendForce 주간 'Memory Spot Price Update'(공개 기사, 512Gb TLC 웨이퍼 포함).
+#   DRAMeXchange Daily Express(매 거래일 공개 시황) · TrendForce 주간 'Memory Spot Price Update'(공개 기사, 512Gb TLC 웨이퍼 포함)
+#   · Internet Archive 에 보존된 공개 가격 페이지(DRAMeXchange 홈 · TrendForce price 페이지 — 그 당시 화면에 표시된 값만, 유료 다운로드·회원 페이지·로그인 없음).
 # 키·비밀 없음. 같은 (관측일, source) 행은 다시 쓰지 않는다(append-only).
 # 평일 04:10 UTC(12:10 KST) — DRAMeXchange 전날 시황 · TrendForce 수요일 기사 뒤. 이 브랜치에 수집 코드가 바뀌어 push 되면 한 번 돈다(처음 1년치 채우기).
 name: collect-memory-history
@@ -25,7 +26,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,6 +38,8 @@ jobs:
         run: python -m marketpulse.scripts.collect_memory_history daily-express --latest
       - name: TrendForce weekly articles (since 2025-08)
         run: python -m marketpulse.scripts.collect_memory_history trendforce-weekly --since 2025-08-01
+      - name: Internet Archive public snapshots (DRAMeXchange home, TrendForce price pages)
+        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01
       - name: Validate
         run: python -m marketpulse.scripts.collect_memory_history validate
       - name: Commit CSV changes

@@ -20,18 +20,31 @@ import json
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from ..adapters.alternative.memory_history import is_weekly_article_url, now_iso, parse_daily_express, parse_trendforce_weekly
+from ..adapters.alternative.memory_history import is_weekly_article_url, now_iso, parse_daily_express, parse_price_snapshot, parse_trendforce_weekly
 from ..config.settings import PACKAGE_ROOT
 
 ROOT = PACKAGE_ROOT / "data" / "memory_history"
-SPOT_FIELDS = ["product", "date", "price", "unit", "source", "source_date", "published_at", "collected_at", "frequency", "quality", "is_proxy", "source_url", "quote"]
+SPOT_FIELDS = ["product", "date", "price", "unit", "source", "source_type", "grade", "source_date", "published_at", "collected_at", "frequency", "quality", "is_proxy",
+               "source_url", "archive_url", "original_url", "snapshot_timestamp", "quote"]
+#: source → (source_type, grade). A = DRAMeXchange/TrendForce 직접 공개 · B = 보존된 공개 스냅샷 · C = 공공 고정가 참고 · D = 보고서·보도가 인용한 DRAMeXchange · E = 기타
+SOURCE_META = {
+    "dramexchange_daily_express": ("DIRECT_PUBLIC_REPORT", "A"),
+    "trendforce_weekly": ("DIRECT_PUBLIC_ARTICLE", "A"),
+    "dramexchange_home": ("DIRECT_PUBLIC_SNAPSHOT", "A"),
+    "dramexchange_archived": ("ARCHIVED_PUBLIC_SNAPSHOT", "B"),
+    "trendforce_archived": ("ARCHIVED_PUBLIC_SNAPSHOT", "B"),
+}
 CONTRACT_FIELDS = ["product", "reference_period", "published_at", "price", "unit", "source", "comparability", "reported_change_pct", "quality", "source_url", "note"]
-FAMILY = {"DDR4_8G_SPOT": "dram", "DDR4_8G_ETT_SPOT": "dram", "NAND_512G_TLC_WAFER": "nand"}
-UNIT = {"DDR4_8G_SPOT": "USD/chip", "DDR4_8G_ETT_SPOT": "USD/chip", "NAND_512G_TLC_WAFER": "USD/wafer-equivalent (512Gb TLC)"}
+FAMILY = {"DDR4_8G_SPOT": "dram", "DDR4_8G_ETT_SPOT": "dram", "DDR5_16G_SPOT": "dram", "DDR5_16G_ETT_SPOT": "dram", "DDR4_16G_SPOT": "dram",
+          "NAND_512G_TLC_WAFER": "nand", "NAND_256G_TLC_WAFER": "nand", "NAND_128G_TLC_WAFER": "nand"}
+UNIT = {**{k: "USD/chip" for k in ("DDR4_8G_SPOT", "DDR4_8G_ETT_SPOT", "DDR5_16G_SPOT", "DDR5_16G_ETT_SPOT", "DDR4_16G_SPOT")},
+        "NAND_512G_TLC_WAFER": "USD/wafer-equivalent (512Gb TLC)", "NAND_256G_TLC_WAFER": "USD/wafer-equivalent (256Gb TLC)",
+        "NAND_128G_TLC_WAFER": "USD/wafer-equivalent (128Gb TLC)"}
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 TPE = timezone(timedelta(hours=8))
 
@@ -55,9 +68,15 @@ def read_rows(path: Path) -> list[dict]:
         return list(csv.DictReader(fh))
 
 
+def _with_meta(r: dict) -> dict:
+    """예전 행(source_type · grade 칸 없음)은 source 로 채운다 — 값은 바꾸지 않는다."""
+    st, g = SOURCE_META.get(r.get("source", ""), ("", ""))
+    return {**r, "source_type": r.get("source_type") or st, "grade": r.get("grade") or g}
+
+
 def merge_rows(path: Path, fields: list[str], new: list[dict], key: tuple[str, ...]) -> tuple[int, list[dict]]:
     """append-only. 같은 key 가 이미 있으면 그대로 두고, 값이 다르면 conflict 로 돌려준다."""
-    old = read_rows(path)
+    old = [_with_meta(r) for r in read_rows(path)]
     have = {tuple(r[k] for k in key): r for r in old}
     added, conflicts = 0, []
     for r in new:
@@ -66,7 +85,7 @@ def merge_rows(path: Path, fields: list[str], new: list[dict], key: tuple[str, .
             if abs(float(have[k]["price"]) - float(r["price"])) > 1e-9:
                 conflicts.append({"key": k, "stored": have[k]["price"], "new": r["price"]})
             continue
-        have[k] = {f: r.get(f, "") for f in fields}
+        have[k] = {f: _with_meta(r).get(f, "") for f in fields}
         added += 1
     rows = sorted(have.values(), key=lambda r: tuple(r[x] for x in key))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -163,6 +182,86 @@ def collect_trendforce_weekly(*, since: date = date(2025, 8, 1), root: Path = RO
     return report
 
 
+# ── Internet Archive 에 보존된 공개 가격 페이지 ───────────────
+#: 그 당시 공개 웹페이지에 표시된 same-day 값만. 유료 과거 다운로드 · 회원 전용 페이지 · 로그인은 쓰지 않는다.
+ARCHIVE_TARGETS = [
+    ("https://dramexchange.com/", "dramexchange_archived", "daily"),
+    ("https://www.trendforce.com/price/dram/dram_spot", "trendforce_archived", "daily"),
+    ("https://www.trendforce.com/price/flash/wafer_spot", "trendforce_archived", "weekly"),
+]
+ARCHIVE_UA = {"User-Agent": "marketpulse-memory-history/0.2 (public snapshot reconstruction; contact via repo)"}
+
+
+def _cdx_days(original: str, since: date, until: date) -> list[tuple[str, str]]:
+    """그 URL 의 보존본 — 날짜(UTC)마다 마지막 캡처 하나 (timestamp, original)."""
+    q = urllib.parse.urlencode({"url": original.split("://", 1)[1], "from": since.strftime("%Y%m%d"), "to": until.strftime("%Y%m%d"), "output": "json",
+                                "fl": "timestamp,original", "filter": "statuscode:200"})
+    try:
+        with urllib.request.urlopen(urllib.request.Request("https://web.archive.org/cdx/search/cdx?" + q, headers=ARCHIVE_UA), timeout=120) as r:
+            rows = json.loads(r.read().decode("utf-8", "ignore"))[1:]
+    except Exception:  # noqa: BLE001
+        return []
+    last: dict[str, tuple[str, str]] = {}
+    for ts, orig in rows:
+        last[ts[:8]] = max(last.get(ts[:8], (ts, orig)), (ts, orig))
+    return [last[k] for k in sorted(last)]
+
+
+def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | None = None, root: Path = ROOT, sleep: float = 1.5,
+                               targets: list | None = None) -> dict:
+    """보존본마다 표를 읽어 행의 'Last Update' 시각을 관측일·공개 시각으로 쓴다. 같은 관측일은 한 번만(append-only)."""
+    until = until or date.today()
+    collected = now_iso()
+    rows: dict[str, list[dict]] = {}
+    report: dict = {"targets": {}, "added": {}, "conflicts": {}, "skipped_future_stamp": 0}
+    seen = {r.get("snapshot_timestamp", "")[:19] for f in root.glob("*/*.csv") for r in read_rows(f) if r.get("snapshot_timestamp")}
+    for original, source, freq in targets or ARCHIVE_TARGETS:
+        snaps = _cdx_days(original, since, until)
+        got = 0
+        for ts, orig in snaps:
+            if datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc).isoformat()[:19] in seen:
+                continue   # 이미 읽은 보존본
+            arch = f"https://web.archive.org/web/{ts}id_/{orig}"
+            page = ""
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(urllib.request.Request(arch, headers=ARCHIVE_UA), timeout=90) as r:
+                        page = r.read().decode("utf-8", "ignore")
+                    break
+                except Exception:  # noqa: BLE001
+                    time.sleep(sleep * (attempt + 2))
+            time.sleep(sleep)
+            if not page:
+                continue
+            snap_at = datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+            for pid, it in parse_price_snapshot(page).items():
+                if pid not in FAMILY:
+                    continue
+                stamp = it["stamp"]
+                if stamp > snap_at + timedelta(minutes=5):   # 캡처보다 늦은 갱신 시각은 있을 수 없다 — 읽기 오류로 보고 버린다
+                    report["skipped_future_stamp"] += 1
+                    continue
+                d = stamp.date()
+                rows.setdefault(pid, []).append({
+                    "product": pid, "date": d.isoformat(), "price": f"{it['value']:.3f}", "unit": UNIT[pid], "source": source,
+                    "source_date": d.isoformat(), "published_at": stamp.isoformat(), "collected_at": collected, "frequency": freq if pid.startswith("NAND") else "daily",
+                    "quality": "ARCHIVED_PUBLIC_SNAPSHOT", "is_proxy": "false", "source_url": arch, "archive_url": arch, "original_url": orig,
+                    "snapshot_timestamp": snap_at.isoformat(),
+                    "quote": f"{it['item']} | session avg {it['value']} | high {it['high']} | low {it['low']} | chg {it['change_pct']}% | Last Update {stamp.isoformat()}"})
+                got += 1
+        report["targets"][original] = {"snapshots": len(snaps), "rows": got}
+    for pid, rs in rows.items():
+        # 같은 관측일의 여러 스냅샷(같은 갱신)은 하나 — 가장 이른 캡처를 남긴다
+        uniq: dict[str, dict] = {}
+        for r in sorted(rs, key=lambda r: r["snapshot_timestamp"]):
+            uniq.setdefault(r["date"], r)
+        a, c = merge_rows(spot_path(pid, root), SPOT_FIELDS, list(uniq.values()), ("date", "source"))
+        report["added"][pid] = a
+        report["conflicts"][pid] = c
+    _append_log(root, "archived_snapshots", report)
+    return report
+
+
 def _append_log(root: Path, kind: str, report: dict) -> None:
     p = root / "collect_log.jsonl"
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -209,6 +308,8 @@ def main(argv: list[str] | None = None) -> int:
     de.add_argument("--ahead", type=int, default=15)
     de.add_argument("--cache", type=Path, default=None)
     sub.add_parser("trendforce-weekly").add_argument("--since", default="2025-08-01")
+    ar = sub.add_parser("archived-snapshots", help="Internet Archive 에 보존된 공개 가격 페이지(러너에서 — 이 세션은 web.archive.org 차단)")
+    ar.add_argument("--since", default="2025-07-01")
     sub.add_parser("validate")
     a = ap.parse_args(argv)
     if a.cmd == "daily-express":
@@ -219,6 +320,8 @@ def main(argv: list[str] | None = None) -> int:
         if lo is None or hi is None:
             ap.error("--from-id/--to-id 또는 --latest")
         rep = collect_daily_express(lo, hi, cache=a.cache)
+    elif a.cmd == "archived-snapshots":
+        rep = collect_archived_snapshots(since=date.fromisoformat(a.since))
     elif a.cmd == "trendforce-weekly":
         rep = collect_trendforce_weekly(since=date.fromisoformat(a.since))
     else:
