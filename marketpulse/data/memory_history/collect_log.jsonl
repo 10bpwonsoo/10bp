@@ -4,3 +4,6 @@
 {"at": "2026-10-23T01:42:25+00:00", "kind": "daily_express", "pages": 112, "added": {"DDR4_8G_SPOT": 111, "DDR4_8G_ETT_SPOT": 111}, "conflicts": {"DDR4_8G_SPOT": [], "DDR4_8G_ETT_SPOT": []}, "suspect": 1}
 {"at": "2026-10-23T01:44:05+00:00", "kind": "daily_express", "pages": 0, "added": {}, "conflicts": {}, "suspect": 0}
 {"at": "2026-10-23T01:46:30+00:00", "kind": "trendforce_weekly", "articles": 50, "first": "2025-08-06", "last": "2026-10-21", "added": {"NAND_512G_TLC_WAFER": 48, "DDR4_8G_SPOT": 50}, "conflicts": {"NAND_512G_TLC_WAFER": [], "DDR4_8G_SPOT": []}, "suspect": 0}
+{"at": "2026-10-23T06:08:37+00:00", "kind": "daily_express", "pages": 0, "added": {}, "conflicts": {}, "suspect": 0}
+{"at": "2026-10-23T06:11:52+00:00", "kind": "trendforce_weekly", "articles": 50, "first": "2025-08-06", "last": "2026-10-21", "added": {"NAND_512G_TLC_WAFER": 0, "DDR4_8G_SPOT": 0}, "conflicts": {"NAND_512G_TLC_WAFER": [], "DDR4_8G_SPOT": []}, "suspect": 0}
+{"at": "2026-10-23T06:53:38+00:00", "kind": "archived_snapshots", "targets": {"https://www.trendforce.com/price/dram/dram_spot": {"snapshots": 38, "rows": 54}}, "added": {"DDR5_16G_SPOT": 16, "DDR4_8G_SPOT": 16, "DDR5_16G_ETT_SPOT": 13, "DDR4_16G_SPOT": 9}, "conflicts": {"DDR5_16G_SPOT": [], "DDR4_8G_SPOT": [], "DDR5_16G_ETT_SPOT": [], "DDR4_16G_SPOT": []}, "skipped_future_stamp": 0, "suspect": 0}
