@@ -36,15 +36,8 @@ jobs:
               print("  arr:", m.group(1)[:300])
           PY
           }
-          fetch ddr5_16g "class=spot&item=dram&type=475&days=30"
-          fetch ddr5_16g_400 "class=spot&item=dram&type=475&days=400"
-          fetch ddr4_8g_400 "class=spot&item=dram&type=471&days=400"
-          fetch wafer512_400 "class=spot&item=wafer&type=1&days=400"
-          fetch con_ddr4_8g_400 "class=contract&item=dram&type=470&days=400"
-          fetch con_ddr5_sodimm_400 "class=contract&item=dram&type=481&days=400"
-          # 차트가 따로 데이터 파일을 부르면 그 파일도 한 번 받아 본다
-          for f in /tmp/p/ddr5_16g_400.html; do
-            for u in $(grep -oE '(xml|data|csv|json)[a-zA-Z_]*\.php[^"'"'"' ]*' "$f" | sort -u | head -5); do
-              echo "== sub $u"; curl -sS -L -m 60 -A "$UA" "https://chart.dramexchange.com/$u" | head -c 1500; echo
-            done
-          done
+          curl -sS -L -m 60 -A "$UA" -e "https://www.dramexchange.com/" "https://chart.dramexchange.com/chart.php?class=spot&item=dram&type=475&days=400" -o /tmp/p/a.html
+          python3 -c "import re,html;t=open('/tmp/p/a.html',encoding='utf-8',errors='ignore').read();t=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S|re.I);print('TEXT:',' '.join(html.unescape(re.sub(r'<[^>]+>',' ',t)).split())[:2000])"
+          grep -oiE '<(form|iframe|img)[^>]*>' /tmp/p/a.html | head -10
+          for u in js/Calendar.js; do :; done
+          curl -sS -L -m 60 -A "$UA" -e "https://chart.dramexchange.com/" "https://chart.dramexchange.com/chart.php?class=spot&item=dram&type=475&days=400&from=2025-09-01" | wc -c
