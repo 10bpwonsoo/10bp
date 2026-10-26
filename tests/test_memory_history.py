@@ -153,3 +153,99 @@ class TestEngineHistory:
         assert next(x for x in a if x.period == "2026-08").source in ("dramexchange_home",)
         s = load_spot_raw("DDR4_8G_SPOT", "DDR4", AS_OF)
         assert not s.conflicts or all(abs(c["kept"][1] / c["other"][1] - 1) > 0.005 for c in s.conflicts)
+
+
+# ── 2026-10-23 보존 공개 스냅샷 · coverage 점수 ─────────────────
+from marketpulse.adapters.alternative.memory_history import parse_price_snapshot  # noqa: E402
+from marketpulse.engines.memory_history import check_validation, history_quality  # noqa: E402
+
+DX_PAGE = """<html><body><div>DRAM Spot Price</div><div>Last Update: Mar.05 2026&nbsp;&nbsp;18:10 (GMT+8)</div>
+<table><tr><td>Item</td><td>Daily High</td><td>Daily Low</td><td>Session High</td><td>Session Low</td><td>Session Average</td><td>Session Change</td></tr>
+<tr><td>DDR5 16G (2Gx8) 4800/5600</td><td>45.00</td><td>30.00</td><td>45.00</td><td>30.00</td><td>38.250</td><td>▲ 1.20 %</td></tr>
+<tr><td>DDR5 16Gb (2Gx8) eTT</td><td>20.00</td><td>18.00</td><td>20.00</td><td>18.00</td><td>19.000</td><td>0.00 %</td></tr></table>
+<div>Wafer Spot Price</div><div>Last Update: Mar.02 2026 14:40 (GMT+8)</div>
+<table><tr><td>512Gb TLC</td><td>22</td><td>18</td><td>22</td><td>18</td><td>20.586</td><td>14.70 %</td></tr></table></body></html>"""
+TF_PAGE = """<h2>DRAM Spot Price</h2><span>Last Update 2025-11-18 18:10 (GMT+8)</span>
+<table><tr><td>DDR5 16Gb (2Gx8) 4800/5600</td><td>30</td><td>20</td><td>30</td><td>20</td><td>24.500</td><td>▲ 3.10 %</td></tr></table>"""
+
+
+class TestArchivedSnapshots:
+    def test_parser_reads_both_sites_with_table_stamp(self):
+        a = parse_price_snapshot(DX_PAGE)
+        assert a["DDR5_16G_SPOT"]["value"] == 38.25 and a["DDR5_16G_SPOT"]["stamp"] == datetime(2026, 3, 5, 18, 10, tzinfo=TPE)
+        assert a["DDR5_16G_ETT_SPOT"]["value"] == 19.0   # eTT 는 다른 제품 — 표준 등급과 섞이지 않는다
+        assert a["NAND_512G_TLC_WAFER"]["stamp"] == datetime(2026, 3, 2, 14, 40, tzinfo=TPE)   # 표마다 자기 갱신 시각
+        b = parse_price_snapshot(TF_PAGE)
+        assert b["DDR5_16G_SPOT"]["value"] == 24.5 and b["DDR5_16G_SPOT"]["stamp"].date() == date(2025, 11, 18)
+
+    def test_rows_without_stamp_are_dropped(self):
+        assert parse_price_snapshot("<table><tr><td>512Gb TLC</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2.0</td><td>0 %</td></tr></table>") == {}
+
+    def test_archived_rows_keep_metadata_and_grade(self, tmp_path, monkeypatch):
+        from marketpulse.scripts import collect_memory_history as c
+        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [("20260305110000", orig)])
+
+        class R:
+            def __init__(self, b): self.b = b
+            def read(self): return self.b.encode()
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        monkeypatch.setattr(c.urllib.request, "urlopen", lambda req, timeout=0: R(DX_PAGE))
+        rep = c.collect_archived_snapshots(since=date(2026, 3, 1), until=date(2026, 3, 6), root=tmp_path, sleep=0,
+                                           targets=[("https://dramexchange.com/", "dramexchange_archived", "daily")])
+        assert rep["added"]["DDR5_16G_SPOT"] == 1
+        row = list(csv.DictReader((tmp_path / "dram" / "DDR5_16G_SPOT.csv").open()))[0]
+        assert row["source_type"] == "ARCHIVED_PUBLIC_SNAPSHOT" and row["grade"] == "B" and row["date"] == "2026-03-05"
+        assert row["archive_url"].startswith("https://web.archive.org/web/20260305110000id_/") and row["original_url"] == "https://dramexchange.com/"
+        assert row["published_at"].startswith("2026-03-05T18:10")   # 값의 공개 시각 = 표의 Last Update
+        # 캡처(11:00 UTC = 19:00 GMT+8)보다 늦은 갱신 시각이면 버린다
+        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [("20260305090000", orig)])
+        rep2 = c.collect_archived_snapshots(since=date(2026, 3, 1), until=date(2026, 3, 6), root=tmp_path / "x", sleep=0,
+                                            targets=[("https://dramexchange.com/", "dramexchange_archived", "daily")])
+        assert rep2["skipped_future_stamp"] >= 1 and not rep2["added"].get("DDR5_16G_SPOT")
+
+
+def _weekly(start: date, n: int, step: int = 7, grade: str = "A") -> list[Raw]:
+    return [Raw(start + timedelta(days=step * i), datetime.combine(start + timedelta(days=step * i), datetime.min.time(), tzinfo=TPE), 10.0 + i, "t", "", "weekly", grade)
+            for i in range(n)]
+
+
+class TestCoverageScore:
+    END = date(2026, 10, 22)
+
+    def test_weekly_series_spanning_the_year_is_good_without_52_obs(self):
+        raw = [r for r in _weekly(date(2025, 10, 20), 53) if r.obs.isocalendar()[1] not in (7, 8, 30, 31, 32)]   # 다섯 주 빠짐
+        c = window_coverage(raw, self.END, 365)
+        assert c["calendar_days"] >= 330 and c["observed_weeks"] / c["expected_weeks"] >= 0.85 and c["status"] == "GOOD"
+
+    def test_long_gap_lowers_density_to_monthly(self):
+        raw = _weekly(date(2025, 10, 20), 53)
+        raw = [r for r in raw if not (date(2026, 1, 1) <= r.obs <= date(2026, 3, 25))] + [Raw(date(2026, 2, 10), datetime(2026, 2, 10, tzinfo=TPE), 9.0, "t", "", "weekly", "A")]
+        c = window_coverage(sorted(raw, key=lambda r: r.obs), self.END, 365)
+        assert c["status"] in ("MONTHLY", "PARTIAL") and c["max_gap"] > 30
+
+    def test_short_history_is_partial_with_available_from(self):
+        c = window_coverage(_weekly(date(2026, 9, 29), 4), self.END, 365)
+        assert c["status"] == "PARTIAL" and c["available_from"] == "2026-09-29"
+
+    def test_history_quality_labels(self):
+        good_b = _weekly(date(2025, 10, 20), 53, grade="B")
+        hq = history_quality(good_b, window_coverage(good_b, self.END, 365), weekly=False, end=self.END)
+        assert hq["class"] == "RECONSTRUCTED GOOD" and hq["label"] == "RECONSTRUCTED · GOOD"
+        good_a = _weekly(date(2025, 10, 20), 53)
+        hq = history_quality(good_a, window_coverage(good_a, self.END, 365), weekly=True, end=self.END)
+        assert hq["class"] == "FULL" and hq["label"] == "WEEKLY · GOOD"
+        hq = history_quality([], {"status": "UNAVAILABLE"}, weekly=True, end=self.END)
+        assert hq["class"] == "UNAVAILABLE"
+
+    def test_grade_c_or_worse_never_enters_raw(self, tmp_path):
+        d = tmp_path / "dram"; d.mkdir(parents=True)
+        (d / "DDR5_16G_SPOT.csv").write_text("product,date,price,source,grade,published_at\nDDR5_16G_SPOT,2026-05-04,40,zdnet,D,2026-05-04T18:00:00+08:00\n"
+                                             "DDR5_16G_SPOT,2026-05-05,41,dramexchange_archived,B,2026-05-05T18:00:00+08:00\n")
+        s = load_spot_raw("DDR5_16G_SPOT", "DDR5", AS_OF, hist=tmp_path, semi=tmp_path)
+        assert [r.v for r in s.raw] == [41.0]
+
+    def test_validation_series_is_compared_not_merged(self):
+        raw = [Raw(date(2026, 4, 30), datetime(2026, 4, 30, tzinfo=TPE), 40.0, "x"), Raw(date(2026, 5, 29), datetime(2026, 5, 29, tzinfo=TPE), 43.0, "x")]
+        v = check_validation([{"reference_period": "2026-05", "value": 7.1, "value_type": "CHANGE_PCT"}], raw)
+        assert v[0]["check"] == "CONSISTENT" and v[0]["raw_change_pct"] == pytest.approx(7.5)

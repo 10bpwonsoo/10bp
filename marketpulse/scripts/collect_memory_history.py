@@ -3,6 +3,7 @@
 
     python -m marketpulse.scripts.collect_memory_history daily-express --from-id 12430 --to-id 12960 [--cache DIR]
     python -m marketpulse.scripts.collect_memory_history trendforce-weekly          # 러너에서(이 세션은 trendforce.com 차단)
+    python -m marketpulse.scripts.collect_memory_history archived-snapshots [--target N]   # 러너에서 — Internet Archive 공개 가격 페이지 보존본(이미 읽은 것은 건너뛴다)
     python -m marketpulse.scripts.collect_memory_history validate
 
 저장 구조(데일리 아카이브와 섞지 않는다):

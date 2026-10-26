@@ -20,8 +20,8 @@ from typing import Any, Mapping, Sequence
 import yaml
 
 from ..config.settings import PACKAGE_ROOT
-from .memory_history import (HIST, TPE, anchor_state, compact, daily_state, freshness, load_contract_raw, load_spot_raw, months_between, moving_avg,
-                             state_change, turning_point, weekdays, window_coverage, zstats)
+from .memory_history import (HIST, TPE, anchor_state, check_validation, compact, daily_state, freshness, history_quality, load_contract_raw, load_spot_raw,
+                             load_validation, months_between, moving_avg, state_change, turning_point, weekdays, window_coverage, zstats)
 
 CONFIG = PACKAGE_ROOT / "config" / "semiconductor_cycle.yaml"
 DATA = PACKAGE_ROOT / "data" / "semiconductor"
@@ -228,6 +228,8 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
             "raw_obs_1y": sum(1 for r in rw if (end_d - r.obs).days <= 365), "raw_obs_1m": raw_1m, "frequency": "weekly" if weekly else "daily",
             "momentum": score, "momentum_basis": basis, "momentum_state": _state(score, (cfg.get("momentum") or {}).get("states") or []), "momentum_confidence": conf,
             "freshness": fr, "ma20": ma20, "ma60": ma60, "coverage": cov, "turning": turning_point(st, max_ref_age=mra),
+            "history_quality": history_quality(rw, cov.get("1Y") or {}, weekly=weekly, end=end_d),
+            "validation": check_validation(load_validation(pid, as_of, hist=hist_dir), rw),
             "sources": raws[pid].sources, "conflicts": raws[pid].conflicts[:5],
             "history": [{"t": r.obs.isoformat(), "v": round(r.v, 4)} for r in rw],
             "daily": compact(st),
@@ -328,8 +330,13 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
             "premium_type": "NONE" if not pr or not pr.get("available") else ("PROXY " if pr.get("proxy") else "") + str(pr.get("comparability")),
             "raw_obs": p["raw_obs_1y"], "latest_update": p["source_date"], "days_since": (p["freshness"] or {}).get("days_since_source"),
             "windows": {k: v["status"] for k, v in p["coverage"].items()}, "coverage": cov1y.get("status", "UNAVAILABLE"),
+            "history_start": rw[0].obs.isoformat() if rw else None, "history_end": rw[-1].obs.isoformat() if rw else None,
+            "expected_obs": p["history_quality"]["expected_obs"], "max_gap": cov1y.get("max_gap"), "calendar_coverage": cov1y.get("calendar_coverage"),
+            "observed_weeks": cov1y.get("observed_weeks"), "expected_weeks": cov1y.get("expected_weeks"), "score": cov1y.get("score"),
+            "quality": cov1y.get("grades"), "history_class": p["history_quality"]["class"], "history_label": p["history_quality"]["label"],
+            "validation": [{k: v.get(k) for k in ("reference_period", "value_type", "check", "source")} for v in p.get("validation") or []],
             "available_from": cov1y.get("available_from"), "sources": p["sources"],
-            "reason": None if cov1y.get("status") == "GOOD" else reasons.get(p["id"], "1년 이력 부족")})
+            "reason": None if cov1y.get("status") == "GOOD" else _cov_reason(cov1y, reasons.get(p["id"]))})
 
     # 4) 정규화 비교 (기간 시작 = 100) — Daily State 기준. 그 기간 이력이 PARTIAL 인 제품은 표시하되 coverage 를 붙인다
     normalized: dict[str, list] = {}
@@ -531,6 +538,18 @@ def build_semiconductor_cycle(*, as_of: datetime, series_by_id: Mapping[str, Any
     from ..ai.semi_read import attach_read
     attach_read(out, session_read, client=client)
     return out
+
+
+def _cov_reason(cov: Mapping, base: str | None) -> str:
+    """PARTIAL 이유 — 실제 수치로(기간 · 관측 주 · 최대 공백). 설정에 적힌 출처 설명을 붙인다."""
+    parts = []
+    if cov.get("calendar_days") is not None:
+        parts.append(f"덮는 기간 {cov['calendar_days']}일")
+    if cov.get("expected_weeks"):
+        parts.append(f"관측 주 {cov.get('observed_weeks')}/{cov['expected_weeks']}")
+    if cov.get("max_gap") is not None:
+        parts.append(f"최대 공백 {cov['max_gap']}일")
+    return " · ".join(parts) + (f" — {base}" if base else "")
 
 
 def _pp_change(pst: Sequence[Mapping], days: int) -> float | None:

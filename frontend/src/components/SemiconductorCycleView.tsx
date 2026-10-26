@@ -138,6 +138,12 @@ function PriceSnapshot({ c }: { c: SemiconductorCycle }) {
 // 계약가 = 공개 뒤부터 다음 공개 전까지의 anchor(점선 계단). Premium = 우축 옅은 면. 계산용 값은 서버 그대로 — 그릴 때만 솎는다(점이 많을 때).
 interface ChartPt { t: number; iso: string; spot: number; origin: "R" | "C"; src: string; contract: number | null; anchor: string | null; premium: number | null }
 const RENDER_MAX = 520;
+const HQ_COLOR: Record<string, string> = { FULL: "var(--ok)", "RECONSTRUCTED GOOD": "var(--ok)", PARTIAL: "var(--warn)", UNAVAILABLE: "var(--faint)" };
+const SRC_NAME: Record<string, string> = {
+  dramexchange_daily_express: "DRAMeXchange Daily Express", dramexchange_home: "DRAMeXchange", trendforce_weekly: "TrendForce weekly",
+  dramexchange_archived: "DRAMeXchange (Internet Archive)", trendforce_archived: "TrendForce (Internet Archive)",
+};
+const sourceNames = (xs: string[]) => xs.map((x) => SRC_NAME[x] ?? x).join(" + ");
 
 export function buildPts(p: SemiProduct, prem: SemiPremium | undefined): ChartPt[] {
   const byT = new Map((prem?.available ? prem.series ?? [] : []).map((s) => [s.t.slice(0, 10), s]));
@@ -237,9 +243,16 @@ function PriceChart({ c }: { c: SemiconductorCycle }) {
         {prem?.available ? <label className="sm-toggle mono"><input type="checkbox" checked={showContract} onChange={(e) => setShowContract(e.target.checked)} data-testid="semi-contract-toggle" /> Contract</label> : null}
       </div>
       <div className="sm-cov mono" data-testid="semi-chart-coverage" data-status={cov?.status ?? "UNAVAILABLE"}>
+        {p?.history_quality ? (
+          <span data-testid="semi-history-quality" data-class={p.history_quality.class}>
+            1Y HISTORY <b style={{ color: HQ_COLOR[p.history_quality.class] ?? "var(--muted)" }}>{p.history_quality.label}</b> · Raw observations {p.history_quality.raw_obs}
+            {" "}· Source {sourceNames(p.history_quality.sources)}{p.history_quality.archived_share ? ` (Internet Archive ${Math.round(p.history_quality.archived_share * 100)}%)` : ""}<br />
+          </span>
+        ) : null}
         {cov?.status === "GOOD"
-          ? <>HISTORY COVERAGE <b style={{ color: "var(--ok)" }}>{range} GOOD</b> · RAW {cov.raw} · 원천 {Object.entries(p?.sources ?? {}).map(([k, v]) => `${k.replace("dramexchange_", "DX ").replace("trendforce_", "TF ")} ${v}`).join(" / ")}</>
-          : <>HISTORY COVERAGE <b style={{ color: "var(--warn)" }}>{range} PARTIAL</b> · Available From {cov?.available_from ?? "–"} · RAW {cov?.raw ?? 0}{(c.coverage_table ?? []).find((r) => r.id === p?.id)?.reason ? ` — ${(c.coverage_table ?? []).find((r) => r.id === p?.id)!.reason}` : ""}</>}
+          ? <>{range} COVERAGE <b style={{ color: "var(--ok)" }}>GOOD</b> · RAW {cov.raw}{cov.expected_weeks ? ` · 관측 주 ${cov.observed_weeks}/${cov.expected_weeks}` : ""}{cov.max_gap !== undefined && cov.max_gap !== null ? ` · 최대 공백 ${cov.max_gap}일` : ""}{cov.score !== undefined ? ` · score ${cov.score}` : ""}</>
+          : <>{range} COVERAGE <b style={{ color: "var(--warn)" }}>{cov?.status === "MONTHLY" ? "MONTHLY COVERAGE GOOD" : cov?.status ?? "UNAVAILABLE"}</b> · Available From {cov?.available_from ?? "–"} · RAW {cov?.raw ?? 0}{(c.coverage_table ?? []).find((r) => r.id === p?.id)?.reason ? ` — ${(c.coverage_table ?? []).find((r) => r.id === p?.id)!.reason}` : ""}</>}
+        {p?.validation?.length ? <><br />VALIDATION {p.validation.map((v) => `${v.reference_period} ${v.value_type === "CHANGE_PCT" ? `${v.value > 0 ? "+" : ""}${v.value}%` : `$${v.value}`} (${v.grade}) → ${v.check}${v.raw_change_pct !== undefined ? ` · raw ${v.raw_change_pct > 0 ? "+" : ""}${v.raw_change_pct}%` : ""}`).join(" · ")}</> : null}
       </div>
       <div ref={ref} className="sm-chart-wrap">
         {pts.length === 0 ? <div className="sm-empty mono">{NO}</div> : (
@@ -584,21 +597,22 @@ function Quality({ c }: { c: SemiconductorCycle }) {
         <>
           <h3 className="sm-sub mono">PRODUCT HISTORY COVERAGE</h3>
           <div className="sm-table sm-covtab" role="table" data-testid="semi-coverage-table">
-            <div className="sm-tr sm-th mono" role="row"><span>PRODUCT</span><span>SPOT</span><span>CONTRACT</span><span>PREMIUM</span><span>RAW OBS</span><span>LATEST</span><span>COVERAGE</span></div>
+            <div className="sm-tr sm-th mono" role="row"><span>PRODUCT</span><span>SPOT</span><span>CONTRACT</span><span>PREMIUM</span><span>RAW OBS</span><span>MAX GAP</span><span>COVERAGE</span></div>
             {c.coverage_table.map((r) => (
-              <div key={r.id} className="sm-tr" role="row" data-testid="semi-coverage-row" data-id={r.id} data-coverage={r.coverage}>
-                <span className="sm-name">{r.label}<small className="mono"> {r.frequency} · {Object.entries(r.windows).map(([k, v]) => `${k} ${v === "GOOD" ? "✓" : "P"}`).join(" ")}</small>
+              <div key={r.id} className="sm-tr" role="row" data-testid="semi-coverage-row" data-id={r.id} data-coverage={r.coverage} data-class={r.history_class}>
+                <span className="sm-name">{r.label}<small className="mono"> {r.frequency} · {r.history_start ?? "–"}~{r.history_end ?? "–"} · {Object.entries(r.windows).map(([k, v]) => `${k} ${v === "GOOD" ? "✓" : v === "MONTHLY" ? "M" : "P"}`).join(" ")}
+                  {r.quality ? ` · ${Object.entries(r.quality).map(([g, n]) => `${g}:${n}`).join(" ")}` : ""}</small>
                   {r.reason ? <small className="sm-reason"> {r.coverage} · Available From {r.available_from ?? "–"} — {r.reason}</small> : null}</span>
                 <span className="mono" data-label="SPOT">{r.spot_history_months}M</span>
                 <span className="mono" data-label="CONTRACT">{r.contract_history_months === null ? "–" : `${r.contract_history_months}M`}</span>
                 <span className="mono" data-label="PREMIUM">{r.premium_history_months === null ? "–" : `${r.premium_history_months}M`}<small> {r.premium_type}</small></span>
-                <span className="mono" data-label="RAW OBS">{r.raw_obs}</span>
-                <span className="mono" data-label="LATEST">{r.days_since === 0 ? "Today" : r.days_since === null ? "–" : `${r.days_since}D AGO`}</span>
-                <b className="mono" data-label="COVERAGE" style={{ color: r.coverage === "GOOD" ? "var(--ok)" : r.coverage === "PARTIAL" ? "var(--warn)" : "var(--faint)" }}>{r.coverage}</b>
+                <span className="mono" data-label="RAW OBS">{r.raw_obs}{r.expected_obs ? <small> /{r.expected_obs}</small> : null}{r.expected_weeks ? <small> · wk {r.observed_weeks}/{r.expected_weeks}</small> : null}</span>
+                <span className="mono" data-label="MAX GAP">{r.max_gap ?? "–"}d<small> · {r.days_since === 0 ? "Today" : r.days_since === null ? "–" : `${r.days_since}D AGO`}</small></span>
+                <b className="mono" data-label="COVERAGE" style={{ color: HQ_COLOR[r.history_class ?? ""] ?? (r.coverage === "GOOD" ? "var(--ok)" : "var(--warn)") }}>{r.history_class ?? r.coverage}<small> {r.history_label && r.history_label !== r.history_class ? r.history_label : ""}</small></b>
               </div>
             ))}
           </div>
-          <p className="sm-note">SPOT/CONTRACT/PREMIUM = 실제 원천 이력 개월 수(1년 기준). RAW OBS = 최근 1년 원천 관측 수(Daily State 반복값 제외). PARTIAL 제품은 다른 제품 값으로 메우지 않는다.</p>
+          <p className="sm-note">SPOT/CONTRACT/PREMIUM = 실제 원천 이력 개월 수. RAW OBS = 최근 1년 원천 관측 수 / 기대 관측 수(Daily State 반복값 제외). COVERAGE = 기간 40% · 관측 밀도 30% · 출처 품질 20% · 공백 10% — GOOD 은 덮는 기간 330일 이상 그리고 관측 주 85% 이상. 등급 A = DRAMeXchange·TrendForce 직접 공개, B = Internet Archive 에 보존된 당시 공개 화면. RECONSTRUCTED 는 공개 과거 스냅샷을 조합해 복원했다는 뜻(가짜 값이 아니다). PARTIAL 제품은 다른 제품 값으로 메우지 않는다.</p>
         </>
       ) : null}
       {c.not_supported?.length ? <p className="sm-note">지원 안 함: {c.not_supported.join(" · ")}</p> : null}

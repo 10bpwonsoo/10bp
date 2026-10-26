@@ -11,7 +11,19 @@ export type Num = number | null;
 export interface SemiPoint { t: string; v: number }
 /** 평일 Daily State 한 칸 — [날짜, 값, 'R'(그날 원천 관측) | 'C'(CARRIED_FORWARD), 그 값의 원천 관측일] */
 export type SemiDaily = [string, number, "R" | "C", string];
-export interface SemiCoverage { status: "GOOD" | "PARTIAL" | "UNAVAILABLE" | string; available_from: string | null; raw: number; max_gap?: number | null }
+export interface SemiCoverage {
+  status: "GOOD" | "MONTHLY" | "PARTIAL" | "UNAVAILABLE" | string; available_from: string | null; raw: number; max_gap?: number | null;
+  score?: number; calendar_days?: number; calendar_coverage?: number; expected_weeks?: number; observed_weeks?: number; density?: number; source_quality?: number;
+  grades?: Record<string, number>;
+}
+export interface SemiHistoryQuality {
+  class: "FULL" | "RECONSTRUCTED GOOD" | "PARTIAL" | "UNAVAILABLE" | string; label: string; status: string; raw_obs: number; archived_share: number; sources: string[];
+  expected_obs: number; max_gap: number | null; calendar_coverage: number | null; score: number | null; observed_weeks?: number; expected_weeks?: number;
+}
+export interface SemiValidation {
+  reference_period: string; value: number; value_type: "LEVEL" | "CHANGE_PCT" | string; basis: string; source: string; source_type: string; grade: string;
+  source_url: string; note: string; check: "CONSISTENT" | "DIVERGENT" | "NO RAW" | string; raw_change_pct?: number; raw_value?: number; diff_pct?: number;
+}
 export interface SemiProduct {
   id: string; label: string; spec: string; family: "DDR5" | "DDR4" | "NAND" | string; tier: "main" | "ett" | string; selector: boolean; available: boolean;
   current: Num; updated_at: string | null; change_1d: Num; change_1w: Num; change_1m: Num; change_3m: Num; change_1y: Num;
@@ -21,7 +33,7 @@ export interface SemiProduct {
   daily?: SemiDaily[]; source_date?: string | null; current_origin?: "RAW" | "CARRIED_FORWARD" | null; change_6m?: Num; raw_obs_1y?: number; raw_obs_1m?: number;
   frequency?: "daily" | "weekly"; momentum_confidence?: "HIGH" | "MEDIUM" | "LOW"; freshness?: { days_since_source: number | null; state: string };
   ma20?: Num; ma60?: Num; coverage?: Record<string, SemiCoverage>; turning?: { spot_momentum: string | null; mom_1m_now?: Num; mom_1m_before?: Num };
-  sources?: Record<string, number>;
+  sources?: Record<string, number>; history_quality?: SemiHistoryQuality; validation?: SemiValidation[];
 }
 export interface SemiPremiumPoint { t: string; spot: number; contract: number; anchor: string; premium: number; origin?: "RAW" | "CARRIED_FORWARD"; src?: string }
 export interface SemiPremium {
@@ -36,6 +48,9 @@ export interface SemiCoverageRow {
   id: string; label: string; frequency: string; spot_history_months: number; spot_from: string | null; contract_history_months: number | null; premium_history_months: number | null;
   premium_type: string; raw_obs: number; latest_update: string | null; days_since: number | null; windows: Record<string, string>; coverage: string; available_from: string | null;
   sources: Record<string, number>; reason: string | null;
+  history_start?: string | null; history_end?: string | null; expected_obs?: number; max_gap?: number | null; calendar_coverage?: number | null;
+  observed_weeks?: number; expected_weeks?: number; score?: number | null; quality?: Record<string, number>; history_class?: string; history_label?: string;
+  validation?: { reference_period: string; value_type: string; check: string; source: string }[];
 }
 export interface SemiChip { key: string; label: string; value: string }
 export interface SemiComponent { key: string; label: string; score: Num; weight: number; tone: string }

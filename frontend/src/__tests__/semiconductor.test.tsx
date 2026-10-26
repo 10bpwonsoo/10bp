@@ -176,6 +176,19 @@ describe("1년 과거 이력 차트 (2026-10-23)", () => {
     expect(d5.textContent).toContain("Available From");
   });
 
+  it("제품별 HISTORY QUALITY — 분류 라벨 · 원천 · 관측 수, coverage 표의 분류", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    const hq = within(chart).getByTestId("semi-history-quality");
+    const d4 = cycle.memory_prices.find((p) => p.id === "DDR4_8G_SPOT")!;
+    expect(hq.getAttribute("data-class")).toBe(d4.history_quality!.class);
+    expect(hq.textContent).toContain(d4.history_quality!.label);
+    expect(hq.textContent).toContain(`Raw observations ${d4.history_quality!.raw_obs}`);
+    for (const r of screen.getAllByTestId("semi-coverage-row")) {
+      expect(["FULL", "RECONSTRUCTED GOOD", "PARTIAL", "UNAVAILABLE"]).toContain(r.getAttribute("data-class"));
+    }
+  });
+
   it("Daily State 칸은 평일만, 'R'/'C' 로 구분된다", () => {
     const d4 = cycle.memory_prices.find((p) => p.id === "DDR4_8G_SPOT")!;
     for (const [d, , o] of d4.daily!) {
