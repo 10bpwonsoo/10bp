@@ -44,12 +44,12 @@ history:
   dense_raw_1m_daily: 15        # 최근 30일 RAW 가 이만큼 있어야 momentum confidence HIGH
   dense_raw_1m_weekly: 3
   partial_reasons:
-    DDR5_16G_SPOT: "공개 과거 출처 없음 — Daily Express 는 DDR4 주력 칩만 싣고, 공식 과거 차트는 MI 회원 전용. 2026-09-29 수집 시작분만"
-    DDR5_16G_ETT_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만"
-    DDR4_16G_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만(Daily Express 미수록)"
+    DDR5_16G_SPOT: "Daily Express 미수록 · 유료 과거 다운로드는 쓰지 않는다 — Internet Archive 에 보존된 공개 홈·TrendForce 가격 화면만(보존본이 없는 주는 빈 칸)"
+    DDR5_16G_ETT_SPOT: "Internet Archive 에 보존된 공개 화면만 — 보존본이 없는 주는 빈 칸"
+    DDR4_16G_SPOT: "보존된 공개 표에서 2026-02 부터 확인되는 품목 — 그 전 공개 관측 없음(Daily Express 미수록)"
     DDR4_16G_ETT_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만"
-    NAND_256G_TLC_WAFER: "공개 과거 출처 없음 — TrendForce 주간 기사는 512Gb 웨이퍼만 싣는다"
-    NAND_128G_TLC_WAFER: "공개 과거 출처 없음 — TrendForce 주간 기사는 512Gb 웨이퍼만 싣는다"
+    NAND_256G_TLC_WAFER: "TrendForce 주간 기사는 512Gb 만 싣는다 — Internet Archive 에 보존된 공개 wafer 표만(보존본이 없는 주는 빈 칸)"
+    NAND_128G_TLC_WAFER: "TrendForce 주간 기사는 512Gb 만 싣는다 — Internet Archive 에 보존된 공개 wafer 표만(보존본이 없는 주는 빈 칸)"
     DDR5_8G_SPOT: "DRAMeXchange 공개 표·시황 어디에도 없다"      # 계약가 공개 시각이 이보다 오래되면 STALE (월간 · 공개 지연)
 premium_states:              # 현재 premium(%) → 상태. 위에서부터 첫 min 이상
   - {min: 30,   key: STRONG_PREMIUM, label: "STRONG PREMIUM"}
