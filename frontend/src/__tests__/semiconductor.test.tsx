@@ -31,8 +31,8 @@ describe("SemiconductorCycleView", () => {
 
   it("가격 표 — 기준 관측이 없는 창은 '–' 이고 0% 로 그리지 않는다", () => {
     render(<SemiconductorCycleView cycle={cycle} />);
-    const row = screen.getAllByTestId("semi-price-row").find((r) => r.getAttribute("data-id") === "DDR4_16G_SPOT")!;
-    const p = cycle.memory_prices.find((x) => x.id === "DDR4_16G_SPOT")!;
+    const row = screen.getAllByTestId("semi-price-row").find((r) => r.getAttribute("data-id") === "NAND_256G_TLC_WAFER")!;
+    const p = cycle.memory_prices.find((x) => x.id === "NAND_256G_TLC_WAFER")!;
     expect(p.change_1w).toBeNull();
     expect(row.querySelector('[data-label="1W"]')!.textContent).toBe("–");
     expect(row.textContent).not.toContain("0.0%");
@@ -138,15 +138,27 @@ describe("1년 과거 이력 차트 (2026-10-23)", () => {
     expect(tip.textContent).toMatch(/Contract \$[\d.]+ \([A-Z][a-z]{2}-\d{4}\)/);
   });
 
-  it("1Y 이력이 없는 제품은 PARTIAL 과 Available From · 이유를 말하고 z-score 는 NOT ENOUGH HISTORY", () => {
+  it("1Y 를 덮지 못하는 제품은 PARTIAL 과 Available From · 실제 수치로 된 이유를 말한다", () => {
+    render(<SemiconductorCycleView cycle={cycle} />);
+    const chart = screen.getByTestId("semi-chart");
+    fireEvent.change(within(chart).getByTestId("semi-product-select"), { target: { value: "DDR4_16G_SPOT" } });
+    const cov = within(chart).getByTestId("semi-chart-coverage");
+    expect(cov.getAttribute("data-status")).toBe("PARTIAL");
+    expect(cov.textContent).toContain("Available From 2026-02-02");
+    expect(within(chart).getByTestId("semi-history-quality").getAttribute("data-class")).toBe("PARTIAL");
+  });
+
+  it("DDR5 16Gb — 보존된 공개 화면으로 재구성한 1Y 이력은 RECONSTRUCTED · GOOD, RAW 수는 일간 기대치와 따로", () => {
     render(<SemiconductorCycleView cycle={cycle} />);
     const chart = screen.getByTestId("semi-chart");
     fireEvent.change(within(chart).getByTestId("semi-product-select"), { target: { value: "DDR5_16G_SPOT" } });
-    const cov = within(chart).getByTestId("semi-chart-coverage");
-    expect(cov.getAttribute("data-status")).toBe("PARTIAL");
-    expect(cov.textContent).toContain("Available From 2026-09-29");
-    expect(cov.textContent).toContain("공개 과거 출처 없음");
-    expect(within(chart).getByTestId("semi-premium-stats").textContent).toContain("NOT ENOUGH HISTORY");
+    const d5 = cycle.memory_prices.find((p) => p.id === "DDR5_16G_SPOT")!;
+    const hq = within(chart).getByTestId("semi-history-quality");
+    expect(hq.getAttribute("data-class")).toBe("RECONSTRUCTED GOOD");
+    expect(hq.textContent).toContain("RECONSTRUCTED · GOOD");
+    expect(hq.textContent).toContain(`Raw observations ${d5.history_quality!.raw_obs}`);
+    expect(hq.textContent).toContain("Internet Archive");
+    expect(d5.history_quality!.raw_obs).toBeLessThan(d5.history_quality!.expected_obs);
     expect(chart.textContent).toContain("PROXY PREMIUM");
   });
 
@@ -172,8 +184,11 @@ describe("1년 과거 이력 차트 (2026-10-23)", () => {
     const d4 = rows.find((r) => r.getAttribute("data-id") === "DDR4_8G_SPOT")!;
     expect(d4.getAttribute("data-coverage")).toBe("GOOD");
     const d5 = rows.find((r) => r.getAttribute("data-id") === "DDR5_16G_SPOT")!;
-    expect(d5.getAttribute("data-coverage")).toBe("PARTIAL");
-    expect(d5.textContent).toContain("Available From");
+    expect(d5.getAttribute("data-coverage")).toBe("GOOD");
+    expect(d5.getAttribute("data-class")).toBe("RECONSTRUCTED GOOD");
+    const d16 = rows.find((r) => r.getAttribute("data-id") === "DDR4_16G_SPOT")!;
+    expect(d16.getAttribute("data-coverage")).toBe("PARTIAL");
+    expect(d16.textContent).toContain("Available From");
   });
 
   it("제품별 HISTORY QUALITY — 분류 라벨 · 원천 · 관측 수, coverage 표의 분류", () => {

@@ -129,19 +129,29 @@ class TestDailyState:
 
 
 class TestEngineHistory:
-    def test_real_db_1y_for_ddr4_8g_and_partial_for_ddr5(self):
+    def test_real_db_1y_for_ddr4_8g_and_reconstructed_ddr5(self):
         out = build_semiconductor_cycle(as_of=AS_OF)
         p = {x["id"]: x for x in out["memory_prices"]}
         d4, d5 = p["DDR4_8G_SPOT"], p["DDR5_16G_SPOT"]
         assert d4["coverage"]["1Y"]["status"] == "GOOD" and d4["raw_obs_1y"] >= 200 and d4["change_1y"] is not None
         assert len(d4["daily"]) >= 250 and {r[2] for r in d4["daily"]} <= {"R", "C"}
-        assert d5["coverage"]["1Y"]["status"] == "PARTIAL" and d5["change_1y"] is None   # 1년 전 관측이 없다 — 만들지 않는다
+        assert d4["history_quality"]["class"] == "FULL"
+        # DDR5 — Internet Archive 에 보존된 공개 화면(B)으로 재구성. RAW 는 일간 기대치보다 훨씬 적다 — 채우지 않는다
+        hq = d5["history_quality"]
+        assert hq["class"] == "RECONSTRUCTED GOOD" and hq["label"] == "RECONSTRUCTED · GOOD" and hq["archived_share"] >= 0.5
+        assert d5["raw_obs_1y"] < hq["expected_obs"] and d5["coverage"]["1Y"]["observed_weeks"] / d5["coverage"]["1Y"]["expected_weeks"] >= 0.85
+        assert d5["raw_obs_1y"] == sum(1 for r in d5["daily"] if r[2] == "R" and r[0] > (AS_OF.date() - timedelta(days=365)).isoformat())
+        assert d5["validation"] and d5["validation"][0]["source_type"] == "PUBLIC_FIXED_REFERENCE" and d5["validation"][0]["check"] == "CONSISTENT"
         prem = next(x for x in out["spot_premium"] if x["spot"] == "DDR4_8G_SPOT")
         assert prem["z_status"] == "OK" and prem["raw_premium_obs"] >= 200 and prem["contract_months"] >= 12
-        d5p = next(x for x in out["spot_premium"] if x["spot"] == "DDR5_16G_SPOT")
-        assert d5p["proxy"] and d5p["z_status"] == "NOT ENOUGH HISTORY"
         rows = {r["id"]: r for r in out["coverage_table"]}
-        assert rows["DDR4_8G_SPOT"]["coverage"] == "GOOD" and rows["DDR5_16G_SPOT"]["coverage"] == "PARTIAL" and rows["DDR5_16G_SPOT"]["reason"]
+        assert rows["DDR4_8G_SPOT"]["history_class"] == "FULL" and rows["DDR5_16G_SPOT"]["history_class"] == "RECONSTRUCTED GOOD"
+        # NAND 256/128 — 보존본이 없는 주가 남아 PARTIAL. 이유는 실제 수치로
+        for pid in ("NAND_256G_TLC_WAFER", "NAND_128G_TLC_WAFER"):
+            r = rows[pid]
+            assert r["history_class"] in ("PARTIAL", "RECONSTRUCTED GOOD")
+            if r["history_class"] == "PARTIAL":
+                assert r["reason"] and f"관측 주 {r['observed_weeks']}/{r['expected_weeks']}" in r["reason"]
 
     def test_archive_date_has_no_look_ahead(self):
         """2026-04-01 저장 화면 — 1Y 차트 끝 = 2026-04-01, 계약 anchor = 그때 공개된 2월분(4월분은 4/30 공개)."""

@@ -465,3 +465,12 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - coverage: DDR4 8Gb · DDR4 8Gb eTT = 1M/3M/6M/1Y GOOD. NAND 512Gb = 1M/3M GOOD, 6M/1Y PARTIAL(2026-04-13~05-13 30일 공백 — 그 주 기사에 웨이퍼 문장 없음). DDR5 16Gb(2026-09-29~) · DDR4 16Gb · NAND 256/128Gb = PARTIAL(공개 과거 출처 없음, 다른 제품 값으로 메우지 않음). DDR5 8Gb 는 공개 원천 없음.
 - 화면: 기본 제품 = 1Y GOOD 인 DDR4 8Gb · 기본 기간 1Y. 현물 실선 · 계약 anchor 점선 계단(토글) · premium 옅은 면(우축) · 툴팁에 원천 관측일과 RAW/CARRIED_FORWARD. 기간별 coverage 와 PARTIAL 사유, Data Quality 에 제품별 coverage 표. 과거 날짜 화면은 그날 as_of 로 잘린 값만(2026-04-01 기준이면 차트 끝 4/01 · 계약 anchor 2월분).
 - 수집: `collect-memory-history` workflow(평일 04:10 UTC) — Daily Express 새 글 · TrendForce 주간 기사, append-only. 10/23 캡처의 반도체 섹션을 새 엔진으로 다시 만들었고(UPSWING 44.5), 잠긴 10/22 history 행(UPSWING 37.3, 이전 엔진)은 그대로다.
+
+### 2026-10-26 — 반도체 사이클: DDR5 · NAND 1Y 이력 — 보존된 공개 화면으로 재구성
+- 원칙: 유료 DRAMeXchange Historical Download · 회원 페이지 · 로그인은 쓰지 않는다(환경변수·credential 에 DRAMeXchange/TrendForce 라이선스 접근 없음 확인). chart 이미지 OCR 없음. Internet Archive 에 보존된 **공개 화면**(dramexchange.com 홈, trendforce.com/price/dram/dram_spot · /price/flash/wafer_spot)에 그날 표시된 표 값만 — 행의 'Last Update' 시각이 관측일·공개 시각, 캡처보다 늦은 시각은 버림.
+- 저장: 행마다 `source_type`(DIRECT_PUBLIC_REPORT/ARTICLE/SNAPSHOT · ARCHIVED_PUBLIC_SNAPSHOT) · `grade`(A 직접 공개 · B 보존 공개 · C 공개 고정 참고 · D 보도 인용 · E 기타) · `archive_url` · `original_url` · `snapshot_timestamp`. source 를 하나의 RAW 로 섞지 않고 같은 날은 순위로 하나만 쓴다. 엔진 RAW 는 A/B 만. 공개 월간 참고값(DDR5 16Gb 2026-05 계약 +7.1%, ZDNet 이 인용한 TrendForce · D)은 `memory_history/validation/` 에 따로 — 대조만(raw +6.84% → CONSISTENT).
+- 수집(`collect-memory-history`): 보존본 단계를 대상마다 나누고 5개마다 저장, 표 없는 캡처는 `archive_empty.txt` 에 적고 같은 날 더 이른 캡처(최대 4개)를 읽는다. 검증 보고가 실패해도 읽은 행은 커밋(검증 보고가 validation/ 참고값을 RAW 로 읽어 실패하던 버그 수정).
+- coverage 점수: 기간 40% · 주간 밀도 30% · 원천 등급 20% · 공백 10%. GOOD = 1Y 의 90% 이상을 덮고 관측 주 85% 이상, 모든 달에 관측이 있으면 MONTHLY COVERAGE GOOD. 분류 FULL(A 위주 원천 그대로) / RECONSTRUCTED GOOD(보존본 비중 25% 이상) / PARTIAL / UNAVAILABLE.
+- 결과(as_of 2026-10-22 22:30Z): DDR4 8Gb FULL(RAW 251, 52/53주). DDR5 16Gb 2025-07-01~ RECONSTRUCTED GOOD(RAW 109/평일 261, 46/53주, 최대 공백 20일, B 104 · A 5). NAND 512Gb RECONSTRUCTED GOOD(RAW 63/53, 49/53주, 공백 14일, A 40 · B 23). NAND 256/128Gb PARTIAL · MONTHLY COVERAGE GOOD(RAW 43, 43/53주, 공백 21일 — 보존본이 없는 주는 빈 칸). DDR4 16Gb PARTIAL(보존된 공개 표에서 2026-02 부터).
+- 화면: 차트 위 1Y HISTORY 줄(분류 · RAW 수 · 원천 · Internet Archive 비중) · VALIDATION 줄, coverage 표에 RAW/기대 · 관측 주 · 최대 공백 · 분류. 차트 기본 제품은 FULL 이력(DDR4 8Gb).
+- 10/23 캡처 반도체 섹션 재생성(UPSWING 46.2) · 세션 Market Read 를 새 컨텍스트로 다시 써 같은 검증 통과. 잠긴 history 행은 그대로.

@@ -140,10 +140,11 @@ interface ChartPt { t: number; iso: string; spot: number; origin: "R" | "C"; src
 const RENDER_MAX = 520;
 const HQ_COLOR: Record<string, string> = { FULL: "var(--ok)", "RECONSTRUCTED GOOD": "var(--ok)", PARTIAL: "var(--warn)", UNAVAILABLE: "var(--faint)" };
 const SRC_NAME: Record<string, string> = {
-  dramexchange_daily_express: "DRAMeXchange Daily Express", dramexchange_home: "DRAMeXchange", trendforce_weekly: "TrendForce weekly",
+  dramexchange_daily_express: "DRAMeXchange Daily Express", dramexchange_home: "DRAMeXchange (direct)", trendforce_weekly: "TrendForce weekly",
   dramexchange_archived: "DRAMeXchange (Internet Archive)", trendforce_archived: "TrendForce (Internet Archive)",
 };
-const sourceNames = (xs: string[]) => xs.map((x) => SRC_NAME[x] ?? x).join(" + ");
+// 직접 공개 원천을 먼저, Internet Archive 보존본을 뒤에
+const sourceNames = (xs: string[]) => [...xs].sort((a, b) => Number(a.endsWith("_archived")) - Number(b.endsWith("_archived"))).map((x) => SRC_NAME[x] ?? x).join(" + ");
 
 export function buildPts(p: SemiProduct, prem: SemiPremium | undefined): ChartPt[] {
   const byT = new Map((prem?.available ? prem.series ?? [] : []).map((s) => [s.t.slice(0, 10), s]));
@@ -169,7 +170,8 @@ const anchorLabel = (a: string | null) => {
 
 function PriceChart({ c }: { c: SemiconductorCycle }) {
   const choices = c.memory_prices.filter((p) => p.selector && p.available);
-  const best = choices.find((p) => p.coverage?.["1Y"]?.status === "GOOD") ?? choices[0];
+  // 기본 = 1Y 이력 품질이 가장 높은 제품 — 원천 그대로(FULL) → 보존본 재구성(GOOD) → 첫 제품
+  const best = choices.find((p) => p.history_quality?.class === "FULL") ?? choices.find((p) => p.coverage?.["1Y"]?.status === "GOOD") ?? choices[0];
   const [sel, setSel] = useState(best?.id ?? "");
   const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("1Y");
   const [showContract, setShowContract] = useState(true);
@@ -246,7 +248,7 @@ function PriceChart({ c }: { c: SemiconductorCycle }) {
         {p?.history_quality ? (
           <span data-testid="semi-history-quality" data-class={p.history_quality.class}>
             1Y HISTORY <b style={{ color: HQ_COLOR[p.history_quality.class] ?? "var(--muted)" }}>{p.history_quality.label}</b> · Raw observations {p.history_quality.raw_obs}
-            {" "}· Source {sourceNames(p.history_quality.sources)}{p.history_quality.archived_share ? ` (Internet Archive ${Math.round(p.history_quality.archived_share * 100)}%)` : ""}<br />
+            {" "}· Source {sourceNames(p.history_quality.sources)}{p.history_quality.archived_share ? ` · Internet Archive 비중 ${Math.round(p.history_quality.archived_share * 100)}%` : ""}<br />
           </span>
         ) : null}
         {cov?.status === "GOOD"

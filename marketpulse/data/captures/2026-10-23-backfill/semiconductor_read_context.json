@@ -2,13 +2,13 @@
  "as_of_utc": "2026-10-22T22:30",
  "regime_model": {
   "state": "UPSWING",
-  "composite": 44.0,
+  "composite": 46.0,
   "confidence": 70.0,
   "coverage": 0.82,
   "evidence": [
    {
     "key": "memory_pricing",
-    "score": 14.0
+    "score": 23.0
    },
    {
     "key": "spot_premium",
@@ -60,32 +60,32 @@
    "tier": "main",
    "price_usd": 61.1,
    "updated": "2026-10-22",
-   "chg_1w_pct": null,
-   "chg_1m_pct": null,
-   "chg_3m_pct": null,
+   "chg_1w_pct": 1.1,
+   "chg_1m_pct": 6.9,
+   "chg_3m_pct": 21.0,
    "chg_6m_pct": null,
    "chg_1y_pct": null,
-   "chg_since_first_pct": 5.7,
-   "since": "2026-09-29",
-   "observations": 5,
-   "history_1y": "PARTIAL",
-   "momentum_state": "FIRM"
+   "chg_since_first_pct": 905.3,
+   "since": "2025-07-01",
+   "observations": 133,
+   "history_1y": "GOOD",
+   "momentum_state": "STRONG"
   },
   {
    "product": "DDR4 16Gb",
    "tier": "main",
    "price_usd": 83.117,
    "updated": "2026-10-22",
-   "chg_1w_pct": null,
-   "chg_1m_pct": null,
-   "chg_3m_pct": null,
+   "chg_1w_pct": -0.7,
+   "chg_1m_pct": -1.6,
+   "chg_3m_pct": 1.2,
    "chg_6m_pct": null,
    "chg_1y_pct": null,
-   "chg_since_first_pct": null,
-   "since": null,
-   "observations": 1,
+   "chg_since_first_pct": 7.0,
+   "since": "2026-02-02",
+   "observations": 87,
    "history_1y": "PARTIAL",
-   "momentum_state": "NO DATA"
+   "momentum_state": "FLAT"
   },
   {
    "product": "DDR4 8Gb",
@@ -99,7 +99,7 @@
    "chg_1y_pct": 482.5,
    "chg_since_first_pct": 3152.6,
    "since": "2025-03-04",
-   "observations": 409,
+   "observations": 413,
    "history_1y": "GOOD",
    "momentum_state": "FIRM"
   },
@@ -108,16 +108,16 @@
    "tier": "ett",
    "price_usd": 28.8,
    "updated": "2026-10-22",
-   "chg_1w_pct": null,
-   "chg_1m_pct": null,
-   "chg_3m_pct": null,
+   "chg_1w_pct": 3.6,
+   "chg_1m_pct": 15.2,
+   "chg_3m_pct": 21.9,
    "chg_6m_pct": null,
    "chg_1y_pct": null,
-   "chg_since_first_pct": null,
-   "since": null,
-   "observations": 1,
+   "chg_since_first_pct": 185.2,
+   "since": "2025-11-14",
+   "observations": 104,
    "history_1y": "PARTIAL",
-   "momentum_state": "NO DATA"
+   "momentum_state": "STRONG"
   },
   {
    "product": "DDR4 16Gb eTT",
@@ -159,12 +159,12 @@
    "chg_1w_pct": -1.3,
    "chg_1m_pct": -6.5,
    "chg_3m_pct": -1.8,
-   "chg_6m_pct": -11.5,
+   "chg_6m_pct": -11.3,
    "chg_1y_pct": 306.3,
-   "chg_since_first_pct": 567.8,
-   "since": "2025-08-06",
-   "observations": 49,
-   "history_1y": "PARTIAL",
+   "chg_since_first_pct": 593.0,
+   "since": "2025-06-23",
+   "observations": 88,
+   "history_1y": "GOOD",
    "momentum_state": "SOFT"
   },
   {
@@ -173,15 +173,15 @@
    "price_usd": 18.365,
    "updated": "2026-10-12",
    "chg_1w_pct": null,
-   "chg_1m_pct": null,
-   "chg_3m_pct": null,
-   "chg_6m_pct": null,
-   "chg_1y_pct": null,
-   "chg_since_first_pct": null,
-   "since": null,
-   "observations": 1,
-   "history_1y": "PARTIAL",
-   "momentum_state": "NO DATA"
+   "chg_1m_pct": 2.7,
+   "chg_3m_pct": 75.5,
+   "chg_6m_pct": 75.3,
+   "chg_1y_pct": 675.5,
+   "chg_since_first_pct": 1129.2,
+   "since": "2025-06-23",
+   "observations": 59,
+   "history_1y": "MONTHLY",
+   "momentum_state": "STRONG"
   },
   {
    "product": "NAND 128Gb TLC",
@@ -189,15 +189,15 @@
    "price_usd": 9.967,
    "updated": "2026-10-12",
    "chg_1w_pct": null,
-   "chg_1m_pct": null,
-   "chg_3m_pct": null,
-   "chg_6m_pct": null,
-   "chg_1y_pct": null,
-   "chg_since_first_pct": null,
-   "since": null,
-   "observations": 1,
-   "history_1y": "PARTIAL",
-   "momentum_state": "NO DATA"
+   "chg_1m_pct": 0.0,
+   "chg_3m_pct": 49.8,
+   "chg_6m_pct": 51.5,
+   "chg_1y_pct": 493.3,
+   "chg_since_first_pct": 749.7,
+   "since": "2025-06-23",
+   "observations": 59,
+   "history_1y": "MONTHLY",
+   "momentum_state": "STRONG"
   }
  ],
  "spot_premium": [
@@ -206,15 +206,15 @@
    "contract": "DDR4 16Gb 2Gx8 계약",
    "comparability": "HIGH",
    "premium_pct": 66.2,
-   "direction": "UNKNOWN",
+   "direction": "STABLE",
    "contract_anchor_month": "Aug-2026",
    "contract_stale": true,
    "proxy": false,
-   "zscore_1y": null,
-   "percentile_1y": null,
-   "mean_1y_pct": null,
-   "z_status": "NOT ENOUGH HISTORY",
-   "raw_premium_obs": 1
+   "zscore_1y": -0.81,
+   "percentile_1y": 6.0,
+   "mean_1y_pct": 71.8,
+   "z_status": "OK",
+   "raw_premium_obs": 35
   },
   {
    "spot": "DDR4 8Gb",
@@ -227,9 +227,9 @@
    "proxy": false,
    "zscore_1y": -0.75,
    "percentile_1y": 33.0,
-   "mean_1y_pct": 115.6,
+   "mean_1y_pct": 115.5,
    "z_status": "OK",
-   "raw_premium_obs": 248
+   "raw_premium_obs": 251
   },
   {
    "spot": "DDR5 16Gb",
@@ -240,11 +240,11 @@
    "contract_anchor_month": "Aug-2026",
    "contract_stale": true,
    "proxy": true,
-   "zscore_1y": null,
-   "percentile_1y": null,
-   "mean_1y_pct": null,
-   "z_status": "NOT ENOUGH HISTORY",
-   "raw_premium_obs": 5
+   "zscore_1y": 1.56,
+   "percentile_1y": 100.0,
+   "mean_1y_pct": 72.7,
+   "z_status": "OK",
+   "raw_premium_obs": 35
   },
   {
    "spot": "NAND 512Gb TLC",
@@ -255,8 +255,8 @@
  "breadth": {
   "state": "SELECTIVE",
   "positive_momentum": [
-   2,
-   3
+   4,
+   6
   ],
   "products_in_premium": [
    3,
@@ -378,9 +378,9 @@
  "displayed_elsewhere": {
   "numbers": [
    -100.0,
-   14.0,
+   23.0,
    33.0,
-   44.0,
+   46.0,
    69.0,
    70.0,
    100.0
