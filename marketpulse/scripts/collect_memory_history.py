@@ -291,6 +291,8 @@ def validate(root: Path = ROOT) -> dict:
     """제품·source 별 첫/마지막 날짜, RAW 수, 7일 넘는 빈 구간(일간)·14일 넘는(주간), 같은 날 중복, 직전 대비 ×3 · ÷3 이상 급변(단위 의심)."""
     out: dict = {"generated_at": now_iso(), "spot": {}, "contract": {}}
     for f in sorted((root).glob("*/*.csv")):
+        if f.parent.name == "validation":   # 대조용 공개 참고값 — RAW 가 아니다
+            continue
         rows = read_rows(f)
         if not rows:
             continue

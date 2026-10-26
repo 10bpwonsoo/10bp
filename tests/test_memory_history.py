@@ -78,6 +78,10 @@ class TestCollector:
         assert again["added"]["DDR4_8G_SPOT"] == 0
         v = validate(tmp_path / "db")
         assert v["spot"]["DDR4_8G_SPOT"]["dramexchange_daily_express"]["duplicates"] == 0
+        # 대조용 공개 참고값(validation/)은 RAW 가 아니다 — 날짜 열이 없어도 검증 보고를 깨지 않는다
+        (tmp_path / "db" / "validation").mkdir()
+        (tmp_path / "db" / "validation" / "DDR5_16G_SPOT.csv").write_text("reference_period,value,value_type\n2026-05,7.1,CHANGE_PCT\n")
+        assert "DDR5_16G_SPOT" not in validate(tmp_path / "db")["spot"]
 
 
 def _raw(d: str, v: float, known: str | None = None) -> Raw:
