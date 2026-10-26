@@ -26,7 +26,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,6 +51,10 @@ jobs:
         continue-on-error: true
         timeout-minutes: 15
         run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01 --target 2
+      - name: Internet Archive — TrendForce price index page
+        continue-on-error: true
+        timeout-minutes: 15
+        run: python -m marketpulse.scripts.collect_memory_history archived-snapshots --since 2025-07-01 --target 3
       - name: Validate
         run: python -m marketpulse.scripts.collect_memory_history validate
       # 검증 보고가 실패해도 이미 읽은 원천 행(append-only)은 남긴다 — 취소된 실행만 커밋하지 않는다

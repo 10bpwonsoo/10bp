@@ -189,12 +189,14 @@ ARCHIVE_TARGETS = [
     ("https://dramexchange.com/", "dramexchange_archived", "daily"),
     ("https://www.trendforce.com/price/dram/dram_spot", "trendforce_archived", "daily"),
     ("https://www.trendforce.com/price/flash/wafer_spot", "trendforce_archived", "weekly"),
+    ("https://www.trendforce.com/price", "trendforce_archived", "weekly"),   # 가격 첫 화면 — 같은 공개 표가 실리면 읽는다(없으면 표 없는 보존본으로 남는다)
 ]
 ARCHIVE_UA = {"User-Agent": "marketpulse-memory-history/0.2 (public snapshot reconstruction; contact via repo)"}
 
 
-def _cdx_days(original: str, since: date, until: date) -> list[tuple[str, str]]:
-    """그 URL 의 보존본 — 날짜(UTC)마다 마지막 캡처 하나 (timestamp, original)."""
+def _cdx_days(original: str, since: date, until: date, per_day: int = 4) -> list[list[tuple[str, str]]]:
+    """그 URL 의 보존본 — 날짜(UTC)마다 늦은 캡처부터 최대 per_day 개 [(timestamp, original), ...].
+    그날 마지막 캡처가 표 없는 화면(차단·스크립트 화면)이면 같은 날 더 이른 캡처를 읽는다 — 같은 날의 공개 화면만, 다른 날 값으로 채우지 않는다."""
     q = urllib.parse.urlencode({"url": original.split("://", 1)[1], "from": since.strftime("%Y%m%d"), "to": until.strftime("%Y%m%d"), "output": "json",
                                 "fl": "timestamp,original", "filter": "statuscode:200"})
     try:
@@ -202,10 +204,10 @@ def _cdx_days(original: str, since: date, until: date) -> list[tuple[str, str]]:
             rows = json.loads(r.read().decode("utf-8", "ignore"))[1:]
     except Exception:  # noqa: BLE001
         return []
-    last: dict[str, tuple[str, str]] = {}
+    by_day: dict[str, set[tuple[str, str]]] = {}
     for ts, orig in rows:
-        last[ts[:8]] = max(last.get(ts[:8], (ts, orig)), (ts, orig))
-    return [last[k] for k in sorted(last)]
+        by_day.setdefault(ts[:8], set()).add((ts, orig))
+    return [sorted(by_day[k], reverse=True)[:per_day] for k in sorted(by_day)]
 
 
 def _flush_archived(rows: dict[str, list[dict]], root: Path, report: dict) -> None:
@@ -231,48 +233,54 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
     empty_path = root / "archive_empty.txt"
     empty = set(empty_path.read_text().split()) if empty_path.exists() else set()
     for original, source, freq in targets or ARCHIVE_TARGETS:
-        snaps = _cdx_days(original, since, until)
+        days = _cdx_days(original, since, until)
         got = done = 0
-        for ts, orig in snaps:
-            if datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc).isoformat()[:19] in seen or f"{ts}|{orig}" in empty:
-                continue   # 이미 읽은 보존본
-            arch = f"https://web.archive.org/web/{ts}id_/{orig}"
-            page = ""
-            for attempt in range(2):
-                try:
-                    with urllib.request.urlopen(urllib.request.Request(arch, headers=ARCHIVE_UA), timeout=45) as r:
-                        page = r.read().decode("utf-8", "ignore")
-                    break
-                except Exception:  # noqa: BLE001
-                    time.sleep(sleep * (attempt + 2))
-            time.sleep(sleep)
-            if not page:
-                continue
-            snap_at = datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
-            parsed = parse_price_snapshot(page)
-            if not any(pid in FAMILY for pid in parsed):
-                with empty_path.open("a", encoding="utf-8") as fh:
-                    fh.write(f"{ts}|{orig}\n")
-            for pid, it in parsed.items():
-                if pid not in FAMILY:
+        for caps in days:
+            stamp_of = {ts: datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc) for ts, _ in caps}
+            if any(stamp_of[ts].isoformat()[:19] in seen for ts, _ in caps):
+                continue   # 그날 보존본은 이미 읽었다
+            for ts, orig in caps:
+                if f"{ts}|{orig}" in empty:
+                    continue   # 표 없던 보존본 — 같은 날 더 이른 캡처로
+                arch = f"https://web.archive.org/web/{ts}id_/{orig}"
+                page = ""
+                for attempt in range(2):
+                    try:
+                        with urllib.request.urlopen(urllib.request.Request(arch, headers=ARCHIVE_UA), timeout=45) as r:
+                            page = r.read().decode("utf-8", "ignore")
+                        break
+                    except Exception:  # noqa: BLE001
+                        time.sleep(sleep * (attempt + 2))
+                time.sleep(sleep)
+                if not page:
+                    break   # 받지 못했다 — 다음 실행에서 다시 (읽음으로 적지 않는다)
+                snap_at = stamp_of[ts]
+                parsed = {pid: it for pid, it in parse_price_snapshot(page).items() if pid in FAMILY}
+                done += 1
+                if not parsed:
+                    with empty_path.open("a", encoding="utf-8") as fh:
+                        fh.write(f"{ts}|{orig}\n")
+                    title = re.search(r"<title[^>]*>([^<]{0,80})", page, re.I)
+                    print(f"no table {ts} {orig} len={len(page)} title={title.group(1).strip() if title else '-'}", flush=True)
                     continue
-                stamp = it["stamp"]
-                if stamp > snap_at + timedelta(minutes=5):   # 캡처보다 늦은 갱신 시각은 있을 수 없다 — 읽기 오류로 보고 버린다
-                    report["skipped_future_stamp"] += 1
-                    continue
-                d = stamp.date()
-                rows.setdefault(pid, []).append({
-                    "product": pid, "date": d.isoformat(), "price": f"{it['value']:.3f}", "unit": UNIT[pid], "source": source,
-                    "source_date": d.isoformat(), "published_at": stamp.isoformat(), "collected_at": collected, "frequency": freq if pid.startswith("NAND") else "daily",
-                    "quality": "ARCHIVED_PUBLIC_SNAPSHOT", "is_proxy": "false", "source_url": arch, "archive_url": arch, "original_url": orig,
-                    "snapshot_timestamp": snap_at.isoformat(),
-                    "quote": f"{it['item']} | session avg {it['value']} | high {it['high']} | low {it['low']} | chg {it['change_pct']}% | Last Update {stamp.isoformat()}"})
-                got += 1
-            done += 1
-            if done % 5 == 0:   # 5개마다 저장 — 실행이 끊겨도 받은 만큼은 남는다
-                _flush_archived(rows, root, report); rows = {}
-                print(f"{original} {ts} read {done}/{len(snaps)} rows {got}", flush=True)
-        report["targets"][original] = {"snapshots": len(snaps), "rows": got}
+                for pid, it in parsed.items():
+                    stamp = it["stamp"]
+                    if stamp > snap_at + timedelta(minutes=5):   # 캡처보다 늦은 갱신 시각은 있을 수 없다 — 읽기 오류로 보고 버린다
+                        report["skipped_future_stamp"] += 1
+                        continue
+                    d = stamp.date()
+                    rows.setdefault(pid, []).append({
+                        "product": pid, "date": d.isoformat(), "price": f"{it['value']:.3f}", "unit": UNIT[pid], "source": source,
+                        "source_date": d.isoformat(), "published_at": stamp.isoformat(), "collected_at": collected, "frequency": freq if pid.startswith("NAND") else "daily",
+                        "quality": "ARCHIVED_PUBLIC_SNAPSHOT", "is_proxy": "false", "source_url": arch, "archive_url": arch, "original_url": orig,
+                        "snapshot_timestamp": snap_at.isoformat(),
+                        "quote": f"{it['item']} | session avg {it['value']} | high {it['high']} | low {it['low']} | chg {it['change_pct']}% | Last Update {stamp.isoformat()}"})
+                    got += 1
+                if done % 5 == 0:   # 5개마다 저장 — 실행이 끊겨도 받은 만큼은 남는다
+                    _flush_archived(rows, root, report); rows = {}
+                    print(f"{original} {ts} read {done} of {len(days)} days rows {got}", flush=True)
+                break   # 그날 표 있는 보존본 하나면 충분하다
+        report["targets"][original] = {"days": len(days), "read": done, "rows": got}
         _flush_archived(rows, root, report)   # 대상마다 저장 — 실행이 중간에 끊겨도 받은 만큼은 남는다
         rows = {}
     _append_log(root, "archived_snapshots", report)

@@ -187,7 +187,7 @@ class TestArchivedSnapshots:
 
     def test_archived_rows_keep_metadata_and_grade(self, tmp_path, monkeypatch):
         from marketpulse.scripts import collect_memory_history as c
-        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [("20260305110000", orig)])
+        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [[("20260305110000", orig)]])
 
         class R:
             def __init__(self, b): self.b = b
@@ -203,10 +203,30 @@ class TestArchivedSnapshots:
         assert row["archive_url"].startswith("https://web.archive.org/web/20260305110000id_/") and row["original_url"] == "https://dramexchange.com/"
         assert row["published_at"].startswith("2026-03-05T18:10")   # 값의 공개 시각 = 표의 Last Update
         # 캡처(11:00 UTC = 19:00 GMT+8)보다 늦은 갱신 시각이면 버린다
-        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [("20260305090000", orig)])
+        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [[("20260305090000", orig)]])
         rep2 = c.collect_archived_snapshots(since=date(2026, 3, 1), until=date(2026, 3, 6), root=tmp_path / "x", sleep=0,
                                             targets=[("https://dramexchange.com/", "dramexchange_archived", "daily")])
         assert rep2["skipped_future_stamp"] >= 1 and not rep2["added"].get("DDR5_16G_SPOT")
+
+    def test_table_less_capture_falls_back_to_earlier_same_day_capture(self, tmp_path, monkeypatch):
+        from marketpulse.scripts import collect_memory_history as c
+        monkeypatch.setattr(c, "_cdx_days", lambda orig, s, u: [[("20260305150000", orig), ("20260305110000", orig)]])
+
+        class R:
+            def __init__(self, b): self.b = b
+            def read(self): return self.b.encode()
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        pages = {"20260305150000": "<html><title>Just a moment...</title></html>", "20260305110000": DX_PAGE}
+        monkeypatch.setattr(c.urllib.request, "urlopen", lambda req, timeout=0: R(pages[req.full_url.split("/web/")[1][:14]]))
+        tgt = [("https://dramexchange.com/", "dramexchange_archived", "daily")]
+        rep = c.collect_archived_snapshots(since=date(2026, 3, 1), until=date(2026, 3, 6), root=tmp_path, sleep=0, targets=tgt)
+        row = list(csv.DictReader((tmp_path / "dram" / "DDR5_16G_SPOT.csv").open()))[0]
+        assert rep["added"]["DDR5_16G_SPOT"] == 1 and row["snapshot_timestamp"].startswith("2026-03-05T11:00")   # 같은 날 더 이른 캡처
+        assert "20260305150000|https://dramexchange.com/" in (tmp_path / "archive_empty.txt").read_text()
+        # 다시 돌리면 그날은 이미 읽었다 — 아무것도 받지 않는다
+        monkeypatch.setattr(c.urllib.request, "urlopen", lambda req, timeout=0: (_ for _ in ()).throw(AssertionError("fetched again")))
+        assert c.collect_archived_snapshots(since=date(2026, 3, 1), until=date(2026, 3, 6), root=tmp_path, sleep=0, targets=tgt)["targets"][tgt[0][0]]["read"] == 0
 
 
 def _weekly(start: date, n: int, step: int = 7, grade: str = "A") -> list[Raw]:
