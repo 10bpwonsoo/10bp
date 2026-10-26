@@ -227,11 +227,14 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
     rows: dict[str, list[dict]] = {}
     report: dict = {"targets": {}, "added": {}, "conflicts": {}, "skipped_future_stamp": 0}
     seen = {r.get("snapshot_timestamp", "")[:19] for f in root.glob("*/*.csv") for r in read_rows(f) if r.get("snapshot_timestamp")}
+    # 표가 없던 보존본(스크립트로 그리는 화면 등)도 한 번 읽으면 다시 받지 않는다 — 값은 남기지 않고 '읽음'만 적는다
+    empty_path = root / "archive_empty.txt"
+    empty = set(empty_path.read_text().split()) if empty_path.exists() else set()
     for original, source, freq in targets or ARCHIVE_TARGETS:
         snaps = _cdx_days(original, since, until)
         got = done = 0
         for ts, orig in snaps:
-            if datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc).isoformat()[:19] in seen:
+            if datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc).isoformat()[:19] in seen or f"{ts}|{orig}" in empty:
                 continue   # 이미 읽은 보존본
             arch = f"https://web.archive.org/web/{ts}id_/{orig}"
             page = ""
@@ -246,7 +249,11 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
             if not page:
                 continue
             snap_at = datetime.strptime(ts, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
-            for pid, it in parse_price_snapshot(page).items():
+            parsed = parse_price_snapshot(page)
+            if not any(pid in FAMILY for pid in parsed):
+                with empty_path.open("a", encoding="utf-8") as fh:
+                    fh.write(f"{ts}|{orig}\n")
+            for pid, it in parsed.items():
                 if pid not in FAMILY:
                     continue
                 stamp = it["stamp"]
@@ -262,8 +269,9 @@ def collect_archived_snapshots(*, since: date = date(2025, 7, 1), until: date | 
                     "quote": f"{it['item']} | session avg {it['value']} | high {it['high']} | low {it['low']} | chg {it['change_pct']}% | Last Update {stamp.isoformat()}"})
                 got += 1
             done += 1
-            if done % 25 == 0:   # 25개마다 저장 — 실행이 끊겨도 받은 만큼은 남는다
+            if done % 5 == 0:   # 5개마다 저장 — 실행이 끊겨도 받은 만큼은 남는다
                 _flush_archived(rows, root, report); rows = {}
+                print(f"{original} {ts} read {done}/{len(snaps)} rows {got}", flush=True)
         report["targets"][original] = {"snapshots": len(snaps), "rows": got}
         _flush_archived(rows, root, report)   # 대상마다 저장 — 실행이 중간에 끊겨도 받은 만큼은 남는다
         rows = {}
