@@ -2554,6 +2554,82 @@
     "stress": "HIGH"
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-23",
+   "tab_id": "ai_regime",
+   "state": "narrative_ahead",
+   "state_label": "NARRATIVE AHEAD OF PRICE",
+   "state_label_ko": "내러티브가 가격을 앞선다",
+   "state_score": 28.9,
+   "confidence": 28.9,
+   "component_scores": {
+    "basket_z_5d": -0.51,
+    "rel_ndx_5d": -1.25,
+    "rel_ndx_z_5d": -0.52,
+    "breadth_ma20": 9.0,
+    "news_tone": 10.0,
+    "driver:macro_rates": 66.3,
+    "driver:broad_risk_off": -28.9,
+    "driver:semi_cycle": -5.9,
+    "driver:ai_narrative": 25.0,
+    "driver:ai_fundamental_stress": -12.7
+   },
+   "key_drivers": [
+    "Macro / Rates +66 CONTRADICTED",
+    "Broad Risk-Off -29 CONFIRMED",
+    "AI Narrative +25 CONTRADICTED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-23T23:59:59Z",
+   "missing_components": [
+    "investment(memory·HBM·consensus)"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-10-26T05:57:50.721184Z",
+   "model_version": "ai_regime_v0.1.0",
+   "logic_version": "rules_5be636bd",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "내러티브가 가격을 앞선다. AI 바스켓 절대 하락(-0.5σ·5일, 5일 -2.0%) · Nasdaq 100 대비 underperform(5일 -1.2%p, 상대 z -0.5σ) — 시장보다 더 빠진다. AI 고유 요인을 의심한다. 가장 큰 driver 는 시장 전반 위험회피(-29, driver 방향(하락)과 AI 바스켓(-0.5σ)이 같다.) breadth 9%(stable). 뉴스×가격 NARRATIVE AHEAD / DISTRIBUTION RISK. AI 고유 스트레스 MODERATE.",
+   "payload": {
+    "leadership": [
+     "software",
+     "memory_hbm",
+     "foundry",
+     "compute"
+    ],
+    "lagging": [
+     "equipment",
+     "power",
+     "packaging"
+    ],
+    "leader_1w": "software_app",
+    "breadth_trend": "stable",
+    "breadth_ma20": 9.0,
+    "price_confirmation": "WEAK",
+    "fundamental_confirmation": "WEAK",
+    "narrative": "narrative_ahead",
+    "ai_vs_market": "underperform",
+    "abs_direction": "down",
+    "dominant": "broad_risk_off",
+    "status_strip": {
+     "narrative": "NEUTRAL+",
+     "relative": "SOFT",
+     "price": "WEAK",
+     "semi": "WEAK",
+     "infra": "WEAK",
+     "software": "STRONG",
+     "breadth": "STABLE",
+     "macro": "HEADWIND",
+     "fundamental": "WEAK"
+    },
+    "subtitle": "NARRATIVE AHEAD OF PRICE / FUNDAMENTALS WEAK",
+    "stress": "MODERATE"
+   },
+   "corrections": []
   }
  ]
 }
