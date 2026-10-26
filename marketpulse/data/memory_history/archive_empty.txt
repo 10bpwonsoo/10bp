@@ -41,3 +41,6 @@
 20260820164707|https://www.trendforce.com/price/flash/wafer_spot
 20260921015253|https://www.trendforce.com/price/flash/wafer_spot
 20261024200607|https://www.trendforce.com/price/flash/wafer_spot
+20260824040025|https://dramexchange.com/
+20251126041806|https://www.trendforce.com/price/dram/dram_spot
+20260731180848|https://www.trendforce.com/price/flash/wafer_spot
