@@ -1,0 +1,124 @@
+# Market Pulse AI — 실데이터 공급자 매핑 (P4)
+#
+# instruments.yaml 이 "무엇을 본다" 면 이 파일은 "어디서 가져온다" 다.
+# 둘을 나눈 이유는 공급자가 바뀌어도 관측 대상의 정의가 흔들리면 안 되기
+# 때문이다 (요구 15-5).
+#
+# providers 는 **우선순위 목록**이다. 앞에서부터 시도하고 실패하면 다음으로
+# 넘어간다. 전부 실패하면 그 instrument 는 missing 이다. 0 으로 채우지 않고
+# coverage 와 confidence 가 떨어진다.
+#
+# 지원 공급자
+#   yahoo : query1.finance.yahoo.com  차트 API. 키 불필요
+#   stooq : stooq.com CSV.            키 불필요. Yahoo 장애 시 대체
+#   fred  : api.stlouisfed.org        FRED_API_KEY 필요. 금리·크레딧의 정본
+#   krx   : data.krx.co.kr            키 불필요. 한국 수급·업종지수
+#   github: raw.githubusercontent.com 공개 저장소의 CSV 미러. 키 불필요
+#   csv   : data/replay/<id>.csv      로컬 파일. 최후의 수단이자 재현 경로
+#
+# github 는 원본 기관(CBOE·EIA·연준 H.10)의 공개 자료를 매일 미러링하는
+# 저장소를 읽는다. 조직 네트워크가 마켓데이터 호스트를 막아도 GitHub 은
+# 열려 있는 경우가 많아, 그때 **같은 숫자에 닿는 유일한 경로**가 된다.
+# 미러라서 원본보다 1~2영업일 늦다. 그 사실은 DataMeta.as_of 에 그대로
+# 남아 화면의 freshness 로 보인다 — 속이지 않는다.
+#
+# scale : 받은 값에 곱할 수. FRED 의 HY OAS 는 % 로 오므로 100 을 곱해 bp 로 맞춘다.
+#         Yahoo 의 ^TNX/^TYX 는 실측 결과 4.975 처럼 **이미 % 단위**로 온다
+#         (2026-09 확인). CBOE 원지수의 10배 관행을 그대로 적용하면 10배 작아진다.
+# csv 는 모든 instrument 에 자동으로 마지막 후보로 붙는다. 여기 적지 않아도
+# data/replay/<id>.csv 가 있으면 쓰인다.
+
+sources:
+  # ── Equity index ──────────────────────────────────────
+  KOSPI:     [{provider: yahoo, symbol: "^KS11"},   {provider: stooq, symbol: "^kospi"}]
+  KOSPI200:  [{provider: yahoo, symbol: "^KS200"}]
+  KOSDAQ:    [{provider: yahoo, symbol: "^KQ11"}]
+  SPX:       [{provider: yahoo, symbol: "^GSPC"},   {provider: stooq, symbol: "^spx"}]
+  NDX:       [{provider: yahoo, symbol: "^NDX"},    {provider: stooq, symbol: "^ndq"}]
+  RUT:       [{provider: yahoo, symbol: "^RUT"}]
+  HSCEI:     [{provider: yahoo, symbol: "^HSCE"}]
+  NIKKEI:    [{provider: yahoo, symbol: "^N225"},   {provider: stooq, symbol: "^nkx"}]
+  SX5E:      [{provider: yahoo, symbol: "^STOXX50E"}]
+
+  # ── Sector / theme proxy ──────────────────────────────
+  XLK:       [{provider: yahoo, symbol: "XLK"},  {provider: stooq, symbol: "xlk.us"}]
+  XLE:       [{provider: yahoo, symbol: "XLE"},  {provider: stooq, symbol: "xle.us"}]
+  XLF:       [{provider: yahoo, symbol: "XLF"},  {provider: stooq, symbol: "xlf.us"}]
+  XLU:       [{provider: yahoo, symbol: "XLU"},  {provider: stooq, symbol: "xlu.us"}]
+  XLY:       [{provider: yahoo, symbol: "XLY"},  {provider: stooq, symbol: "xly.us"}]
+  SOXX:      [{provider: yahoo, symbol: "SOXX"}, {provider: stooq, symbol: "soxx.us"}]
+  ITA:       [{provider: yahoo, symbol: "ITA"},  {provider: stooq, symbol: "ita.us"}]
+  JETS:      [{provider: yahoo, symbol: "JETS"}, {provider: stooq, symbol: "jets.us"}]
+  # KRX 업종지수는 Yahoo 에 없다. KRX 포털이 유일한 무료 경로다.
+  KRX_SEMI:  [{provider: krx, dataset: sector_index, symbol: "반도체"}]
+
+  # ── Rates ─────────────────────────────────────────────
+  # FRED 가 정본이다. Yahoo 의 ^TNX 계열은 장중 스냅이라 공식 종가와
+  # 어긋난다. 키가 없을 때의 대체재로만 둔다.
+  # Yahoo 에는 2년물 현물 지수가 없다. ^IRX 는 13주 T-bill 이라 2Y 가 아니다 —
+  # 그것을 2Y 로 쓰면 2s10s 커브가 T-bill 스프레드가 된다. 2년 수익률
+  # 선물(2YY=F)이 tenor 가 맞는 유일한 무료 대체재다.
+  US2Y:      [{provider: fred, symbol: "DGS2"},  {provider: yahoo, symbol: "2YY=F"}]
+  US10Y:     [{provider: fred, symbol: "DGS10"}, {provider: yahoo, symbol: "^TNX"}]
+  US30Y:     [{provider: fred, symbol: "DGS30"}, {provider: yahoo, symbol: "^TYX"}]
+  BE10Y:     [{provider: fred, symbol: "T10YIE"}]
+  US5Y:      [{provider: fred, symbol: "DGS5"},  {provider: yahoo, symbol: "^FVX"}]
+  BE5Y:      [{provider: fred, symbol: "T5YIE"}]
+  TIPS10Y:   [{provider: fred, symbol: "DFII10"}]
+  TIPS5Y:    [{provider: fred, symbol: "DFII5"}]
+  KR3Y:      [{provider: krx, dataset: bond_yield, symbol: "국고채 3년"}]
+  KR10Y:     [{provider: krx, dataset: bond_yield, symbol: "국고채 10년"}]
+  # CURVE_2S10S 는 derived_from 으로 계산된다. 여기 적지 않는다.
+
+  # ── FX ────────────────────────────────────────────────
+  USDKRW:    [{provider: yahoo, symbol: "KRW=X"},
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: South Korea}}]
+  DXY:       [{provider: yahoo, symbol: "DX-Y.NYB"}, {provider: stooq, symbol: "^dxy"}]
+  USDJPY:    [{provider: yahoo, symbol: "JPY=X"},    {provider: stooq, symbol: "usdjpy"},
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: Japan}}]
+  EURUSD:    [{provider: yahoo, symbol: "EURUSD=X"}, {provider: stooq, symbol: "eurusd"},
+              # 연준 H.10 은 USD→EUR(0.86)로 준다. 뒤집어야 EURUSD 다.
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: Euro}, invert: true}]
+  # Yahoo 의 CNH=X 는 히스토리를 주지 않는다(최근 1개). CNY=X 는 준다.
+  USDCNH:    [{provider: yahoo, symbol: "CNY=X"},
+              # H.10 은 역내 위안(CNY)이다. CNH 와 미세하게 다르지만 매크로 신호로는 같다.
+              {provider: github, path: "datasets/exchange-rates/main/data/daily.csv", date_col: Date, value_col: "Exchange rate", filter: {Country: China}}]
+
+  # ── Commodity ─────────────────────────────────────────
+  WTI:       [{provider: yahoo, symbol: "CL=F"}, {provider: fred, symbol: "DCOILWTICO"},
+              {provider: github, path: "datasets/oil-prices/main/data/wti-daily.csv", date_col: Date, value_col: Price}]
+  BRENT:     [{provider: yahoo, symbol: "BZ=F"}, {provider: fred, symbol: "DCOILBRENTEU"},
+              {provider: github, path: "datasets/oil-prices/main/data/brent-daily.csv", date_col: Date, value_col: Price}]
+  GOLD:      [{provider: yahoo, symbol: "GC=F"}]
+  COPPER:    [{provider: yahoo, symbol: "HG=F"}]
+  NATGAS:    [{provider: yahoo, symbol: "NG=F"}, {provider: fred, symbol: "DHHNGSP"},
+              {provider: github, path: "datasets/natural-gas/main/data/daily.csv", date_col: Date, value_col: Price}]
+  # COPPER_GOLD 는 derived_from 으로 계산된다.
+
+  # ── Volatility ────────────────────────────────────────
+  VIX:       [{provider: yahoo, symbol: "^VIX"},  {provider: fred, symbol: "VIXCLS"},
+              {provider: github, path: "datasets/finance-vix/main/data/vix-daily.csv", date_col: DATE, value_col: CLOSE}]
+  MOVE:      [{provider: yahoo, symbol: "^MOVE"}]
+  VKOSPI:    [{provider: krx, dataset: index, symbol: "코스피 200 변동성지수"}]
+  # VIX_RV_SPX / VKOSPI_RV_KOSPI 는 derived_from(vol_premium) 으로 계산된다.
+  # CYC_DEF 도 derived_from(ratio) 이다. 여기 적지 않는다.
+
+  # ── Credit ────────────────────────────────────────────
+  US_HY_OAS: [{provider: fred, symbol: "BAMLH0A0HYM2", scale: 100.0}]
+
+  # ── Flow — 무료 API 가 사실상 없는 영역 (설계서 STEP 7.1) ──
+  # KRX 포털의 투자자별 거래실적이 유일한 무료 경로다. OTP 를 받아
+  # 조회하는 2단 요청이라 상용 API 만큼 안정적이지 않다. 실패하면
+  # data/replay/*.csv 로 떨어지고, 그것도 없으면 missing 이다.
+  KR_FOREIGN_NET:     [{provider: krx, dataset: investor_flow, symbol: "외국인"}]
+  KR_INSTITUTION_NET: [{provider: krx, dataset: investor_flow, symbol: "기관합계"}]
+  KR_RETAIL_NET:      [{provider: krx, dataset: investor_flow, symbol: "개인"}]
+  KR_TRADING_VALUE:   [{provider: krx, dataset: trading_value, symbol: "코스피"}]
+
+  # ── Breadth — 무료 공급자가 없다 ───────────────────────
+  # 상승종목 비율과 신고가-신저가는 종목 전체를 훑어야 나온다. 무료 API 로
+  # 받을 수 없어 CSV 적재만 지원한다. 비어 있으면 missing 이고, 그러면
+  # KoreaBreadth factor 의 가중치가 재정규화된다 — 0 으로 채우지 않는다.
+  KOSPI_ADV_RATIO: []
+  KOSPI_NHNL:      []
+  SPX_ADV_RATIO:   []

@@ -1,0 +1,22 @@
+# Daily Full Dashboard Archive (2026-10-21).
+#
+# 기존 daily history(data/history)는 탭별 '상태·히스토리 strip' 용 일별 판정 기록이다 — 그대로 둔다.
+# 이 archive 는 그 위에 얹는 '그날 화면 전체 재현용' 저장본이다: 대시보드가 쓰는 API 응답 전체를 날짜별 JSON 하나로 저장하고,
+# 과거 날짜를 열면 이 JSON 만 읽어 현재 UI 컴포넌트에 넣는다(다시 계산하지 않는다 · LLM 문구도 저장본 그대로).
+schema_version: "1"
+archive_time: "07:30"        # 매일 아침 저장 시각 (timezone 기준). 스케줄러·GitHub Actions 가 이 값을 읽는다
+timezone: "Asia/Seoul"       # snapshot_date 는 저장 시각을 이 시간대로 본 날짜다 (daily history 는 UTC 날짜 — 둘은 하루 어긋날 수 있다)
+weekdays_only: true          # Daily Snapshot 은 월~금만(weekday < 5). 토·일은 정기 저장·backfill·수동 capture 모두 만들지 않는다(기존 파일은 그대로)
+holidays: []                 # 휴장일 캘린더 확장 자리 — YYYY-MM-DD 를 넣으면 그날도 만들지 않는다(지금은 각국 휴장일을 강제하지 않는다)
+cutoff_time: "07:30"         # 과거 재구성(backfill)의 기준 시각 — 그 한국 날짜 07:30 KST 에 이미 공개된 데이터만 쓴다
+# 화면 하나를 그리는 데 쓰는 섹션. snapshot 은 필수 — 이것이 없으면 저장하지 않는다. 나머지는 실패해도 null + errors 로 저장(PARTIAL).
+required: [snapshot]
+sections: [snapshot, cockpit, market_state_history, ai_regime, rates_regime, oil_regime, investment, scenario_checks, analyst_views, daily_history, news, semiconductor_cycle]
+# semiconductor_cycle(2026-10-23~): 반도체 사이클 탭 전체. 이 섹션이 없는 과거 저장본은 'NOT ARCHIVED' 로 보이고 현재 값으로 메우지 않는다
+# 하위 섹션의 as_of 는 snapshot.as_of 와 같아야 한다(같은 snapshot 위에서 계산). 아래 섹션은 자기 계산 시각을 as_of 로 갖는다 —
+# Investment 는 종목 시계열을 따로 받아 계산한 시각이라 snapshot 뒤 as_of_window_sec 안이면 같은 저장 회차로 본다.
+as_of_independent: [analyst_views, news, daily_history, scenario_checks]
+as_of_windowed: [investment]
+as_of_window_sec: 900
+# 정적 배포본(아티팩트)에 함께 넣을 최근 저장본 수 — 하루 약 1.2MB, 아티팩트 한도 16MB
+bundle_max_dates: 8

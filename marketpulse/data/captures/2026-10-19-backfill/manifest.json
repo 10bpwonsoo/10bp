@@ -1,0 +1,63 @@
+{
+ "day": "2026-10-19",
+ "cutoff": "2026-10-19T07:30:00+09:00",
+ "origin": "historical_backfill",
+ "series": {
+  "base": 41,
+  "universe": 94,
+  "basket": 52
+ },
+ "news": {
+  "rss_in_window": 3,
+  "web_extra": 1,
+  "tagged_events": 4
+ },
+ "market": {
+  "state": "GEOPOLITICAL_RISK",
+  "confidence": 63.9,
+  "coverage": "41/54",
+  "thermo": -44
+ },
+ "ai": {
+  "regime": "AI-SPECIFIC DE-RISKING",
+  "sentiment": 30
+ },
+ "rates": {
+  "regime": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+  "market_read": [
+   "llm",
+   "session",
+   "API 호출 실패(API 인증 실패) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+  ],
+  "inflation_read": [
+   "llm",
+   "session",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+  ]
+ },
+ "oil": {
+  "regime": "Geopolitical Premium — CONFIRMED"
+ },
+ "cockpit": {
+  "now": "LIQUIDITY STRESS"
+ },
+ "vintage": {
+  "market_series": {
+   "data_vintage": "CURRENT_SERIES",
+   "vintage_guaranteed": false,
+   "note": "Yahoo 일봉(수정종가)·FRED 시장금리를 지금 받아 cutoff 에 이미 끝난 봉만 남겼다 — 사후 수정은 드물지만 vintage 가 보장되지는 않는다"
+  },
+  "macro_releases": {
+   "data_vintage": "FRED_REALTIME_AT_CUTOFF",
+   "vintage_guaranteed": true,
+   "note": "CPI·PCE·임금 등은 FRED realtime(그날 vintage)으로 받았다 — 나중 개정치를 쓰지 않는다"
+  },
+  "news": {
+   "timestamp_rule": "published_at <= cutoff",
+   "rss_window_since": "2026-10-15T22:30:00+00:00"
+  },
+  "analyst_views": {
+   "rule": "수기 확인 파일 날짜 <= 그 날짜"
+  }
+ }
+}

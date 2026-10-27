@@ -1,0 +1,155 @@
+# SEMICONDUCTOR CYCLE 탭 (2026-10-23)
+#
+# 메모리 가격 → Spot Premium → 계약가 → HBM / 공급 → 한국 반도체 수출 → 매출 / EPS → 주가 를 이어서
+# '지금 반도체 업황이 어느 국면인지' 를 판단한다. 수치는 전부 결정론적으로 계산하고, 없는 데이터는 NO DATA 로 남긴다(0 으로 채우지 않는다).
+# 데이터: data/semiconductor/spot · contract (DRAMeXchange 공개 홈 — collect_memory_prices --only semi), data/replay/alternative/HBM*_CONTRACT.csv,
+#         data/semiconductor/exports.json (관세청·산업부 발표 인용), 종목·지수 시계열(기존 수집), 뉴스(그날 저장본).
+version: "semi_cycle_v0.1.0"
+
+# ── 현물 제품 ─────────────────────────────────────────────
+# family: DDR5 · DDR4 · NAND. tier: 표준 등급(main) · eTT(유효 테스트 등급, 저가 · 변동 큼). 지원되는 것만 — 없는 제품은 만들지 않는다.
+products:
+  - {id: DDR5_16G_SPOT,       label: "DDR5 16Gb",          spec: "DDR5 16Gb (2Gx8) 4800/5600", family: DDR5, tier: main, selector: true}
+  - {id: DDR4_16G_SPOT,       label: "DDR4 16Gb",          spec: "DDR4 16Gb (2Gx8) 3200",      family: DDR4, tier: main, selector: true}
+  - {id: DDR4_8G_SPOT,        label: "DDR4 8Gb",           spec: "DDR4 8Gb (1Gx8) 3200",       family: DDR4, tier: main, selector: true}
+  - {id: DDR5_16G_ETT_SPOT,   label: "DDR5 16Gb eTT",      spec: "DDR5 16Gb (2Gx8) eTT",       family: DDR5, tier: ett,  selector: false}
+  - {id: DDR4_16G_ETT_SPOT,   label: "DDR4 16Gb eTT",      spec: "DDR4 16Gb (2Gx8) eTT",       family: DDR4, tier: ett,  selector: false}
+  - {id: DDR4_8G_ETT_SPOT,    label: "DDR4 8Gb eTT",       spec: "DDR4 8Gb (1Gx8) eTT",        family: DDR4, tier: ett,  selector: false}
+  - {id: NAND_512G_TLC_WAFER, label: "NAND 512Gb TLC",     spec: "512Gb TLC wafer (주간)",      family: NAND, tier: main, selector: true}
+  - {id: NAND_256G_TLC_WAFER, label: "NAND 256Gb TLC",     spec: "256Gb TLC wafer (주간)",      family: NAND, tier: main, selector: true}
+  - {id: NAND_128G_TLC_WAFER, label: "NAND 128Gb TLC",     spec: "128Gb TLC wafer (주간)",      family: NAND, tier: main, selector: false}
+not_supported: ["DDR5 8Gb 현물 — DRAMeXchange 공개 표에 없다", "NAND 칩(비웨이퍼) TLC 현물 — 공개 표에 없다"]
+
+# ── 계약가 · Spot Premium 매핑 ───────────────────────────
+# premium = spot / (contract / units) - 1. units = 계약 단위가 칩 몇 개분인가(모듈 → 칩 환산).
+# comparability HIGH = 같은 칩끼리 · LOW = 모듈 환산 등 proxy(PROXY PREMIUM 으로 표시, 종합 판단 가중 낮게) · NONE = 계산하지 않는다
+premium_map:
+  - {spot: DDR4_16G_SPOT, contract: DDR4_16G_CONTRACT,        contract_label: "DDR4 16Gb 2Gx8 계약",        units: 1, comparability: HIGH, weight: 1.0}
+  - {spot: DDR4_8G_SPOT,  contract: DDR4_8G_CONTRACT,         contract_label: "DDR4 8Gb 1Gx8 계약",         units: 1, comparability: HIGH, weight: 1.0,
+     note: "같은 8Gb 1Gx8 칩. 현물은 3200 등급, 계약가는 DRAMeXchange PC DRAM 범용 평균(속도 등급 미표기) — 월간 계약가 2025-07~ 보도 인용(출처 링크)"}
+  - {spot: DDR5_16G_SPOT, contract: DDR5_8GB_SODIMM_CONTRACT, contract_label: "DDR5 8GB SO-DIMM 계약 ÷ 4칩", units: 4, comparability: LOW,  weight: 0.4,
+     conversion: "chip-equivalent contract = 8GB SO-DIMM contract (USD/module) ÷ 4 (16Gb chips per 8GB module)",
+     note: "DDR5 칩 계약가가 공개되지 않아 8GB SO-DIMM(16Gb 칩 4개) 모듈 계약가를 칩 단위로 나눈 proxy — 모듈 조립·PCB 비용이 섞여 있다"}
+  - {spot: NAND_512G_TLC_WAFER, contract: null, comparability: NONE, note: "공개 NAND 계약가는 옛 MLC 칩뿐 — TLC 웨이퍼와 비교하지 않는다"}
+contract_stale_days: 45
+# ── 과거 DB · Daily State (2026-10-23) ─────────────────
+# RAW = data/memory_history(Daily Express 일간 · TrendForce 주간 · 월간 계약가) + data/semiconductor(홈 수집기). Daily State = 평일마다 그날까지 알려진 최근 RAW.
+history:
+  lookback_days: 400            # 13개월 남짓 — 1Y z-score · percentile · 이동평균 여유
+  coverage_windows: {"1M": 30, "3M": 91, "6M": 182, "1Y": 365}
+  max_gap_daily: 10             # 창 안 RAW 간격이 이보다 길면 PARTIAL(대만 설 연휴 9일까지는 허용)
+  max_gap_weekly: 16
+  max_ref_age_daily: 7          # 변화율 기준일의 원천 관측이 이보다 오래면 그 창은 계산하지 않는다
+  max_ref_age_weekly: 14
+  dense_raw_1m_daily: 15        # 최근 30일 RAW 가 이만큼 있어야 momentum confidence HIGH
+  dense_raw_1m_weekly: 3
+  partial_reasons:
+    DDR5_16G_SPOT: "Daily Express 미수록 · 유료 과거 다운로드는 쓰지 않는다 — Internet Archive 에 보존된 공개 홈·TrendForce 가격 화면만(보존본이 없는 주는 빈 칸)"
+    DDR5_16G_ETT_SPOT: "Internet Archive 에 보존된 공개 화면만 — 보존본이 없는 주는 빈 칸"
+    DDR4_16G_SPOT: "보존된 공개 표에서 2026-02 부터 확인되는 품목 — 그 전 공개 관측 없음(Daily Express 미수록)"
+    DDR4_16G_ETT_SPOT: "공개 과거 출처 없음 — 2026-10-22 수집 시작분만"
+    NAND_256G_TLC_WAFER: "TrendForce 주간 기사는 512Gb 만 싣는다 — Internet Archive 에 보존된 공개 wafer 표만(보존본이 없는 주는 빈 칸)"
+    NAND_128G_TLC_WAFER: "TrendForce 주간 기사는 512Gb 만 싣는다 — Internet Archive 에 보존된 공개 wafer 표만(보존본이 없는 주는 빈 칸)"
+    DDR5_8G_SPOT: "DRAMeXchange 공개 표·시황 어디에도 없다"      # 계약가 공개 시각이 이보다 오래되면 STALE (월간 · 공개 지연)
+premium_states:              # 현재 premium(%) → 상태. 위에서부터 첫 min 이상
+  - {min: 30,   key: STRONG_PREMIUM, label: "STRONG PREMIUM"}
+  - {min: 10,   key: PREMIUM,        label: "PREMIUM"}
+  - {min: -10,  key: NEUTRAL,        label: "NEUTRAL"}
+  - {min: -30,  key: DISCOUNT,       label: "DISCOUNT"}
+  - {min: -1000, key: DEEP_DISCOUNT, label: "DEEP DISCOUNT"}
+premium_direction_pp: 2.0    # premium 변화(%p)가 이보다 크면 EXPANDING / COMPRESSING
+zscore_min_obs: 20           # z-score · 1Y percentile 에 필요한 관측 수 — 모자라면 계산하지 않는다
+
+# ── 모멘텀 ─────────────────────────────────────────────
+# 표준 창(1W · 1M · 3M · 1Y): 기준 관측이 목표 날짜 앞뒤 tolerance 안에 있어야 쓴다. 없으면 NO DATA.
+windows: {"1D": 1, "1W": 7, "1M": 30, "3M": 91, "1Y": 365}
+window_tolerance: {"1D": 4, "1W": 3, "1M": 7, "3M": 14, "1Y": 21}
+momentum:
+  scale: {"1W": 5.0, "1M": 15.0, "3M": 30.0}   # 이 변화율(%)이면 ±100
+  weight: {"1W": 0.3, "1M": 0.4, "3M": 0.3}
+  since_first_scale: 15.0   # 표준 창이 하나도 없을 때만: 첫 관측 이후 변화율로 대신(라벨 'SINCE MM/DD', 신뢰도 낮음)
+  states: [{min: 40, key: STRONG}, {min: 10, key: FIRM}, {min: -10, key: FLAT}, {min: -40, key: SOFT}, {min: -1000, key: WEAK}]
+breadth_min_products: 2   # 모멘텀을 잴 수 있는 표준 제품이 이보다 적으면 breadth 를 계산하지 않는다
+breadth_states: [{min: 0.75, key: BROAD}, {min: 0.5, key: SELECTIVE}, {min: 0.25, key: NARROW}, {min: 0, key: WEAK}]
+
+# ── HBM 앵커 ───────────────────────────────────────────
+hbm:
+  series: [{id: HBM3E_CONTRACT, label: "HBM3E 계약가 ($/GB)"}, {id: HBM4_CONTRACT, label: "HBM4 계약가 ($/GB)"}]
+  firm_pct: 5.0              # 직전 앵커 대비 이 이상 오르면 FIRM · RISING
+
+# ── 수출 나우캐스트 ─────────────────────────────────────
+# 1~20일(또는 1~10일) 누적을 조업일 페이스로 늘리되, 월말 구간(21일~말일)의 페이스 배수는
+#   ① 작년 같은 달(1~20일 → 확정)과 ② 최근 확정된 달의 같은 비율에서 가져온다(평균 = 중심, 최소~최대 = 범위).
+# 1~10일 자료만 있을 때는 11~20일을 같은 페이스로, 21일~말일을 배수로. 배수 자료가 없으면 1.0 으로 두고 신뢰도를 낮춘다.
+export_nowcast:
+  momentum_pp: 10.0          # 나우캐스트 YoY 가 직전 달 확정 YoY 보다 이만큼 높/낮으면 ACCELERATING / DECELERATING
+  confidence: {"1-20": 70, "1-10": 45, "none": 0}
+
+# ── 사이클 국면 ─────────────────────────────────────────
+# 증거 점수(−100~+100)의 가중 평균 = composite. 없는 증거는 분모에서 뺀다(0 으로 넣지 않는다).
+regime:
+  # 증거가 너무 적으면 국면을 정하지 않는다(INSUFFICIENT DATA) — 확보된 가중 비율이 min_coverage 미만이거나, 메모리 가격 증거(core) 가 하나도 없을 때
+  min_coverage: 0.4
+  core: [memory_pricing, spot_premium]
+  weights: {memory_pricing: 1.0, spot_premium: 0.8, contract: 0.8, premium_breadth: 0.5, hbm: 0.6, export: 1.0, eps_revision: 0.8, equity: 0.6, supply_news: 0.4}
+  states:
+    - {min: 55,   key: STRONG_UPSWING, label: "STRONG UPSWING"}
+    - {min: 25,   key: UPSWING,        label: "UPSWING"}
+    - {min: 8,    key: EARLY_RECOVERY, label: "EARLY RECOVERY"}
+    - {min: -8,   key: NEUTRAL,        label: "NEUTRAL"}
+    - {min: -40,  key: DOWNTURN,       label: "DOWNTURN"}
+    - {min: -1000, key: DEEP_DOWNTURN, label: "DEEP DOWNTURN"}
+
+# ── 종목 ───────────────────────────────────────────────
+# exposure 는 사업 구조에 따른 정성 노출(고정) — 매일 바뀌는 값이 아니다. 장비주는 P2.
+stocks:
+  - {id: SKHYNIX, label: "SK hynix",            memory: HIGH, hbm: HIGH,   export: HIGH,   bench: KOSPI}
+  - {id: SAMSUNG, label: "Samsung Electronics", memory: HIGH, hbm: MEDIUM, export: HIGH,   bench: KOSPI}
+  - {id: MU,      label: "Micron",              memory: HIGH, hbm: MEDIUM, export: LOW,    bench: NDX}
+index: {id: SOX, label: "SOX", fallback: SOXX}
+equity_flat_pct: 2.0         # 1M 수익률이 이 안이면 → (평탄)
+
+# ── 뉴스 분류 ──────────────────────────────────────────
+# 그날 저장본의 뉴스(제목·요약)에서 키워드로 분류. 방향 = 기사 감성, 중요도 = 기사 영향도. 전파 경로·영향 제품·종목은 분류별 설명.
+news:
+  categories:
+    HBM:         {kw: ["HBM", "고대역폭"], why: "AI 가속기 메모리 — 캐파를 먼저 가져가 범용 DRAM 공급을 줄인다", transmission: "HBM 수요 ↑ → 캐파 배분 ↑ → 범용 DRAM 공급 ↓ → 현물 타이트", products: ["HBM", "DDR5"], stocks: [SKHYNIX, SAMSUNG, MU]}
+    DRAM:        {kw: ["DRAM", "D램", "디램", "DDR5", "DDR4"], why: "범용 DRAM 수급", transmission: "DRAM 수급 → 현물 → 계약가", products: ["DDR5", "DDR4"], stocks: [SKHYNIX, SAMSUNG, MU]}
+    NAND:        {kw: ["NAND", "낸드", "SSD", "eSSD"], why: "NAND·SSD 수급", transmission: "NAND 수급 → 웨이퍼 현물 → 계약가", products: ["NAND"], stocks: [SAMSUNG, SKHYNIX, MU]}
+    PRICING:     {kw: ["가격 인상", "고정가", "계약가", "현물가", "price hike", "contract price", "ASP"], why: "가격 결정 — ASP 로 바로 이어진다", transmission: "가격 → ASP → 매출", products: ["DDR5", "DDR4", "NAND"], stocks: [SKHYNIX, SAMSUNG, MU]}
+    CAPACITY:    {kw: ["증설", "캐파", "capacity", "팹", "fab", "투자 확대"], why: "공급 능력 변화 — 중기 수급", transmission: "증설 → 1~2년 뒤 공급 ↑", products: ["DDR5", "HBM"], stocks: [SKHYNIX, SAMSUNG, MU]}
+    INVENTORY:   {kw: ["재고", "inventory"], why: "채널·고객 재고 — 현물 수요의 선행 지표", transmission: "재고 ↑ → 현물 수요 ↓ → 프리미엄 축소", products: ["DDR4", "NAND"], stocks: [SAMSUNG, SKHYNIX]}
+    EXPORT:      {kw: ["반도체 수출", "수출입", "수출 "], why: "한국 반도체 수출 — 가격·물량이 실제 매출로 이어지는지", transmission: "가격 × 물량 → 수출 → 매출", products: ["DDR5", "HBM", "NAND"], stocks: [SAMSUNG, SKHYNIX]}
+    SERVER:      {kw: ["서버", "server", "데이터센터", "data center", "하이퍼스케일", "hyperscaler"], why: "서버 수요 — DDR5·eSSD 의 최대 수요처", transmission: "서버 투자 → DDR5·eSSD 수요", products: ["DDR5", "NAND"], stocks: [SKHYNIX, SAMSUNG, MU]}
+    PC:          {kw: ["PC ", "노트북", "laptop"], why: "PC 수요 — DDR4/DDR5 범용 수요", transmission: "PC 출하 → 범용 DRAM 수요", products: ["DDR4", "DDR5"], stocks: [SAMSUNG, MU]}
+    SMARTPHONE:  {kw: ["스마트폰", "smartphone", "모바일"], why: "모바일 수요 — LPDDR·UFS", transmission: "스마트폰 출하 → 모바일 메모리 수요", products: ["LPDDR", "NAND"], stocks: [SAMSUNG, SKHYNIX, MU]}
+    SUPPLY_CUT:  {kw: ["감산", "supply cut", "생산 축소"], why: "공급 축소 — 가격 반등의 전형적 출발점", transmission: "감산 → 공급 ↓ → 현물 ↑", products: ["DDR4", "NAND"], stocks: [SAMSUNG, SKHYNIX, MU]}
+    # 키워드는 없고 기사 테마가 semiconductor 인 것(지수·주가 기사) — 업황 데이터가 아니라 시장 반응으로만 표시한다
+    SECTOR:      {kw: [], why: "반도체 주가·지수 흐름 기사 — 업황 데이터가 아니라 시장 반응", transmission: "업황 기대 → 주가 (반대 방향은 아님)", products: [], stocks: [SKHYNIX, SAMSUNG, MU]}
+  fallback_category: SECTOR
+  max_items: 8
+
+data_quality_sources:
+  spot: {tier: PRIMARY, source: "DRAMeXchange (TrendForce) 공개 홈 — 세션 평균", frequency: "Daily (DRAM) · Weekly (NAND wafer)"}
+  contract: {tier: PRIMARY, source: "DRAMeXchange 공개 홈 계약가(DRAM 칩·모듈, NAND MLC)", frequency: "Monthly"}
+  hbm: {tier: SECONDARY, source: "Silicon Analysts 앵커(보도·모델 기반 추정)", frequency: "비정기"}
+  export: {tier: PRIMARY_VIA_PRESS, source: "관세청·산업통상부 발표(인용 보도 확인)", frequency: "1~10일 · 1~20일 · 월간"}
+  eps_revision: {tier: UNAVAILABLE, source: "컨센서스 공급원 없음", frequency: "-"}
+  equity: {tier: MARKET_DATA, source: "Yahoo 일봉(기존 수집)", frequency: "Daily"}
+
+# ── MARKET READ (LLM) ──────────────────────────────────
+# 엔진 결과(국면 · 증거 점수 · 프리미엄 · 수출 · 주가 확인 · 뉴스)만 컨텍스트로 넘긴다. LLM 은 판정을 바꾸지 않고 해석 2~4문장만 쓴다.
+# API 실패 → 같은 컨텍스트·프롬프트·검증으로 만든 세션 생성본(captures/<날짜>/semiconductor_read_session.json) → 그것도 없으면 규칙 기반 문장.
+read:
+  effort: high
+  max_tokens: 16000
+  timeout_sec: 120
+  retries_on_invalid: 1
+  validate:
+    min_sentences: 2
+    max_sentences: 4
+    max_chars: 480
+    max_numbers: 3
+    forbidden: [매수, 매도, 비중 확대, 비중확대, 비중 축소, 비중축소, BUY, SELL, Overweight, Underweight, 확률, 전망, 사야, 팔아야, 목표가]
+    filler: [주된 원인은, 아직 확인되지 않았습니다, 모니터링해야, 모니터링할 필요, 지켜볼 필요, 향후 추이, 주목할 필요, 귀추가 주목]
+    certainty: [때문입니다, 때문이다, 확실히, 분명히, 틀림없이, 확정적으로]

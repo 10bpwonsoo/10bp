@@ -1,0 +1,149 @@
+{
+ "as_of": "2026-10-14T01:26:00.269404+00:00",
+ "coverage": 0.7592592592592593,
+ "missing": [
+  "KOSPI200",
+  "KRX_SEMI",
+  "KR3Y",
+  "KR10Y",
+  "VKOSPI",
+  "VKOSPI_RV_KOSPI",
+  "KR_FOREIGN_NET",
+  "KR_INSTITUTION_NET",
+  "KR_RETAIL_NET",
+  "KR_TRADING_VALUE",
+  "KOSPI_ADV_RATIO",
+  "KOSPI_NHNL",
+  "SPX_ADV_RATIO"
+ ],
+ "failed": [
+  [
+   "KOSPI200",
+   "yahoo 1개뿐 — 최소 20개 필요"
+  ]
+ ],
+ "fred_key_present": true,
+ "extra_rates": {
+  "got": [
+   "BE5Y",
+   "TIPS10Y",
+   "TIPS5Y",
+   "US5Y"
+  ],
+  "failed": []
+ },
+ "refetch_stale": [],
+ "refetch_fx": [
+  [
+   "USDKRW",
+   "yahoo:KRW=X",
+   "2026-10-14T01:26",
+   1339.28
+  ],
+  [
+   "USDJPY",
+   "yahoo:JPY=X",
+   "2026-10-14T01:26",
+   158.459
+  ],
+  [
+   "EURUSD",
+   "yahoo:EURUSD=X",
+   "2026-10-14T01:26",
+   1.121
+  ]
+ ],
+ "fill_prev_close": {
+  "filled_effective": [
+   [
+    "KOSPI",
+    "^KS11",
+    "2026-10-13",
+    6035.35
+   ],
+   [
+    "KOSDAQ",
+    "^KQ11",
+    "2026-10-13",
+    837.03
+   ],
+   [
+    "NIKKEI",
+    "^N225",
+    "2026-10-13",
+    67777.52
+   ],
+   [
+    "DXY",
+    "DX-Y.NYB",
+    "2026-10-13",
+    102.18
+   ],
+   [
+    "WTI",
+    "CL=F",
+    "2026-10-13",
+    94.14
+   ],
+   [
+    "BRENT",
+    "BZ=F",
+    "2026-10-13",
+    105.69
+   ],
+   [
+    "GOLD",
+    "GC=F",
+    "2026-10-13",
+    4177.3
+   ],
+   [
+    "COPPER",
+    "HG=F",
+    "2026-10-13",
+    6.73
+   ],
+   [
+    "NATGAS",
+    "NG=F",
+    "2026-10-13",
+    3.28
+   ]
+  ],
+  "second_run": {
+   "filled": [],
+   "skipped": [
+    [
+     "MOVE",
+     "previousClose = 앞 봉 종가(휴장 이월값)"
+    ]
+   ]
+  },
+  "note": "첫 실행에서 FX(=X) 4종과 MOVE 도 채웠으나 규칙 오류라 되돌렸다(fill_prev_close_undo) — 남은 것은 위 9건"
+ },
+ "fill_prev_close_undo": {
+  "removed": [
+   [
+    "USDKRW",
+    1
+   ],
+   [
+    "USDJPY",
+    1
+   ],
+   [
+    "EURUSD",
+    1
+   ],
+   [
+    "USDCNH",
+    1
+   ],
+   [
+    "MOVE",
+    1
+   ]
+  ],
+  "why": "첫 실행의 FX(=X) · MOVE 채움 되돌림 — 규칙 보정"
+ }
+}

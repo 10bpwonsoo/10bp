@@ -1,0 +1,132 @@
+# 금리 탭 아래 세 패널(2026-10-13) — INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN.
+# 새 계산은 없다. rates_regime 이 이미 계산한 구성요소 점수 · 테너 변화 · 명목 분해를 '상태 → 방향 → 원인 → 의미' 순으로 다시 읽는 문턱과 문구다.
+# 숫자는 화면 칸에만 있고 문장에는 넣지 않는다. '확률' 이라는 말은 쓰지 않는다.
+
+inflation_map:
+  #: 구성요소 이름 옆 한글 설명(영어명은 그대로 둔다)
+  label_ko: {realized: "실제 물가", implied: "시장 기대인플레이션", energy: "에너지·원자재", wages: "임금·서비스", fx: "환율 전가"}
+  #: 결측 칸 문구 — 0 이 아니라 '없음'
+  missing_text: {realized: "CPI / PCE 실제 물가 데이터 미연결", wages: "임금·서비스 물가 데이터 미연결"}
+  missing_short: {realized: "실제 CPI/PCE", wages: "임금·서비스", implied: "시장 기대인플레이션", energy: "에너지·원자재", fx: "환율"}
+  #: 점수 → 상태. 위에서부터 처음 맞는 줄(min 이상)
+  states:
+    - {min: 50,   state: "STRONG PRESSURE", ko: "강한 상승 압력", tone: up}
+    - {min: 25,   state: "PRESSURE",        ko: "상승 압력",     tone: up}
+    - {min: 10,   state: "MILD PRESSURE",   ko: "약한 상승 압력", tone: up}
+    - {min: -10,  state: "NEUTRAL",         ko: "중립",         tone: flat}
+    - {min: -25,  state: "MILD EASING",     ko: "약한 하락 압력", tone: down}
+    - {min: -50,  state: "EASING",          ko: "하락 압력",     tone: down}
+    - {min: -101, state: "COOLING",         ko: "강한 하락 압력", tone: down}
+  #: 근거 계열 짧은 이름 — 기여가 큰 순서로 최대 evidence_max 개
+  short: {BE10Y: "10Y BE", BE5Y: "5Y BE", BRENT: "Brent", WTI: "WTI", COPPER: "Copper", NATGAS: "NatGas", GASOLINE: "RBOB", USDKRW: "USD/KRW", DXY: "DXY"}
+  evidence_max: 3
+  #: 신호 — 계열이 있는 구성요소 점수의 평균과 반대쪽 압력으로 정한다
+  signal:
+    lean_abs: 20            # 평균이 이 이상 한쪽이면 방향을 말한다
+    counter_abs: 25         # 반대쪽에 이 이상인 구성요소가 있으면 MIXED
+    #: 실제 물가(realized)가 없거나 확인이 FULL 이 아니면 강한 말(COOLING · REACCELERATING) 대신 BIAS 를 쓴다
+    down: {strong: "COOLING", weak: "COOLING BIAS", ko: "물가 하방 압력 우세"}
+    up: {strong: "REACCELERATING", weak: "UPSIDE BIAS", ko: "물가 상방 압력 우세"}
+    mixed: {label: "MIXED", ko: "압력이 엇갈림"}
+    none: {label: "NO SIGNAL", ko: "판단할 계열 없음"}
+  confirmation:
+    #: 다섯 칸이 다 있으면 FULL, 실제 물가가 있고 셋 이상이면 PARTIAL, 실제 물가 없이 셋 이상이어도 PARTIAL, 그 아래 INSUFFICIENT
+    partial_min: 3
+    ko: {FULL: "확인됨", PARTIAL: "부분 확인", INSUFFICIENT: "확인 부족"}
+  scale_note: "점수 −100 강한 물가 하락 압력 · 0 중립 · +100 강한 물가 상승 압력 — 결측은 0 이 아니라 계산에서 빠진다"
+  #: 상단 한 줄 · 하단 규칙 기반 해석(LLM 해석이 없을 때) — 조사는 이중 표기로 쓰고 엔진이 고른다
+  clause_down: "{names}은(는) 물가를 낮추는 방향"
+  clause_up: "{names}은(는) {mild}상승 압력"
+  clause_missing: "{names} 데이터가 없어 확인은 불완전합니다"
+  rule_read:
+    down: "{lead}으로(로), 강한 재가속 신호는 보이지 않습니다."
+    up: "{lead}으로(로) 물가 상방 압력이 우세합니다."
+    mixed: "{lead}으로(로) 물가 압력의 방향이 엇갈립니다."
+    missing: "다만 {names} 데이터가 빠져 있어 물가 {dir_ko}을(를) 확정하기에는 근거가 불완전합니다."
+    proxy: "다만 {names}은(는) 단일 원데이터가 아니라 대체 지표 조합이라 확인의 무게는 낮습니다."
+    dir_ko: {down: "둔화", up: "재가속", mixed: "방향"}
+  link:
+    down: "시장 기대인플레이션 둔화가 실제 국채금리 움직임에도 반영되는지 아래 커브에서 확인"
+    up: "물가 상방 압력이 실제 국채금리 움직임에도 반영되는지 아래 커브에서 확인"
+    mixed: "엇갈린 물가 압력이 국채금리 어느 구간에 반영되는지 아래 커브에서 확인"
+
+curve_move:
+  window_days: 5            # 모양(bp)과 이례성(z)을 같은 창으로 — 테너 막대의 5D bp 와 같다
+  flat_bp: 1                # 스프레드 변화 |bp| 가 이 아래면 FLAT
+  mild_bp: 3                # 이 아래면 MILD
+  sharp_bp: 10              # 이 이상이면 SHARP
+  level_flat_bp: 1          # 모든 테너 |bp| 가 이 아래면 '거의 변화 없음'
+  unusual_z: 1.0            # |z| 가 이 이상이어야 '이례적'
+  lead_margin_z: 0.3        # 장단기 |z| 차가 이 이상이어야 한쪽이 더 이례적
+  spreads: {"2s10s": ["2Y", "10Y"], "5s30s": ["5Y", "30Y"]}
+  primary_spread: "2s10s"
+  front: "2Y"
+  long: ["10Y", "30Y"]
+  shape_label:
+    bull_steepening: "BULL STEEPENING"
+    bull_flattening: "BULL FLATTENING"
+    bear_steepening: "BEAR STEEPENING"
+    bear_flattening: "BEAR FLATTENING"
+    parallel_down: "PARALLEL DOWN"
+    parallel_up: "PARALLEL UP"
+    twist_steepening: "STEEPENING TWIST"
+    twist_flattening: "FLATTENING TWIST"
+    flat: "LITTLE CHANGE"
+    unknown: "UNKNOWN"
+  read:
+    level: {down: "전 구간 금리가 하락했지만", up: "전 구간 금리가 상승했지만", mixed: "만기별로 금리 방향이 갈렸고", flat: "금리 변화가 거의 없어"}
+    shape:
+      bull_steepening: "실제 bp 기준으로는 단기물이 조금 더 내려 커브는 {mild}스티프닝 방향입니다."
+      bull_flattening: "실제 bp 기준으로는 장기물이 더 내려 커브는 {mild}플래트닝 방향입니다."
+      bear_steepening: "실제 bp 기준으로는 장기물이 더 올라 커브는 {mild}스티프닝 방향입니다."
+      bear_flattening: "실제 bp 기준으로는 단기물이 더 올라 커브는 {mild}플래트닝 방향입니다."
+      parallel_down: "실제 bp 기준으로는 만기별 하락폭이 비슷해 커브 모양 변화는 작습니다."
+      parallel_up: "실제 bp 기준으로는 만기별 상승폭이 비슷해 커브 모양 변화는 작습니다."
+      twist_steepening: "단기물은 내리고 장기물은 올라 커브가 가팔라졌습니다."
+      twist_flattening: "단기물은 오르고 장기물은 내려 커브가 평탄해졌습니다."
+      flat: "커브 모양도 거의 그대로입니다."
+    intensity:
+      long: "평소 변동성 대비로는 {tenor} 움직임이 가장 커, 장기물 변화가 통계적으로 더 이례적입니다."
+      front: "평소 변동성 대비로는 {tenor} 움직임이 가장 커, 단기물 변화가 통계적으로 더 이례적입니다."
+      similar: "평소 변동성 대비로는 만기별 이례성이 비슷합니다."
+      calm: "평소 변동성 대비로는 {window} 움직임이 모두 평소 범위 안이고, {short_note}"
+      calm_short_long: "하루 기준으로는 장기물 움직임이 더 이례적이었습니다."
+      calm_short_front: "하루 기준으로는 단기물 움직임이 더 이례적이었습니다."
+      calm_short_none: "하루 기준으로도 두드러진 만기는 없습니다."
+  intensity_label: {long: "LONG-END MOVE MORE UNUSUAL", front: "FRONT-END MOVE MORE UNUSUAL", similar: "SIMILAR ACROSS CURVE", calm: "WITHIN NORMAL RANGE"}
+  link: {down: "금리 하락이 실질금리와 기대인플레이션 중 무엇 때문인지 아래에서 분해", up: "금리 상승이 실질금리와 기대인플레이션 중 무엇 때문인지 아래에서 분해",
+         mixed: "명목금리 변화가 실질금리와 기대인플레이션 중 무엇 때문인지 아래에서 분해", flat: "명목금리 변화가 실질금리와 기대인플레이션 중 무엇 때문인지 아래에서 분해"}
+
+yield_breakdown:
+  default_tenors: ["5Y", "10Y"]     # 기본 노출. 나머지는 View all
+  headline_tenor: "10Y"
+  small_move_bp: 3                   # |명목| 이 이 아래면 SMALL MOVE — 분해 의미 제한
+  flat_bp: 1                         # 구성요소 |bp| 가 이 아래면 보합
+  lead_ratio: 1.5                    # 한쪽이 다른 쪽의 이 배 이상이면 그쪽이 주도
+  divergence_bp: 2                   # MODEL REAL 과 OBSERVED TIPS 차가 이 이상이면 MODEL / MARKET DIVERGENCE
+  risk_off: {equity: SPX, equity_z: -1.0, credit: US_HY_OAS, credit_z: 1.0}   # 5일 z(분해와 같은 창)
+  primary_label: {real: "REAL YIELD", breakeven: "INFLATION EXPECTATION", both: "REAL + INFLATION EXP."}
+  line:
+    flat: "명목금리 변화가 거의 없어 주도 요인을 가르기 어렵습니다."
+    breakeven_alone: "금리 {dir}은(는) 실질금리 {dir}이(가) 아니라 기대인플레이션 {dir}이(가) 주도."
+    breakeven_with: "금리 {dir}은(는) 기대인플레이션 {dir}이(가) 주도하고 실질금리도 같은 방향."
+    real_alone: "금리 {dir}은(는) 기대인플레이션이 아니라 실질금리 {dir}이(가) 주도."
+    real_with: "금리 {dir}은(는) 실질금리 {dir}이(가) 주도하고 기대인플레이션도 같은 방향."
+    both: "금리 {dir}에 실질금리와 기대인플레이션이 비슷하게 기여."
+    missing: "기대인플레이션 계열이 없어 분해하지 못했습니다."
+  divergence_text: "MODEL / MARKET DIVERGENCE — 항등식 실질금리와 TIPS 실측이 다르게 움직였다(유동성·계절 요인 가능)"
+  unaligned_text: "세 계열의 마지막 관측일이 달라 항등식 대조를 하지 않았다"
+  character:
+    discount_easing: "Discount-rate easing 성격 — 할인율(실질금리)이 내려 밸류에이션 부담을 덜어 주는 금리 하락입니다."
+    disinflation: "Disinflation repricing 성격 — 실질금리가 아니라 물가 기대가 내려간 금리 하락입니다."
+    growth_riskoff: "Growth / Risk-off 성격 가능성 — 실질금리 하락과 함께 주식 약세·크레딧 스트레스가 나타납니다."
+    discount_tightening: "Discount-rate tightening 성격 — 실질금리가 올라 밸류에이션에 부담이 되는 금리 상승입니다."
+    inflation_repricing: "Inflation repricing 성격 — 물가 기대가 금리를 끌어올리는 쪽입니다."
+    mixed_down: "실질금리와 기대인플레이션이 함께 내려 할인율 완화와 물가 둔화 중 한쪽으로 단정하기 어렵습니다."
+    mixed_up: "실질금리와 기대인플레이션이 함께 올라 할인율 상승과 물가 재평가 중 한쪽으로 단정하기 어렵습니다."
+    flat: "명목금리 변화가 작아 금리 움직임의 성격을 말하기 어렵습니다."
+    unknown: "분해할 계열이 모자라 성격을 판단하지 않았습니다."
+  small_suffix: " 다만 움직임이 작아 약한 신호입니다."
+  link: {down: "현재 금리 하락의 성격이 물가 둔화인지 할인율 완화인지 구분", up: "현재 금리 상승의 성격이 물가 재평가인지 할인율 상승인지 구분",
+         flat: "명목금리 변화가 작아 성격 구분은 다음 움직임에서 확인"}
+  note: "MODEL REAL = 명목 − 기대인플레(항등식) · OBSERVED TIPS = 실측. 세 계열이 모두 값을 가진 같은 날짜로 맞춰 잰다."
