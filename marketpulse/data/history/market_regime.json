@@ -3338,6 +3338,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-29",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 1.7600022809974498,
+   "confidence": 34.00673400673401,
+   "component_scores": {
+    "RiskAppetite": -21.17619588456872,
+    "Volatility": 2.620416551280916,
+    "Growth": 46.488966185286586,
+    "Credit": 40.65875257898369,
+    "KoreaFlow": null,
+    "news": -7.5006403127240615,
+    "factor:Growth": 1.007,
+    "factor:Inflation": -0.146,
+    "factor:Rates": 0.328,
+    "factor:USD": -0.186,
+    "factor:Liquidity": 0.639,
+    "factor:RiskAppetite": -0.43,
+    "factor:Credit": -0.863,
+    "factor:Volatility": -0.052,
+    "factor:China": -0.329
+   },
+   "key_drivers": [
+    "Aerospace & Defense +3.2σ",
+    "US 2s10s Curve +3.0σ",
+    "Financials +1.9σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-29T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T06:24:38.477203Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 34% · 온도 +2",
+   "payload": {
+    "date": "2026-10-29",
+    "as_of": "2026-10-29T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 34.00673400673401,
+    "price_temperature": 7.933764010145124,
+    "news_temperature": -7.5006403127240615,
+    "composite": 1.7600022809974498,
+    "news_events": 6,
+    "thermo_confidence": 85.95655956771309,
+    "components": {
+     "RiskAppetite": -21.17619588456872,
+     "Volatility": 2.620416551280916,
+     "Growth": 46.488966185286586,
+     "Credit": 40.65875257898369,
+     "KoreaFlow": null,
+     "news": -7.5006403127240615
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 1.007,
+     "Inflation": -0.146,
+     "Rates": 0.328,
+     "USD": -0.186,
+     "Liquidity": 0.639,
+     "RiskAppetite": -0.43,
+     "Credit": -0.863,
+     "Volatility": -0.052,
+     "China": -0.329
+    },
+    "hypotheses": {},
+    "drivers": [
+     "Aerospace & Defense +3.2σ",
+     "US 2s10s Curve +3.0σ",
+     "Financials +1.9σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

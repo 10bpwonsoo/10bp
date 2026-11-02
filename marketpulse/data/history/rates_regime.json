@@ -3991,6 +3991,111 @@
     }
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-29",
+   "tab_id": "rates_regime",
+   "state": "inflation_repricing",
+   "state_label": "INFLATION REPRICING — Inflation Repricing Confirmed",
+   "state_label_ko": "",
+   "state_score": 47.8,
+   "confidence": 47.8,
+   "component_scores": {
+    "driver:inflation_repricing": 47.8,
+    "driver:fed_policy": -58.0,
+    "driver:growth": 19.1,
+    "driver:term_premium": 30.1,
+    "driver:risk_liquidity": 37.6,
+    "rate_move_z": 1.07,
+    "rate_change_5d_bp": -8.0,
+    "inflation:realized": 13.2,
+    "inflation:implied": 70.9,
+    "inflation:energy": 7.4,
+    "inflation:wages": -6.8,
+    "inflation:fx": 35.4
+   },
+   "key_drivers": [
+    "Fed Policy -58 CONTRADICTED",
+    "Inflation Repricing +48 CONFIRMED",
+    "Risk / Liquidity +38 CONFIRMED"
+   ],
+   "data_coverage": 0.985,
+   "data_asof": "2026-10-29T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T06:24:38.322399Z",
+   "model_version": "rates_regime_v0.1.0",
+   "logic_version": "rules_f27eae24",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "금리를 움직이는 증거는 물가 리프라이싱 쪽이 가장 크다(+48, MODERATE) — 위험·유동성 +38 보다 10 앞선다. 물가 리프라이싱은 확인됨(+48). 상태: driver 방향(상승)과 10년 금리(+1.1σ)가 같다.",
+   "payload": {
+    "regime_label": "INFLATION REPRICING — Inflation Repricing Confirmed",
+    "dominant": "inflation_repricing",
+    "runner_up": "risk_liquidity",
+    "margin": 10.2,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "inflation_repricing": {
+      "label": "Inflation Repricing",
+      "score": 47.8,
+      "status": "CONFIRMED",
+      "coverage": 0.925
+     },
+     "fed_policy": {
+      "label": "Fed Policy",
+      "score": -58.0,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "growth": {
+      "label": "Growth",
+      "score": 19.1,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "term_premium": {
+      "label": "Term Premium / Supply",
+      "score": 30.1,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "risk_liquidity": {
+      "label": "Risk / Liquidity",
+      "score": 37.6,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Breakeven (기대인플레)": "CONFIRMED",
+     "Oil": "NOT_CONFIRMED",
+     "Commodities (구리)": "CONFIRMED",
+     "USD": "NOT_CONFIRMED",
+     "Rates — 2Y": "NOT_CONFIRMED",
+     "Rates — 10Y / 30Y": "CONFIRMED",
+     "Equities (S&P)": "CONFIRMED",
+     "Growth / Tech (Nasdaq)": "CONFIRMED",
+     "Banks (XLF)": "MIXED",
+     "HY OAS": "MIXED",
+     "VIX": "MIXED",
+     "Gold": "MIXED"
+    },
+    "implication": "기대인플레이션이 금리를 끌어올리는 국면 — 원자재·기대인플레·단기물이 같이 오른다.",
+    "inflation_status": "CONFIRMED",
+    "rate_direction": "up",
+    "curve": "bear_steepening",
+    "inflation_components": {
+     "realized": "flat",
+     "implied": "up",
+     "energy": "flat",
+     "wages": "flat",
+     "fx": "up"
+    }
+   },
+   "corrections": []
   }
  ]
 }

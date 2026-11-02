@@ -2890,6 +2890,122 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-29",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 42.8,
+   "confidence": 80.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 33.0,
+    "breadth": 24.8,
+    "fundamentals": 57.8,
+    "macro": 61.8
+   },
+   "key_drivers": [
+    "Credit Stress",
+    "Volatility (VIX)",
+    "HBM / Memory Fundamentals",
+    "−AI Basket Price",
+    "−Breadth >20DMA",
+    "−AI Basket 1M"
+   ],
+   "data_coverage": 0.8,
+   "data_asof": "2026-10-29T22:30:00Z",
+   "missing_components": [
+    "narrative"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T06:24:37.276690Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 43",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 33.0,
+     "breadth": 24.8,
+     "fundamentals": 57.8,
+     "macro": 61.8
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "GREED"
+    },
+    "key_tension": "매크로는 투자심리를 지지하고 있지만 가격 · 확산도는 아직 이를 확인하지 못하고 있습니다.",
+    "read": "Credit Stress · Volatility (VIX)는 여전히 지지적입니다. 그러나 가격 · 확산도가 따라오지 않고 AI Basket Price · Breadth >20DMA가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 82.8,
+      "display": "-1.3σ (5일)"
+     },
+     {
+      "id": "vix",
+      "label": "Volatility (VIX)",
+      "label_ko": "변동성",
+      "component": "macro",
+      "score": 80.5,
+      "display": "-1.2σ (5일)"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 80.0,
+      "display": "+60 · STRONG"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 6.8,
+      "display": "-1.7σ"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 9.0,
+      "display": "9%"
+     },
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 15.8,
+      "display": "-6.8%"
+     }
+    ],
+    "basis": [
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }
