@@ -33,6 +33,13 @@ def _window(manager: DailySnapshotManager, tab_id: str, as_of: datetime, days: i
     return rows[-days:]
 
 
+def _lead_in(manager: DailySnapshotManager, tab_id: str, as_of: datetime, days: int) -> list[DailySnapshot]:
+    """창 앞의 저장 기록 전부 — 공식 regime 을 저장 sequence 첫날부터 판정해 날짜마다 고정하는 데 쓴다."""
+    today = manager.snapshot_date_of(as_of)
+    rows = manager.get_history(tab_id, None, today)
+    return rows[:-days] if len(rows) > days else []
+
+
 def _run(manager: DailySnapshotManager, tab_id: str, *, dates: Sequence[date], calc, live: DailySnapshot | None, as_of: datetime, backfill: bool = True) -> None:
     manager.promote_stale_live(tab_id, today=manager.snapshot_date_of(as_of))
     if backfill:
@@ -50,7 +57,8 @@ def sync_market(manager: DailySnapshotManager, *, inputs: MarketInputs, snapshot
         got = market_calculator(inputs, as_of=as_of)(manager.snapshot_date_of(as_of), manager.get_snapshot("market_regime", manager.snapshot_date_of(as_of) - timedelta(days=1)))
         live = got
     _run(manager, "market_regime", dates=dates, calc=market_calculator(inputs, as_of=as_of), live=live, as_of=as_of, backfill=backfill)
-    return market_history(_window(manager, "market_regime", as_of, days), as_of=as_of, days=days, config_dir=inputs.config_dir)
+    return market_history(_window(manager, "market_regime", as_of, days), as_of=as_of, days=days, config_dir=inputs.config_dir,
+                          lead_in=_lead_in(manager, "market_regime", as_of, days))
 
 
 def market_context(manager: DailySnapshotManager) -> dict[date, tuple[str, float]]:

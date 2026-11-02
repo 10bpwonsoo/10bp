@@ -34,10 +34,11 @@ def storage_view(doc: Mapping[str, Any], *, as_of: datetime, manager, config_dir
     from ..engines.cockpit import load_cockpit_config
     from ..engines.regime_history import build_regime_history
     from .assemble import market_history, sentiment_history
-    from .integrate import _window, history_of
+    from .integrate import _lead_in, _window, history_of
     out = dict(doc)
     days = manager.window_days
-    hist = market_history(_window(manager, "market_regime", as_of, days), as_of=as_of, days=days, config_dir=config_dir)
+    hist = market_history(_window(manager, "market_regime", as_of, days), as_of=as_of, days=days, config_dir=config_dir,
+                          lead_in=_lead_in(manager, "market_regime", as_of, days))
     if _kst(out.get("market_state_history")):
         out["market_state_history"] = hist.model_dump(mode="json")
     ck = out.get("cockpit")

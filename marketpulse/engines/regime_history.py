@@ -132,6 +132,10 @@ def build_regime_history(
         return None
     hcfg = dict(cfg or {})
     days_n = int(hcfg.get("days", 22))
+    # 공식 regime 은 저장 sequence 첫날부터 한 번만 판정한다(인과적 · 잠긴 행 위) — 창 첫날에서 다시 시작하면 같은 날짜가 화면마다 달라진다.
+    # 창 앞의 기록(lead)은 판정에만 쓰고 화면에는 창(days_n)만 보인다.
+    seen = {p.date for p in points}
+    lead = [p for p in (getattr(history, "_lead_in", None) or []) if p.date not in seen and p.date < points[0].date] + points[:-days_n]
     points = points[-days_n:]
     hi, lo = [float(x) for x in hcfg.get("heat_arrow", [1.5, 0.5])]
     drivers_cfg = list(hcfg.get("drivers") or [])
@@ -140,6 +144,13 @@ def build_regime_history(
     by_date: dict[date, list[StateObservation]] = {}
     for o in observations:
         by_date.setdefault(o.as_of.date(), []).append(o)
+
+    lead_keys: list[str] = []; lead_strengths: list[float] = []; lead_dwells: list[float | None] = []
+    for p in lead:
+        raw_label = p.label.value if hasattr(p.label, "value") else str(p.label)
+        end_key, _ = _tax(hcfg, raw_label)
+        dom_label, _end, dwell, n_obs, _n = _day_from_observations(by_date.get(p.date, []), p.as_of, hcfg)
+        lead_keys.append(_tax(hcfg, dom_label)[0] if n_obs else end_key); lead_strengths.append(float(p.confidence)); lead_dwells.append(dwell)
 
     raw_keys: list[str] = []; strengths: list[float] = []; dwells: list[float | None] = []; rows: list[dict] = []
     for p in points:
@@ -169,7 +180,7 @@ def build_regime_history(
             source=str(getattr(p, "source", "RECOMPUTED") or "RECOMPUTED"), calculated_at=(getattr(p, "calculated_at", None).isoformat() if getattr(p, "calculated_at", None) else ""),
             model_version=str(getattr(p, "model_version", "") or ""), logic_version=str(getattr(p, "logic_version", "") or ""), locked=bool(getattr(p, "locked", False)),
         ))
-    disp = stabilize(raw_keys, strengths, dwells, hcfg)
+    disp = stabilize(lead_keys + raw_keys, lead_strengths + strengths, lead_dwells + dwells, hcfg)[len(lead_keys):]
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
     days: list[RegimeDay] = []
     for i, r in enumerate(rows):

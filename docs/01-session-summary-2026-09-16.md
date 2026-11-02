@@ -492,3 +492,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 결과: 시장 raw RISK_ON 95%(온도 +34) — S&P +0.6% · 나스닥100 +1.3% · SOXX +3.9% · VIX −4.7% · 코스피 +3.1% · 코스닥 +2.3% · 브렌트 −1.7%. 공식 regime Risk-On CONFIRMED(2일). AI LEADERSHIP NARROWING(센티 65), 금리 LONG-END RATE / TERM PREMIUM SHOCK(물가 리프라이싱 미확인), 물가 압력 MIXED(기대인플레만 약한 상승), 유가 Supply CONFIRMED, 반도체 UPSWING 45.7. 해석 3종은 API 401 → 세션 생성본.
 - history: 10/27 행 7개 탭 RECORDED·잠금(data_asof 10/27 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 10/27 · 10/28 화면의 같은 날짜 Official regime 띠는 09/28~10/05 가 다르다 — 화면마다 1M 창 첫날부터 전환 확인 규칙을 다시 적용하기 때문(10/27 화면은 09/25 Liquidity Stress, 10/28 화면은 09/28 Neutral 에서 시작)이고, 첫 확정 전환(10/06 Risk-On)부터는 같다. 저장된 행은 그대로.
 - 참고: 10/27 저장본에 없던 코스피 10/26 봉이 지금은 Yahoo 에 있다 — 10/27 저장본은 고치지 않는다(수정은 승인 후 correction 경로로만).
+
+### 2026-11-02 — MARKET REGIME HISTORY 공식 regime 띠 고정 · 10/28 저장본 correction
+- 문제: 10/28 화면의 09/28~10/05 공식 regime 띠가 10/27 화면(Liquidity Stress)과 달랐다(Neutral). 원인 — `stabilize` 가 1M 창(22거래일) 첫날을 raw 그대로 두고 판정을 다시 시작해, 창 첫날이 바뀌면 첫 확정 전환 전까지의 과거 칸이 화면마다 달라졌다.
+- 수정: 공식 regime 은 저장 sequence 첫날(09/04)부터 한 번만 판정한다 — 창 앞의 저장 기록(lead-in, `history/integrate._lead_in` → `MarketStateHistory._lead_in`, 직렬화 안 함)을 판정에만 쓰고 화면에는 창만 보인다(`engines/regime_history.build_regime_history`). 잠긴 행 위의 인과적 판정이라 같은 날짜의 띠는 어느 화면에서나 같고, 뒤에 날이 붙어도 바뀌지 않는다. 이 값은 10/13~10/27 저장본의 띠와 각 화면 첫 칸을 빼고 모두 같다.
+- 10/28 저장본: 사용자 요청으로 correction(`archive correct`, 이전 파일 `archive/superseded/2026-10-28.*.json`, meta.corrections 에 이유). cockpit 섹션만 교체(띠 · blocks · share 표기), 다른 섹션은 기존 파일 그대로. 잠긴 history 행 · 다른 저장본 바이트 동일. 10/27 · 10/28 화면의 같은 날짜 띠 차이 0.
+- 테스트: `test_storage_view.py::test_official_regime_is_fixed_per_date_across_screens` 추가. 10/21 저장본 첫 칸(그때 창 첫날 판정) 비교 제외, 반도체 섹션 미보유 검사는 10/26 이전 저장본만.

@@ -218,6 +218,8 @@ class TestArchive:
     def test_existing_archives_are_untouched(self):
         """탭이 생기기 전 저장본에는 섹션이 없다 — 현재 값으로 메우지 않는다(화면은 NOT ARCHIVED)."""
         for f in sorted((PKG / "data" / "archive" / "2026" / "10").glob("2026-10-*.json")):
+            if f.stem >= "2026-10-26":   # 탭이 생긴 뒤(10/26~) 저장본은 섹션을 갖는다
+                continue
             assert "semiconductor_cycle" not in json.loads(f.read_text(encoding="utf-8")), f.name
 
     def test_capture_section_has_all_api_keys(self):

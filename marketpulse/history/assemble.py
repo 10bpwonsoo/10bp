@@ -27,16 +27,19 @@ def to_state_point(s: DailySnapshot) -> StateHistoryPoint | None:
     return p.model_copy(update={"source": _src(s), "calculated_at": s.calculated_at, "model_version": s.model_version, "logic_version": s.logic_version, "locked": s.is_locked})
 
 
-def market_history(snaps: Sequence[DailySnapshot], *, as_of: datetime, days: int, config_dir=None) -> MarketStateHistory:
+def market_history(snaps: Sequence[DailySnapshot], *, as_of: datetime, days: int, config_dir=None, lead_in: Sequence[DailySnapshot] = ()) -> MarketStateHistory:
+    """lead_in = 창 앞의 저장 기록(오래된 → 최근). 화면에는 보이지 않고, 공식 regime 판정을 저장 sequence 첫날부터 잇는 데만 쓴다."""
     from ..engines.state_history import summarize_points
     points = [p for p in (to_state_point(s) for s in snaps) if p is not None]
     labels: dict[str, str] = {}
     for s in snaps:
         for k in (s.payload.get("components") or {}):
             labels.setdefault(k, k)
-    return summarize_points(points, as_of=as_of, days=days, config_dir=config_dir, history_mode="stored", footnote=footnote(config_dir),
+    hist = summarize_points(points, as_of=as_of, days=days, config_dir=config_dir, history_mode="stored", footnote=footnote(config_dir),
                             note=("저장된 daily snapshot 의 sequence 다 — RECORDED(그날 당시 저장한 판정) 와 BACKFILLED(당시 기록이 없어 그 날짜까지의 데이터로 1회 복원한 판정), "
                                   "오늘은 LIVE(확정 전). 저장 후에는 모델·룰·데이터가 바뀌어도 과거 날짜를 다시 계산하지 않는다. 날짜별 색·확신·온도·재료는 같은 snapshot 에서 나온다."))
+    hist._lead_in = [p for p in (to_state_point(s) for s in lead_in) if p is not None]
+    return hist
 
 
 # ── ai_sentiment → SentimentHistory ─────────────────────────

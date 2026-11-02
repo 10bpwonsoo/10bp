@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from .common import Base
 from .daily_history import MergedRow
@@ -88,6 +88,9 @@ class MarketStateHistory(Base):
     days_by_band: dict[str, int] = Field(default_factory=dict, description="밴드 id → 일수")
     band_labels: dict[str, str] = Field(default_factory=dict, description="밴드 id → 화면 라벨 (온도계 설정 순서)")
     band_changes: int = 0
+    #: 창(points) 앞의 저장 기록 — 공식(confirmed) regime 을 저장 sequence 첫날부터 한 번만 판정하는 데만 쓴다(직렬화하지 않는다).
+    #: 화면마다 창 첫날에서 판정을 다시 시작하면 같은 날짜의 공식 regime 이 화면마다 달라진다(2026-11-02).
+    _lead_in: list[StateHistoryPoint] = PrivateAttr(default_factory=list)
     current_band_streak: int = 0
     previous_band: str | None = None
     current_streak: int = Field(default=0, description="현재 라벨이 이어진 거래일 수")

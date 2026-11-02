@@ -50,9 +50,11 @@ def test_1022_uses_the_same_storage_dates_as_other_days():
     doc = _view("2026-10-22")
     assert doc["cockpit"]["market_now"]["label"] == "NEUTRAL" and v["official_state_label"] == "NEUTRAL"
     # MARKET NOW 의 Official regime 띠도 History 와 같은 sequence — 10/21 화면과 같은 날짜는 같은 판정
+    # (10/21 저장본의 첫 칸은 그때 창 첫날에서 판정을 시작한 값이라 제외 — 2026-11-02 부터 공식 regime 은 저장 sequence 첫날부터 판정)
     spark = doc["cockpit"]["market_now"]["spark"]
     assert [p["date"] for p in spark] == [d["date"] for d in v["days"]]
-    s21 = {p["date"]: p["label"] for p in _doc("2026-10-21")["cockpit"]["market_now"]["spark"]}
+    sp21 = _doc("2026-10-21")["cockpit"]["market_now"]["spark"]
+    s21 = {p["date"]: p["label"] for p in sp21[1:]}
     assert all(s21[p["date"]] == p["label"] for p in spark if p["date"] in s21)
     for tab, h in doc["daily_history"].items():
         assert h.get("date_basis", "storage_utc") != "kst_snapshot" and h["points"][-1]["date"] == "2026-10-21", tab
@@ -81,3 +83,26 @@ def test_api_serves_view_and_stored():
         assert c.get("/api/v1/archive/2026-10-15").json() == _doc("2026-10-15")
     finally:
         use_archive_service(None); use_history_manager(None)
+
+
+def test_official_regime_is_fixed_per_date_across_screens():
+    """공식 regime 은 저장 sequence 첫날부터 한 번만 판정한다 — 1M 창 첫날이 바뀌어도 같은 날짜의 띠는 같다(2026-11-02, 10/27 vs 10/28)."""
+    from datetime import datetime
+    from marketpulse.engines.cockpit import load_cockpit_config
+    from marketpulse.engines.regime_history import build_regime_history
+    from marketpulse.history.assemble import market_history
+    from marketpulse.history.integrate import _lead_in, _window
+    m = _mgr()
+    cfg = load_cockpit_config().get("history") or {}
+    views = {}
+    for asof in ("2026-10-23T22:30:00+00:00", "2026-10-26T22:30:00+00:00", "2026-10-27T22:30:00+00:00"):
+        a = datetime.fromisoformat(asof); n = m.window_days
+        h = market_history(_window(m, "market_regime", a, n), as_of=a, days=n, lead_in=_lead_in(m, "market_regime", a, n))
+        assert h._lead_in   # 창 앞의 저장 기록이 있다
+        views[asof] = {d.date: d.display_regime for d in build_regime_history(h, cfg, as_of=a).days}
+    keys = list(views)
+    for a, b in zip(keys, keys[1:]):
+        assert [d for d in views[a] if d in views[b] and views[a][d] != views[b][d]] == []
+    # 저장된 10/27 화면의 띠와도 같다
+    doc = json.loads((ROOT / "archive" / "2026" / "10" / "2026-10-27.json").read_text(encoding="utf-8"))
+    assert all(views[keys[1]].get(x["date"]) == x["display_regime"] for x in doc["cockpit"]["history"]["days"])
