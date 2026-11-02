@@ -3249,6 +3249,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-28",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 31.430457344951428,
+   "confidence": 34.00673400673401,
+   "component_scores": {
+    "RiskAppetite": 37.591283148943,
+    "Volatility": 35.13894829021007,
+    "Growth": 19.640542888958663,
+    "Credit": 83.78677338974019,
+    "KoreaFlow": null,
+    "news": 10.3043552914509,
+    "factor:Growth": 0.398,
+    "factor:Inflation": 0.477,
+    "factor:Rates": -0.07,
+    "factor:USD": -0.09,
+    "factor:Liquidity": 1.794,
+    "factor:RiskAppetite": 0.791,
+    "factor:Credit": -2.428,
+    "factor:Volatility": -0.734,
+    "factor:China": 0.646
+   },
+   "key_drivers": [
+    "US HY OAS -2.4σ",
+    "KOSPI +1.8σ",
+    "USD/CNH -1.7σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-28T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T01:39:33.362545Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 34% · 온도 +31",
+   "payload": {
+    "date": "2026-10-28",
+    "as_of": "2026-10-28T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 34.00673400673401,
+    "price_temperature": 45.514525380618444,
+    "news_temperature": 10.3043552914509,
+    "composite": 31.430457344951428,
+    "news_events": 5,
+    "thermo_confidence": 80.22898299108324,
+    "components": {
+     "RiskAppetite": 37.591283148943,
+     "Volatility": 35.13894829021007,
+     "Growth": 19.640542888958663,
+     "Credit": 83.78677338974019,
+     "KoreaFlow": null,
+     "news": 10.3043552914509
+    },
+    "band": "warm",
+    "band_label": "온기",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 0.398,
+     "Inflation": 0.477,
+     "Rates": -0.07,
+     "USD": -0.09,
+     "Liquidity": 1.794,
+     "RiskAppetite": 0.791,
+     "Credit": -2.428,
+     "Volatility": -0.734,
+     "China": 0.646
+    },
+    "hypotheses": {},
+    "drivers": [
+     "US HY OAS -2.4σ",
+     "KOSPI +1.8σ",
+     "USD/CNH -1.7σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

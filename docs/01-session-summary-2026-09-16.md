@@ -498,3 +498,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 수정: 공식 regime 은 저장 sequence 첫날(09/04)부터 한 번만 판정한다 — 창 앞의 저장 기록(lead-in, `history/integrate._lead_in` → `MarketStateHistory._lead_in`, 직렬화 안 함)을 판정에만 쓰고 화면에는 창만 보인다(`engines/regime_history.build_regime_history`). 잠긴 행 위의 인과적 판정이라 같은 날짜의 띠는 어느 화면에서나 같고, 뒤에 날이 붙어도 바뀌지 않는다. 이 값은 10/13~10/27 저장본의 띠와 각 화면 첫 칸을 빼고 모두 같다.
 - 10/28 저장본: 사용자 요청으로 correction(`archive correct`, 이전 파일 `archive/superseded/2026-10-28.*.json`, meta.corrections 에 이유). cockpit 섹션만 교체(띠 · blocks · share 표기), 다른 섹션은 기존 파일 그대로. 잠긴 history 행 · 다른 저장본 바이트 동일. 10/27 · 10/28 화면의 같은 날짜 띠 차이 0.
 - 테스트: `test_storage_view.py::test_official_regime_is_fixed_per_date_across_screens` 추가. 10/21 저장본 첫 칸(그때 창 첫날 판정) 비교 제외, 반도체 섹션 미보유 검사는 10/26 이전 저장본만.
+
+### 2026-11-02 — 10/29 Daily Snapshot (07:30 KST, 사후 재구성)
+- 입력: 11/02 00:50Z 에 받은 전체 이력(10/28 재구성과 같은 입력)을 10/29 07:30 KST cutoff 로 잘라 재구성(`data/captures/2026-10-29-backfill/`) — 미국 10/28 종가(FOMC 동결일) · 한국 10/28 종가(코스피 +6.6%) · 미국채/TIPS/HY OAS 10/27 관측(FRED 공개 지연). 시장 계열 vintage 미보장, 거시 발표치는 FRED realtime.
+- 뉴스: RSS 피드에 남은 창(10/28 07:30~10/29 07:30 KST) 기사는 3건뿐(CNBC FOMC 관련) — 모두 태깅. 웹 검색으로 10/28(KST) 기사 2건(코스피 6%대 급등 마감, SK하이닉스 3분기 사상 최대 실적·주주환원 100조 원 계획)을 extra_news 로 더했다. 원문 사이트는 이 세션 네트워크에서 열리지 않아 발행 시각 미확인 → DATE_ONLY, 10/28 KST 마지막 시각(14:59Z, cutoff 전)으로 보수적으로 두었고 코스피 수치는 시장 계열(6012.44 · +6.63%)과 대조. 그 밖의 당일 기사 공백은 메우지 않았다.
+- 결과: 시장 raw NEUTRAL 34%(온도 +31) — S&P +0.3% · 나스닥100 +0.6% · SOXX +2.1% · VIX −3.5% · 코스피 +6.6% · 코스닥 +3.7% · WTI +2.9%. 공식 regime Risk-On 3일째, raw 가 Neutral 로 갈려 TRANSITION WATCH. AI LEADERSHIP NARROWING(센티 66), 금리 LONG-END RATE / TERM PREMIUM SHOCK(물가 리프라이싱 미확인), 물가 압력 MIXED(에너지·환율만 상승 압력), 유가 Macro / Liquidity CONFIRMED, 반도체 UPSWING 52.8(공급 뉴스 반영). 해석 3종은 API 401 → 세션 생성본.
+- history: 10/28 행 7개 탭 RECORDED·잠금(data_asof 10/28 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 10/27 · 10/28 · 10/29 화면의 같은 날짜 공식 regime 띠 차이 0(저장 sequence 첫날부터 판정).

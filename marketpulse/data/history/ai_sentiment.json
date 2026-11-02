@@ -2783,6 +2783,113 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-28",
+   "tab_id": "ai_sentiment",
+   "state": "GREED",
+   "state_label": "GREED",
+   "state_label_ko": "낙관적인 투자심리",
+   "state_score": 65.9,
+   "confidence": 80.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 61.6,
+    "breadth": 52.0,
+    "fundamentals": 72.0,
+    "macro": 80.5
+   },
+   "key_drivers": [
+    "Credit Stress",
+    "Long-End Rates",
+    "Real Yield",
+    "−AI Basket 1M",
+    "−Breadth >20DMA"
+   ],
+   "data_coverage": 0.8,
+   "data_asof": "2026-10-28T22:30:00Z",
+   "missing_components": [
+    "narrative"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T01:39:32.303968Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "GREED 66",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 61.6,
+     "breadth": 52.0,
+     "fundamentals": 72.0,
+     "macro": 80.5
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "GREED",
+     "breadth": "NEUTRAL",
+     "fundamentals": "GREED",
+     "macro": "EXTREME_GREED"
+    },
+    "key_tension": "가격 · 펀더멘털 · 매크로가 투자심리를 지지하고 있고 뚜렷한 부담 요인은 없습니다.",
+    "read": "Credit Stress · Long-End Rates는 여전히 지지적입니다. 그러나 AI Basket 1M · Breadth >20DMA가 sentiment 를 압박하고 있습니다.",
+    "secondary": "BALANCED",
+    "support": [
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 100.0,
+      "display": "-2.4σ"
+     },
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 88.0,
+      "display": "-1.5σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 87.8,
+      "display": "-1.5σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 30.8,
+      "display": "-3.9%"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 31.0,
+      "display": "31%"
+     }
+    ],
+    "basis": [
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }
