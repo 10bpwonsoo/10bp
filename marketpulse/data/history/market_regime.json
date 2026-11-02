@@ -3158,6 +3158,97 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-27",
+   "tab_id": "market_regime",
+   "state": "RISK_ON",
+   "state_label": "Risk-On",
+   "state_label_ko": "",
+   "state_score": 33.78215062750519,
+   "confidence": 95.08599508599508,
+   "component_scores": {
+    "RiskAppetite": 43.4377443782803,
+    "Volatility": 42.77104619894872,
+    "Growth": 38.95322384805509,
+    "Credit": 68.7085760514978,
+    "KoreaFlow": null,
+    "news": 13.164944543700361,
+    "factor:Growth": 0.822,
+    "factor:Inflation": -0.241,
+    "factor:Rates": -0.195,
+    "factor:USD": 0.518,
+    "factor:Liquidity": 1.406,
+    "factor:RiskAppetite": 0.931,
+    "factor:Credit": -1.685,
+    "factor:Volatility": -0.914,
+    "factor:China": 0.186
+   },
+   "key_drivers": [
+    "US HY OAS -1.7σ",
+    "Russell 2000 +1.4σ",
+    "Nasdaq 100 +1.1σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-27T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T00:53:52.513429Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "RISK_ON 95% · 온도 +34",
+   "payload": {
+    "date": "2026-10-27",
+    "as_of": "2026-10-27T22:30:00Z",
+    "label": "RISK_ON",
+    "secondary_label": null,
+    "confidence": 95.08599508599508,
+    "price_temperature": 47.52695468337508,
+    "news_temperature": 13.164944543700361,
+    "composite": 33.78215062750519,
+    "news_events": 15,
+    "thermo_confidence": 91.56379898603252,
+    "components": {
+     "RiskAppetite": 43.4377443782803,
+     "Volatility": 42.77104619894872,
+     "Growth": 38.95322384805509,
+     "Credit": 68.7085760514978,
+     "KoreaFlow": null,
+     "news": 13.164944543700361
+    },
+    "band": "warm",
+    "band_label": "온기",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": 0.822,
+     "Inflation": -0.241,
+     "Rates": -0.195,
+     "USD": 0.518,
+     "Liquidity": 1.406,
+     "RiskAppetite": 0.931,
+     "Credit": -1.685,
+     "Volatility": -0.914,
+     "China": 0.186
+    },
+    "hypotheses": {
+     "RISK_ON": 1.0
+    },
+    "drivers": [
+     "US HY OAS -1.7σ",
+     "Russell 2000 +1.4σ",
+     "Nasdaq 100 +1.1σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

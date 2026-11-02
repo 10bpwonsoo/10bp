@@ -2704,6 +2704,80 @@
     "stress": "LOW"
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-27",
+   "tab_id": "ai_regime",
+   "state": "leadership_narrowing",
+   "state_label": "LEADERSHIP NARROWING",
+   "state_label_ko": "리더십 축소",
+   "state_score": 61.1,
+   "confidence": 61.1,
+   "component_scores": {
+    "basket_z_5d": 0.19,
+    "rel_ndx_5d": 0.91,
+    "rel_ndx_z_5d": 0.32,
+    "breadth_ma20": 19.0,
+    "news_tone": 21.2,
+    "driver:macro_rates": 54.0,
+    "driver:broad_risk_off": 59.3,
+    "driver:semi_cycle": 61.1,
+    "driver:ai_narrative": 52.9,
+    "driver:ai_fundamental_stress": 18.5
+   },
+   "key_drivers": [
+    "Semiconductor Cycle +61 CONFIRMED",
+    "Broad Risk-Off +59 CONFIRMED",
+    "Macro / Rates +54 CONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-10-27T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-02T00:53:51.534457Z",
+   "model_version": "ai_regime_v0.1.0",
+   "logic_version": "rules_5be636bd",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "리더십 축소. AI 바스켓 절대 상승(+1.4σ, 5일 +1.5%) · Nasdaq 100 대비 시장과 같은 걸음(5일 +0.9%p, 상대 z +0.3σ) 가장 큰 driver 는 반도체 사이클(+61, driver 방향(상승)과 AI 바스켓(+1.4σ)이 같다.) breadth 19%(stable). 뉴스×가격 CONFIRMED. AI 고유 스트레스 LOW.",
+   "payload": {
+    "leadership": [
+     "software",
+     "memory_hbm",
+     "dc_infra",
+     "compute"
+    ],
+    "lagging": [
+     "equipment",
+     "hyperscalers",
+     "power"
+    ],
+    "leader_1w": "networking_infra",
+    "breadth_trend": "stable",
+    "breadth_ma20": 19.0,
+    "price_confirmation": "STRONG",
+    "fundamental_confirmation": "WEAK",
+    "narrative": "confirmed",
+    "ai_vs_market": "inline",
+    "abs_direction": "up",
+    "dominant": "semi_cycle",
+    "status_strip": {
+     "narrative": "POSITIVE",
+     "relative": "NEUTRAL",
+     "price": "STRONG",
+     "semi": "WEAK",
+     "infra": "STRONG",
+     "software": "STRONG",
+     "breadth": "STABLE",
+     "macro": "TAILWIND",
+     "fundamental": "WEAK"
+    },
+    "subtitle": "LEADERSHIP NARROWING / FUNDAMENTALS WEAK",
+    "stress": "LOW"
+   },
+   "corrections": []
   }
  ]
 }

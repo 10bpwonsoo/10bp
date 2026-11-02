@@ -1,0 +1,287 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/28 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 10/27 01:08Z 수집분과 11/02 00:50Z 수집분을 합쳤다 — 10/27 01:00~15:50Z 사이 기사는 피드에서 이미 빠져 없다(메우지 않음).",
+ "tags": {
+  "e91e3f2389398e50": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -5,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "국내 증시 거래대금 106조→39조 원 급감, 증권주 바닥권 근접 평가(제목)."
+  },
+  "fd63273d58556667": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 20,
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 사상 최대 IPO 추진 — 국내 증시 바닥 논쟁(제목)."
+  },
+  "ddbf25b84dadb01f": {
+   "themes": [
+    "shareholder_return",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 30,
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "삼성전자·SK하이닉스 대규모 주주환원 기대(제목)."
+  },
+  "d58af650c5d6f6e2": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 25
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 IPO 가 AI 수익성 불안을 낮췄다는 월가 평가, 11월 중순까지 관망론도(제목)."
+  },
+  "554286c8d6af8efa": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20,
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "long",
+   "event_type": "flow",
+   "reason": "대신증권, 내년 코스피 상단 8200 제시 — 반도체 저평가 과도(제목)."
+  },
+  "614b10eeea191d4d": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 35
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 30,
+   "impact": 65,
+   "novelty": 70,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽, SEC 에 나스닥 상장 증권신고서 제출(요약)."
+  },
+  "5f866e0b9c026f53": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 30
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "앤트로픽 신고서의 실적이 'AI 는 돈 못 번다' 우려를 반박(제목)."
+  },
+  "2dedc02ca69c990e": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 30,
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "월가 은행·블랙스톤, 앤트로픽용 브로드컴 AI 칩 조달에 630억 달러 금융 주선(제목)."
+  },
+  "ce60081cd6734aaa": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40,
+    "ai": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 40,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 앤트로픽발 훈풍에 장 초반 3%대 강세, 삼성전자·SK하이닉스 4~6% 상승(제목)."
+  },
+  "5232e8daa139f92a": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40,
+    "ai": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 35,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽이 AI 수익화 우려를 덜며 삼성전자·SK하이닉스 동반 급등(제목)."
+  },
+  "ca377bb72719dce4": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 30,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "SK하이닉스 주가 급등 배경(제목)."
+  },
+  "e67e7c80d5e1eb5c": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40,
+    "ai": 20,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 40,
+   "impact": 60,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽에 삼성전자·SK하이닉스가 필수라는 평가 속 코스피 4%대 급등(제목)."
+  },
+  "66c609ad6ac804d1": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -5,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "CNBC 연준 설문: 이번 주 FOMC 동결 93%, 이후 금리 인상 예상(요약)."
+  },
+  "6869f68f66973820": {
+   "themes": [
+    "ai",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "rates": 15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "rates": "up"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "세계은행 총재: AI 수요가 차입 비용을 끌어올리지만 자본 가용성은 문제 아님(요약)."
+  },
+  "075ca89fdb53f0bf": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 20,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "금리 상승에도 한 달 새 14% 하락한 종목에 투자자 당혹(제목)."
+  }
+ }
+}
