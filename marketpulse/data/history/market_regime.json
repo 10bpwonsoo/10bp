@@ -3427,6 +3427,99 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-30",
+   "tab_id": "market_regime",
+   "state": "LIQUIDITY_STRESS",
+   "state_label": "Liquidity Stress",
+   "state_label_ko": "",
+   "state_score": -46.540536541887974,
+   "confidence": 52.56347256347256,
+   "component_scores": {
+    "RiskAppetite": -83.68087329532423,
+    "Volatility": -63.76277082135026,
+    "Growth": -24.682167909464056,
+    "Credit": -77.20009559109342,
+    "KoreaFlow": null,
+    "news": -9.413492630943573,
+    "factor:Growth": -0.504,
+    "factor:Inflation": -0.158,
+    "factor:Rates": -1.34,
+    "factor:USD": -0.453,
+    "factor:Liquidity": -1.772,
+    "factor:RiskAppetite": -2.421,
+    "factor:Credit": 2.051,
+    "factor:Volatility": 1.508,
+    "factor:China": 0.542
+   },
+   "key_drivers": [
+    "S&P 500 -3.1σ",
+    "US HY OAS +2.1σ",
+    "VIX +2.0σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-10-30T23:59:59Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-11-03T01:11:48.870565Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "LIQUIDITY_STRESS 53% · 온도 -47",
+   "payload": {
+    "date": "2026-10-30",
+    "as_of": "2026-10-30T23:59:59Z",
+    "label": "LIQUIDITY_STRESS",
+    "secondary_label": "RISK_OFF",
+    "confidence": 52.56347256347256,
+    "price_temperature": -71.29189914918425,
+    "news_temperature": -9.413492630943573,
+    "composite": -46.540536541887974,
+    "news_events": 676,
+    "thermo_confidence": 88.81215934817594,
+    "components": {
+     "RiskAppetite": -83.68087329532423,
+     "Volatility": -63.76277082135026,
+     "Growth": -24.682167909464056,
+     "Credit": -77.20009559109342,
+     "KoreaFlow": null,
+     "news": -9.413492630943573
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.504,
+     "Inflation": -0.158,
+     "Rates": -1.34,
+     "USD": -0.453,
+     "Liquidity": -1.772,
+     "RiskAppetite": -2.421,
+     "Credit": 2.051,
+     "Volatility": 1.508,
+     "China": 0.542
+    },
+    "hypotheses": {
+     "LIQUIDITY_STRESS": 1.0,
+     "RISK_OFF": 0.867,
+     "POLICY_DRIVEN": 0.7
+    },
+    "drivers": [
+     "S&P 500 -3.1σ",
+     "US HY OAS +2.1σ",
+     "VIX +2.0σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

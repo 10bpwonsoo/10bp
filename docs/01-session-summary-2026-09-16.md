@@ -510,3 +510,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 뉴스: RSS 피드에 남은 창(10/29 07:30~10/30 07:30 KST) 기사 4건(ECB 동결 · 라가르드 조기 퇴임 · Warsh 분석 · GDP/PCE) 모두 태깅. 웹 검색으로 10/29 한국 기사 2건(삼성전자 3분기 확정 실적, 코스피 실적 발표 뒤 하락 전환)을 extra_news 로 더했다 — 원문 사이트는 이 세션에서 열리지 않아 발행 시각은 기사 URL 의 시각(15:52 · 16:35 KST, URL_TIME), 수치는 시장 계열과 대조(코스피 −1.24% · 삼성전자 −4.13% · SK하이닉스 +2.62%).
 - 결과: 시장 raw NEUTRAL 34%(온도 +2) — S&P −0.3% · 나스닥100 −1.4% · SOXX −1.6% · VIX +1.7% · 코스피 −1.2% · 코스닥 −2.3%. 공식 regime Risk-On → Neutral / Mixed(CHANGED, raw Neutral 2일). AI MACRO-DRAGGED AI WEAKNESS(센티 43), 금리 INFLATION REPRICING(확인 — FOMC 날 bear steepening, 기대인플레·실질금리 동반 상승), 물가 압력 UPSIDE BIAS, 유가 Macro / Liquidity UNCONFIRMED, 반도체 UPSWING 49.1. 해석 3종은 API 401 → 세션 생성본.
 - history: 10/29 행 7개 탭 RECORDED·잠금(data_asof 10/29 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 10/28 · 10/29 · 10/30 화면의 같은 날짜 공식 regime 띠 차이 0.
+
+### 2026-11-03 — 11/02 Daily Snapshot (07:30 KST, 사후 재구성)
+- 입력: 11/02 00:50Z 에 받은 전체 이력(cutoff 11/01 22:30Z 직후 수집)을 11/02 07:30 KST cutoff 로 잘라 재구성(`data/captures/2026-11-02-backfill/`) — 미국 10/30(금) 종가 · 한국 10/30 종가 · 미국채/TIPS/HY OAS 10/29 관측(FRED 공개 지연). 시장 계열 vintage 미보장, 거시 발표치는 FRED realtime.
+- 뉴스: 주말 포함 RSS 창(10/30 07:30~11/02 07:30 KST) 66건 중 25건 수기 태깅. 10/30 낮(KST) 기사는 피드에서 빠져 없다(메우지 않음).
+- 결과: 시장 raw LIQUIDITY_STRESS 64%(온도 −50) — 10/30 S&P −1.8% · 나스닥100 −3.5% · SOXX −8.2%(인텔 −29%) · VIX +12.9% · MOVE +7.1% · 금 −3.3% · 브렌트 +2.4% · 코스피 −3.5% · 코스닥 −3.8% · SK하이닉스 −7.1%. 공식 regime Neutral / Mixed 2일째, raw 가 Liquidity Stress 로 갈려 TRANSITION WATCH. AI MACRO-DRAGGED AI WEAKNESS(센티 30), 금리 RISK-OFF FLIGHT TO QUALITY(물가 리프라이싱 미확인), 물가 압력 MIXED(기대인플레 급락 vs 실제 물가·환율·에너지 상승), 유가 Macro / Liquidity Risk-Off CONTRADICTED, 반도체 UPSWING 46.6(주가 확인 −89). 해석 3종은 API 401 → 세션 생성본.
+- history: 10/30(금) 행 7개 탭 BACKFILLED·잠금(data_asof 10/30 23:59:59Z — 월요일 저장의 금요일 규칙). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 10/29 · 10/30 · 11/02 화면의 같은 날짜 공식 regime 띠 차이 0.
+- 정적 배포본 13.6MB(아티팩트 한도 16MB) — 저장본이 날마다 늘어 몇 주 안에 한도에 닿는다.

@@ -4096,6 +4096,111 @@
     }
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-10-30",
+   "tab_id": "rates_regime",
+   "state": "risk_liquidity",
+   "state_label": "RISK-OFF FLIGHT TO QUALITY — Inflation Repricing Not Confirmed",
+   "state_label_ko": "",
+   "state_score": -81.8,
+   "confidence": 81.8,
+   "component_scores": {
+    "driver:inflation_repricing": -31.6,
+    "driver:fed_policy": -51.3,
+    "driver:growth": -47.8,
+    "driver:term_premium": -7.8,
+    "driver:risk_liquidity": -81.8,
+    "rate_move_z": -1.45,
+    "rate_change_5d_bp": 2.0,
+    "inflation:realized": null,
+    "inflation:implied": -61.9,
+    "inflation:energy": 19.3,
+    "inflation:wages": null,
+    "inflation:fx": 52.5
+   },
+   "key_drivers": [
+    "Risk / Liquidity -82 CONFIRMED",
+    "Fed Policy -51 CONFIRMED",
+    "Growth -48 CONFIRMED"
+   ],
+   "data_coverage": 0.9184000000000001,
+   "data_asof": "2026-10-30T23:59:59Z",
+   "missing_components": [],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-11-03T01:11:48.625575Z",
+   "model_version": "rates_regime_v0.1.0",
+   "logic_version": "rules_f27eae24",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "금리를 움직이는 증거는 위험·유동성 쪽이 가장 크다(-82, STRONG) — 연준 정책 경로 -51 보다 30 앞선다. 물가 리프라이싱은 미확인(-32). 상태: driver 방향(하락)과 10년 금리(-1.4σ)가 같다.",
+   "payload": {
+    "regime_label": "RISK-OFF FLIGHT TO QUALITY — Inflation Repricing Not Confirmed",
+    "dominant": "risk_liquidity",
+    "runner_up": "fed_policy",
+    "margin": 30.5,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "inflation_repricing": {
+      "label": "Inflation Repricing",
+      "score": -31.6,
+      "status": "CONFIRMED",
+      "coverage": 0.774
+     },
+     "fed_policy": {
+      "label": "Fed Policy",
+      "score": -51.3,
+      "status": "CONFIRMED",
+      "coverage": 0.818
+     },
+     "growth": {
+      "label": "Growth",
+      "score": -47.8,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "term_premium": {
+      "label": "Term Premium / Supply",
+      "score": -7.8,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "risk_liquidity": {
+      "label": "Risk / Liquidity",
+      "score": -81.8,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Breakeven (기대인플레)": "CONFIRMED",
+     "Oil": "NOT_CONFIRMED",
+     "Commodities (구리)": "CONFIRMED",
+     "USD": "NOT_CONFIRMED",
+     "Rates — 2Y": "CONFIRMED",
+     "Rates — 10Y / 30Y": "CONFIRMED",
+     "Equities (S&P)": "CONFIRMED",
+     "Growth / Tech (Nasdaq)": "CONFIRMED",
+     "Banks (XLF)": "CONFIRMED",
+     "HY OAS": "CONFIRMED",
+     "VIX": "CONFIRMED",
+     "Gold": "NOT_CONFIRMED"
+    },
+    "implication": "위험회피가 금리를 누르는 국면(안전자산 매수) — 스프레드·VIX 가 오르면서 금리가 내려야 확인된다.",
+    "inflation_status": "UNCONFIRMED",
+    "rate_direction": "down",
+    "curve": "bull_steepening",
+    "inflation_components": {
+     "realized": "missing",
+     "implied": "down",
+     "energy": "flat",
+     "wages": "missing",
+     "fx": "up"
+    }
+   },
+   "corrections": []
   }
  ]
 }
