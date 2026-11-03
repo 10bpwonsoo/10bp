@@ -517,3 +517,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 결과: 시장 raw LIQUIDITY_STRESS 64%(온도 −50) — 10/30 S&P −1.8% · 나스닥100 −3.5% · SOXX −8.2%(인텔 −29%) · VIX +12.9% · MOVE +7.1% · 금 −3.3% · 브렌트 +2.4% · 코스피 −3.5% · 코스닥 −3.8% · SK하이닉스 −7.1%. 공식 regime Neutral / Mixed 2일째, raw 가 Liquidity Stress 로 갈려 TRANSITION WATCH. AI MACRO-DRAGGED AI WEAKNESS(센티 30), 금리 RISK-OFF FLIGHT TO QUALITY(물가 리프라이싱 미확인), 물가 압력 MIXED(기대인플레 급락 vs 실제 물가·환율·에너지 상승), 유가 Macro / Liquidity Risk-Off CONTRADICTED, 반도체 UPSWING 46.6(주가 확인 −89). 해석 3종은 API 401 → 세션 생성본.
 - history: 10/30(금) 행 7개 탭 BACKFILLED·잠금(data_asof 10/30 23:59:59Z — 월요일 저장의 금요일 규칙). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 10/29 · 10/30 · 11/02 화면의 같은 날짜 공식 regime 띠 차이 0.
 - 정적 배포본 13.6MB(아티팩트 한도 16MB) — 저장본이 날마다 늘어 몇 주 안에 한도에 닿는다.
+
+### 2026-11-03 — 11/03 Daily Snapshot (07:30 KST)
+- 입력: 01:21Z 수집이 Yahoo 요청 제한(429)으로 기본 35/54 · 바스켓 40/52, 01:28Z 재수집은 기본 37 · 종목 22 · 바스켓 0. 세 수집분(11/03 두 번 + 11/02 00:50Z)을 계열마다 합쳐 마지막 봉이 가장 늦은 것을 썼다(기본 41/54 · 종목 94 · 바스켓 52; 11/02 수집분에서 온 계열 기본 1 · 종목 6 · 바스켓 12 는 마지막 봉 10/30 → STALE 로 보인다). 07:30 KST cutoff 재구성(`data/captures/2026-11-03-backfill/`) — 미국 11/02 종가 · 미국채/TIPS/HY OAS 10/30 관측. **코스피 · 코스닥 · 브렌트 · WTI · 금 · 구리의 11/02 봉은 Yahoo 일봉에 없다**(10/30 다음이 11/03 장중) — 결측 그대로(기사상 11/02 코스피 2%대 상승 마감, 유가 급락).
+- 메모리: DRAMeXchange 공개 홈 11/02 18:10(GMT+8) 현물(DDR5 16Gb $61.50) · NAND 512Gb 웨이퍼 10/26 주($16.883, −9.2%) · 9월 계약가 표(Last Update 9/30) 수집, Daily Express 11/02분. 
+- 뉴스: RSS 창(11/02 07:30~11/03 07:30 KST) 103건 중 25건 수기 태깅. 금리 · 물가 · 반도체 해석은 API 401 → 세션 생성본.
+- 결과: 시장 raw RISK_OFF 53%(온도 −25) — S&P −0.5% · 나스닥100 −1.4% · SOXX −3.8% · VIX +8.9% · 금융·경기민감 상승. 공식 regime Neutral / Mixed → Liquidity Stress / Risk-Off(CHANGED, raw 위험회피 2일). AI AI-SPECIFIC DE-RISKING(센티 30), 금리 RISK-OFF FLIGHT TO QUALITY, 물가 압력 MIXED, 유가 Macro / Liquidity Risk-Off CONTRADICTED, 반도체 UPSWING 41.3(NAND 512Gb 1M −13% WEAK, 주가 확인 −99, 계약 anchor 9월분으로 갱신).
+- history: 11/02 행 7개 탭 RECORDED·잠금(data_asof 11/02 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 11/02 · 11/03 화면의 같은 날짜 공식 regime 띠 차이 0. 정적 배포본 14.0MB(한도 16MB).
