@@ -42,7 +42,17 @@ describe("CockpitView", () => {
     expect(screen.getAllByTestId("ck-catalyst").length).toBeLessThanOrEqual(12);
     expect(screen.getAllByTestId("ck-next-item").length).toBeLessThanOrEqual(5);
     expect(screen.getAllByTestId("ck-radar-stock").length).toBeLessThanOrEqual(8);
-    for (const r of screen.getAllByTestId("ck-radar-stock")) expect(r.textContent).toMatch(/Why|Watch/);
+    // 기본 카드는 종목명 · 판단 제목 한 줄 · 상태만 — 엔진 코드(RETURN_SPIKE 등)와 WHY/SYSTEM 은 펼쳤을 때만
+    for (const r of screen.getAllByTestId("ck-radar-stock")) {
+      const title = within(r).getByTestId("ck-radar-title").textContent!;
+      expect(title.length).toBeGreaterThan(4); expect(title.length).toBeLessThanOrEqual(26);
+      expect(r.textContent).not.toMatch(/RETURN_SPIKE|NEWS_DRIVEN_MOVE|RELATIVE_MOVE|UNEXPLAINED_ACTIVITY|확률|매수|매도|전망/);
+      expect(["POSITIVE", "WATCH", "MIXED", "NEGATIVE"]).toContain(within(r).getByTestId("ck-radar-status").textContent);
+      expect(within(r).queryByTestId("ck-radar-detail")).toBeNull();
+    }
+    const first = screen.getAllByTestId("ck-radar-stock")[0]!;
+    fireEvent.click(first);
+    expect(within(first).getByTestId("ck-radar-detail").textContent).toMatch(/Why|Watch/);
   });
 
   it("뉴스는 클릭해 펼치고, 데이터 없는 카드(Earnings)는 숨기며, Details / Diagnostics 는 토글로 연다", () => {
@@ -99,6 +109,8 @@ describe("CockpitView — STOCK RADAR analyst view · WHAT MATTERS NEXT transmis
   it("radar 에는 확인된 종목만 ANALYST VIEW 한 줄(이름·증권사·날짜·freshness)이 붙고, 누르면 상세(Key view·Key variable·Source·System vs Analyst)가 열린다; 없는 종목은 줄 자체가 없다", async () => {
     const av = (await import("../__fixtures__/analyst_views.json")).default as unknown as import("../api/types").AnalystViews;
     render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={av} />);
+    expect(screen.queryByTestId("ck-analyst-view")).toBeNull();   // 기본 카드에는 없다 — 펼쳤을 때만
+    for (const card of screen.getAllByTestId("ck-radar-stock")) fireEvent.click(card);
     const lines = screen.getAllByTestId("ck-analyst-view");
     expect(lines.length).toBe(av.views.length);
     expect(lines.length).toBeLessThan(cockpit.radar.length); // 확인 안 된 종목은 숨긴다
@@ -143,6 +155,7 @@ describe("CockpitView — STOCK RADAR analyst view · WHAT MATTERS NEXT transmis
   it("radar 의 Related market issues 를 누르면 그 이슈가 열리고, 경로의 RADAR ● 종목은 radar 에도 있는 종목이다", () => {
     render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
     const r = cockpit.radar.find((x) => x.related_issues.length)!;
+    fireEvent.click(screen.getAllByTestId("ck-radar-stock").find((e) => e.id === `ck-rd-${r.id}`)!);
     const box = screen.getAllByTestId("ck-radar-issues")[0]!;
     fireEvent.click(within(box).getAllByRole("button")[0]!);
     const path = screen.getByTestId("ck-path");
@@ -234,12 +247,14 @@ describe("CockpitView — DRIVER HEAT 의미 층 · MARKET LEADERSHIP intelligen
     expect(screen.getByTestId("ck-h-heat-legend").textContent).toMatch(/COLOR.*ARROW/);
   });
 
-  it("MARKET LEADERSHIP 은 LEADERSHIP READ 와 행마다 SYSTEM VIEW 한 줄을 보이고, 테마를 누르면 WHY → CONFIRMATION → SYSTEM VIEW(INTERNAL) → STREET VIEW(EXTERNAL, 있을 때만) → KEY STOCKS(RADAR ●) → WHAT TO WATCH 가 열린다", () => {
+  it("MARKET LEADERSHIP 은 LEADERSHIP READ 와 행마다 왜 강(약)한지 제목 한 줄을 보이고, 테마를 누르면 WHY → CONFIRMATION → SYSTEM VIEW(INTERNAL) → STREET VIEW(EXTERNAL, 있을 때만) → KEY STOCKS(RADAR ●) → WHAT TO WATCH 가 열린다", () => {
     render(<CockpitView cockpit={cockpit} snapshot={snapshot} history={history} analystViews={null} />);
     const l = cockpit.leadership;
     expect(screen.getByTestId("ck-lead-read").textContent).toContain(l.read);
     const rows = screen.getAllByTestId("ck-lead-row");
-    expect(screen.getAllByTestId("ck-lead-system-view").length).toBe(rows.length);
+    const titles = screen.getAllByTestId("ck-lead-title");
+    expect(titles.length).toBe(rows.length);
+    for (const t of titles) expect(t.textContent!.length).toBeGreaterThan(4);
     expect(screen.queryByTestId("ck-lead-detail")).toBeNull();
     const withStreet = [...l.leaders, ...l.laggards].find((r) => r.detail && r.detail.street.length)!;
     const row = rows.find((r) => r.getAttribute("data-key") === withStreet.key)!;

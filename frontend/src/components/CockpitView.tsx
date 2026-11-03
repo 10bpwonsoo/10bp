@@ -6,6 +6,7 @@ import { COLOR_LEGEND, MATCH_COLOR, STATUS_KO, STATUS_KO_SHORT, glossaryFor } fr
 import { LABEL_KO } from "./StateHistoryStrip";
 import { RegimeHistoryCard } from "./RegimeHistoryCard";
 import { MarketToneCard } from "./MarketToneCard";
+import { leaderTitle, radarHeadline, type RadarStatus } from "./radarTitle";
 
 /**
  * 실시간 메인 탭 — decision cockpit.
@@ -275,8 +276,8 @@ function LeadRow({ r, open, setOpen }: { r: CkLeaderRow; open: string | null; se
   return (
     <div className={`ck-lead-row${r.detail ? " has-detail" : ""}${isOpen ? " open" : ""}`} data-testid="ck-lead-row" data-key={r.key} title={`${r.kind} · ${r.available}/${r.instruments} 계열`} onClick={r.detail ? () => setOpen(isOpen ? null : r.key) : undefined} role={r.detail ? "button" : undefined} tabIndex={r.detail ? 0 : undefined} aria-expanded={r.detail ? isOpen : undefined} onKeyDown={(e) => { if (r.detail && e.key === "Enter") setOpen(isOpen ? null : r.key); }}>
       <div className="ck-lead-h"><span className="ck-lead-l">{r.label}</span><Arrow a={r.arrow} />{isOpen ? <span className="ck-lead-active mono" data-testid="ck-lead-active">ACTIVE</span> : null}{r.detail ? <span className="ck-nx-open mono">{isOpen ? "▾" : "›"}</span> : null}</div>
+      <span className="ck-lead-title" data-testid="ck-lead-title">{leaderTitle(r)}</span>
       <span className="mono ck-lead-v">{sg(r.z_1d)}σ <small>1D</small> | vs market {sg(r.rel_1w)}σ | breadth {r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}</span>
-      {r.system_view ? <span className="ck-lead-sv" data-testid="ck-lead-system-view"><span className="ck-k mono">System view</span> {r.system_view}</span> : null}
     </div>
   );
 }
@@ -378,22 +379,42 @@ function AnalystLine({ r, v, issues, onIssue }: { r: CkRadarStock; v: AnalystVie
   );
 }
 
+const RADAR_STATUS_COLOR: Record<RadarStatus, string> = { POSITIVE: "var(--ok)", WATCH: "var(--warn)", MIXED: "var(--muted)", NEGATIVE: "var(--down)" };
+
+/** 한 종목 — 기본은 종목명 · 수익률 · 판단 제목 한 줄 · 보조 한 줄 · 상태. 누르면 WHY · SYSTEM · ANALYST VIEW · RELATED ISSUES */
+function RadarStockCard({ r, c, v, issues, onIssue, focus }: { r: CkRadarStock; c: Cockpit; v: AnalystView | undefined; issues: { id: string; text: string }[]; onIssue?: (id: string) => void; focus: boolean }) {
+  const [open, setOpen] = useState(false);
+  const h = radarHeadline(r, c);
+  const isOpen = open || focus;
+  return (
+    <div id={`ck-rd-${r.id}`} className={`ck-rd${focus ? " focus" : ""}${isOpen ? " open" : ""}`} data-testid="ck-radar-stock" data-status={h.status} role="button" tabIndex={0} aria-expanded={isOpen}
+      onClick={() => setOpen(!open)} onKeyDown={(e) => { if (e.key === "Enter") setOpen(!open); }}>
+      <div className="ck-rd-h"><b>{r.name}</b><span className="num mono" style={{ color: r.change_1d === null ? "var(--faint)" : "var(--ink-2)" }}>{sg(r.change_1d, 1, "%")}</span></div>
+      <div className="ck-rd-title" data-testid="ck-radar-title">{h.title}</div>
+      {h.sub ? <div className="ck-rd-sub" data-testid="ck-radar-sub">{h.sub}</div> : null}
+      <div className="ck-rd-foot"><span className="ck-rd-st mono" data-testid="ck-radar-status" style={{ color: RADAR_STATUS_COLOR[h.status], borderColor: RADAR_STATUS_COLOR[h.status] }}>{h.status}</span><span className="ck-rd-more mono">{isOpen ? "상세 ▾" : "상세 ›"}</span></div>
+      {isOpen ? (
+        <div className="ck-rd-detail" data-testid="ck-radar-detail" onClick={(e) => e.stopPropagation()}>
+          <div className="ck-rd-t mono">{r.tag}</div>
+          <div className="ck-rd-w"><span className="ck-k mono">{r.kind === "watch" ? "Watch" : "Why"}</span> {r.why}</div>
+          {r.system_axes.length ? <div className="ck-rd-sa mono"><span className="ck-k">System</span> {r.system_axes.map((a) => <span key={a.key} title={a.detail}>{a.label} <b>{a.arrow}</b></span>)}</div> : null}
+          <AnalystLine r={r} v={v} issues={issues} onIssue={onIssue} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function RadarCard({ c, views, onIssue, focus }: { c: Cockpit; views: AnalystViews | null; onIssue?: (id: string) => void; focus?: string | null }) {
   if (!c.radar.length) return null;
   const byId = new Map((views?.views ?? []).map((v) => [v.stock_id, v]));
   const issueText = new Map(c.what_matters_next.map((n) => [n.id, n.text]));
   const n = byId.size;
   return (
-    <Card title="Stock Radar" area="radar" testid="ck-radar" note={`${c.radar.length}종목 · 이상 거동·뉴스·테마·펀더멘털·상대강도·매크로 종합 — 수익률 순 아님${views ? ` · Analyst view ${n}/${views.requested.length}${views.pending.length ? " (검색 중)" : ""}` : ""}`}>
+    <Card title="Stock Radar" area="radar" testid="ck-radar" note={`${c.radar.length}종목 · 왜 잡혔는지 한 줄 — 누르면 근거(WHY · SYSTEM · ANALYST VIEW) · 수익률 순 아님${views ? ` · Analyst view ${n}/${views.requested.length}${views.pending.length ? " (검색 중)" : ""}` : ""}`}>
       <div className="ck-radar">
         {c.radar.map((r) => (
-          <div key={r.id} id={`ck-rd-${r.id}`} className={`ck-rd${focus === r.id ? " focus" : ""}`} data-testid="ck-radar-stock" title={r.signals.join(" · ")}>
-            <div className="ck-rd-h"><b>{r.name}</b><span className="num mono" style={{ color: r.change_1d === null ? "var(--faint)" : "var(--ink-2)" }}>{sg(r.change_1d, 1, "%")}</span></div>
-            <div className="ck-rd-t mono">{r.tag}</div>
-            <div className="ck-rd-w"><span className="ck-k mono">{r.kind === "watch" ? "Watch" : "Why"}</span> {r.why}</div>
-            {r.system_axes.length ? <div className="ck-rd-sa mono"><span className="ck-k">System</span> {r.system_axes.map((a) => <span key={a.key} title={a.detail}>{a.label} <b>{a.arrow}</b></span>)}</div> : null}
-            <AnalystLine r={r} v={byId.get(r.id)} issues={r.related_issues.map((i) => ({ id: i, text: issueText.get(i) ?? i }))} onIssue={onIssue} />
-          </div>
+          <RadarStockCard key={r.id} r={r} c={c} v={byId.get(r.id)} issues={r.related_issues.map((i) => ({ id: i, text: issueText.get(i) ?? i }))} onIssue={onIssue} focus={focus === r.id} />
         ))}
       </div>
     </Card>

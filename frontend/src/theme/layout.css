@@ -1453,8 +1453,16 @@
 .ck-tr-s { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
 .ck-tr-stock { display: inline-flex; gap: 5px; align-items: baseline; }
 .ck-tr-n { margin-left: auto; font-size: 10px; color: var(--faint); }
-.ck-radar { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; }
-.ck-rd { padding: 6px 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.ck-radar { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 6px; align-items: start; }
+.ck-rd { padding: 8px 10px; border: 1px solid var(--rule-soft); border-radius: var(--radius); display: flex; flex-direction: column; gap: 3px; font-size: 12px; cursor: pointer; }
+.ck-rd:hover { border-color: var(--rule); }
+.ck-rd-title { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; }
+.ck-rd-sub { font-size: 11px; line-height: 1.4; color: var(--muted); }
+.ck-rd-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+.ck-rd-st { font-size: 9px; letter-spacing: 0.06em; padding: 0 5px; border: 1px solid; border-radius: var(--radius); line-height: 15px; }
+.ck-rd-more { font-size: 10px; color: var(--faint); }
+.ck-rd-detail { display: flex; flex-direction: column; gap: 3px; border-top: 1px dashed var(--rule-soft); padding-top: 5px; margin-top: 2px; cursor: auto; }
+.ck-lead-title { grid-column: 1 / -1; display: block; font-size: 12px; line-height: 1.4; color: var(--ink); margin: 1px 0 2px; }
 .ck-rd-h { display: flex; justify-content: space-between; gap: 8px; }
 .ck-rd-t { font-size: 10px; color: var(--muted); }
 .ck-rd-w { font-size: 11px; line-height: 1.4; color: var(--ink-2); }

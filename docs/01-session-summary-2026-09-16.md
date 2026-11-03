@@ -524,3 +524,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 뉴스: RSS 창(11/02 07:30~11/03 07:30 KST) 103건 중 25건 수기 태깅. 금리 · 물가 · 반도체 해석은 API 401 → 세션 생성본.
 - 결과: 시장 raw RISK_OFF 53%(온도 −25) — S&P −0.5% · 나스닥100 −1.4% · SOXX −3.8% · VIX +8.9% · 금융·경기민감 상승. 공식 regime Neutral / Mixed → Liquidity Stress / Risk-Off(CHANGED, raw 위험회피 2일). AI AI-SPECIFIC DE-RISKING(센티 30), 금리 RISK-OFF FLIGHT TO QUALITY, 물가 압력 MIXED, 유가 Macro / Liquidity Risk-Off CONTRADICTED, 반도체 UPSWING 41.3(NAND 512Gb 1M −13% WEAK, 주가 확인 −99, 계약 anchor 9월분으로 갱신).
 - history: 11/02 행 7개 탭 RECORDED·잠금(data_asof 11/02 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 11/02 · 11/03 화면의 같은 날짜 공식 regime 띠 차이 0. 정적 배포본 14.0MB(한도 16MB).
+
+### 2026-11-03 — STOCK RADAR · MARKET LEADERSHIP: 제목 한 줄
+- STOCK RADAR 카드 기본 화면 = 종목명 · 1D 수익률 · **판단 제목 한 줄**(25자 이내) · 보조 한 줄 · 작은 상태(POSITIVE / WATCH / MIXED / NEGATIVE). 카드를 누르면 기존 WHY · SYSTEM 축 · ANALYST VIEW · RELATED MARKET ISSUES 가 펼쳐진다(다른 카드에서 종목으로 이동하면 자동으로 펼침). 엔진 코드(RETURN_SPIKE · NEWS_DRIVEN_MOVE 등)는 기본 화면에 없다. 데스크톱 2열(카드 최소 330px)로 제목이 꺾이지 않게.
+- 제목은 카드에 이미 있는 값으로만 만든다(`components/radarTitle.ts`, 새 판단 없음): 연결된 Leadership 의 실제 동인(유가 ↓ · 지정학) → 펀더멘털 축(세그먼트 개선/둔화 × 상대강도 · 그날 방향) → 같은 테마 Leadership · 테마 확인 → AI 세그먼트 상대강도(펀더멘털 미확인 표시) → 시장 대비 상대강도 → 단순 가격 이상("급등 포착 · 추가 확인 필요", "뉴스성 움직임 · 원인 확인 중" — 원인을 만들지 않는다). 급등·급락은 하루 |z| ≥ 2 일 때만 쓴다. 펀더멘털이 개선이어도 그날 내렸으면 "개선에도 주가 조정"(MIXED).
+- MARKET LEADERSHIP 행마다 왜 강(약)한지 한 줄(예: Airlines ↑↑ "유가 하락 수혜로 상대강도 확대", Defense ↑↑ "지정학 리스크 확대로 방산주 강세") — 기존 System view 문장은 detail 패널(System read)에 남는다.
+- 화면에서 만들어 저장본을 고치지 않고 과거 날짜 화면에도 같은 규칙이 적용된다. 테스트 `radarTitle.test.ts`(저장된 모든 날짜: 25자 · 엔진 코드/금지어 없음 · 11/03 대표 종목 문장), `cockpit.test.tsx` 갱신.
