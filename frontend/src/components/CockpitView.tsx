@@ -244,7 +244,9 @@ function LeadershipDetailView({ r, onStock }: { r: CkLeaderRow; onStock?: (id: s
   );
 }
 
-const leadMetrics = (r: CkLeaderRow) => `${sg(r.z_1d)}σ 1D | vs market ${sg(r.rel_1w)}σ | breadth ${r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}`;
+/** breadth — 가격 계열이 하나면(섹터 ETF 등) 그 지수 하나의 20일선 위·아래일 뿐이라 % 로 쓰지 않는다 */
+const breadthTxt = (r: CkLeaderRow) => (r.breadth === null ? "–" : r.available <= 1 ? `단일 지수 · 20일선 ${r.breadth >= 50 ? "위" : "아래"}` : `${r.breadth.toFixed(0)}%`);
+const leadMetrics = (r: CkLeaderRow) => `${sg(r.z_1d)}σ 1D | vs market ${sg(r.rel_1w)}σ | breadth ${breadthTxt(r)}`;
 
 /** MARKET LEADERSHIP 목록 아래(그리드 전체 폭)에 열리는 Full-width Detail Panel — 한 번에 한 테마만 */
 function LeadershipDetailPanel({ r, onClose, onStock }: { r: CkLeaderRow; onClose: () => void; onStock?: (id: string) => void }) {
@@ -277,7 +279,7 @@ function LeadRow({ r, open, setOpen }: { r: CkLeaderRow; open: string | null; se
     <div className={`ck-lead-row${r.detail ? " has-detail" : ""}${isOpen ? " open" : ""}`} data-testid="ck-lead-row" data-key={r.key} title={`${r.kind} · ${r.available}/${r.instruments} 계열`} onClick={r.detail ? () => setOpen(isOpen ? null : r.key) : undefined} role={r.detail ? "button" : undefined} tabIndex={r.detail ? 0 : undefined} aria-expanded={r.detail ? isOpen : undefined} onKeyDown={(e) => { if (r.detail && e.key === "Enter") setOpen(isOpen ? null : r.key); }}>
       <div className="ck-lead-h"><span className="ck-lead-l">{r.label}</span><Arrow a={r.arrow} />{isOpen ? <span className="ck-lead-active mono" data-testid="ck-lead-active">ACTIVE</span> : null}{r.detail ? <span className="ck-nx-open mono">{isOpen ? "▾" : "›"}</span> : null}</div>
       <span className="ck-lead-title" data-testid="ck-lead-title">{leaderTitle(r)}</span>
-      <span className="mono ck-lead-v">{sg(r.z_1d)}σ <small>1D</small> | vs market {sg(r.rel_1w)}σ | breadth {r.breadth === null ? "–" : `${r.breadth.toFixed(0)}%`}</span>
+      <span className="mono ck-lead-v">{sg(r.z_1d)}σ <small>1D</small> | vs market {sg(r.rel_1w)}σ | breadth {breadthTxt(r)}</span>
     </div>
   );
 }
