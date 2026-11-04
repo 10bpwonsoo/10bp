@@ -101,6 +101,9 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
   }, [open]);
 
+  // 펼침 창을 날짜 버튼의 어느 쪽에 붙일지 — 오른쪽 끝에 맞추면 화면 왼쪽 밖으로 나갈 때(머리줄이 접혀 버튼이 왼쪽에 올 때)는 왼쪽 끝에 맞춘다
+  const [side, setSide] = useState<"left" | "right">("right");
+
   const go = async (date: string) => {
     const c = checkDate(date, dates);
     if (c.kind !== "ok") { setMsg(c); return; }
@@ -124,7 +127,7 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
   return (
     <div className="arc" ref={box} data-testid="archive-control">
       <button type="button" className="arc-step mono" disabled={!older || busy !== null} onClick={() => older && go(older)} data-testid="archive-older" aria-label="이전 저장일" title={older ? `이전 저장일 ${older}` : "이전 저장일 없음"}>◀</button>
-      <button type="button" className={`arc-btn mono${archive ? " on" : ""}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => { setOpen((o) => !o); setMsg(null); }} data-testid="archive-toggle"
+      <button type="button" className={`arc-btn mono${archive ? " on" : ""}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => { setSide(popSide(box.current)); setOpen((o) => !o); setMsg(null); }} data-testid="archive-toggle"
         title="날짜별 저장 화면 — 검색 · 달력">
         <span className="arc-date" data-testid="archive-date">{shown ?? "날짜"}</span>
         <span aria-hidden="true">▾</span>
@@ -140,7 +143,7 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
       {open ? (
         <>
           <div className="arc-scrim" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="arc-pop" role="dialog" aria-label="날짜별 저장 화면" data-testid="archive-pop">
+          <div className={`arc-pop${side === "left" ? " arc-pop-l" : ""}`} role="dialog" aria-label="날짜별 저장 화면" data-testid="archive-pop" data-side={side}>
             <div className="arc-pop-h">
               <span className="ai-k mono">Daily Snapshot · 월~금 07:30 KST</span>
               <span className="arc-pop-note">그날 저장된 데이터 그대로 · 다시 계산하지 않음</span>
@@ -255,4 +258,11 @@ export function NotArchivedPanel({ what }: { what: string }) {
       </section>
     </div>
   );
+}
+
+/** 펼침 창(폭 320px)이 화면 안에 들어오는 쪽. 버튼 오른쪽 끝 기준으로 왼쪽 밖으로 나가면 "left"(버튼 왼쪽 끝 기준). */
+export function popSide(el: HTMLElement | null, popWidth = 320, margin = 8): "left" | "right" {
+  if (!el) return "right";
+  const r = el.getBoundingClientRect();
+  return r.right - popWidth < margin ? "left" : "right";
 }

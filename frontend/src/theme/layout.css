@@ -2863,3 +2863,8 @@
     .rr .rt-ca > .panel-body > .rt-wd { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; border-top: 0; padding-top: 0; }
   }
 }
+
+/* 날짜 펼침 창 — 화면 밖으로 잘리지 않게(2026-11-04). 버튼이 왼쪽에 있으면 왼쪽 끝에 붙이고, 폭은 화면 안으로 */
+.arc-pop { max-width: calc(100vw - 16px); }
+.arc-pop.arc-pop-l { right: auto; left: 0; }
+@media (max-width: 640px) { .arc-pop.arc-pop-l { left: 0; right: 0; } .arc-pop { max-width: none; } }
