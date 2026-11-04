@@ -28,6 +28,7 @@ describe("radarHeadline", () => {
     const h = (name: string) => radarHeadline(c.radar.find((r) => r.name === name)!, c);
     expect(h("대한항공")).toMatchObject({ title: "유가 하락 수혜 + 항공주 동반 강세", status: "POSITIVE" });   // Airlines 리더의 동인(유가 ↓)
     expect(h("한화오션").title).toBe("지정학 긴장 속 방산주 동반 강세");
+    expect(h("대한항공").sub).toBe("항공주 지수 시장 대비 +4.1σ (1주)");   // Airlines 는 JETS 하나 — breadth 100% 를 '전반 상승' 으로 쓰지 않는다
     expect(h("삼성전자")).toMatchObject({ title: "메모리·HBM 개선 속 상대강도 유지", sub: "SOX 약세에도 시장 대비 견조", status: "POSITIVE" });
     expect(h("현대제철")).toMatchObject({ title: "급등 포착 · 추가 확인 필요", sub: "확인된 펀더멘털 근거 부족", status: "WATCH" });   // 억지로 해석하지 않는다
     expect(h("효성중공업").title).toBe("뉴스성 움직임 · 원인 확인 중");
@@ -49,7 +50,12 @@ describe("leaderTitle", () => {
     const t = Object.fromEntries(c.leadership.leaders.map((l) => [l.label, leaderTitle(l)]));
     expect(t["Airlines"]).toBe("유가 하락 수혜로 상대강도 확대");
     expect(t["Defense"]).toBe("지정학 리스크 확대로 방산주 강세");
-    expect(t["Geopolitical Risk"]).toBe("지정학 긴장 수혜주 동반 강세");
-    for (const [, cc] of docs) for (const l of [...cc.leadership.leaders, ...cc.leadership.laggards]) expect(leaderTitle(l)).not.toMatch(BAD);
+    // Geopolitical Risk · 섹터 줄은 주식 계열이 하나(ITA · ETF) — breadth 0/100 을 '수혜주 동반' · '종목 전반 확산' 으로 읽지 않는다
+    expect(t["Geopolitical Risk"]).toBe("지정학 긴장 속 상대강도 확대");
+    expect(t["Consumer Discretionary"]).toBe("경기소비재 시장 대비 강세");
+    for (const [, cc] of docs) for (const l of [...cc.leadership.leaders, ...cc.leadership.laggards]) {
+      expect(leaderTitle(l)).not.toMatch(BAD);
+      if (l.available <= 1) expect(leaderTitle(l)).not.toMatch(/확산|동반/);
+    }
   });
 });

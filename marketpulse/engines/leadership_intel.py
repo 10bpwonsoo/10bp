@@ -118,12 +118,16 @@ def build_leadership_intel(
         # ── MARKET CONFIRMATION ──
         conf: list[ConfirmRow] = []
         mtab = STATUS_MEANING if lead else STATUS_MEANING_LAG
-        def row(key: str, label: str, value: str, status: str) -> None:
-            conf.append(ConfirmRow(key=key, label=label, value=value, status=status, meaning=mtab[key][status]))  # type: ignore[arg-type]
+        def row(key: str, label: str, value: str, status: str, meaning: str | None = None) -> None:
+            conf.append(ConfirmRow(key=key, label=label, value=value, status=status, meaning=meaning or mtab[key][status]))  # type: ignore[arg-type]
+        # 가격 계열이 하나뿐이면(섹터 ETF · 주식 자산이 하나인 테마) breadth 는 그 지수 하나의 20일선 위·아래(0 또는 100)일 뿐 — 종목 확산으로 읽지 않는다
+        single = r.available <= 1
         row("PRICE", "PRICE", "–" if r.z_1d is None else f"{r.z_1d:+.1f}σ 1D", _st(r.z_1d, d, confirm=pc, partial=pc / 3))
         row("RELATIVE", "RELATIVE STRENGTH", "–" if r.rel_1w is None else f"{r.rel_1w:+.1f}σ vs S&P 1W", _st(r.rel_1w, d, confirm=rc, partial=rc / 3))
         if r.breadth is None:
             row("BREADTH", "BREADTH", "–", "DATA MISSING")
+        elif single:
+            row("BREADTH", "BREADTH", f"단일 지수 · 20일선 {'위' if r.breadth >= 50 else '아래'}", "DATA MISSING", "기준 지수가 하나 — 종목 확산 여부는 이 지표로 알 수 없다")
         else:
             b = r.breadth if lead else 100 - r.breadth
             row("BREADTH", "BREADTH", f"{r.breadth:.0f}% 20일선 위", "CONFIRMED" if b >= bc else "PARTIAL" if b >= bp else "CONTRADICTED" if b < 100 - bc else "UNCONFIRMED")
@@ -152,7 +156,7 @@ def build_leadership_intel(
                 why.append(f"{lk.get('text') or name_of(str(lk['id']))} ({name_of(str(lk['id']))} {z:+.1f}σ) — 현재 확인됨")
         if r.rel_1w is not None and abs(r.rel_1w) >= rc / 3:
             why.append(f"S&P 500 대비 1주 상대수익 {r.rel_1w:+.1f}σ — {'시장 ' + regime_short + ' 에도 상대강도 유지' if lead and regime_short == 'Risk-Off' else ('시장보다 강하다' if lead else '시장보다 약하다')}")
-        if r.breadth is not None:
+        if r.breadth is not None and not single:
             if lead and r.breadth >= bc:
                 why.append(f"breadth {r.breadth:.0f}% — 소수 종목 중심 상승이 아니라 종목 전반으로 확산")
             elif lead and r.breadth < bp:
@@ -167,13 +171,13 @@ def build_leadership_intel(
         # ── QUALITY ──
         cs = {c.key: c.status for c in conf}
         if lead:
-            if r.breadth is not None and r.breadth < bp and cs.get("RELATIVE") == "CONFIRMED":
+            if r.breadth is not None and not single and r.breadth < bp and cs.get("RELATIVE") == "CONFIRMED":
                 q = "NARROW"
             elif cs.get("FUNDAMENTAL") == "CONFIRMED" and cs.get("RELATIVE") in ("CONFIRMED", "PARTIAL"):
                 q = "FUNDAMENTAL-LED"
             elif macro_link and cs.get("MACRO") == "CONFIRMED" and cs.get("RELATIVE") in ("CONFIRMED", "PARTIAL"):
                 q = "MACRO-DRIVEN"
-            elif r.breadth is not None and r.breadth >= bc and cs.get("RELATIVE") in ("CONFIRMED", "PARTIAL"):
+            elif r.breadth is not None and not single and r.breadth >= bc and cs.get("RELATIVE") in ("CONFIRMED", "PARTIAL"):
                 q = "BROADENING"
             elif cs.get("NEWS") == "CONFIRMED" and cs.get("PRICE") in ("UNCONFIRMED", "PARTIAL"):
                 q = "NEWS-DRIVEN"
@@ -182,11 +186,12 @@ def build_leadership_intel(
             else:
                 q = "FRAGILE"
         else:
-            q = "MACRO-DRIVEN" if (macro_link and cs.get("MACRO") == "CONFIRMED") else "BROADENING" if (r.breadth is not None and r.breadth <= 100 - bc) else "FRAGILE"
-        qd = " · ".join(x for x in [f"Breadth {r.breadth:.0f}%" if r.breadth is not None else "", f"Relative {r.rel_1w:+.1f}σ" if r.rel_1w is not None else ""] if x)
+            q = "MACRO-DRIVEN" if (macro_link and cs.get("MACRO") == "CONFIRMED") else "BROADENING" if (r.breadth is not None and not single and r.breadth <= 100 - bc) else "FRAGILE"
+        qd = " · ".join(x for x in [("Breadth 단일 지수" if single else f"Breadth {r.breadth:.0f}%") if r.breadth is not None else "", f"Relative {r.rel_1w:+.1f}σ" if r.rel_1w is not None else ""] if x)
         # ── SYSTEM VIEW ──
         rel_text = f"S&P 대비 1주 {r.rel_1w:+.1f}σ 의 상대강도" if r.rel_1w is not None else "상대강도"
-        breadth_text = (f"breadth {r.breadth:.0f}% 로 종목 전반이 참여한다" if r.breadth is not None and r.breadth >= bc else f"breadth {r.breadth:.0f}% 로 참여는 일부다" if r.breadth is not None else "breadth 는 없다")
+        breadth_text = ("기준 지수가 하나라 종목 확산 여부는 알 수 없다" if single and r.breadth is not None else
+                        f"breadth {r.breadth:.0f}% 로 종목 전반이 참여한다" if r.breadth is not None and r.breadth >= bc else f"breadth {r.breadth:.0f}% 로 참여는 일부다" if r.breadth is not None else "breadth 는 없다")
         seg_text = ""
         if segments:
             strong = [getattr(s, "label", k) for k, s in segments.items() if (getattr(s, "rel_z_5d", None) or 0) >= 0.8]
@@ -230,9 +235,11 @@ def leadership_read(leaders: Sequence[LeaderRow], laggards: Sequence[LeaderRow],
     s += (f"{lead_txt} 는 상대강도를 유지." if leaders else "상대강도를 유지하는 리더가 없다.")
     if laggards:
         s += f" {lag_txt} 는{lag_reason} leadership 에서 이탈."
-    broad = [r for r in leaders if r.breadth is not None and r.breadth >= 70]
-    if leaders and len(broad) == len(leaders):
+    # breadth 는 가격 계열이 둘 이상인 리더만 — 단일 지수(섹터 ETF 등)의 0 / 100 은 확산을 말하지 않는다
+    multi = [r for r in leaders if r.breadth is not None and r.available > 1]
+    broad = [r for r in multi if r.breadth >= 70]
+    if multi and len(broad) == len(multi):
         s += " 지수는 약해도 내부적으로 선별적 Risk-On 이 breadth 를 갖고 유지되고 있음." if regime_short == "Risk-Off" else " 리더의 breadth 가 넓다."
-    elif leaders:
+    elif multi:
         s += " 다만 리더 일부는 breadth 가 좁아 소수 종목 중심이다."
     return s

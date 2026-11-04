@@ -122,7 +122,9 @@ export function radarHeadline(r: CkRadarStock, c: Cockpit): RadarHeadline {
 
   const grp = lead ? (LEADER_KO[lead.label] ?? lead.label) : "";
   const leadWhy = lead ? driverPhrase(lead.detail?.driver) : null;
-  const leadSub = breadth !== null && breadth >= 70 ? `${grp} 전반 상승 · breadth ${breadth.toFixed(0)}%` : rel !== null ? `시장 대비 ${fmt(rel)}%p (1주)` : spikeSub;
+  // breadth 는 가격 계열이 둘 이상일 때만 확산으로 읽는다 — 단일 지수(섹터 ETF 등)의 0 / 100 은 그 지수 하나의 20일선 위·아래
+  const leadSub = lead && lead.available > 1 && breadth !== null && breadth >= 70 ? `${grp} 전반 상승 · breadth ${breadth.toFixed(0)}%`
+    : lead && lead.rel_1w !== null ? `${grp} 지수 시장 대비 ${fmt(lead.rel_1w)}σ (1주)` : rel !== null ? `시장 대비 ${fmt(rel)}%p (1주)` : spikeSub;
   // 1) 연결된 Leadership 의 실제 동인(유가 · 지정학 …)이 있고 같은 방향이면 그것이 이유다
   if (lead && leadUp && dir >= 0 && leadWhy) {
     const title = leadWhy === "유가 하락" ? `유가 하락 수혜 + ${grp} 동반 강세` : `${leadWhy} 속 ${grp} 동반 강세`;
@@ -178,14 +180,15 @@ export function radarHeadline(r: CkRadarStock, c: Cockpit): RadarHeadline {
 /** Leadership 행 아래 한 줄 — 무엇 때문에 강(약)한가 */
 export function leaderTitle(r: CkLeaderRow): string {
   const grp = LEADER_KO[r.label] ?? r.label;
+  const single = r.available <= 1;   // 가격 계열 하나 — breadth 로 종목 확산을 말하지 않는다
   const up = UP.has(r.arrow) || ((r.z_1d ?? 0) > 0 && !DOWN.has(r.arrow));
   const why = driverPhrase(r.detail?.driver);
   if (up) {
     if (why === "유가 하락") return "유가 하락 수혜로 상대강도 확대";
-    if (why === "지정학 긴장") return r.label === "Geopolitical Risk" ? "지정학 긴장 수혜주 동반 강세" : `지정학 리스크 확대로 ${grp} 강세`;
-    if (r.label === "Geopolitical Risk") return "지정학 긴장 수혜주 동반 강세";
+    if (r.label === "Geopolitical Risk") return single ? "지정학 긴장 속 상대강도 확대" : "지정학 긴장 수혜주 동반 강세";
+    if (why === "지정학 긴장") return `지정학 리스크 확대로 ${grp} 강세`;
     if (why) return `${why} 수혜로 ${grp} 강세`;
-    return r.detail?.quality === "BROADENING" || (r.breadth ?? 0) >= 70 ? `${grp} 시장 대비 강세 · 종목 전반 확산` : `${grp} 시장 대비 강세`;
+    return !single && (r.detail?.quality === "BROADENING" || (r.breadth ?? 0) >= 70) ? `${grp} 시장 대비 강세 · 종목 전반 확산` : `${grp} 시장 대비 강세`;
   }
   if (why === "유가 하락") return `유가 하락으로 ${grp} 약세`;
   if (why) return `${why} 부담 속 ${grp} 약세`;
