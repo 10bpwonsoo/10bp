@@ -67,8 +67,11 @@ describe("금리 탭 아래 세 패널", () => {
     expect(it0.textContent).toContain("CPI / PCE 실제 물가 데이터 미연결");
   });
 
-  it("TREASURY CURVE: 모양(bp)과 이례성(σ)을 칸으로 나누고, 오늘·5D 전 곡선을 그린다", () => {
+  it("TREASURY CURVE: 모양(bp)과 이례성(σ)을 한 칸에 쓰고(쪼개지 않음), 오늘·5D 전 곡선을 그린다", () => {
     render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
+    const curve = screen.getByTestId("curve");
+    expect(curve.querySelectorAll(".rp-fact").length).toBe(1);
+    expect(screen.getByTestId("curve-shape").contains(screen.getByTestId("curve-intensity"))).toBe(true);
     expect(screen.getByTestId("curve-shape").textContent).toContain("MILD BULL STEEPENING");
     expect(screen.getByTestId("curve-shape").textContent).toContain("5D bp");
     expect(screen.getByTestId("curve-intensity").textContent).toContain("5D σ");
@@ -96,5 +99,15 @@ describe("금리 탭 아래 세 패널", () => {
     expect(screen.getAllByTestId("breakdown-tenor").length).toBe(2);
     fireEvent.click(screen.getByTestId("breakdown-all"));
     expect(screen.getAllByTestId("breakdown-tenor").length).toBe(3);
+  });
+});
+
+describe("금리 아래 네 카드 배치(2026-11-04)", () => {
+  it("CURVE 와 BREAKDOWN 은 한 칼럼(rp-col)으로 묶이고 INFLATION MAP 은 그 옆 칼럼", () => {
+    render(<RatesRegimeView regime={regime} snapshot={snapshot} check={check} />);
+    const col = document.querySelector(".rp-flow > .rp-col")!;
+    expect(col).not.toBeNull();
+    expect([...col.children].map((e) => e.getAttribute("data-testid"))).toEqual(["curve", "decomposition"]);
+    expect(document.querySelector(".rp-flow > .g-imap")).not.toBeNull();
   });
 });

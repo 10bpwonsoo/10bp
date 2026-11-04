@@ -601,3 +601,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - `marketpulse/scripts/policy_events_update.py`: `draft`(직전 파일을 오늘 KST 파일로 이어 쓰기 · 지난 일정 정리 · 조사 목록 출력) · `due` · `validate`(형식 · look-ahead · 금리 산술 · 출처 · 직전 파일 대비 누락 + FRED 발표일 vintage 대조: CPI/PCE/고용 actual, 연준 목표 상단 · ECB 예치금리). 값은 만들지 않는다.
 - 절차 `docs/policy-events-daily-update.md`. 평일 06:40 KST 예약 작업(매번 새 세션)이 draft → 웹검색으로 둘 이상 출처 확인한 값만 채움 → validate · 테스트 → 이벤트 파일만 커밋 · push. 저장본 · 캡처는 건드리지 않는다.
 - 기존 파일 5개 모두 validate 통과(FRED 대조 포함). 틀린 숫자(PCE 3.9 · NFP 55 · 연준 3.50–3.75%)를 넣으면 FAIL 로 막히는 것 확인. 테스트 `tests/test_policy_events_update.py`.
+
+### 2026-11-04 — 금리 탭 아래 네 카드 길이 맞춤 · TREASURY CURVE 한 칸
+- 원인: 데스크톱(≥1024)에서 EVENTS · INFLATION MAP · CURVE · BREAKDOWN 을 줄 번호로 두 칼럼에 흘려, 칼럼마다 높이가 달라 한쪽에 큰 빈칸이 생겼다(1180 에서 INFLATION MAP 아래 470px).
+- 수정(화면만): [POLICY & MACRO EVENTS 12] / [INFLATION MAP 6][CURVE 6 → BREAKDOWN 6] — 오른쪽 둘을 한 칼럼(`rp-col`)으로 묶고 두 칼럼 끝을 맞춘다(짧은 쪽 마지막 카드가 늘어난다). 1024 · 1180 · 1280 · 1366 · 1600 모두 두 칼럼 끝이 같은 y, 카드 겹침 0, 가로 스크롤 없음. 1024 미만은 `rp-col` 이 display: contents 라 예전 순서 그대로. 옛 저장본(흐름 없는 화면)은 예전 줄 번호 규칙.
+- Central Banks 4곳은 3 + 1 대신 2 × 2.
+- TREASURY CURVE 판정: CURVE MOVE · MOVE INTENSITY 두 상자를 한 칸으로(모양 → 방향 · 가장 크게 움직인 만기 σ · 이례성). 값 · 계산 그대로. 다른 탭 변경 없음.

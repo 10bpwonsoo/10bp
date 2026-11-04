@@ -171,17 +171,11 @@ export function TreasuryCurvePanel({ cv }: { cv: CurveMoveView }) {
     <section className="panel rp-panel g-curve" data-testid="curve">
       <header className="panel-head"><h2 className="panel-title">Treasury Curve</h2><div className="panel-note">금리곡선의 어느 만기가 움직이고 있는가</div></header>
       <div className="panel-body rp-body">
-        <div className="rp-verdict">
-          <div className="rp-fact" data-testid="curve-shape" data-shape={cv.shape_key}>
-            <span className="rr-k mono">CURVE MOVE · {cv.window_label} bp</span>
-            <b className="mono">{cv.shape}</b>
-            <span className="rp-sub mono">{cv.level_dir}</span>
-          </div>
-          <div className="rp-fact" data-testid="curve-intensity">
-            <span className="rr-k mono">MOVE INTENSITY · {cv.window_label} σ</span>
-            <b className="mono">{cv.most_unusual ?? "–"} <span className="num">{cv.most_unusual_z === null ? "" : `${sg(cv.most_unusual_z, 1)}σ`}</span></b>
-            <span className="rp-sub mono">{cv.intensity}</span>
-          </div>
+        {/* 곡선 판정 한 칸(2026-11-04) — 모양과 가장 크게 움직인 만기를 두 칸으로 쪼개지 않고 한 문단으로 */}
+        <div className="rp-fact rp-cv-one" data-testid="curve-shape" data-shape={cv.shape_key}>
+          <span className="rr-k mono">CURVE MOVE · {cv.window_label} bp</span>
+          <b className="mono">{cv.shape}</b>
+          <span className="rp-sub mono">{cv.level_dir}<span className="rp-cv-sep" aria-hidden="true"> · </span><span data-testid="curve-intensity">MOVE INTENSITY · {cv.window_label} σ <b className="num">{cv.most_unusual ?? "–"}{cv.most_unusual_z === null ? "" : ` ${sg(cv.most_unusual_z, 1)}σ`}</b> · {cv.intensity}</span></span>
         </div>
         <div className="rp-spreads mono" data-testid="curve-spreads">
           {cv.spreads.map((s) => (
@@ -254,8 +248,11 @@ export function RatesLowerFlow({ map, cv, yb }: { map: InflationPressureMap; cv:
   return (
     <div className="rp-flow span-3" data-testid="rates-lower-flow">
       <InflationPressureMapPanel map={map} />
-      <TreasuryCurvePanel cv={cv} />
-      <YieldMoveBreakdownPanel yb={yb} />
+      {/* 데스크톱(≥1024): [INFLATION MAP][CURVE → BREAKDOWN] 두 칼럼 — 끝을 맞춘다. 그 아래 폭에선 rp-col 이 사라져(display: contents) 예전 순서 그대로 */}
+      <div className="rp-col">
+        <TreasuryCurvePanel cv={cv} />
+        <YieldMoveBreakdownPanel yb={yb} />
+      </div>
     </div>
   );
 }
