@@ -3527,6 +3527,92 @@
     "suspect": false
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-03",
+   "tab_id": "oil_regime",
+   "state": "supply",
+   "state_label": "Supply — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -65.0,
+   "confidence": 65.0,
+   "component_scores": {
+    "driver:macro_liquidity": -23.5,
+    "driver:demand": 37.5,
+    "driver:supply": -65.0,
+    "driver:geopolitical": 37.6,
+    "brent_z": -4.0,
+    "wti_z": -3.2937121691059597,
+    "oil_z": -3.64685608455298
+   },
+   "key_drivers": [
+    "Supply -65 CONFIRMED",
+    "Geopolitical Premium +38 CONTRADICTED",
+    "Demand +38 CONTRADICTED"
+   ],
+   "data_coverage": 0.9715,
+   "data_asof": "2026-11-03T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-04T04:06:35.233567Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_76e6ad14",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "지금 유가는 공급 (물리적 타이트) 쪽 증거가 가장 크다(-65, STRONG) — 지정학 프리미엄 +38 보다 27 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-3.6σ)가 같다.",
+   "payload": {
+    "regime_label": "Supply — CONFIRMED",
+    "dominant": "supply",
+    "runner_up": "geopolitical",
+    "margin": 27.4,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -23.5,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 37.5,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -65.0,
+      "status": "CONFIRMED",
+      "coverage": 0.886
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 37.6,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "contradicts",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "neutral",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "contradicts",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "정제품·에너지 주식·공급 뉴스가 함께 오르는 물리적 공급 충격 — 재고·수출 재개 뉴스가 풀리기 전까지 유지된다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
   }
  ]
 }

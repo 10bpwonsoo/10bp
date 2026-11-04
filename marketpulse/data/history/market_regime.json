@@ -3612,6 +3612,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-03",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": -1.0976390615746179,
+   "confidence": 34.00673400673401,
+   "component_scores": {
+    "RiskAppetite": 20.939533352389297,
+    "Volatility": -6.387500239876709,
+    "Growth": -30.11742243569282,
+    "Credit": 18.114953610477684,
+    "KoreaFlow": null,
+    "news": -9.28197933872351,
+    "factor:Growth": -0.622,
+    "factor:Inflation": -2.526,
+    "factor:Rates": -0.202,
+    "factor:USD": -0.881,
+    "factor:Liquidity": 0.292,
+    "factor:RiskAppetite": 0.425,
+    "factor:Credit": -0.366,
+    "factor:Volatility": 0.128,
+    "factor:China": 0.539
+   },
+   "key_drivers": [
+    "브렌트 원유 -4.0σ",
+    "WTI 원유 -3.3σ",
+    "US 5Y Breakeven -2.9σ"
+   ],
+   "data_coverage": 0.7592592592592593,
+   "data_asof": "2026-11-03T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-04T04:06:35.350632Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 34% · 온도 -1",
+   "payload": {
+    "date": "2026-11-03",
+    "as_of": "2026-11-03T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 34.00673400673401,
+    "price_temperature": 4.358587789857976,
+    "news_temperature": -9.28197933872351,
+    "composite": -1.0976390615746179,
+    "news_events": 22,
+    "thermo_confidence": 93.63594328714186,
+    "components": {
+     "RiskAppetite": 20.939533352389297,
+     "Volatility": -6.387500239876709,
+     "Growth": -30.11742243569282,
+     "Credit": 18.114953610477684,
+     "KoreaFlow": null,
+     "news": -9.28197933872351
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7592592592592593,
+    "factors": {
+     "Growth": -0.622,
+     "Inflation": -2.526,
+     "Rates": -0.202,
+     "USD": -0.881,
+     "Liquidity": 0.292,
+     "RiskAppetite": 0.425,
+     "Credit": -0.366,
+     "Volatility": 0.128,
+     "China": 0.539
+    },
+    "hypotheses": {},
+    "drivers": [
+     "브렌트 원유 -4.0σ",
+     "WTI 원유 -3.3σ",
+     "US 5Y Breakeven -2.9σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }
