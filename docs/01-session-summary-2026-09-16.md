@@ -590,3 +590,8 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 화면(MARKET NOW): REGIME CONFIDENCE · DATA COVERAGE · PRIMARY SIGNAL · (공식과 다르면) PENDING CANDIDATE · TRANSITION n/2 · EQUITY CONFIRMATION US/KOREA/GLOBAL · WHY, 펼침에 신호별 방향 · EXCLUDED · 후보 · persistence. 화면에 NO REGIME 을 쓰지 않는다(NEUTRAL / MIXED, 예전 저장본 문구도 보일 때만 바꾼다).
 - 테스트 `tests/test_regime_select.py`(요청서 case A–J + 자격 없는 선택 · 금지어 차단 · LLM → 세션 → 정량 흐름), `frontend/src/__tests__/regimeSelection.test.tsx`.
 - 11/04 다시 판단(LIVE 화면 · 캡처만, 11/04 저장본 · history 는 그대로): 자격 있는 후보 없음(가장 가까운 Growth −0.62 / 기준 −1.0, Risk Appetite +0.43 / +0.8) → NEUTRAL / MIXED · confidence 58 · coverage 76% · US PARTIAL · KOREA CONTRADICTED · GLOBAL PARTIAL. 공식은 Liquidity Stress 유지(전환 후보 1/2). API 401 → 같은 컨텍스트 · 검증의 세션 생성본.
+
+### 2026-11-04 — 금리 탭 POLICY & MACRO EVENTS: 10/15 이후 결정이 빠져 있던 문제
+- 원인: 이벤트는 수기 확인 파일(`data/policy_events/YYYY-MM-DD.json`)에서만 오고, 스냅샷은 그 날짜 이하의 가장 최근 파일을 읽는다. 10/15 뒤로 파일을 만들지 않아 10/16~11/04 스냅샷이 모두 10/15 파일(FED 9/16 인상 · NEXT 10/28 …)을 보여줬다.
+- 수정: `2026-11-04.json` 추가 — 10/22 BOK 3.00% 만장일치 동결 · 10/28 FOMC 3.75–4.00% 동결(10–2, Cook · Hammack 인상 주장) · 10/29 ECB 예치 2.50% 동결 · 10/30 BOJ 1.25% 동결(8–1, Takata 1.5% 제안) · 9월 PCE(헤드라인 3.6% vs Dow Jones 3.7% → COOL, 근원 3.1% 예상 수준). 다음 회의 FED 12/8–9 · ECB 12/17 · BOJ 12/17–18 · BOK 11/26, 일정 11/06 고용 · 11/10 CPI · 11/13 PPI · 11/17 소매판매 · 11/25 PCE. 확인하지 못한 값(ECB 표결 · 8월 PCE 전월 수정치 · 연준 12월 경로 가격)은 비움. 톤은 네 곳 모두 neutral(동결 · 데이터 의존) — 인상 쪽 반대표는 guidance_basis 에 적었다.
+- 적용: 11/05 스냅샷부터 자동. 11/04 저장본은 잠금 그대로(승인 시 archive correct 경로로만).
