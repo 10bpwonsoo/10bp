@@ -15,6 +15,7 @@ from pydantic import Field
 
 from .common import Base
 from .daily_history import MergedRow
+from .regime_select import RegimeSelection  # noqa: F401  (MarketNow.selection)
 
 Arrow = Literal["↑↑", "↑", "→", "↓", "↓↓", "?"]
 PathStatus = Literal["CONFIRMED", "PARTIAL", "UNCONFIRMED", "CONTRADICTED", "DATA MISSING"]
@@ -34,6 +35,8 @@ class SparkPoint(Base):
 
 
 class MarketNow(Base):
+    #: MARKET REGIME v2 (2026-11-04) — 오늘 선택(후보 · 미국/한국/Global 주식 확인 · confidence · coverage · WHY). None 이면 v2 이전 저장본
+    selection: "RegimeSelection | None" = None
     label: str
     secondary: str | None = None
     label_text: str

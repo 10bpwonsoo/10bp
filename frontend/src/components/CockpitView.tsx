@@ -42,8 +42,73 @@ const TR_LABEL: Record<string, string> = { CONFIRMED: "CONFIRMED", UNCONFIRMED_T
 const TR_COLOR: Record<string, string> = { CONFIRMED: "var(--ok)", UNCONFIRMED_TRANSITION: "var(--warn)", TRANSITION_WATCH: "var(--warn)", CHANGED: "var(--accent)", NO_HISTORY: "var(--faint)" };
 const TREND_KO: Record<string, string> = { WEAKENING: "약화", STRENGTHENING: "강화", STABLE: "유지" };
 
+/** 화면에는 NO REGIME 을 쓰지 않는다(2026-11-04) — 예전 저장본 문구도 보일 때만 NEUTRAL / MIXED 로 */
+export const nm = (s: string | null | undefined): string => (s ?? "").replace(/NO REGIME/g, "NEUTRAL / MIXED");
+const RS_COLOR: Record<string, string> = { STRONG: "var(--ok)", CONFIRMED: "var(--ok)", PARTIAL: "var(--warn)", MIXED: "var(--warn)", CONTRADICTED: "var(--crit)", UNAVAILABLE: "var(--faint)" };
+const RS_DISPLAY: Record<string, string> = { RISK_ON: "RISK-ON", RISK_OFF: "RISK-OFF", LIQUIDITY_STRESS: "LIQUIDITY STRESS", INFLATION_SHOCK: "INFLATION SHOCK", GROWTH_SHOCK: "GROWTH SHOCK", GEOPOLITICAL_RISK: "GEOPOLITICAL RISK", POLICY_DRIVEN: "POLICY DRIVEN", NEUTRAL: "NEUTRAL / MIXED" };
+const RS_SRC: Record<string, string> = { llm: "AI 선택", session: "AI 선택 · 세션", quant: "정량 선택(LLM 없음)" };
+
+function sigArrow(sc: number | null, exp: number): string {
+  if (sc === null) return "–";
+  const dir = sc * exp; // 실제 방향(+ 상승 / − 하락)
+  return Math.abs(dir) >= 0.6 ? (dir > 0 ? "↑↑" : "↓↓") : Math.abs(dir) >= 0.15 ? (dir > 0 ? "↑" : "↓") : "→";
+}
+
+/** MARKET REGIME v2 블록 — 선택 · confidence · coverage · 주식 확인 · WHY. 상세(신호 · 후보)는 펼침에 */
+function RegimeSelectionBlock({ n }: { n: Cockpit["market_now"] }) {
+  const s = n.selection!;
+  const pending = s.selected_regime !== n.label;
+  const eq = s.selected_regime === "NEUTRAL" ? s.neutral_equity : s.candidates.find((c) => c.label === s.selected_regime)?.equity ?? null;
+  const st = (k: string, v: string) => <span className="ck-rs-eq" data-testid={`ck-rs-${k}`}><span className="ck-k">{k}</span> <b style={{ color: RS_COLOR[v] ?? "var(--ink)" }}>{v}</b></span>;
+  return (
+    <div className="ck-rs" data-testid="ck-rs">
+      <div className="ck-rs-top mono">
+        <span><span className="ck-k">REGIME CONFIDENCE</span> <b className="num" data-testid="ck-rs-conf">{s.regime_confidence}</b></span>
+        <span><span className="ck-k">DATA COVERAGE</span> <b className="num" data-testid="ck-rs-cov">{s.data_coverage}%</b></span>
+        {s.primary_signal ? <span><span className="ck-k">PRIMARY SIGNAL</span> <b>{s.primary_signal}</b></span> : null}
+        <span className="ck-rs-src">{RS_SRC[s.source] ?? s.source}</span>
+      </div>
+      {pending ? (
+        <div className="ck-rs-pending mono" data-testid="ck-rs-pending"><span className="ck-k">PENDING CANDIDATE</span> <b style={{ color: LABEL_COLOR[s.selected_regime] ?? "var(--ink)" }}>{RS_DISPLAY[s.selected_regime] ?? s.selected_regime}</b>
+          <span className="ck-k">TRANSITION</span> <b>{Math.min(n.raw_persistence_days, n.required_days)} / {n.required_days} DAYS</b></div>
+      ) : null}
+      <div className="ck-rs-eqrow mono" data-testid="ck-rs-equity"><span className="ck-k">EQUITY CONFIRMATION</span>{st("US", s.us_equity_confirmation)}{st("KOREA", s.korea_equity_confirmation)}{st("GLOBAL", s.global_equity_confirmation)}</div>
+      {s.commentary ? <p className="ck-interp ck-rs-why" data-testid="ck-rs-why"><span className="ck-k mono">WHY</span> {s.commentary}</p> : null}
+      <details className="ck-rs-more">
+        <summary className="mono">Equity read · 후보 {s.candidates.length}개{s.excluded.length ? ` · 제외 ${s.excluded.length}` : ""}</summary>
+        {s.selected_regime === "NEUTRAL" && eq ? <div className="ck-rs-alt">후보가 없어 Risk-On 기준(위험선호 쪽이면 ↑)으로 본 주식 방향 — 참고</div> : null}
+        {eq ? (
+          <div className="ck-rs-read" data-testid="ck-rs-read">
+            {(["us", "kr"] as const).map((m) => (
+              <div key={m} className="ck-rs-mkt">
+                <div className="ck-k mono">{m === "us" ? "US" : "KOREA"} · {eq[m].status} · {eq[m].available}/{eq[m].total} AVAILABLE</div>
+                {eq[m].signals.map((g) => (
+                  <div key={g.key} className={`ck-rs-sig${g.state === "EXCLUDED" ? " ex" : ""}`} title={g.note}>
+                    <span>{g.label}</span>
+                    <b className="num">{g.state === "EXCLUDED" ? "UNAVAILABLE · EXCLUDED" : sigArrow(g.score, g.expected)}</b>
+                    {g.state === "PARTIAL" ? <small className="mono">PARTIAL</small> : null}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className="ck-rs-cands mono" data-testid="ck-rs-candidates">
+          {s.candidates.length ? s.candidates.map((c) => (
+            <div key={c.label} className="ck-rs-cand"><b style={{ color: LABEL_COLOR[c.label] ?? "var(--ink)" }}>{c.display}</b> <span>{c.trigger_expr} · 지금 {c.trigger_value === null ? "–" : sg(c.trigger_value)}</span> <span>정량 {c.quant_confidence.toFixed(0)}</span> <span>US {c.equity.us.status} · KR {c.equity.kr.status}</span></div>
+          )) : <div className="ck-rs-cand">자격 있는 후보 없음 — 어느 regime 도 주요 Trigger 를 넘지 않았다</div>}
+          {s.alternative_candidates.map((a) => <div key={a.regime} className="ck-rs-alt">대안 {RS_DISPLAY[a.regime] ?? a.regime}: {a.reason}</div>)}
+          {s.persistence_assessment ? <div className="ck-rs-alt">PERSISTENCE · {s.persistence_assessment}</div> : null}
+          {s.excluded.length ? <div className="ck-rs-alt">EXCLUDED(데이터 없음 — 판정에서 뺌, coverage 에만): {s.excluded.join(" · ")}</div> : null}
+        </div>
+      </details>
+    </div>
+  );
+}
+
 function MarketNow({ c }: { c: Cockpit }) {
-  const n = c.market_now; const col = LABEL_COLOR[n.label] ?? "var(--ink)";
+  const n0 = c.market_now; const col = LABEL_COLOR[n0.label] ?? "var(--ink)";
+  const n = { ...n0, label_text: nm(n0.label_text), raw_text: nm(n0.raw_text), change_text: nm(n0.change_text), potential_change_text: nm(n0.potential_change_text), read: nm(n0.read), transition_status_ko: nm(n0.transition_status_ko) };
   const last = new Date(n.last_update).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" });
   const rawDiffers = n.raw_label !== n.label;
   return (
@@ -55,6 +120,7 @@ function MarketNow({ c }: { c: Cockpit }) {
         <span title="공식 regime 이 이어진 거래일 수">Regime Duration <b data-testid="ck-now-duration">{n.persistence_days}D</b></span>
         {n.change_text ? <span>Change <b data-testid="ck-now-change">{n.change_text}</b></span> : n.potential_change_text ? <span title="raw 신호가 가리키는 방향 — 확정 전">{n.transition_status === "TRANSITION_WATCH" ? "Transition watch" : "Potential change"} <b data-testid="ck-now-potential">{n.potential_change_text}</b></span> : null}
       </div>
+      {n.selection ? <RegimeSelectionBlock n={n} /> : null}
       <div className="ck-now-raw mono" data-testid="ck-now-raw" data-status={n.transition_status}>
         <span className="ck-k">RAW SIGNAL</span>
         <b style={{ color: rawDiffers ? LABEL_COLOR[n.raw_label] ?? "var(--ink)" : "var(--muted)" }}>{n.raw_text}{n.raw_secondary ? ` / ${LABEL_KO[n.raw_secondary] ?? n.raw_secondary}` : ""}</b>

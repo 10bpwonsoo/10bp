@@ -405,9 +405,9 @@ describe("CANONICAL CURRENT REGIME — HISTORY 의 CURRENT 와 MARKET NOW 는 �
       change_text: "", potential_change_text: "RISK-ON → NO REGIME", persistence_days: 2, read: "RISK-ON은 유지되고 있지만 raw signal 이 NO REGIME 쪽으로 1거래일째 이어지고 있습니다." };
     render(<CockpitView cockpit={{ ...cockpit, history: h, market_now: n }} snapshot={snapshot} history={history} />);
     expect(screen.getByTestId("ck-now-label").textContent).toBe("RISK-ON"); expect(screen.getByTestId("ck-h-current").textContent).toBe("Risk-On");
-    expect(screen.queryByTestId("ck-now-change")).toBeNull(); expect(screen.getByTestId("ck-now-potential").textContent).toBe("RISK-ON → NO REGIME");
+    expect(screen.queryByTestId("ck-now-change")).toBeNull(); expect(screen.getByTestId("ck-now-potential").textContent).toBe("RISK-ON → NEUTRAL / MIXED");
     expect(screen.getByTestId("ck-now").textContent).toContain("Transition watch"); expect(screen.getByTestId("ck-now-status").textContent).toBe("TRANSITION WATCH");
-    expect(screen.getByTestId("ck-now-raw").textContent).toContain("NO REGIME"); expect(screen.getByTestId("ck-h-raw").textContent).toContain("Neutral / Mixed");
-    expect(screen.getByTestId("ck-now").textContent).not.toMatch(/RISK-ON → NO REGIME\s*$/m);
+    expect(screen.getByTestId("ck-now-raw").textContent).toContain("NEUTRAL / MIXED"); expect(screen.getByTestId("ck-h-raw").textContent).toContain("Neutral / Mixed");
+    expect(screen.getByTestId("ck-now").textContent).not.toMatch(/RISK-ON → NEUTRAL \/ MIXED\s*$/m);
   });
 });

@@ -69,7 +69,7 @@ def build_one(svc: DailyArchiveService, day: date, *, inputs: Path, cutoff: date
         fetch_macro_vintage(out / "macro_raw.json", cutoff)
     tags = json.loads((out / "manual_tags.json").read_text(encoding="utf-8"))["tags"] if (out / "manual_tags.json").exists() else {}
     extra = json.loads((out / "extra_news.json").read_text(encoding="utf-8")) if (out / "extra_news.json").exists() else []
-    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read", "semiconductor_read") if (out / f"{k}_session.json").exists()}
+    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read", "semiconductor_read", "regime_select") if (out / f"{k}_session.json").exists()}
     prev = _previous_archive(svc, day)
     since = _ts(((prev or {}).get("meta") or {}).get("source_asof")) if prev else None
     hist_dir = get_settings().history_dir
@@ -82,7 +82,8 @@ def build_one(svc: DailyArchiveService, day: date, *, inputs: Path, cutoff: date
         res = reconstruct(day, inputs=inputs, out=out, cutoff=cutoff, tags=tags, extra_news=extra,
                           previous_investment=(prev or {}).get("investment"), news_since=since,
                           origin="latest_update" if latest else "historical_backfill", session_reads=reads,
-                          manager=DailySnapshotManager(JsonDirStore(hist_dir)))
+                          manager=DailySnapshotManager(JsonDirStore(hist_dir)),
+                          previous_official=(((prev or {}).get("cockpit") or {}).get("history") or {}).get("current_label"))
     finally:
         if tmp:
             shutil.rmtree(tmp, ignore_errors=True)

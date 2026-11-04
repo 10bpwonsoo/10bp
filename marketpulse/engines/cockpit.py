@@ -35,7 +35,7 @@ from ..models.snapshot import IntelligenceSnapshot
 
 KST = timezone(timedelta(hours=9))
 LABEL_TEXT = {"RISK_ON": "RISK-ON", "RISK_OFF": "RISK-OFF", "GROWTH_SHOCK": "GROWTH SHOCK", "INFLATION_SHOCK": "INFLATION SHOCK", "LIQUIDITY_STRESS": "LIQUIDITY STRESS",
-              "POLICY_DRIVEN": "POLICY DRIVEN", "GEOPOLITICAL_RISK": "GEOPOLITICAL RISK", "NEUTRAL": "NO REGIME"}
+              "POLICY_DRIVEN": "POLICY DRIVEN", "GEOPOLITICAL_RISK": "GEOPOLITICAL RISK", "NEUTRAL": "NEUTRAL / MIXED"}
 LABEL_KO = {"RISK_ON": "위험선호", "RISK_OFF": "위험회피", "GROWTH_SHOCK": "성장 충격", "INFLATION_SHOCK": "물가 충격", "LIQUIDITY_STRESS": "유동성 경색",
             "POLICY_DRIVEN": "정책 주도", "GEOPOLITICAL_RISK": "지정학 위험", "NEUTRAL": "판정 없음"}
 
@@ -218,7 +218,8 @@ def build_cockpit(
                     key_variables=keyvars, sentence=sentence,
                     interpretation=ms.narrative or "", raw_label=raw_label, raw_text=LABEL_TEXT.get(raw_label, raw_label), raw_secondary=ms.secondary_label.value if ms.secondary_label else None,
                     **hf, last_update=snapshot.as_of, coverage=f"{dh.available_instruments}/{dh.expected_instruments}",
-                    latency=f"최대 {dh.max_freshness_trading_days}거래일 지연" if dh.max_freshness_trading_days else "")
+                    latency=f"최대 {dh.max_freshness_trading_days}거래일 지연" if dh.max_freshness_trading_days else "",
+                    selection=ms.selection)
 
     # ── 1c. MARKET TONE SNAPSHOT (2026-10-07) — 온도계를 그대로, regime 과 대조 ──
     from .market_tone import build_market_tone

@@ -187,9 +187,45 @@ class _AnalystDir:
         shutil.rmtree(self.tmp, ignore_errors=True)
 
 
+def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read, previous_official, config_dir=None):
+    """REGIME v2 선택을 live.market_state 에 반영한다. 어떤 실패도 화면을 막지 않는다 — 실패하면 v1 판정 그대로."""
+    from ..ai.client import build_client
+    from ..config.registry import get_universe
+    from ..config.settings import get_settings
+    from ..engines import regime_select as RS
+    from ..engines.policy_events import load_events_file
+    from ..history.integrate import history_of
+    try:
+        try:
+            hist = history_of(manager, "market_regime", as_of=live.as_of)
+            rows = [{"date": p.date.isoformat(), "raw_state": p.state, "confidence": p.confidence} for p in hist.points][-10:]
+        except Exception:
+            rows = []
+        md = live.as_of.date()
+        evs: list[dict] = []
+        try:
+            f = load_events_file(live.as_of) or {}
+            for r in (f.get("releases") or []) + (f.get("policy") or []):
+                d = str(r.get("date") or "")
+                if d and (md.fromisoformat(d) <= md) and (md - md.fromisoformat(d)).days <= 4:
+                    evs.append({k: r.get(k) for k in ("date", "title", "name", "bank", "decision", "label", "actual", "consensus", "guidance") if r.get(k) is not None})
+        except Exception:
+            evs = []
+        news = sorted([{"title": e.event, "type": e.event_type, "themes": list(e.themes), "sentiment": e.sentiment, "impact": e.impact_score, "at": e.timestamp.isoformat()}
+                       for e in live.events if e.timestamp <= live.as_of and (e.impact_score or 0) >= 40], key=lambda x: -(x["impact"] or 0))[:10]
+        inp = RS.EquityInputs.from_market(market, RS.kr_stock_features(inv, get_universe(config_dir)))
+        ctx = RS.build_context(live.market_state, market, by_iid, inp, history_rows=rows, official=previous_official, events=evs, news=news, as_of=live.as_of.isoformat())
+        sel = RS.select_regime(ctx, client=build_client(get_settings()), session_read=session_read)
+        return live.model_copy(update={"market_state": RS.apply_selection(live.market_state, sel)}), ctx
+    except Exception as e:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).exception("REGIME v2 선택 실패 — v1 판정 유지")
+        return live, {"error": f"{type(e).__name__}: {e}"}
+
+
 def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: Mapping[str, Mapping[str, Any]], extra_news: list[dict],
                 previous_investment: Mapping[str, Any] | None, news_since: datetime | None, origin: str, session_reads: Mapping[str, Any] | None = None,
-                manager=None) -> ReconstructResult:
+                manager=None, previous_official: str | None = None) -> ReconstructResult:
     """한 날짜의 화면 전체를 cutoff 기준으로 계산해 out/ 에 캡처 파일로 남긴다."""
     from ..adapters.analyst_view import AnalystViewStore
     from ..adapters.market.scenario import available_scenarios, load_scenario
@@ -256,6 +292,18 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
                            commentary=commentary, previous=prev_inv, warnings=[], timings_ms={}, config_dir=settings.config_dir)
     inv._series_by_id = dict(uni)
     (out / "investment.json").write_text(inv.model_dump_json(), encoding="utf-8")
+
+    # 4b) MARKET REGIME v2 (2026-11-04) — 자격 있는 후보 · 미국/한국 주식 확인 · 선택(API → 세션 생성본 → 정량).
+    #     선택이 market_state.primary_label 이 되어 history 의 raw 로 저장되고, 공식 전환은 기존 2거래일 persistence 가 정한다.
+    live, rs_ctx = _attach_regime_selection(live, market, by_iid, inv, manager=manager, session_read=(session_reads or {}).get("regime_select"),
+                                            previous_official=previous_official, config_dir=settings.config_dir)
+    (out / "regime_select_context.json").write_text(json.dumps(rs_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
+    (out / "live.json").write_text(live.model_dump_json(), encoding="utf-8")
+    sel = live.market_state.selection
+    summary["market"].update({"state": live.market_state.primary_label.value, "confidence": round(live.market_state.confidence, 1)})
+    summary["regime_select"] = {"selected": sel.selected_regime, "confidence": sel.regime_confidence, "source": sel.source, "quant_label": sel.quant_label,
+                                "candidates": [c.label for c in sel.candidates], "us": sel.us_equity_confirmation, "kr": sel.korea_equity_confirmation,
+                                "global": sel.global_equity_confirmation, "coverage": sel.data_coverage} if sel else None
     u = get_universe(settings.config_dir)
     by_all = {s.id: s.as_instrument() for s in u.stocks}
     by_all.update({a.id: a.as_instrument() for a in u.alternative})

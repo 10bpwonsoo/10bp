@@ -2875,3 +2875,19 @@
 .ck-h-tr-mean { font-size: 11px; color: var(--ink-2); margin-top: 2px; }
 .ck-h-tr-evbox { margin-top: 6px; }
 .ck-h-tr-evbox .ck-k { font-size: 9.5px; }
+
+/* MARKET NOW · REGIME v2 — 선택 · confidence · coverage · 주식 확인 · WHY (2026-11-04). 한 카드 안에서 줄로, 상자 없음 */
+.ck-rs { display: flex; flex-direction: column; gap: 5px; margin: 6px 0 4px; padding: 6px 0; border-top: 1px solid var(--rule-soft); }
+.ck-rs-top, .ck-rs-eqrow, .ck-rs-pending { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; font-size: 11px; color: var(--muted); }
+.ck-rs-top b, .ck-rs-eqrow b, .ck-rs-pending b { color: var(--ink); font-size: 12.5px; }
+.ck-rs-src { margin-left: auto; font-size: 10px; color: var(--faint); }
+.ck-rs-eqrow > .ck-k:first-child { margin-right: 2px; }
+.ck-rs-why { margin: 2px 0 0; }
+.ck-rs-more summary { font-size: 10.5px; color: var(--faint); cursor: pointer; }
+.ck-rs-read { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 20px; margin-top: 6px; }
+.ck-rs-sig { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; font-size: 11.5px; padding: 2px 0; border-bottom: 1px solid var(--rule-soft); }
+.ck-rs-sig.ex { color: var(--faint); }
+.ck-rs-sig small { font-size: 9px; color: var(--faint); }
+.ck-rs-cands { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 10.5px; color: var(--muted); }
+.ck-rs-cand { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.ck-rs-alt { color: var(--faint); word-break: keep-all; overflow-wrap: anywhere; }

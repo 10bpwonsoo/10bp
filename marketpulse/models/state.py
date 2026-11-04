@@ -17,6 +17,7 @@ from pydantic import Field
 
 from .common import Base, Direction, ScoreBreakdown
 from .theme import DataQualityBand
+from .regime_select import RegimeSelection  # noqa: E402,F401  (MarketState.selection)
 
 
 class StateLabel(StrEnum):
@@ -155,3 +156,5 @@ class MarketState(Base):
     )
     narrative: str | None = None
     narrative_source: Literal["llm", "template", "none"] = "none"
+    #: MARKET REGIME v2 (2026-11-04) — 자격 있는 후보 · 미국/한국 주식 확인 · LLM(또는 정량) 선택. None 이면 v2 이전 저장본
+    selection: "RegimeSelection | None" = None

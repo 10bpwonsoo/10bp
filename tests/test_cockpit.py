@@ -424,10 +424,10 @@ class TestCanonicalRegime:
         hist = MarketStateHistory(as_of=AS_OF, days_requested=3, points=pts, history_mode="stored", current_streak=1, previous_label=StateLabel.RISK_ON)
         c = build_cockpit(snap, market, by_id, history=hist)
         assert c.market_now.label == "RISK_ON" == c.history.official_state_label and c.history.current_regime == "risk_on"
-        assert c.market_now.raw_label == "NEUTRAL" and c.market_now.raw_text == "NO REGIME" and c.market_now.raw_persistence_days == 1
-        assert c.market_now.change_text == "" and c.market_now.potential_change_text == "RISK-ON → NO REGIME"
+        assert c.market_now.raw_label == "NEUTRAL" and c.market_now.raw_text == "NEUTRAL / MIXED" and c.market_now.raw_persistence_days == 1
+        assert c.market_now.change_text == "" and c.market_now.potential_change_text == "RISK-ON → NEUTRAL / MIXED"
         assert c.market_now.transition_status == c.history.transition_status and c.market_now.persistence_days == c.history.duration_days
-        assert "RISK-ON" in c.market_now.read and "NO REGIME" in c.market_now.read and "확률" not in c.market_now.read
+        assert "RISK-ON" in c.market_now.read and "NEUTRAL / MIXED" in c.market_now.read and "확률" not in c.market_now.read
         assert c.market_now.conviction_trend == "WEAKENING"
         assert c.tone is not None and c.tone.regime_key == "risk_on"  # 다른 component 의 regime 참조도 공식 판정
         # 공식 label 이 cross-asset 기대 방향·문장에 쓰인다
@@ -439,7 +439,7 @@ class TestCanonicalRegime:
         assert h2.current_regime == "neutral" and h2.changed_today and h2.transition_status == "CHANGED" and h2.previous_regime == "risk_on" and h2.duration_days == 1
         hist2 = hist.model_copy(update={"points": pts2})
         c2 = build_cockpit(snap, market, by_id, history=hist2)
-        assert c2.market_now.label == "NEUTRAL" and c2.market_now.change_text == "RISK-ON → NO REGIME" and c2.market_now.potential_change_text == ""
+        assert c2.market_now.label == "NEUTRAL" and c2.market_now.change_text == "RISK-ON → NEUTRAL / MIXED" and c2.market_now.potential_change_text == ""
 
     def test_without_history_official_equals_raw(self):
         snap, market, by_id = _run("baseline")

@@ -759,7 +759,18 @@ export interface AiRegime {
 /** 실시간 메인 탭 — decision cockpit. 서버(cockpit.yaml)가 기존 층의 값을 우선순위대로 고른 것 */
 export type CkArrow = "↑↑" | "↑" | "→" | "↓" | "↓↓" | "?";
 export interface CkKeyVariable { id: string; label: string; z: number; arrow: CkArrow; change_display: string }
-export interface CkMarketNow { label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
+/** MARKET REGIME v2 (2026-11-04) — 자격 있는 후보 · 미국/한국/Global 주식 확인 · LLM(또는 정량) 선택 */
+export type RsEquityStatus = "STRONG" | "CONFIRMED" | "PARTIAL" | "CONTRADICTED" | "MIXED" | "UNAVAILABLE";
+export interface RsSignal { key: string; label: string; market: "us" | "kr"; value: number | null; expected: number; score: number | null; state: "AVAILABLE" | "PARTIAL" | "EXCLUDED"; note: string }
+export interface RsMarket { status: RsEquityStatus; score: number | null; available: number; total: number; coverage: number; signals: RsSignal[] }
+export interface RsEquity { us: RsMarket; kr: RsMarket; global: RsMarket }
+export interface RsCandidate { label: string; display: string; trigger_expr: string; trigger_value: number | null; trigger_threshold: number | null; trigger_margin: number | null;
+  support: { id: string; expr: string; passed: boolean | null; observed: number | null }[]; support_ratio: number | null; cross_asset: number | null; equity: RsEquity; quant_confidence: number; interpretation: string }
+export interface RegimeSelection { selected_regime: string; regime_confidence: number; selection_status: "CONFIRMED" | "TENTATIVE" | "LOW_CONFIDENCE" | "NO_ELIGIBLE"; primary_reason: string;
+  alternative_candidates: { regime: string; reason: string }[]; us_equity_confirmation: RsEquityStatus; korea_equity_confirmation: RsEquityStatus; global_equity_confirmation: RsEquityStatus;
+  persistence_assessment: string; data_coverage: number; selection_rationale: string; commentary: string; source: "llm" | "session" | "quant"; status: string; reason: string;
+  quant_label: string; candidates: RsCandidate[]; neutral_equity: RsEquity | null; primary_signal: string; coverage_detail: Record<string, number>; excluded: string[]; warnings: string[] }
+export interface CkMarketNow { selection?: RegimeSelection | null; label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
   /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */
   raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: "CONFIRMED" | "UNCONFIRMED_TRANSITION" | "TRANSITION_WATCH" | "CHANGED" | "NO_HISTORY";
   transition_status_ko: string; potential_change_text: string; required_days: number; conviction_trend: "WEAKENING" | "STRENGTHENING" | "STABLE"; read: string;
