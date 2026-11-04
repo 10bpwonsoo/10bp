@@ -18,5 +18,7 @@ sections: [snapshot, cockpit, market_state_history, ai_regime, rates_regime, oil
 as_of_independent: [analyst_views, news, daily_history, scenario_checks]
 as_of_windowed: [investment]
 as_of_window_sec: 900
-# 정적 배포본(아티팩트)에 함께 넣을 최근 저장본 수 — 하루 약 1.2MB, 아티팩트 한도 16MB
-bundle_max_dates: 8
+# 정적 배포본(아티팩트)에 함께 넣을 최근 저장본 수 — 0 = 전부(2026-11-04~).
+# 저장본은 날짜별 gzip+base64 로 들어가고 화면이 고른 날짜만 브라우저에서 푼다(하루 원본 약 1.5MB → 약 0.1MB 대).
+# 아티팩트 한도 16MB 에 가까워지면 여기서 최근 N 개로 줄인다.
+bundle_max_dates: 0

@@ -559,3 +559,8 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 유가: OIL MARKET REGIME · OIL STATE HISTORY · WHAT IS DRIVING OIL?. chip 상자 → 막대 + 글자, history 회색 상자 제거, driver 상자 4개 → 구분선 줄(지배 driver 는 왼쪽 강조선, 넓은 카드에선 [이름 · 상태][점수 막대] 한 줄 + 증거 줄). 데스크톱 [REGIME 6][HISTORY 6] / [DRIVING 12], 4번째부터 [CONFIRMATION 5 ─ 두 줄][NARRATIVE 7 / WATCH 7] · [DIAGNOSTICS 12].
 - 확인: 1440 · 1366 · 1180 · 390 에서 세 탭 첫 3개 카드 안의 테두리·음영 sub-box 0(변경 전 실시간 1·4·0 / 금리 10·4·1 / 유가 4·1·4), 가로 스크롤 0, 세로로 쪼개진 글자 0, 페이지 오류 0. 모바일은 1열 그대로.
 - 후속(11/04): 실시간 · 금리 탭은 맨 위 첫 줄도 나누지 않는다 — 첫 3개 카드를 한 장씩 전체 폭으로 쌓는다(실시간 MARKET NOW → HISTORY → TONE, 금리 REGIME → CURRENT ANALYSIS → HISTORY). 전체 폭이 된 MARKET NOW · CURRENT RATES ANALYSIS 는 카드 한 장 그대로 안쪽만 두 칸으로 흘린다(상태·지표 | 해석 문장 / DRIVER~BREAKEVEN 줄 | What Is Driving Rates). 유가 탭은 [REGIME][HISTORY] / [DRIVING] 그대로. 제외 탭 픽셀 동일, 가로 스크롤 0.
+
+### 2026-11-04 — 정적 배포본에 저장 화면 전부(10/12~)
+- 원인: 배포본(아티팩트 파일 하나, 한도 16MB)에 저장본을 원본 JSON 으로 넣어 최근 8일(`bundle_max_dates: 8`)만 담겼다 — 하루 1.2~1.6MB, 8일로 14.6MB. 저장소의 저장본 18일치는 그대로 있었다.
+- 수정: 날짜별 저장본을 gzip+base64 로 넣고, 화면이 날짜를 고를 때 그 날짜만 브라우저에서 푼다(`DecompressionStream`, 푼 것은 기억). `bundle_max_dates: 0` = 전부. 18일치를 넣어도 배포본 7.6MB.
+- 내용은 저장본 그대로 — 푼 결과가 이전 배포본 8일치와 객체 단위로 같고, snapshot · rates · oil · semiconductor · investment · news 섹션이 저장 파일과 같다. 18일 모두 `?date=` 로 열림 · 페이지 오류 0.
