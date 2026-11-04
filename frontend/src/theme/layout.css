@@ -2678,9 +2678,10 @@
      [CURVE 6 ─ 두 줄 ][                  ]
      [                ][BREAKDOWN 6        ]
      줄 번호를 명시한다(빈 칸 예약이 아니라 서로 다른 높이를 두 칼럼으로 흘리기 위해). 나머지는 그 아래로 자동 배치. */
-  .rr .g-regime { grid-column: 1 / 7; grid-row: 1 / 3; }
+  /* 상단 3개 section(2026-11-04 통카드): [REGIME 6][CURRENT 6] / [HISTORY 12] — 셋 다 각각 한 장의 큰 카드 */
+  .rr .g-regime { grid-column: 1 / 7; grid-row: 1; }
   .rr .g-ca { grid-column: 7 / 13; grid-row: 1; }
-  .rr > [data-testid="history-panel-rates_regime"] { grid-column: 7 / 13; grid-row: 2; }
+  .rr > [data-testid="history-panel-rates_regime"] { grid-column: 1 / 13; grid-row: 2; }
   .rr .g-events { grid-column: 1 / 7; grid-row: 3; }
   .rr .g-imap { grid-column: 7 / 13; grid-row: 3 / 5; }
   .rr .g-curve { grid-column: 1 / 7; grid-row: 4 / 6; }
@@ -2695,11 +2696,14 @@
 
   /* 유가 — [REGIME 6][HISTORY 6] [DRIVING 7][CONFIRM 5] [NARRATIVE 5][WATCH 7] [DIAG 12] */
   .or .g-regime, .or > [data-testid="history-panel-oil_regime"] { grid-column: span 6; }
-  .or .g-drivers { grid-column: span 7; }
-  .or .g-conf { grid-column: span 5; }
-  .or .g-nar { grid-column: span 5; }
-  .or .g-watch { grid-column: span 7; }
-  .or > [data-testid="history-panel-oil_regime"] { align-self: stretch; }
+  /* 상단 3개 section(2026-11-04 통카드): [REGIME 6][HISTORY 6] / [WHAT IS DRIVING OIL 12]
+     4번째부터: [CONFIRMATION 5 ─ 두 줄][NARRATIVE 7] / [            ][WATCH NEXT 7] — 긴 확인표 옆에 짧은 두 카드 */
+  .or .g-regime { grid-row: 1; }
+  .or .g-drivers { grid-column: 1 / 13; grid-row: 2; }
+  .or .g-conf { grid-column: 1 / 6; grid-row: 3 / 5; }
+  .or .g-nar { grid-column: 6 / 13; grid-row: 3; }
+  .or .g-watch { grid-column: 6 / 13; grid-row: 4; }
+  .or > [data-testid="history-panel-oil_regime"] { align-self: stretch; grid-row: 1; }
   .or > [data-testid="history-panel-oil_regime"] .panel-body { flex: 1; display: flex; flex-direction: column; }
   .or > [data-testid="history-panel-oil_regime"] .dh-spark { height: 96px; }
 
@@ -2722,14 +2726,9 @@
   .rr .rt-banks { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 @media (min-width: 1280px) {
-  /* 금리 — [REGIME 4 ─ 두 줄][CURRENT 8] / [HISTORY 8] · [EVENTS 7][INFLATION 5 ─ 두 줄] / [CURVE 7 ─ 두 줄] / [BREAKDOWN 5] */
-  .rr .g-regime { grid-column: 1 / 5; }
-  .rr .g-ca, .rr > [data-testid="history-panel-rates_regime"] { grid-column: 5 / 13; }
+  /* 금리 — [REGIME 6][CURRENT 6] / [HISTORY 12] · [EVENTS 7][INFLATION 5 ─ 두 줄] / [CURVE 7 ─ 두 줄] / [BREAKDOWN 5] */
   .rr .g-events, .rr .g-curve { grid-column: 1 / 8; }
   .rr .g-imap, .rr .g-yb { grid-column: 8 / 13; }
-  /* 유가 — [DRIVING 8][CONFIRM 4] (CONFIRM ≥ 380px) */
-  .or .g-drivers { grid-column: span 8; }
-  .or .g-conf { grid-column: span 4; }
 }
 @media (min-width: 1024px) {
   /* 카드 폭에 따른 안쪽 배치 — 열을 줄여 글자를 지킨다 */
@@ -2769,3 +2768,59 @@
 .or-watch-now { font-size: 12.5px; color: var(--ink-2); }
 .or-watch-now b { color: var(--ink); }
 .or-watch-rest { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+/* ── 실시간 · 금리 · 유가 — 처음 3개 section = 한 장의 큰 카드 (2026-11-04) ─────────────────────
+   section 안을 작은 박스(테두리 있는 sub-card) 여러 개로 다시 나누지 않는다 — 이름 | 값 줄, 구분선, 인라인 표시로.
+   클래스가 이 세 탭에만 있는 것(rt-· rr-chip · or-· ck-now · ck-h-)은 그대로, 다른 탭과 함께 쓰는 컴포넌트
+   (history strip · 온도계)는 그 탭 컨테이너 아래로만 건다. AI 센티 · 반도체 사이클 · 평시 탭은 손대지 않는다. */
+
+/* 금리 1 · INFLATION & RATES REGIME — 사실 칸 4개 → 이름 | 값 줄 */
+.rt-facts { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule-soft); }
+.rt-fact { display: grid; grid-template-columns: minmax(8em, 40%) minmax(0, 1fr); column-gap: 12px; row-gap: 1px; align-items: baseline; border: 0; border-bottom: 1px solid var(--rule-soft); border-radius: 0; padding: 6px 0; }
+.rt-fact > .rr-k { grid-column: 1; grid-row: 1 / span 2; }
+.rt-fact > :not(.rr-k) { grid-column: 2; }
+.rt-fact .rt-big { font-size: 17px; }
+.rt-fact .rr-strength-bar { max-width: 180px; height: 6px; margin-top: 3px; }
+.rt-dread { background: none; border-radius: 0; padding: 6px 0; border-top: 1px solid var(--rule-soft); border-bottom: 1px solid var(--rule-soft); }
+/* driver chip — 상자 대신 상태색 막대 하나 + 글자 */
+.rr-chips, .or-chips { gap: 4px 16px; }
+.rr-chip, .or-chip { border: 0; border-left: 3px solid; border-radius: 0; padding: 0 0 0 6px; background: none; line-height: 1.5; }
+.rr-chip.on, .or-chip.on { background: none; color: var(--ink); font-weight: 600; }
+
+/* 금리 2 · CURRENT RATES ANALYSIS — DRIVER / CURVE / REAL YIELD / BREAKEVEN 4칸 → 줄 */
+.rt-tiles { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule-soft); }
+.rt-tile { display: grid; grid-template-columns: minmax(7.5em, 28%) minmax(0, 1fr) auto; column-gap: 12px; align-items: baseline; border: 0; border-bottom: 1px solid var(--rule-soft); border-radius: 0; padding: 6px 0; }
+.rt-tile .rt-tsub { text-align: right; }
+
+/* 금리 3 · 유가 2 · STATE HISTORY — 카드 안의 회색 상자를 걷어 카드 자체가 담는다 */
+.rr .dh, .or .dh { border: 0; background: none; padding: 0; }
+
+/* 유가 3 · WHAT IS DRIVING OIL? — driver 상자 4개 → 구분선 있는 줄, 지배 driver 는 왼쪽 강조선 */
+.or-drivers { gap: 0; }
+.or-drv { border: 0; border-bottom: 1px solid var(--rule-soft); border-radius: 0; padding: 9px 0; }
+.or-drv:last-child { border-bottom: 0; }
+.or-drv.on { background: none; border-color: var(--rule-soft); box-shadow: inset 3px 0 0 var(--accent); padding-left: 11px; }
+@media (min-width: 1024px) {
+  /* 넓은 카드: [이름 · 상태][점수 막대] 한 줄, 증거는 다음 줄 */
+  @container (min-width: 760px) {
+    .or .or-drv { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 20px; row-gap: 3px; align-items: center; }
+    .or .or-drv-ev { grid-column: 1 / -1; }
+  }
+}
+
+/* 실시간 1 · MARKET NOW — raw signal 회색 상자 → 위·아래 구분선 줄 */
+.ck-now-raw { background: none; border: 0; border-top: 1px solid var(--rule-soft); border-bottom: 1px solid var(--rule-soft); border-radius: 0; padding: 6px 0; }
+/* 실시간 2 · MARKET REGIME HISTORY — raw signal 상자 · 최근 전환 상자 3개 → 구분선 줄 */
+.ck-h-rawbox { background: none; border: 0; border-top: 1px solid var(--rule-soft); border-bottom: 1px solid var(--rule-soft); border-radius: 0; padding: 6px 0; }
+.ck-h-tr { border: 0; border-top: 1px solid var(--rule-soft); border-radius: 0; padding: 6px 0; }
+.ck-h-tr:hover, .ck-h-tr.open { background: none; border-color: var(--rule-hi); }
+.ck-h-tr.open .ck-h-tr-l1 b { color: var(--accent); }
+@media (min-width: 761px) { .ck-h-trans { column-gap: 18px; } }
+/* 실시간 3 · MARKET TONE SNAPSHOT — 같은 온도계, 넓은 화면에선 카드 폭을 다 쓴다: [온도 · 눈금 · 설명][재료 스트립] */
+@media (min-width: 1024px) {
+  [data-testid="ck-tone"] .ck-tone-body { max-width: none; }
+  [data-testid="ck-tone"] .gauge { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 36px; row-gap: 6px; align-items: start; border-left: 0; padding-left: 0; }
+  [data-testid="ck-tone"] .gauge > * { grid-column: 1; min-width: 0; }
+  [data-testid="ck-tone"] .gauge > .strip { grid-column: 2; grid-row: 1 / span 4; }
+  [data-testid="ck-tone"] .gauge > svg { max-width: 600px; }
+}

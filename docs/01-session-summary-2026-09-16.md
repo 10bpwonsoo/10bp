@@ -551,3 +551,10 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - Diagnostics 는 접혀 있으면 한 줄 바, 펼치면 한 줄 전체. 높이는 내용대로(`align-items: start`). 카드 안쪽은 container query 로 카드 폭에 맞춰 열을 줄인다(확인표 400px ↓ 두 줄, 이벤트 640px ↓ 한 열, Regime 머리 600px ↓ 한 열). 확인표 ellipsis 제거 · `word-break: keep-all` + `overflow-wrap: anywhere` · 읽는 문장 13px 이상.
 - 유가 What To Watch Next 를 제목(엔진 문장의 "머리:") · 현재 값 · 기준(작게) · 설명(작게)으로 나눠 보인다 — 문장 · 조건은 그대로(테스트로 원문 복원 확인).
 - 계산 · 데이터 변경 없음. 1440×900 · 1366×768 · 1180×820 · 1024×768 · 390×844 에서 가로 스크롤 0 · 세로로 쪼개진 글자 0 · 페이지 오류 0. 390 금리 화면 높이 이전과 동일.
+
+### 2026-11-04 — 실시간 · 금리 · 유가: 처음 3개 section = 한 장의 큰 카드
+- 범위: 웹 화면 CSS 만(`frontend/src/theme/layout.css` 끝 블록). 실시간 · 금리 · 유가 탭의 위에서 첫 3개 section. 계산 · 데이터 · API · 백엔드 변경 없음. AI 센티 · 반도체 사이클 · 평시 탭은 손대지 않았다 — 변경 전후 전체 화면 픽셀 해시가 1440 · 1180 · 390 에서 모두 같다.
+- 실시간: MARKET NOW · MARKET REGIME HISTORY · 1M · MARKET TONE SNAPSHOT. raw signal 회색 상자(두 카드) · 최근 전환 상자 3개 → 구분선 줄. Tone 은 ≥1024 에서 [온도 · 눈금 · 설명][재료 스트립] 두 칼럼으로 카드 폭을 쓴다(같은 온도계, 그 카드 안에서만).
+- 금리: INFLATION & RATES REGIME · CURRENT RATES ANALYSIS · STATE HISTORY. 10Y · CONFIDENCE · PRIMARY DRIVER · INFLATION REPRICING 4칸과 DRIVER · CURVE · REAL YIELD · BREAKEVEN 4칸 → "이름 | 값 | 보조" 줄, DRIVER READ 회색 띠 → 구분선 줄, driver chip → 상태색 막대 + 글자, history 안 회색 상자 제거. 데스크톱 배치 [REGIME 6][CURRENT 6] / [HISTORY 12], 4번째부터는 기존(Policy 7 → Curve 7 / Inflation 5 → Breakdown 5 …).
+- 유가: OIL MARKET REGIME · OIL STATE HISTORY · WHAT IS DRIVING OIL?. chip 상자 → 막대 + 글자, history 회색 상자 제거, driver 상자 4개 → 구분선 줄(지배 driver 는 왼쪽 강조선, 넓은 카드에선 [이름 · 상태][점수 막대] 한 줄 + 증거 줄). 데스크톱 [REGIME 6][HISTORY 6] / [DRIVING 12], 4번째부터 [CONFIRMATION 5 ─ 두 줄][NARRATIVE 7 / WATCH 7] · [DIAGNOSTICS 12].
+- 확인: 1440 · 1366 · 1180 · 390 에서 세 탭 첫 3개 카드 안의 테두리·음영 sub-box 0(변경 전 실시간 1·4·0 / 금리 10·4·1 / 유가 4·1·4), 가로 스크롤 0, 세로로 쪼개진 글자 0, 페이지 오류 0. 모바일은 1열 그대로.
