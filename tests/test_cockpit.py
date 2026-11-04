@@ -23,6 +23,15 @@ def _run(scenario: str):
 
 
 class TestEngine:
+    @pytest.mark.parametrize("scenario", ["baseline", "inflation_shock", "oil_spike", "commodity_shock", "china_stress"])
+    def test_market_now_sentence_has_no_repeated_clause(self, scenario):
+        """브렌트 · WTI 처럼 같은 문구로 읽히는 변수가 둘 다 핵심이어도 문장에는 한 번만(2026-11-04 '유가 하락·유가 하락' 수정)."""
+        snap, market, by_id = _run(scenario)
+        n = build_cockpit(snap, market, by_id).market_now
+        for pair in (load_cockpit_config().get("clauses") or {}).values():
+            for ph in pair:
+                assert n.sentence.count(ph) <= 1, (scenario, n.sentence)
+
     def test_market_now_and_drivers(self):
         snap, market, by_id = _run("inflation_shock")
         c = build_cockpit(snap, market, by_id)

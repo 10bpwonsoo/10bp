@@ -200,7 +200,10 @@ def build_cockpit(
     for kv in sorted(keyvars, key=lambda k: -abs(k.z)):
         c = clauses.get(kv.id)
         if c and abs(kv.z) >= flat:
-            parts.append(c[0] if kv.z > 0 else c[1])
+            ph = c[0] if kv.z > 0 else c[1]
+            # 브렌트 · WTI 처럼 같은 문구로 읽히는 변수는 한 번만(2026-11-04: "유가 하락·유가 하락이 겹친" 수정)
+            if ph not in parts:
+                parts.append(ph)
         if len(parts) >= 3:
             break
     tail = str(cfg.get("regime_tail", {}).get(label, "이 겹친 환경이다."))
