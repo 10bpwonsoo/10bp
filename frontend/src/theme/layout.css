@@ -2868,3 +2868,10 @@
 .arc-pop { max-width: calc(100vw - 16px); }
 .arc-pop.arc-pop-l { right: auto; left: 0; }
 @media (max-width: 640px) { .arc-pop.arc-pop-l { left: 0; right: 0; } .arc-pop { max-width: none; } }
+
+/* RECENT TRANSITIONS — 날짜 · 전환 → 왜 바뀌었나(먼저, 읽는 글씨) → 근거(작게) → 시장 의미 · 원자료는 눌러서 (2026-11-04) */
+.ck-h-tr-why { margin: 4px 0 2px; font-size: 12.5px; line-height: 1.55; color: var(--ink); word-break: keep-all; overflow-wrap: anywhere; }
+.ck-h-tr-chips { font-size: 10.5px; color: var(--muted); }
+.ck-h-tr-mean { font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+.ck-h-tr-evbox { margin-top: 6px; }
+.ck-h-tr-evbox .ck-k { font-size: 9.5px; }

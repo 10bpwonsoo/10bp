@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { CkRegimeDay, CkRegimeHistory } from "../api/types";
 import { duplicateDates, kstTime, maxLabelsFor, md, mergedNote, snapshotLine, thinLabels } from "../lib/historyDates";
 import { sourceLine } from "./DailyHistoryStrip";
+import { fetchArchive, fetchArchiveIndex } from "../api/client";
+import { dayDocDateFor, dayDocMatches, explainTransition, type TransitionDayDoc } from "./transitionWhy";
 
 /**
  * MARKET REGIME HISTORY · 1M — 실시간 2 탭 전용. "최근 한 달 시장의 색이 어떻게 변해 왔는가" 를 3초에 읽게 한다.
@@ -232,19 +234,51 @@ function Share({ h }: { h: CkRegimeHistory }) {
   );
 }
 
+/** 전환 날짜 행의 데이터를 담은 저장 스냅샷(다음 평일 07:30 KST 저장본) — 한 번 받은 것은 기억한다. 없거나 못 받으면 null */
+const dayDocCache = new Map<string, Promise<TransitionDayDoc | null>>();
+let archiveDates: Promise<string[]> | null = null;
+function loadDayDoc(d: string): Promise<TransitionDayDoc | null> {
+  archiveDates ??= fetchArchiveIndex().then((rows) => rows.map((r) => r.date)).catch(() => []);
+  return archiveDates.then((dates) => {
+    const at = dayDocDateFor(d, dates);
+    if (!at) return null;
+    if (!dayDocCache.has(at)) dayDocCache.set(at, fetchArchive(at).then((x) => x as unknown as TransitionDayDoc).catch(() => null));
+    return dayDocCache.get(at)!.then((doc) => (dayDocMatches(doc, d) ? doc : null));
+  });
+}
+
 function Transitions({ h }: { h: CkRegimeHistory }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [docs, setDocs] = useState<Record<string, TransitionDayDoc | null>>({});
+  const key = h.transitions.map((t) => t.date).join(",");
+  useEffect(() => {
+    let alive = true;
+    for (const t of h.transitions) void loadDayDoc(t.date).then((doc) => { if (alive) setDocs((m) => ({ ...m, [t.date]: doc })); }).catch(() => undefined);
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
   if (!h.transitions.length) return <div className="ck-h-empty mono">기간 중 display regime 전환 없음</div>;
   return (
     <div className="ck-h-trans" data-testid="ck-h-trans">
       <span className="ck-k mono">Recent transitions{h.total_transitions > h.transitions.length ? ` · ${h.transitions.length} / ${h.total_transitions}` : ""}</span>
-      {h.transitions.map((t) => (
-        <div key={t.date} className={`ck-h-tr${open === t.date ? " open" : ""}`} data-testid="ck-h-transition" onClick={() => setOpen(open === t.date ? null : t.date)} role="button" tabIndex={0}>
-          <div className="ck-h-tr-l1"><b className="mono">{md(t.date)}</b> <span style={{ color: color(t.from_regime) }}>{short(t.from_label)}</span> <span className="ck-h-tr-ar">→</span> <span style={{ color: color(t.to_regime) }}>{short(t.to_label)}</span></div>
-          <div className="ck-h-tr-l2 mono">{t.primary_driver}{t.confirmation ? ` · ${t.confirmation}` : ""}</div>
-          {open === t.date ? <ul className="ck-h-tr-ev mono">{t.evidence.map((e) => <li key={e}>{e}</li>)}</ul> : null}
-        </div>
-      ))}
+      {h.transitions.map((t) => {
+        const i = h.days.findIndex((d) => d.date === t.date);
+        const w = explainTransition(t, i > 0 ? h.days[i - 1]!.date : null, docs[t.date] ?? null, h.days);
+        return (
+          <div key={t.date} className={`ck-h-tr${open === t.date ? " open" : ""}`} data-testid="ck-h-transition" data-basis={w.basis} onClick={() => setOpen(open === t.date ? null : t.date)} role="button" tabIndex={0}>
+            <div className="ck-h-tr-l1"><b className="mono">{md(t.date)}</b> <span style={{ color: color(t.from_regime) }}>{short(t.from_label)}</span> <span className="ck-h-tr-ar">→</span> <span style={{ color: color(t.to_regime) }}>{short(t.to_label)}</span></div>
+            <p className="ck-h-tr-why" data-testid="ck-h-tr-why">{w.why}</p>
+            <div className="ck-h-tr-chips" data-testid="ck-h-tr-chips">{w.chips.join(" · ")}</div>
+            <div className="ck-h-tr-mean" data-testid="ck-h-tr-meaning">→ {w.meaning}</div>
+            {open === t.date ? (
+              <div className="ck-h-tr-evbox" data-testid="ck-h-tr-evidence">
+                <span className="ck-k mono">Market evidence{w.dayDoc ? ` · ${md(w.dayDoc)} 07:30 KST 저장본` : ""}</span>
+                <ul className="ck-h-tr-ev mono">{[...w.evidence, ...t.evidence].map((e, k) => <li key={`${k}-${e}`}>{e}</li>)}</ul>
+              </div>
+            ) : <div className="ck-h-tr-l2 mono">근거 보기 ▸</div>}
+          </div>
+        );
+      })}
     </div>
   );
 }
