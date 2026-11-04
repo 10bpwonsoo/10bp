@@ -607,3 +607,4 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 수정(화면만): [POLICY & MACRO EVENTS 12] / [INFLATION MAP 6][CURVE 6 → BREAKDOWN 6] — 오른쪽 둘을 한 칼럼(`rp-col`)으로 묶고 두 칼럼 끝을 맞춘다(짧은 쪽 마지막 카드가 늘어난다). 1024 · 1180 · 1280 · 1366 · 1600 모두 두 칼럼 끝이 같은 y, 카드 겹침 0, 가로 스크롤 없음. 1024 미만은 `rp-col` 이 display: contents 라 예전 순서 그대로. 옛 저장본(흐름 없는 화면)은 예전 줄 번호 규칙.
 - Central Banks 4곳은 3 + 1 대신 2 × 2.
 - TREASURY CURVE 판정: CURVE MOVE · MOVE INTENSITY 두 상자를 한 칸으로(모양 → 방향 · 가장 크게 움직인 만기 σ · 이례성). 값 · 계산 그대로. 다른 탭 변경 없음.
+- 배포 주소 정정: 위 두 변경(11/04 이벤트 · 금리 탭 배치)을 처음에 예전 대시보드 주소(YJ43T5NFBoLDoCS8Bua5am)에 올렸다. 사용 중인 대시보드는 https://claude.ai/artifact/3ERLmXjNkcrbGmfdjwbHzS — V108 로 다시 올림. 앞으로 배포는 이 주소로만.
