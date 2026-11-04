@@ -127,7 +127,7 @@ export function CurrentRatesAnalysisPanel({ regime, analysis }: { regime: RatesR
   const ordered = [...regime.drivers].sort((a, b) => (a.status === "CONFIRMED" ? 0 : 1) - (b.status === "CONFIRMED" ? 0 : 1) || Math.abs(b.score) - Math.abs(a.score));
   const lines = regime.top?.driver_lines ?? {};
   return (
-    <section className="panel span-3 rt-ca" data-testid="current-rates-analysis">
+    <section className="panel span-3 rt-ca g-ca" data-testid="current-rates-analysis">
       <header className="panel-head"><h2 className="panel-title">Current Rates Analysis</h2><div className="panel-note mono">흩어진 금리 판단의 요약 — 세부 수치는 아래 Treasury Curve · Decomposition</div></header>
       <div className="panel-body">
         <div className="rt-tiles">
@@ -265,7 +265,7 @@ export function PolicyMacroEventsPanel({ events }: { events: PolicyMacroEvents |
   const [allUp, setAllUp] = useState(false);
   if (!events) {
     return (
-      <section className="panel span-3 rt-events" data-testid="policy-macro-events">
+      <section className="panel span-3 rt-events g-events" data-testid="policy-macro-events">
         <header className="panel-head"><h2 className="panel-title">Policy &amp; Macro Events</h2><div className="panel-note">금리 방향을 바꿀 수 있는 최근 정책 결정과 주요 경제지표</div></header>
         <div className="panel-body"><div className="sv-muted" data-testid="events-empty">확인된 정책·지표 이벤트 파일이 없습니다 — 만들어 채우지 않습니다.</div></div>
       </section>
@@ -276,7 +276,7 @@ export function PolicyMacroEventsPanel({ events }: { events: PolicyMacroEvents |
   const up = allUp ? ev.upcoming : ev.upcoming.slice(0, ev.upcoming_default);
   const toggle = (k: string) => setOpenKey(openKey === k ? null : k);
   return (
-    <section className="panel span-3 rt-events" data-testid="policy-macro-events">
+    <section className="panel span-3 rt-events g-events" data-testid="policy-macro-events">
       <header className="panel-head"><h2 className="panel-title">Policy &amp; Macro Events</h2><div className="panel-note">금리 방향을 바꿀 수 있는 최근 정책 결정과 주요 경제지표</div></header>
       <div className="panel-body">
         {lk ? (

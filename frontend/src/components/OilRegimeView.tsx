@@ -73,7 +73,7 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
   return (
     <div className="or" data-testid="oil-regime">
       {/* 1. OIL MARKET REGIME */}
-      <section className="panel span-3 or-regime" data-testid="oil-regime-card">
+      <section className="panel span-3 or-regime g-regime" data-testid="oil-regime-card">
         <header className="panel-head"><h2 className="panel-title">Oil Market Regime</h2><div className="panel-note mono">{new Date(regime.as_of).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" })} KST</div></header>
         <div className="panel-body">
           <div className="or-head">
@@ -107,7 +107,7 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
       <DailyHistoryPanel tab="oil_regime" title="Oil State History · 1M" scenario={snapshot.scenario ?? undefined} asOf={snapshot.as_of} />
 
       {/* 2. WHAT IS DRIVING OIL? */}
-      <section className="panel span-2">
+      <section className="panel span-2 g-drivers" data-testid="oil-drivers">
         <header className="panel-head"><h2 className="panel-title">What Is Driving Oil?</h2><div className="panel-note mono">evidence score · −100 하락 압력 … +100 상승 압력</div></header>
         <div className="panel-body or-drivers">
           {ordered.map((d) => <DriverBar key={d.id} d={d} dominant={d.id === regime.dominant} />)}
@@ -115,7 +115,7 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
       </section>
 
       {/* 3. MARKET CONFIRMATION */}
-      <section className="panel">
+      <section className="panel g-conf" data-testid="oil-confirmation">
         <header className="panel-head"><h2 className="panel-title">Market Confirmation</h2><div className="panel-note mono"><span style={{ color: "var(--ok)" }}>확인 {confirms}</span> · <span style={{ color: "var(--down)" }}>반박 {contradicts}</span> · {dom.label} 기준</div></header>
         <div className="panel-body or-confs" role="table" aria-label="시장 확인">
           {regime.confirmations.map((r) => <ConfRow key={r.key} r={r} />)}
@@ -123,7 +123,7 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
       </section>
 
       {/* 4. NARRATIVE vs PRICE */}
-      <section className="panel span-3">
+      <section className="panel span-3 g-nar" data-testid="oil-narrative">
         <header className="panel-head"><h2 className="panel-title">Narrative vs Price</h2><div className="panel-note mono">뉴스 톤 / 가격 모멘텀 (−100~+100) · 괴리 엔진 심각도</div></header>
         <div className="panel-body or-nar">
           {regime.narrative.map((n) => (
@@ -137,22 +137,30 @@ export function OilRegimeView({ regime, snapshot, check, history }: { regime: Oi
       </section>
 
       {/* 5. WHAT TO WATCH NEXT */}
-      <section className="panel span-3 or-watch">
+      <section className="panel span-3 or-watch g-watch" data-testid="oil-watch">
         <header className="panel-head"><h2 className="panel-title">What To Watch Next</h2><div className="panel-note mono">지금 판단이 바뀌려면</div></header>
         <div className="panel-body">
           <ol className="or-watch-list">
-            {regime.watch.map((w, i) => (
-              <li key={i} data-testid="watch-item">
-                <span className="or-watch-text">{w.text}</span>
-                <span className="or-watch-meta mono">{w.metric} 지금 <b className="num">{w.current}</b> → 조건 {w.condition} → {w.effect}</span>
-              </li>
-            ))}
+            {regime.watch.map((w, i) => {
+              // 표시만 나눈다 — 엔진 문장 "머리: 설명" 의 머리를 제목으로, 나머지를 작은 설명으로. 내용·조건은 그대로.
+              const cut = w.text.indexOf(": ");
+              const head = cut > 0 && cut < 40 ? w.text.slice(0, cut) : w.text;
+              const rest = cut > 0 && cut < 40 ? w.text.slice(cut + 2) : "";
+              return (
+                <li key={i} data-testid="watch-item">
+                  <span className="or-watch-text"><b className="or-watch-head">{head}</b>{w.effect ? <span className="or-watch-eff mono">→ {w.effect}</span> : null}</span>
+                  <span className="or-watch-now">현재 {w.metric} <b className="num">{w.current}</b></span>
+                  <span className="or-watch-meta mono">기준 {w.condition}</span>
+                  {rest ? <span className="or-watch-rest">{rest}</span> : null}
+                </li>
+              );
+            })}
           </ol>
         </div>
       </section>
 
       {/* 6. Diagnostics */}
-      <details className="panel span-3 or-diag" data-testid="oil-diagnostics">
+      <details className="panel span-3 or-diag g-diag" data-testid="oil-diagnostics">
         <summary className="panel-head"><h2 className="panel-title">Diagnostics / Historical Pattern Match</h2><div className="panel-note mono">판정 룰 · 시나리오 서명 대조 — 접어 둔 내부 진단</div></summary>
         <div className="panel-body">
           <div className="or-diag-grid">

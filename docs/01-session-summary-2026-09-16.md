@@ -537,3 +537,17 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 결과: 시장 raw NEUTRAL 34%(온도 −1) — 11/03 S&P +0.4% · 나스닥100 +0.7% · SOXX +2.5% · VIX −1.5% · 코스피 −3.6% · 코스닥 −4.1% · SK하이닉스 −5.0%, 11/02 브렌트 −10.9% · WTI −7.4%. 공식 regime Liquidity Stress / Risk-Off 2일째, raw Neutral → TRANSITION WATCH. AI AI-SPECIFIC DE-RISKING(센티 32), 금리 RISK-OFF FLIGHT TO QUALITY(기대인플레 급락), 물가 압력 COOLING BIAS, 유가 Supply CONFIRMED, 반도체 UPSWING 41.2. 해석 3종은 API 401 → 세션 생성본.
 - 단일 지수 breadth 규칙(11/04 수정)이 이 저장본부터 엔진 문장에 적용 — Leadership 의 BREADTH = "단일 지수 · 20일선 위/아래", Leadership read 에 breadth 문장 없음.
 - history: 11/03 행 7개 탭 RECORDED·잠금(data_asof 11/03 22:30Z). 다른 잠긴 행 · 기존 아카이브 바이트 동일. COMPLETE · validate 통과. 11/02~11/04 화면의 같은 날짜 공식 regime 띠 차이 0. 정적 배포본 14.3MB(한도 16MB).
+
+### 2026-11-04 — China 테마 = 중국 주식 7지수 종합
+- China 테마 점수 · Leadership 을 H지수 하나 대신 홍콩 3(항셍 `HANGSENG` · H지수 `HSCEI` · 항셍테크 `HSTECH`) + 본토 4(상해종합 `SHCOMP` · 심천성분 `SZCOMP` · CSI 300 `CSI300_ETF` · 창업판 `CHINEXT`) 동일가중으로 본다. Leadership breadth = 7개 중 20일선 위 비중.
+- 항셍테크 · CSI 300 · 창업판은 Yahoo 지수 이력이 1봉뿐이라 같은 지수를 추종하는 현지 상장 ETF(3033.HK · 510300.SS · 159915.SZ)로 대신한다(이름에 "(ETF)"). 구리 · 위안화는 테마 점수에서 빼고 driver 연결 · 매크로 factor 에 남긴다.
+- 기존 아카이브는 그대로(잠금) — 다음 스냅샷부터 적용. 11/04 cutoff 기준으로 계산해 보면 홍콩 대형(H지수 +2.3% · 항셍 +2.1%, 1주)만 강하고 본토·성장(심천 −3.3% · 창업판 −6.7%)은 약세, 7개 모두 20일선 아래.
+
+### 2026-11-04 — 금리 · 유가 탭 DESKTOP 레이아웃
+- 원인: `.rr`/`.or` 는 1101px 부터 3열인데 `.span-3` 은 1400px 부터만 3칸 → 1101–1399px(iPad 가로)에서 큰 카드가 한 칸(≈120–140px)으로 떨어져 글자가 세로로 쪼개지고 카드가 3,000px 넘게 늘어났다. ≥1400px 에서는 반대로 모든 카드가 한 줄 전체.
+- ≥1024px 에만 12열 grid(`layout.css` 끝 블록) — 모바일(<768) · 태블릿(768–1023) 규칙 · DOM 순서는 그대로. 카드마다 자리 class(`g-regime` · `g-ca` · `g-events` · `g-imap` · `g-curve` · `g-yb` · `g-conf` · `g-div` · `g-imp` · `g-changes` · `g-diag` / 유가 `g-drivers` · `g-nar` · `g-watch`).
+- 금리 ≥1280: [Regime 4 (두 줄)][Current Analysis 8 / History 8] · [Policy & Macro 7 → Treasury Curve 7][Inflation Map 5 → Yield Breakdown 5] · [Market Confirmation 8][Key Divergence 4] · [Implication 5][What Changes 7] · [Diagnostics 12]. 1024–1279 은 같은 흐름을 6:6. 긴 카드(Regime · Inflation Map) 옆에 짧은 카드를 쌓아 빈 칸을 줄였다(행 단위 4/5/3 · 6/6 보다 1440px 기준 높이 −220px · 빈 칸 −600px).
+- 유가 ≥1280: [Regime 6][History 6] · [Driving Oil 8][Confirmation 4] · [Narrative 5][Watch Next 7] · [Diagnostics 12]. 1024–1279 은 Driving 7 / Confirmation 5.
+- Diagnostics 는 접혀 있으면 한 줄 바, 펼치면 한 줄 전체. 높이는 내용대로(`align-items: start`). 카드 안쪽은 container query 로 카드 폭에 맞춰 열을 줄인다(확인표 400px ↓ 두 줄, 이벤트 640px ↓ 한 열, Regime 머리 600px ↓ 한 열). 확인표 ellipsis 제거 · `word-break: keep-all` + `overflow-wrap: anywhere` · 읽는 문장 13px 이상.
+- 유가 What To Watch Next 를 제목(엔진 문장의 "머리:") · 현재 값 · 기준(작게) · 설명(작게)으로 나눠 보인다 — 문장 · 조건은 그대로(테스트로 원문 복원 확인).
+- 계산 · 데이터 변경 없음. 1440×900 · 1366×768 · 1180×820 · 1024×768 · 390×844 에서 가로 스크롤 0 · 세로로 쪼개진 글자 0 · 페이지 오류 0. 390 금리 화면 높이 이전과 동일.

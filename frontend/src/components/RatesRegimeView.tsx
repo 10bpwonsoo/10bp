@@ -117,7 +117,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
   return (
     <div className="rr" data-testid="rates-regime">
       {/* 1. INFLATION & RATES REGIME */}
-      <section className="panel span-3 rr-regime" data-testid="rates-regime-card">
+      <section className="panel span-3 rr-regime g-regime" data-testid="rates-regime-card">
         <header className="panel-head"><h2 className="panel-title">Inflation &amp; Rates Regime</h2><div className="panel-note mono">{new Date(regime.as_of).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" })} KST · FRED 하루 지연</div></header>
         {regime.top ? <div className="panel-body"><RatesRegimeHead regime={regime} /></div> : <div className="panel-body">
           <div className="rr-head">
@@ -161,7 +161,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
 
       {/* 2. WHAT IS DRIVING RATES? — 상단 정리 이후엔 1b 안의 compact 표로 옮겼다. 옛 캡처(top 없음)만 예전 패널 */}
       {regime.current_analysis ? null : (
-        <section className="panel span-2">
+        <section className="panel span-2 g-ca">
           <header className="panel-head"><h2 className="panel-title">What Is Driving Rates?</h2><div className="panel-note mono">evidence score · −100 장기금리 하락 압력 … +100 상승 압력 · 상태는 10Y 방향과의 일치</div></header>
           <div className="panel-body rr-drivers">
             {ordered.map((d) => <DriverRow key={d.id} d={d} dominant={d.id === regime.dominant} />)}
@@ -172,7 +172,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       {/* 3–5. 아래 세 패널 정리(2026-10-13): INFLATION PRESSURE MAP → TREASURY CURVE → YIELD MOVE BREAKDOWN. 옛 캡처는 예전 패널 */}
       {regime.inflation_map && regime.curve_move && regime.yield_breakdown ? <RatesLowerFlow map={regime.inflation_map} cv={regime.curve_move} yb={regime.yield_breakdown} /> : (<>
         {/* 3. INFLATION PRESSURE */}
-        <section className="panel">
+        <section className="panel g-imap">
           <header className="panel-head"><h2 className="panel-title">Inflation Pressure</h2><div className="panel-note mono">구성별 · 결측은 0 이 아니다</div></header>
           <div className="panel-body rr-comps">
             {regime.inflation_components.map((c) => <ComponentRow key={c.key} c={c} />)}
@@ -180,7 +180,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
         </section>
 
         {/* 4. TREASURY CURVE */}
-        <section className="panel span-2" data-testid="curve">
+        <section className="panel span-2 g-curve" data-testid="curve">
           <header className="panel-head"><h2 className="panel-title">Treasury Curve</h2><div className="panel-note mono">{SHAPE_KO[regime.curve.shape]}{regime.curve.lead !== "none" ? ` · ${LEAD_KO[regime.curve.lead]}` : ""} · 2s10s {sg(regime.curve.spread_z)}σ</div></header>
           <div className="panel-body">
             <div className="rr-tenors" role="table" aria-label="테너별 금리">
@@ -198,7 +198,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
         </section>
 
         {/* 5. NOMINAL YIELD DECOMPOSITION */}
-        <section className="panel" data-testid="decomposition">
+        <section className="panel g-yb" data-testid="decomposition">
           <header className="panel-head"><h2 className="panel-title">Nominal Yield Decomposition</h2><div className="panel-note mono">명목 = <span style={{ color: "var(--accent)" }}>실질</span> + <span style={{ color: "var(--muted)" }}>기대인플레</span> · {regime.decomposition[0]?.window_days ?? 5}일 변화</div></header>
           <div className="panel-body rr-decomp">
             {regime.decomposition.map((d) => (
@@ -218,7 +218,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </>)}
 
       {/* 6. MARKET CONFIRMATION */}
-      <section className="panel span-2">
+      <section className="panel span-2 g-conf" data-testid="rates-confirmation">
         <header className="panel-head"><h2 className="panel-title">Market Confirmation</h2><div className="panel-note mono"><span style={{ color: "var(--ok)" }}>CONFIRMED {counts.CONFIRMED}</span> · <span style={{ color: "var(--warn)" }}>MIXED {counts.MIXED}</span> · <span style={{ color: "var(--down)" }}>NOT CONFIRMED {counts.NOT_CONFIRMED}</span> · {dom.label} 기준</div></header>
         <div className="panel-body rr-confs" role="table" aria-label="시장 확인">
           {regime.confirmations.map((r) => <ConfRow key={r.key} r={r} />)}
@@ -226,7 +226,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 7. KEY DIVERGENCE */}
-      <section className={`panel${regime.current_analysis && !regime.inflation_map ? " rt-fill" : ""}`} data-testid="key-divergence">
+      <section className={`panel g-div${regime.current_analysis && !regime.inflation_map ? " rt-fill" : ""}`} data-testid="key-divergence">
         <header className="panel-head"><h2 className="panel-title">Key Divergence</h2><div className="panel-note mono">자동 탐지 {divs.length}건 · 심각도 = 관련 z 중 작은 쪽</div></header>
         <div className="panel-body rr-divs">
           {divs.length === 0 ? <div className="sv-muted">설정된 괴리 짝 중 지금 걸린 것이 없다.</div> : divs.map((d) => (
@@ -240,7 +240,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 8. MARKET IMPLICATION */}
-      <section className="panel span-3" data-testid="market-implication">
+      <section className="panel span-3 g-imp" data-testid="market-implication">
         <header className="panel-head"><h2 className="panel-title">Market Implication</h2><div className="panel-note mono">{dom.label} 아래서의 전이 방향 — 추천이 아니다</div></header>
         <div className="panel-body">
           <div className="rr-imp-grid">
@@ -260,7 +260,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 9. WHAT CHANGES THE VIEW */}
-      <section className="panel span-3 rr-watch" data-testid="what-changes">
+      <section className="panel span-3 rr-watch g-changes" data-testid="what-changes">
         <header className="panel-head"><h2 className="panel-title">What Changes The View</h2><div className="panel-note mono">{dom.id === "inflation_repricing" ? "물가 리프라이싱 판단이 깨지는 조건" : "물가 리프라이싱으로 넘어가는 조건"} · 그리고 지배 driver 해제 조건</div></header>
         <div className="panel-body rr-watch-cols">
           <ol className="rr-watch-list">
@@ -283,7 +283,7 @@ export function RatesRegimeView({ regime, snapshot, check }: { regime: RatesRegi
       </section>
 
       {/* 10. Diagnostics */}
-      <details className="panel span-3 rr-diag" data-testid="rates-diagnostics">
+      <details className="panel span-3 rr-diag g-diag" data-testid="rates-diagnostics">
         <summary className="panel-head"><h2 className="panel-title">Diagnostics</h2><div className="panel-note mono">판정 룰(require/support) · 팩터 원점수 · 시나리오 서명 대조 · driver 증거 전체 — 접어 둔 내부 진단</div></summary>
         <div className="panel-body">
           <div className="rr-diag-grid">

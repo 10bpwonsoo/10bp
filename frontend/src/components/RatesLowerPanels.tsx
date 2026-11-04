@@ -99,7 +99,7 @@ function DataSources({ rows }: { rows: PressureValue[] }) {
 
 export function InflationPressureMapPanel({ map }: { map: InflationPressureMap }) {
   return (
-    <section className="panel rp-panel" data-testid="inflation-map">
+    <section className="panel rp-panel g-imap" data-testid="inflation-map">
       <header className="panel-head"><h2 className="panel-title">Inflation Pressure Map</h2><div className="panel-note">물가를 위·아래로 움직이는 주요 압력을 구성요소별로 확인</div></header>
       <div className="panel-body rp-body">
         <div className="rp-verdict">
@@ -168,7 +168,7 @@ function CurveChart({ points, window }: { points: CurvePoint[]; window: string }
 
 export function TreasuryCurvePanel({ cv }: { cv: CurveMoveView }) {
   return (
-    <section className="panel rp-panel" data-testid="curve">
+    <section className="panel rp-panel g-curve" data-testid="curve">
       <header className="panel-head"><h2 className="panel-title">Treasury Curve</h2><div className="panel-note">금리곡선의 어느 만기가 움직이고 있는가</div></header>
       <div className="panel-body rp-body">
         <div className="rp-verdict">
@@ -236,7 +236,7 @@ export function YieldMoveBreakdownPanel({ yb }: { yb: YieldMoveBreakdown }) {
   const hidden = yb.tenors.length - yb.tenors.filter((t) => yb.default_tenors.includes(t.tenor)).length;
   const t0 = yb.tenors[0];
   return (
-    <section className="panel rp-panel" data-testid="decomposition">
+    <section className="panel rp-panel g-yb" data-testid="decomposition">
       <header className="panel-head"><h2 className="panel-title" title="Nominal Yield Decomposition">Yield Move Breakdown</h2><div className="panel-note">명목금리 변화 = 실질금리 변화 + 기대인플레이션 변화</div></header>
       <div className="panel-body rp-body">
         <p className="rp-formula">금리가 왜 움직였는지 분해 <span className="mono">· {t0 ? `${t0.window_days}D` : ""}{t0?.start_date ? ` · ${md(t0.start_date)} → ${md(t0.end_date)}` : ""}{t0?.aligned ? " · 세 계열 같은 날짜" : ""}</span></p>

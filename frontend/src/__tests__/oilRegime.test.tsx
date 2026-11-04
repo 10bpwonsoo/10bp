@@ -15,6 +15,24 @@ const regime = regimeFx as unknown as OilRegime;
 const check: ScenarioCheck = { ...(checksFx as unknown as ScenarioCheck[]).find((c) => c.name === "oil_spike")!, focus: "oil_regime" };
 
 describe("OilRegimeView", () => {
+  it("What To Watch Next — 사람이 읽는 제목 · 현재 값 · 기준(작게)으로 나누되 엔진 문장·조건은 하나도 버리지 않는다", () => {
+    render(<OilRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+    const items = screen.getAllByTestId("watch-item");
+    items.forEach((li, i) => {
+      const w = regime.watch[i]!;
+      expect(li.querySelector(".or-watch-now")!.textContent).toBe(`현재 ${w.metric} ${w.current}`);
+      expect(li.querySelector(".or-watch-meta")!.textContent).toBe(`기준 ${w.condition}`);
+      const head = li.querySelector(".or-watch-head")!.textContent!;
+      const rest = li.querySelector(".or-watch-rest")?.textContent ?? "";
+      expect(rest ? `${head}: ${rest}` : head).toBe(w.text);
+    });
+  });
+
+  it("데스크톱 grid 자리 class — 금리·유가 본문 카드가 정보량별 폭(12열)을 받는다", () => {
+    const { container } = render(<OilRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
+    for (const c of ["g-regime", "g-drivers", "g-conf", "g-nar", "g-watch", "g-diag"]) expect(container.querySelectorAll(`.or > .${c}`).length).toBe(1);
+  });
+
   it("최상단 REGIME 카드가 dominant driver 와 상태(CONFIRMED/UNCONFIRMED/CONTRADICTED), 신호 강도를 말한다", () => {
     render(<OilRegimeView regime={regime} snapshot={snapshot} check={check} history={history} />);
     const card = screen.getByTestId("oil-regime-card");

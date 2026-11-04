@@ -2652,3 +2652,120 @@
   .arc-step { display: none; }
   .arc-cal-d { padding: 8px 0; font-size: 13px; }
 }
+
+/* ── 금리 · 유가 탭 DESKTOP / TABLET LANDSCAPE 레이아웃 (2026-11-04) ──────────────────
+   ≥1024px 에만 적용한다. 모바일(<768) · 태블릿(768–1023) 규칙과 DOM 순서는 그대로 둔다.
+   원인: 예전 .rr/.or 는 1101px 부터 3열인데 .span-3 은 1400px 부터만 3칸이라 1101–1399px(iPad 가로)에서
+   큰 카드가 한 칸(≈140px)으로 떨어져 글자가 세로로 쪼개졌고, ≥1400px 에서는 모든 카드가 한 줄 전체를 썼다.
+   이제 12열 grid 위에 카드마다 정보량에 맞는 폭을 준다. 빈 칸을 예약하지 않고, 각 줄의 합은 정확히 12.
+   높이는 내용대로(align-items:start) — 짧은 카드를 옆 카드 높이로 늘리지 않는다.
+   카드 안쪽 배치는 카드 폭(container query)에 맞춰 바뀐다 — 좁아지면 열을 줄이지, 글자를 쪼개지 않는다. */
+@media (min-width: 1024px) {
+  .rr, .or {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px; align-items: start;
+    width: 100%; max-width: 1760px; margin: 0 auto; padding: 16px 24px 40px; box-sizing: border-box;
+    word-break: keep-all; overflow-wrap: anywhere;
+  }
+  .rr > *, .or > *, .rr .rp-flow > * { min-width: 0; }
+  .rr > .panel, .or > .panel, .rr .rp-flow > .panel { container-type: inline-size; }
+  .rr .rp-flow { display: contents; }
+
+  /* 금리 — 1024–1279
+     [REGIME 6 ─ 두 줄][CURRENT 6]        긴 Regime 옆에 짧은 두 카드를 쌓아 빈 칸을 없앤다
+     [            ][HISTORY 6]
+     [EVENTS 6        ][INFLATION 6 ─ 두 줄]  Inflation Map 이 가장 길다 — 왼쪽은 Events 아래로 Curve 가 이어진다
+     [CURVE 6 ─ 두 줄 ][                  ]
+     [                ][BREAKDOWN 6        ]
+     줄 번호를 명시한다(빈 칸 예약이 아니라 서로 다른 높이를 두 칼럼으로 흘리기 위해). 나머지는 그 아래로 자동 배치. */
+  .rr .g-regime { grid-column: 1 / 7; grid-row: 1 / 3; }
+  .rr .g-ca { grid-column: 7 / 13; grid-row: 1; }
+  .rr > [data-testid="history-panel-rates_regime"] { grid-column: 7 / 13; grid-row: 2; }
+  .rr .g-events { grid-column: 1 / 7; grid-row: 3; }
+  .rr .g-imap { grid-column: 7 / 13; grid-row: 3 / 5; }
+  .rr .g-curve { grid-column: 1 / 7; grid-row: 4 / 6; }
+  .rr .g-yb { grid-column: 7 / 13; grid-row: 5; }
+  .rr > [data-testid="history-panel-rates_regime"] .dh-spark { height: 56px; }
+  .rr .g-conf { grid-column: span 8; }
+  .rr .g-div { grid-column: span 4; }
+  .rr .g-imp { grid-column: span 5; }
+  .rr .g-changes { grid-column: span 7; }
+  /* Diagnostics 는 접혀 있으면 머리 한 줄 — 옆 카드 높이를 빼앗지 않게 한 줄 전체의 얇은 바, 펼치면 그 자리에서 넓게 */
+  .rr .g-diag, .or .g-diag { grid-column: span 12; }
+
+  /* 유가 — [REGIME 6][HISTORY 6] [DRIVING 7][CONFIRM 5] [NARRATIVE 5][WATCH 7] [DIAG 12] */
+  .or .g-regime, .or > [data-testid="history-panel-oil_regime"] { grid-column: span 6; }
+  .or .g-drivers { grid-column: span 7; }
+  .or .g-conf { grid-column: span 5; }
+  .or .g-nar { grid-column: span 5; }
+  .or .g-watch { grid-column: span 7; }
+  .or > [data-testid="history-panel-oil_regime"] { align-self: stretch; }
+  .or > [data-testid="history-panel-oil_regime"] .panel-body { flex: 1; display: flex; flex-direction: column; }
+  .or > [data-testid="history-panel-oil_regime"] .dh-spark { height: 96px; }
+
+  /* 읽는 문장은 줄이지 않는다 — 폭을 먼저 주고, 글자는 13px 이상 */
+  .rr .rr-sent, .rr .rp-bd-line, .rr .rt-ev-read, .or .or-nar-sent { font-size: 13px; line-height: 1.55; }
+  .rr .rp-read p, .rr .rp-summary { font-size: 13.5px; line-height: 1.6; }
+
+  /* 잘라 버리던 확인표 — 숫자를 ellipsis 로 숨기지 않고 줄을 바꾼다 */
+  .rr .rr-conf-label, .rr .rr-conf-val, .or .or-conf-label, .or .or-conf-val { white-space: normal; overflow: visible; text-overflow: clip; }
+  .rr .rr-conf, .or .or-conf { align-items: baseline; padding: 5px 0; font-size: 12px; }
+  .rr .rr-conf-val, .or .or-conf-val { font-size: 11.5px; }
+  .or .or-conf { grid-template-columns: 14px minmax(0, 1fr) minmax(0, 1.3fr) 48px 40px; }
+  .rr .rr-side { min-width: min(300px, 100%); }
+
+  /* 곡선 차트 — 카드 폭 전체, 높이 220–280 */
+  .rr .rp-chart svg { max-height: 290px; }
+
+  /* Policy & Macro Events — 최근 지표 55 : Central Banks 45, 은행 칸은 150px 아래로 쪼개지 않는다 */
+  .rr .rt-ev-grid { grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); }
+  .rr .rt-banks { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+@media (min-width: 1280px) {
+  /* 금리 — [REGIME 4 ─ 두 줄][CURRENT 8] / [HISTORY 8] · [EVENTS 7][INFLATION 5 ─ 두 줄] / [CURVE 7 ─ 두 줄] / [BREAKDOWN 5] */
+  .rr .g-regime { grid-column: 1 / 5; }
+  .rr .g-ca, .rr > [data-testid="history-panel-rates_regime"] { grid-column: 5 / 13; }
+  .rr .g-events, .rr .g-curve { grid-column: 1 / 8; }
+  .rr .g-imap, .rr .g-yb { grid-column: 8 / 13; }
+  /* 유가 — [DRIVING 8][CONFIRM 4] (CONFIRM ≥ 380px) */
+  .or .g-drivers { grid-column: span 8; }
+  .or .g-conf { grid-column: span 4; }
+}
+@media (min-width: 1024px) {
+  /* 카드 폭에 따른 안쪽 배치 — 열을 줄여 글자를 지킨다 */
+  @container (max-width: 640px) {
+    .rr .rt-ev-grid { grid-template-columns: minmax(0, 1fr); }
+    .rr .rr-watch-cols { grid-template-columns: minmax(0, 1fr); }
+    .or .or-nar-row { grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 2px 12px; }
+    .or .or-nar-sent { grid-column: 1 / -1; }
+  }
+  @container (max-width: 560px) {
+    .rr .rr-imp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .rr .dh-ctx-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .rr .dh-ctx-grid .dh-counts { justify-self: start; grid-column: 1 / -1; }
+  }
+  @container (max-width: 600px) {
+    .rr .rt-head { grid-template-columns: minmax(0, 1fr); }
+  }
+  @container (max-width: 460px) {
+    .rr .rp-bds { grid-template-columns: minmax(0, 1fr); }
+  }
+  @container (max-width: 400px) {
+    /* 좁은 확인표: [표시 · 지표 · 상태] / [· 현재값 · 기대] 두 줄 */
+    .rr .rr-conf, .or .or-conf { grid-template-columns: 14px minmax(0, 1fr) auto; grid-template-areas: "mk lb st" ". vl ex"; row-gap: 1px; }
+    .rr .rr-conf-mark, .or .or-conf-mark { grid-area: mk; }
+    .rr .rr-conf-label, .or .or-conf-label { grid-area: lb; }
+    .rr .rr-conf-val, .or .or-conf-val { grid-area: vl; }
+    .rr .rr-conf-exp, .or .or-conf-exp { grid-area: ex; }
+    .rr .rr-conf-st, .or .or-conf-st { grid-area: st; }
+  }
+}
+
+/* 유가 What To Watch Next — 제목 · 현재 · 기준(작게) · 설명(작게). 모든 폭 공통 */
+.or-watch-list li { display: flex; flex-direction: column; gap: 1px; }
+.or-watch-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.or-watch-head { font-weight: 600; font-size: 13px; }
+.or-watch-eff { font-size: 10.5px; color: var(--muted); }
+.or-watch-now { font-size: 12.5px; color: var(--ink-2); }
+.or-watch-now b { color: var(--ink); }
+.or-watch-rest { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
