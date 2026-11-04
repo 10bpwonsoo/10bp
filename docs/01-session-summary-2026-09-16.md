@@ -596,3 +596,8 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 수정: `2026-11-04.json` 추가 — 10/22 BOK 3.00% 만장일치 동결 · 10/28 FOMC 3.75–4.00% 동결(10–2, Cook · Hammack 인상 주장) · 10/29 ECB 예치 2.50% 동결 · 10/30 BOJ 1.25% 동결(8–1, Takata 1.5% 제안) · 9월 PCE(헤드라인 3.6% vs Dow Jones 3.7% → COOL, 근원 3.1% 예상 수준). 다음 회의 FED 12/8–9 · ECB 12/17 · BOJ 12/17–18 · BOK 11/26, 일정 11/06 고용 · 11/10 CPI · 11/13 PPI · 11/17 소매판매 · 11/25 PCE. 확인하지 못한 값(ECB 표결 · 8월 PCE 전월 수정치 · 연준 12월 경로 가격)은 비움. 톤은 네 곳 모두 neutral(동결 · 데이터 의존) — 인상 쪽 반대표는 guidance_basis 에 적었다.
 - 적용: 11/05 스냅샷부터 자동. 11/04 저장본은 잠금 그대로(승인 시 archive correct 경로로만).
 - 사용자 승인으로 11/04 화면에도 적용: 같은 엔진 · 같은 PIT 계열(cutoff 11/03 22:30Z)로 10/15 파일을 넣으면 저장된 events 가 바이트 단위로 재현되는 것을 먼저 확인한 뒤, 새 파일로 만든 `rates_regime.events` 한 칸만 저장본(archive correct · 이전 파일 superseded/2026-11-04.20261104T130321Z.json · meta.corrections 에 이유)과 LIVE 캡처에서 교체. 다른 섹션 · 금리 regime 판정 · 점수는 그대로, validate COMPLETE. 매크로 패널 컨센서스 · regime 선택 컨텍스트처럼 판정 입력으로 쓰인 곳은 바꾸지 않았다.
+
+### 2026-11-04 — 정책·지표 이벤트 파일 매일 자동 갱신
+- `marketpulse/scripts/policy_events_update.py`: `draft`(직전 파일을 오늘 KST 파일로 이어 쓰기 · 지난 일정 정리 · 조사 목록 출력) · `due` · `validate`(형식 · look-ahead · 금리 산술 · 출처 · 직전 파일 대비 누락 + FRED 발표일 vintage 대조: CPI/PCE/고용 actual, 연준 목표 상단 · ECB 예치금리). 값은 만들지 않는다.
+- 절차 `docs/policy-events-daily-update.md`. 평일 06:40 KST 예약 작업(매번 새 세션)이 draft → 웹검색으로 둘 이상 출처 확인한 값만 채움 → validate · 테스트 → 이벤트 파일만 커밋 · push. 저장본 · 캡처는 건드리지 않는다.
+- 기존 파일 5개 모두 validate 통과(FRED 대조 포함). 틀린 숫자(PCE 3.9 · NFP 55 · 연준 3.50–3.75%)를 넣으면 FAIL 로 막히는 것 확인. 테스트 `tests/test_policy_events_update.py`.
