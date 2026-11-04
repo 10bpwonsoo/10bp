@@ -37,6 +37,12 @@ sources:
   NDX:       [{provider: yahoo, symbol: "^NDX"},    {provider: stooq, symbol: "^ndq"}]
   RUT:       [{provider: yahoo, symbol: "^RUT"}]
   HSCEI:     [{provider: yahoo, symbol: "^HSCE"}]
+  HANGSENG:  [{provider: yahoo, symbol: "^HSI"}]
+  HSTECH:    [{provider: yahoo, symbol: "3033.HK"}]      # CSOP Hang Seng TECH ETF — ^HSTECH / HSTECH.HK 는 이력이 1봉뿐
+  SHCOMP:    [{provider: yahoo, symbol: "000001.SS"}]
+  SZCOMP:    [{provider: yahoo, symbol: "399001.SZ"}]
+  CSI300_ETF: [{provider: yahoo, symbol: "510300.SS"}]   # Huatai-PineBridge CSI 300 ETF — 000300.SS 는 이력이 1봉뿐
+  CHINEXT:   [{provider: yahoo, symbol: "159915.SZ"}]    # E Fund ChiNext ETF — 399006.SZ 는 이력이 1봉뿐
   NIKKEI:    [{provider: yahoo, symbol: "^N225"},   {provider: stooq, symbol: "^nkx"}]
   SX5E:      [{provider: yahoo, symbol: "^STOXX50E"}]
 

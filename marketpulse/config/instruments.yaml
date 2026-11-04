@@ -17,6 +17,14 @@ instruments:
   - {id: NDX,      name: Nasdaq 100,       asset_class: equity, unit: index, series_kind: price, region: US,     currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [us, growth, tech]}
   - {id: RUT,      name: Russell 2000,     asset_class: equity, unit: index, series_kind: price, region: US,     currency: USD, higher_is_risk_on: true,  calendar: NYSE, tags: [us, smallcap, cyclical]}
   - {id: HSCEI,    name: Hang Seng China,  asset_class: equity, unit: index, series_kind: price, region: CN,     currency: HKD, higher_is_risk_on: true,  calendar: NYSE, tags: [china]}
+  # 중국 종합(2026-11-04) — China 테마는 홍콩(항셍 · H지수 · 항셍테크)과 본토(상해 · 심천 · CSI 300 · 창업판)를 함께 본다.
+  # 항셍테크 · CSI 300 · 창업판은 Yahoo 가 지수 이력을 주지 않아 같은 지수를 추종하는 현지 상장 ETF 로 대신한다(이름에 표시).
+  - {id: HANGSENG,   name: Hang Seng,               asset_class: equity, unit: index, series_kind: price, region: CN, currency: HKD, higher_is_risk_on: true, calendar: NYSE, tags: [china, hongkong]}
+  - {id: HSTECH,     name: Hang Seng TECH (ETF),    asset_class: equity, unit: price, series_kind: price, region: CN, currency: HKD, higher_is_risk_on: true, calendar: NYSE, tags: [china, hongkong, tech]}
+  - {id: SHCOMP,     name: Shanghai Composite,      asset_class: equity, unit: index, series_kind: price, region: CN, currency: CNY, higher_is_risk_on: true, calendar: NYSE, tags: [china, mainland]}
+  - {id: SZCOMP,     name: Shenzhen Component,      asset_class: equity, unit: index, series_kind: price, region: CN, currency: CNY, higher_is_risk_on: true, calendar: NYSE, tags: [china, mainland]}
+  - {id: CSI300_ETF, name: CSI 300 (ETF),           asset_class: equity, unit: price, series_kind: price, region: CN, currency: CNY, higher_is_risk_on: true, calendar: NYSE, tags: [china, mainland]}
+  - {id: CHINEXT,    name: ChiNext (ETF),           asset_class: equity, unit: price, series_kind: price, region: CN, currency: CNY, higher_is_risk_on: true, calendar: NYSE, tags: [china, mainland, growth]}
   - {id: NIKKEI,   name: Nikkei 225,       asset_class: equity, unit: index, series_kind: price, region: JP,     currency: JPY, higher_is_risk_on: true,  calendar: NYSE, tags: [japan]}
   - {id: SX5E,     name: Euro Stoxx 50,    asset_class: equity, unit: index, series_kind: price, region: EU,     currency: EUR, higher_is_risk_on: true,  calendar: NYSE, tags: [europe]}
 

@@ -727,7 +727,7 @@ F_j = Σ_i (s_ij · w_ij · z_i) / Σ_i w_ij        (available i만, 재정규�
 | Volatility | +0.60·z(VIX) +0.40·z(RealizedVol20d) |
 | Credit | +1.00·z(HY_OAS) |
 | Liquidity | −0.50·z(CreditSpread) −0.30·z(MOVE) +0.20·z(거래대금) |
-| China | +0.50·z(HSCEI) +0.30·z(Copper) +0.20·z(CNH) |
+| China | 중국 주식 종합 7지수 동일가중: H지수 · 항셍 · 항셍테크(ETF) · 상해종합 · 심천성분 · CSI 300(ETF) · 창업판(ETF) (2026-11-04~) |
 | KoreaFlow | +0.60·z(외국인순매수) +0.40·z(기관순매수) |
 | KoreaBreadth | +0.60·z(상승종목비율) +0.40·z(신고가−신저가) |
 

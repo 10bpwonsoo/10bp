@@ -38,10 +38,17 @@ themes:
     aliases: [중국]
     keywords: [중국, 차이나, 위안화, 인민은행, 시진핑, China, PBOC, yuan, 부동산, 헝다]
     macro_factors: [China, Growth]
+    # 중국 주식 종합(2026-11-04) — 홍콩 3(항셍 · H지수 · 항셍테크) + 본토 4(상해 · 심천 · CSI 300 · 창업판).
+    # 한 지수(예전엔 H지수 하나)로 판단하지 않는다 — Leadership 의 breadth 도 이 7개 중 20일선 위 비중이 된다.
+    # 구리 · 위안화는 China 테마 점수에서 빼고 Leadership 의 driver 연결(cockpit.yaml leadership_intel.hints.china)과 매크로 factor 에 남긴다.
     instruments:
-      - {instrument_id: HSCEI,  weight: 0.40, direction: 1}
-      - {instrument_id: COPPER, weight: 0.30, direction: 1}
-      - {instrument_id: USDCNH, weight: 0.30, direction: -1}
+      - {instrument_id: HSCEI,      weight: 0.15, direction: 1}
+      - {instrument_id: HANGSENG,   weight: 0.15, direction: 1}
+      - {instrument_id: HSTECH,     weight: 0.14, direction: 1}
+      - {instrument_id: SHCOMP,     weight: 0.14, direction: 1}
+      - {instrument_id: SZCOMP,     weight: 0.14, direction: 1}
+      - {instrument_id: CSI300_ETF, weight: 0.14, direction: 1}
+      - {instrument_id: CHINEXT,    weight: 0.14, direction: 1}
 
   - id: oil
     name: Oil

@@ -142,7 +142,7 @@ Yahoo·stooq·FRED 가 닿으면 자동으로 받는다. 막힌 환경에서만 
 | `COPPER` | 구리 | `HG=F` | – | `4.12` |
 | `NATGAS` | 천연가스 | `NG=F` | `DHHNGSP` | `2.85` |
 
-### 지수 · 업종 ETF (17종목)
+### 지수 · 업종 ETF (23종목)
 
 Yahoo Finance `finance.yahoo.com/quote/<심볼>/history` → Download.
 막혀 있으면 stooq `stooq.com/q/d/?s=<심볼>` 의 CSV 링크.
@@ -158,6 +158,14 @@ Yahoo Finance `finance.yahoo.com/quote/<심볼>/history` → Download.
 | `HSCEI` | `^HSCE` | – | | `ITA` | `ITA` | `ita.us` |
 | `NIKKEI` | `^N225` | `^nkx` | | `JETS` | `JETS` | `jets.us` |
 | `SX5E` | `^STOXX50E` | – | | | | |
+
+중국 종합(China 테마, 6종목 추가): 항셍테크 · CSI 300 · 창업판은 Yahoo 에 지수 이력이 없어 현지 상장 ETF 를 쓴다.
+
+| id | Yahoo | stooq | | id | Yahoo | stooq |
+|---|---|---|---|---|---|---|
+| `HANGSENG` | `^HSI` | – | | `SZCOMP` | `399001.SZ` | – |
+| `HSTECH` | `3033.HK` | – | | `CSI300_ETF` | `510300.SS` | – |
+| `SHCOMP` | `000001.SS` | – | | `CHINEXT` | `159915.SZ` | – |
 
 지수는 지수값(`2540.10`), ETF 는 주가(`58.44`) 를 넣는다. 배당·분할
 조정 종가(`Adj Close`)가 있으면 그쪽이 수익률 계산에 맞다.
