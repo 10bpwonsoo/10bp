@@ -1,0 +1,490 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/05 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/04 · 11/05 수집분을 합쳤다.",
+ "tags": {
+  "ed45c9db291935a4": {
+   "themes": [
+    "geopolitical_risk",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 10,
+    "energy": 20
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up",
+    "energy": "up"
+   },
+   "sentiment": 5,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 중간선거 개표 시작 · AI 전력주 일제히 급등(제목)."
+  },
+  "3c12f9c0f4e3bdb2": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "ai": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "AMD 실적으로 '인텔 쇼크' 우려 완화 · 선거 결과와 무관한 안도 랠리 기대(제목)."
+  },
+  "97322205f11f4e81": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 장 초반 2%대 상승 · 반도체 강세, 미국 중간선거 경계(제목)."
+  },
+  "0ad294ea4d5c58f4": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 상승 출발 뒤 외국인 매도로 삼성전자·SK하이닉스 하락 전환(제목)."
+  },
+  "987d33161d567521": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피·코스닥 상승 출발 뒤 1%대 하락 전환(속보 제목)."
+  },
+  "f5c4d53134805841": {
+   "themes": [
+    "korea_governance",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15,
+    "usd": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "usd": "up"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 하락 전환 · 외국인 1.2조 원 순매도(제목)."
+  },
+  "beda4623e2f171f4": {
+   "themes": [
+    "semiconductor",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "geopolitical_risk": 20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "AMD·슈퍼마이크로 호실적에도 미국 '블루 쓰나미'(민주당 압승) 우려로 증시 하락 전환(제목)."
+  },
+  "a9bda748470e12c4": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10,
+    "ai": 5
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "AMD, OpenAI·Meta 칩 계약 관련 분기 10억 달러 비용 인식(제목)."
+  },
+  "80aced125f6f88b2": {
+   "themes": [
+    "semiconductor",
+    "china",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10,
+    "china": 20,
+    "shareholder_return": 20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 0,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "중국 창신메모리(CXMT) 자사주 매입 1조 원으로 확대 · 13% 급등 — 중국 메모리 경쟁 맥락(제목)."
+  },
+  "5dba5dab6dfe0185": {
+   "themes": [
+    "inflation",
+    "rates",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "inflation": 40,
+    "rates": 30,
+    "energy": 25
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up",
+    "energy": "up"
+   },
+   "sentiment": -20,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "유로존 10월 물가 4%(3년 만에 처음) · 에너지 물가 20% 이상 급등, ECB 인상 압력(본문)."
+  },
+  "70138722871fa129": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "대규모 이익 전망에도 삼성전자·SK하이닉스 주가가 하락 반전한 이유 분석(제목)."
+  },
+  "407c8520e2316e7d": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 5,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "ADP 10월 민간고용 +8.6만 명, 예상 소폭 상회 · 업종 전반 고른 증가(본문)."
+  },
+  "5a324f1ba83521e1": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10,
+    "semiconductor": 5
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 극심한 변동성 끝에 0.62% 상승 마감(5683) — 미국 반도체 강세 출발, 중간선거 불확실성에 급락도(본문)."
+  },
+  "fc94553dec1a0518": {
+   "themes": [
+    "energy",
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "energy": 40,
+    "semiconductor": -20,
+    "ai": -15
+   },
+   "theme_direction": {
+    "energy": "up",
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": 10,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "미 중간선거 민주당 상·하원 다수 확보 → 한국 태양광·2차전지 급등(한화솔루션 18%·삼성SDI 11%), AI 데이터센터 규제 우려로 삼성전자·SK하이닉스 장중 급락(본문)."
+  },
+  "d292b55e23f47b2f": {
+   "themes": [
+    "energy",
+    "ai",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "energy": 30,
+    "ai": -10,
+    "geopolitical_risk": -10
+   },
+   "theme_direction": {
+    "energy": "up",
+    "ai": "down",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 5,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "민주당 압승 · 트럼프 패배 인정과 협력 언급에 불안 완화, 신재생·헬스케어 수혜 시각(본문)."
+  },
+  "ee60fd98137588a8": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "ai": -15,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "코스피 9000선 돌파 한 달여 만에 5000선대 — 반도체 쏠림·AI 투자 불안·외국인 매도로 급등락 반복(본문)."
+  },
+  "80c13575243ff9d0": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": -20
+   },
+   "theme_direction": {
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 35,
+   "impact": 60,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "미국 민주당 압승에 다우 3% 급등 — 18개월 만에 최대폭(속보 제목)."
+  },
+  "63a618092d1df0c3": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40,
+    "ai": -35
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "필라델피아 반도체지수 3% 급락 — 텍사스 AI 데이터센터 건설 중단 우려(속보 제목)."
+  },
+  "1936a274558ca080": {
+   "themes": [
+    "oil",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "oil": -50,
+    "geopolitical_risk": -20
+   },
+   "theme_direction": {
+    "oil": "down",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 20,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "트럼프 패배 인정에 다우 3% 급등 · 유가 8% 급락(제목)."
+  },
+  "40153de51e50daeb": {
+   "themes": [
+    "energy"
+   ],
+   "theme_sentiment": {
+    "energy": 25
+   },
+   "theme_direction": {
+    "energy": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "미국 '블루 웨이브' 수혜 기대 속 LG에너지솔루션 반등 가능성 점검(제목)."
+  },
+  "c4d46d40dcc11554": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "하나: 메모리 가격 상승에 애플의 부품사 가격 인하 압박 우려(제목)."
+  },
+  "bb2a6e930a05980b": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "호반그룹이 한진칼 최대주주(조원태 회장 대비 0.11%p 앞섬) — 경영권 경쟁(제목)."
+  },
+  "78ca2867861c436f": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "심텍 3분기 호실적에 장 초반 10%대 급등(제목)."
+  },
+  "ae564c56e06aeb89": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "NH아문디: 앤트로픽 상장이 AI 산업 재평가 계기(제목)."
+  },
+  "ee34e3b4e20fec33": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -30
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "LG생활건강 3분기 어닝쇼크 · 장 초반 10%대 급락(제목)."
+  }
+ }
+}
