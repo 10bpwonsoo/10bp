@@ -28,6 +28,21 @@ const sel: RegimeSelection = {
   primary_signal: "Growth -0.62", coverage_detail: {}, excluded: ["US Breadth", "KOSPI 상승종목 비율"], warnings: [],
 };
 
+describe("REGIME v2 · 같은 taxonomy 묶음(2026-11-06)", () => {
+  it("오늘 선택 RISK_OFF 와 공식 LIQUIDITY_STRESS 는 같은 'Liquidity Stress / Risk-Off' — PENDING 을 띄우지 않는다", () => {
+    const n = { ...cockpit.market_now, label: "LIQUIDITY_STRESS", label_text: "LIQUIDITY STRESS", raw_label: "RISK_OFF", raw_persistence_days: 1, required_days: 2,
+      selection: { ...sel, selected_regime: "RISK_OFF", selection_status: "CONFIRMED" } as RegimeSelection };
+    render(<CockpitView cockpit={{ ...cockpit, market_now: n }} snapshot={snapshot} history={history} />);
+    expect(screen.queryByTestId("ck-rs-pending")).toBeNull();
+  });
+  it("묶음이 다르면(RISK_ON vs LIQUIDITY_STRESS) 여전히 PENDING", () => {
+    const n = { ...cockpit.market_now, label: "LIQUIDITY_STRESS", label_text: "LIQUIDITY STRESS", raw_label: "RISK_ON", raw_persistence_days: 1, required_days: 2,
+      selection: { ...sel, selected_regime: "RISK_ON", selection_status: "CONFIRMED" } as RegimeSelection };
+    render(<CockpitView cockpit={{ ...cockpit, market_now: n }} snapshot={snapshot} history={history} />);
+    expect(screen.getByTestId("ck-rs-pending").textContent).toContain("RISK-ON");
+  });
+});
+
 describe("REGIME v2 · MARKET NOW", () => {
   it("공식과 오늘 선택이 다르면 PENDING · confidence 와 coverage 는 따로 · 주식 확인 3칸", () => {
     const n = { ...cockpit.market_now, label: "LIQUIDITY_STRESS", label_text: "LIQUIDITY STRESS", raw_label: "NEUTRAL", raw_text: "NO REGIME", raw_persistence_days: 1, required_days: 2, selection: sel };

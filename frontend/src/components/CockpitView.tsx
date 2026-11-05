@@ -54,10 +54,14 @@ function sigArrow(sc: number | null, exp: number): string {
   return Math.abs(dir) >= 0.6 ? (dir > 0 ? "↑↑" : "↓↓") : Math.abs(dir) >= 0.15 ? (dir > 0 ? "↑" : "↓") : "→";
 }
 
+const REGIME_GROUP: Record<string, string> = { RISK_OFF: "LIQUIDITY_STRESS" };
+export const regimeGroup = (l: string | null | undefined): string => REGIME_GROUP[l ?? ""] ?? (l ?? "");
+
 /** MARKET REGIME v2 블록 — 선택 · confidence · coverage · 주식 확인 · WHY. 상세(신호 · 후보)는 펼침에 */
 function RegimeSelectionBlock({ n }: { n: Cockpit["market_now"] }) {
   const s = n.selection!;
-  const pending = s.selected_regime !== n.label;
+  // 공식 regime 은 taxonomy 묶음 단위 — RISK_OFF 와 LIQUIDITY_STRESS 는 같은 'Liquidity Stress / Risk-Off' (config/cockpit.yaml taxonomy). 같은 묶음이면 전환 후보가 아니다(2026-11-06)
+  const pending = regimeGroup(s.selected_regime) !== regimeGroup(n.label);
   const eq = s.selected_regime === "NEUTRAL" ? s.neutral_equity : s.candidates.find((c) => c.label === s.selected_regime)?.equity ?? null;
   const st = (k: string, v: string) => <span className="ck-rs-eq" data-testid={`ck-rs-${k}`}><span className="ck-k">{k}</span> <b style={{ color: RS_COLOR[v] ?? "var(--ink)" }}>{v}</b></span>;
   return (

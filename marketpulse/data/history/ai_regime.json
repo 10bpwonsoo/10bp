@@ -3224,6 +3224,80 @@
     "stress": "HIGH"
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-05",
+   "tab_id": "ai_regime",
+   "state": "ai_specific_derisking",
+   "state_label": "AI-SPECIFIC DE-RISKING",
+   "state_label_ko": "AI 고유 디레버리징",
+   "state_score": 100.0,
+   "confidence": 100.0,
+   "component_scores": {
+    "basket_z_5d": -3.9,
+    "rel_ndx_5d": -8.87,
+    "rel_ndx_z_5d": -3.47,
+    "breadth_ma20": 9.0,
+    "news_tone": -46.8,
+    "driver:macro_rates": 36.8,
+    "driver:broad_risk_off": -52.4,
+    "driver:semi_cycle": -100.0,
+    "driver:ai_narrative": -78.6,
+    "driver:ai_fundamental_stress": 2.0
+   },
+   "key_drivers": [
+    "Semiconductor Cycle -100 CONFIRMED",
+    "AI Narrative -79 CONFIRMED",
+    "Broad Risk-Off -52 CONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-05T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-05T23:41:37.746160Z",
+   "model_version": "ai_regime_v0.1.0",
+   "logic_version": "rules_5be636bd",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "AI 고유 디레버리징. AI 바스켓 절대 하락(-3.9σ·5일, 5일 -17.5%) · Nasdaq 100 대비 underperform(5일 -8.9%p, 상대 z -3.5σ) — 시장보다 더 빠진다. AI 고유 요인을 의심한다. 가장 큰 driver 는 반도체 사이클(-100, driver 방향(하락)과 AI 바스켓(-3.9σ)이 같다.) breadth 9%(stable). 뉴스×가격 CONFIRMED RISK-OFF. AI 고유 스트레스 HIGH.",
+   "payload": {
+    "leadership": [
+     "hyperscalers",
+     "software",
+     "power",
+     "packaging"
+    ],
+    "lagging": [
+     "networking",
+     "memory_hbm",
+     "compute"
+    ],
+    "leader_1w": "hyperscalers",
+    "breadth_trend": "stable",
+    "breadth_ma20": 9.0,
+    "price_confirmation": "WEAK",
+    "fundamental_confirmation": "WEAK",
+    "narrative": "confirmed_risk_off",
+    "ai_vs_market": "underperform",
+    "abs_direction": "down",
+    "dominant": "semi_cycle",
+    "status_strip": {
+     "narrative": "NEGATIVE",
+     "relative": "WEAK",
+     "price": "WEAK",
+     "semi": "WEAK",
+     "infra": "WEAK",
+     "software": "WEAK",
+     "breadth": "STABLE",
+     "macro": "HEADWIND",
+     "fundamental": "WEAK"
+    },
+    "subtitle": "AI-SPECIFIC DE-RISKING / FUNDAMENTALS WEAK",
+    "stress": "HIGH"
+   },
+   "corrections": []
   }
  ]
 }
