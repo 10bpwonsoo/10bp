@@ -226,6 +226,8 @@ def fred_fetcher(api_key: str | None) -> Fetch | None:
     http = HttpClient(timeout_sec=20.0, retries=1)
 
     def get(sid: str, realtime: str) -> list[tuple[str, float | None]]:
+        # FRED 의 '오늘' 은 미국 중부시간 날짜 — 그보다 늦은 realtime 은 미래 vintage 라며 거절된다(2026-11-05 ECB 대조 실패)
+        realtime = min(realtime, datetime.now(ZoneInfo("America/Chicago")).date().isoformat())
         start = (date.fromisoformat(realtime) - timedelta(days=500)).isoformat()
         r = _fred_api(http, "https://api.stlouisfed.org/fred", sid, api_key, start, realtime)
         return [(d, v) for d, v in r["observations"]]
