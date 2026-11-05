@@ -608,3 +608,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - Central Banks 4곳은 3 + 1 대신 2 × 2.
 - TREASURY CURVE 판정: CURVE MOVE · MOVE INTENSITY 두 상자를 한 칸으로(모양 → 방향 · 가장 크게 움직인 만기 σ · 이례성). 값 · 계산 그대로. 다른 탭 변경 없음.
 - 배포 주소 정정: 위 두 변경(11/04 이벤트 · 금리 탭 배치)을 처음에 예전 대시보드 주소(YJ43T5NFBoLDoCS8Bua5am)에 올렸다. 사용 중인 대시보드는 https://claude.ai/artifact/3ERLmXjNkcrbGmfdjwbHzS — V108 로 다시 올림. 앞으로 배포는 이 주소로만.
+
+### 2026-11-05 — 11/05 Daily Snapshot (07:30 KST)
+- 입력: 05:20Z 수집이 Yahoo 요청 제한(429)으로 S&P 500 · MOVE · XLF · 종목 12개가 빠져, 05:24Z 재수집 · USD/KRW 단독 재수집(첫 두 번은 FRED 주간 계열 10/30 으로 대체됨)과 계열마다 합쳤다(마지막 봉이 가장 늦은 것 — 기본 47/60 · 종목 94 · 바스켓 52). 07:30 KST cutoff 재구성(`data/captures/2026-11-05-backfill/`, historical_backfill 규칙 — 오늘이지만 '지금 데이터' 저장이 아니다) — 미국 11/04 종가(중간선거 다음 날) · 한국 11/04 종가 · 미국채/TIPS/HY OAS · 원자재 · 환율 11/03 관측(11/04 봉은 cutoff 에 끝나지 않음). RSS 창(11/04 07:30~11/05 07:30 KST) 77건 중 25건 수기 태깅. DRAMeXchange 11/05 11:00(GMT+8) 값은 cutoff 뒤라 화면 밖(DDR5 16Gb 마지막 값 11/04 $61.50).
+- 결과: 미국 중간선거 민주당 압승 · 트럼프 패배 인정 — S&P +1.6% · Russell +1.6% · XLF +3.5% · 경기민감 대 방어 +3.8% · VIX −20% · SOXX −3.1%(텍사스 AI 데이터센터 건설 중단 우려), 한국 대표 종목 78% 상승. REGIME v2 선택 RISK_ON 78(세션 — 정량 86.5 보다 낮게: 하루짜리 정치 이벤트 반응 · 반도체/나스닥 미확인 · 신용/원자재 반응 미반영), US · KOREA · GLOBAL CONFIRMED, coverage 81%. 공식 regime Liquidity Stress / Risk-Off 유지, PENDING Risk-On 1/2. AI AI-SPECIFIC DE-RISKING(센티 28), 금리 GROWTH-LED RATES(물가 리프라이싱 반박), 물가 압력 MIXED(환율 전가 ↔ 기대인플레·에너지), 유가 Geopolitical Premium UNCONFIRMED, 반도체 UPSWING 41.2. 해석 4종(금리 · 물가 · 반도체 · regime 선택)은 API 사용 불가 → 같은 컨텍스트·검증의 세션 생성본.
+- 정책 이벤트: 11/05 파일(06:40 KST 예약 작업, 이어 쓰기) — 금리 탭 하단 '수집 2026-11-05'.
+- history: 11/04 행 7개 탭 RECORDED·잠금. 다른 잠긴 행 · 기존 아카이브 바이트 동일(삽입만). COMPLETE · validate · 테스트 통과. 스크린샷 `data/archive/screenshots/2026-11-05.jpg`. 정적 배포본 8.3MB.
