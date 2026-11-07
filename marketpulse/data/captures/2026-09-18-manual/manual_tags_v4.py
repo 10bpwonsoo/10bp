@@ -1,0 +1,158 @@
+"""
+2026-09-18 01:10 UTC 기준 4차 수기 태깅 (시장 봉은 9/17 종가까지).
+
+RSS 80건 중 테마와 관련 있는 것만 읽고 태깅했다. 해외 기사는 이 세션의 웹검색으로
+찾아 같은 규약으로 적었다. extractor="manual". Anthropic API 호출 아님.
+
+부호 규약: 테마가 강해지는 방향이 +. oil/inflation/rates 는 directional 이라
+유가·물가·금리 '상승' 이 direction=up 이고, sentiment 는 시장 호재/악재다.
+geopolitical_risk 는 risk polarity — 긴장 고조가 +.
+
+이번 주 맥락: 9/16 FOMC 25bp 인상(3.75~4.00%, 2023년 이후 첫 인상, 워시 매파 기자회견) →
+9/16 뉴욕 급락 → 9/17 금리·유가 하락에 반등(나스닥 +1.4~1.7%) → 코스피 9/17 보합(외국인 7일째 순매도) →
+9/18 장초 +2%대 반등(젠슨 황 "내년 칩 판매 2배"). BoE 동결, BoJ 9/18 인상 예상. 사우디 파이프라인 복구 소식에 브렌트 하락.
+"""
+
+def T(themes, ts, td, sentiment, impact, novelty, horizon, event_type, reason):
+    return dict(themes=themes, theme_sentiment=ts, theme_direction=td, sentiment=sentiment,
+                impact=impact, novelty=novelty, horizon=horizon, event_type=event_type, reason=reason)
+
+TAGS = {
+    # ── 금리 · 연준 · 중앙은행 ──
+    "2b0dcbbe4aae8bc7": T(["rates"], {"rates": -30}, {"rates": "up"}, 0, 50, 35, "short", "policy",
+        "Fed 25bp 인상에도 코스피 6800선 턱밑 유지. 인상 자체는 반영됐다는 톤."),
+    "3dca60d728b62197": T(["rates"], {"rates": -30}, {"rates": "up"}, -5, 45, 30, "short", "macro",
+        "연준 매파 기조에도 코스피 강보합. 추가 긴축 경계는 남아 있다."),
+    "d0c12d1e0065716f": T(["rates"], {"rates": -25}, {"rates": "up"}, -10, 50, 40, "medium", "policy",
+        "시티 '한두 번 인상으로 안 무너진다' vs JPM '점도표보다 더 올린다'. 추가 인상 폭이 쟁점."),
+    "83f58dcdeff03fb8": T(["rates"], {"rates": -20}, {"rates": "up"}, 10, 35, 35, "medium", "other",
+        "NH: 미 국채의 안전자산 역할 약화, 채권 대비 주식 매력. 금리 상승을 인정하되 주식엔 중립~긍정."),
+    "edd6ccee5c714ba8": T(["rates"], {"rates": -15}, {"rates": "up"}, 5, 30, 25, "medium", "other",
+        "인상 직후 10% 조정 가능성과 1년 뒤 상승 사례를 같이 든다. 단기 경계, 중기 낙관."),
+    "996164b3a55c4983": T(["rates"], {"rates": -40}, {"rates": "up"}, -35, 45, 35, "medium", "other",
+        "2022년 긴축기 코스피 25% 폭락 재현 우려. 공포 프레임."),
+    "c85a0050270e18f3": T(["rates"], {"rates": -15}, {"rates": "up"}, -5, 35, 25, "intraday", "macro",
+        "코스피 -0.04% 6715, 코스닥 +0.76%. 인상 소화 국면의 보합."),
+    "8e4ab42b4327a19e": T(["rates", "oil", "ai"], {"rates": 15, "oil": 20, "ai": 25}, {"rates": "down", "oil": "down", "ai": "up"},
+        40, 65, 45, "short", "macro",
+        "9/17 뉴욕: 금리 충격 딛고 반등, 나스닥 +1.69%. 10년물·유가 하락이 근거."),
+    "37560610bbb943e2": T(["rates", "oil"], {"rates": 10, "oil": 15}, {"rates": "down", "oil": "down"}, 5, 35, 25, "intraday", "macro",
+        "반등 뒤 미 선물 소폭 하락. 유가·금리 완화가 전일 반등의 이유였다는 재확인."),
+    "e5f089aba3fbd298": T(["rates", "semiconductor"], {"rates": 10, "semiconductor": 30}, {"rates": "up", "semiconductor": "up"},
+        35, 50, 40, "intraday", "macro",
+        "9/18 장초 코스피 2%대 반등. 미 금리인상을 소화했다는 프레임, 반도체 주도."),
+    "52955ed693ed6569": T(["rates"], {"rates": 5}, {"rates": "neutral"}, 5, 35, 40, "short", "policy",
+        "BoE 3.75% 동결(6:3). 연준 인상에 동조하지 않았다. 인플레 상방 위험은 경고."),
+    "2748c09512e1468f": T(["inflation", "oil"], {"inflation": -35, "oil": 20}, {"inflation": "up", "oil": "up"}, -30, 45, 35, "short", "macro",
+        "영국 CPI 3.1% 로 반등, 에너지 비용 급등. 유가발 인플레 재점화의 실례."),
+    "4567e36f910408a0": T(["rates"], {"rates": -10}, {"rates": "up"}, 10, 25, 20, "medium", "other",
+        "금리 상승기 은행주 주목. 금리 상승 자체는 인정, 금융주에는 호재 프레임."),
+    "7b29b924e1ddcd02": T(["usd"], {"usd": 10}, {"usd": "down"}, 15, 30, 30, "medium", "other",
+        "원화 강세 시기에 금융주가 돋보인다는 분석. 달러 약세(원화 강세) 방향 전제."),
+    "93f9c5fbad0b10ab": T(["rates", "semiconductor"], {"rates": -20, "semiconductor": -20}, {"rates": "up", "semiconductor": "down"},
+        -25, 50, 55, "medium", "other",
+        "삼성증권 코스피 목표 12,600→8,400 대폭 하향. 조정 시 매수라지만 눈높이 자체가 내려갔다."),
+
+    # ── 반도체 · AI ──
+    "82516ccc32c1b76f": T(["semiconductor", "ai"], {"semiconductor": 45, "ai": 40}, {"semiconductor": "up", "ai": "up"},
+        45, 70, 65, "short", "other",
+        "젠슨 황 '내년 칩 판매 2배' 발언에 삼성전자·SK하이닉스 동반 강세. AI 속도조절론에 정면 반박."),
+    "1712805a28c5c745": T(["ai", "semiconductor"], {"ai": 25, "semiconductor": 30}, {"ai": "up", "semiconductor": "up"},
+        30, 45, 40, "medium", "other",
+        "엔비디아 독주 뒤 삼성전자·SK하이닉스에 기회가 왔다는 분석. 메모리 협상력."),
+    "6099c22a1d9e205d": T(["ai", "semiconductor"], {"ai": 20, "semiconductor": 20}, {"ai": "up", "semiconductor": "up"},
+        30, 35, 35, "medium", "earnings",
+        "KB: 삼성전기 3분기 어닝 서프라이즈 전망, 저가 매수 기회. AI 서버 MLCC."),
+    "f11d2022a603e6c0": T(["semiconductor"], {"semiconductor": -35}, {"semiconductor": "down"}, -25, 50, 40, "short", "flow",
+        "'반도체 너무 올랐나' — 외국인이 삼성전자·SK하이닉스 9조 순매도하고 돈을 옮긴 곳. 수급 이탈."),
+    "8f65da1f52713ae9": T(["rates", "semiconductor", "ai"], {"rates": -30, "semiconductor": -20, "ai": 15},
+        {"rates": "up", "semiconductor": "down", "ai": "up"}, -10, 40, 35, "short", "flow",
+        "금리인상·워시 매파 발언 뒤 고수 투자자는 전력인프라주를 담고 삼성전자는 팔았다. AI 인프라 내 로테이션."),
+    "16e513fa48665388": T(["semiconductor"], {"semiconductor": 5}, {"semiconductor": "neutral"}, 0, 25, 30, "short", "flow",
+        "초고수가 삼성전자는 팔고 SK하이닉스는 담았다. 종목 간 차별화, 테마 방향은 중립."),
+    "f485b98c50a54239": T(["semiconductor", "ai"], {"semiconductor": -10, "ai": 15}, {"semiconductor": "down", "ai": "up"},
+        10, 25, 30, "short", "other",
+        "삼전닉스가 주춤할 때 오른 종목 — AI 밸류체인 내 순환."),
+    "91c95174733f8e25": T(["ai", "semiconductor"], {"ai": 30, "semiconductor": 10}, {"ai": "up", "semiconductor": "up"},
+        30, 35, 35, "short", "other",
+        "금리 충격에도 AI 병목주(후공정·전력)가 뛰었다. AI 투자 사이클은 살아 있다는 신호."),
+    "64120ce012208963": T(["ai"], {"ai": 20}, {"ai": "up"}, 20, 25, 35, "short", "other",
+        "데이터센터 수혜 '의외의 종목' 하루 10% 급등. AI 인프라 수요의 주변부 확산."),
+    "51bc11826f8638ef": T(["ai", "semiconductor"], {"ai": 15, "semiconductor": 15}, {"ai": "up", "semiconductor": "up"},
+        20, 25, 45, "medium", "other",
+        "AI 반도체 유니콘 리벨리온 코스닥 상장 추진. 국내 AI 칩 생태계 확장."),
+    "8bfc5bdacd2f87e4": T(["ai"], {"ai": -15}, {"ai": "down"}, -10, 25, 35, "long", "regulation",
+        "실리콘밸리 AI 데이터센터 붐이 지역 반대에 부딪힌다. 전력·부지 제약이 장기 병목."),
+
+    # ── 에너지 · 방산 · 조선 ──
+    "e1c9d1fbef041a2d": T(["energy"], {"energy": 25}, {"energy": "up"}, 25, 30, 45, "medium", "other",
+        "효성중공업, 한전 HVDC 실증사업 밸브·제어기 기업 선정. 국산 전력망 투자."),
+    "7e6127600757d5c8": T(["energy"], {"energy": 30}, {"energy": "up"}, 30, 35, 40, "medium", "flow",
+        "미 원전 수주 기대감에 두산그룹주 매수. 원전·전력 인프라 테마."),
+    "1ff3617f84279ee2": T(["defense", "energy"], {"defense": 15, "energy": 10}, {"defense": "up", "energy": "up"},
+        25, 30, 30, "short", "other",
+        "수주 실적·사업 다변화 부각으로 조선주 상승. 조선은 방산·에너지(LNG선) 양쪽에 걸친다."),
+    "a49e268e08138953": T(["defense"], {"defense": 30}, {"defense": "up"}, 35, 30, 50, "short", "other",
+        "스페이스X 궤도 비행 성공에 우주항공주 급등. 방산·우주 테마 심리."),
+
+    # ── 중국 · 소비 · 주주환원 ──
+    "a5d67e219dfb6352": T(["china"], {"china": -20}, {"china": "down"}, -25, 35, 30, "medium", "earnings",
+        "화학주 반짝 실적 끝, 우울한 전망 속 조정. 중국 공급과잉·수요 부진이 배경."),
+    "1760e58bdf7d8d3f": T(["consumer"], {"consumer": 15}, {"consumer": "up"}, 25, 25, 30, "medium", "flow",
+        "대한항공 외국인 지분율 꾸준히 상승, 실적·합병 기대. 종목 고유 수급."),
+    "7dcf3b029a01773a": T(["shareholder_return"], {"shareholder_return": 20}, {"shareholder_return": "up"}, 15, 20, 20, "long", "other",
+        "주주 자본주의 시대 고배당주 투자법. 배당성향 성장 기업 선별."),
+}
+
+FOREIGN = [
+    dict(url="https://www.cnbc.com/2026/09/16/fed-rate-decision-september-2026.html",
+         title="Fed rate decision September 2026: Rates rise to 3.75%-4%", date="2026-09-16",
+         themes=["rates", "inflation"], theme_sentiment={"rates": -45, "inflation": -20}, theme_direction={"rates": "up", "inflation": "up"},
+         sentiment=-40, impact=90, novelty=60, horizon="short", event_type="policy",
+         reason="FOMC 만장일치 25bp 인상, 3.75~4.00%. 2023년 이후 첫 인상. 점도표는 연내 1회 추가 인상."),
+    dict(url="https://www.fool.com/investing/2026/09/16/these-2-words-from-fed-chair-kevin-warsh-sunk-dow-sp500-nasdaq-put-wall-street-on-notice/",
+         title="These 2 Words From Fed Chair Kevin Warsh Sunk the Dow, S&P 500, and Nasdaq", date="2026-09-16",
+         themes=["rates"], theme_sentiment={"rates": -50}, theme_direction={"rates": "up"},
+         sentiment=-50, impact=75, novelty=55, horizon="short", event_type="policy",
+         reason="워시 의장 기자회견의 매파 톤에 다우 -1.7%(700pt), S&P -1%, 나스닥 -0.8%. 7월 이후 최저 근접."),
+    dict(url="https://fortune.com/2026/09/16/warsh-fed-hike-ai-hyperscalers-treasury-yields/",
+         title="Stocks slide toward lowest level since July after Warsh's hawkish press conference", date="2026-09-16",
+         themes=["rates", "ai"], theme_sentiment={"rates": -45, "ai": -20}, theme_direction={"rates": "up", "ai": "down"},
+         sentiment=-45, impact=70, novelty=50, horizon="short", event_type="macro",
+         reason="매파 기자회견 뒤 주가 7월 이후 최저 근접. AI 하이퍼스케일러 자본지출과 금리 부담을 연결."),
+    dict(url="https://www.cnbc.com/2026/09/17/treasury-yields-move-lower-after-fed-kicks-off-hiking-cycle.html",
+         title="Treasury yields move lower after Fed kicks off hiking cycle", date="2026-09-17",
+         themes=["rates"], theme_sentiment={"rates": 25}, theme_direction={"rates": "down"},
+         sentiment=25, impact=60, novelty=50, horizon="short", event_type="macro",
+         reason="인상 다음 날 10년물 4.93%(-7bp), 2년물 4.67%(-5bp). 인플레 억제 의지를 시장이 신뢰했다는 해석."),
+    dict(url="https://finance.yahoo.com/markets/live/stock-market-today-thursday-september-17-dow-sp-500-nasdaq-oil-fed-081248626.html",
+         title="Stock market today: Dow, S&P 500, Nasdaq rebound as bond yields slip, oil eases", date="2026-09-17",
+         themes=["rates", "oil", "ai"], theme_sentiment={"rates": 20, "oil": 25, "ai": 20}, theme_direction={"rates": "down", "oil": "down", "ai": "up"},
+         sentiment=40, impact=65, novelty=45, horizon="short", event_type="macro",
+         reason="9/17 S&P +0.8%, 나스닥 +1.4%. 금리·유가 하락이 반등의 근거."),
+    dict(url="https://www.cnbc.com/2026/09/17/oil-prices-today-wti-brent-hormuz-iran-war.html",
+         title="Oil prices fall as Saudi Arabia reportedly offers more crude via Hormuz after pipeline attack", date="2026-09-17",
+         themes=["oil", "geopolitical_risk"], theme_sentiment={"oil": 35, "geopolitical_risk": -25}, theme_direction={"oil": "down", "geopolitical_risk": "down"},
+         sentiment=30, impact=65, novelty=55, horizon="short", event_type="supply",
+         reason="브렌트 104.82(-1.01), WTI 101.91. 동서 파이프라인 절반 복구 며칠 내, 호르무즈 밖 STS 환적으로 공급 우려 완화."),
+    dict(url="https://www.cornerstonefuturesllc.com/post/brent-falls-to-103-68-as-wright-signals-faster-pipeline-repair-diesel-sets-new-record-at-6-29-gal",
+         title="Brent Falls to $103.68 as Wright Signals Faster Pipeline Repair, Diesel Sets New Record at $6.29/Gallon", date="2026-09-17",
+         themes=["oil", "inflation"], theme_sentiment={"oil": 20, "inflation": -20}, theme_direction={"oil": "down", "inflation": "up"},
+         sentiment=5, impact=45, novelty=45, horizon="short", event_type="supply",
+         reason="원유는 내리는데 디젤 소매가는 사상 최고(6.29달러/갤런). 정제 제품 타이트함이 물가에 남는다."),
+    dict(url="https://en.sedaily.com/finance/2026/09/17/kospi-ends-flat-as-foreigners-dump-16-billion-on-hawkish-fed",
+         title="KOSPI Ends Flat as Foreigners Dump $1.6 Billion on Hawkish Fed", date="2026-09-17",
+         themes=["rates", "semiconductor"], theme_sentiment={"rates": -25, "semiconductor": -15}, theme_direction={"rates": "up", "semiconductor": "down"},
+         sentiment=-15, impact=50, novelty=35, horizon="short", event_type="flow",
+         reason="코스피 6715.41(-0.04%). 외국인 7거래일 연속 순매도 2.28조원. 삼성전자 -0.3%, SK하이닉스 -0.8%."),
+    dict(url="https://www.investing.com/news/economy-news/boj-preview-september-25-bps-hike-expected-with-hawkish-outlook-4904796",
+         title="BOJ preview September: 25 bps hike expected with hawkish outlook in focus", date="2026-09-17",
+         themes=["rates", "usd"], theme_sentiment={"rates": -15, "usd": -15}, theme_direction={"rates": "up", "usd": "down"},
+         sentiment=-10, impact=40, novelty=35, horizon="short", event_type="policy",
+         reason="BoJ 9/18 25bp 인상(1.25%) 완전 반영. 엔 강세·달러 약세 방향, 긴축 속도가 관심."),
+    dict(url="https://www.fool.com/investing/2026/09/16/what-nvidia-and-sk-hynix-are-signaling-about-micro/",
+         title="What Nvidia and SK Hynix Are Signaling About Micron's Outlook", date="2026-09-16",
+         themes=["semiconductor", "ai"], theme_sentiment={"semiconductor": 30, "ai": 20}, theme_direction={"semiconductor": "up", "ai": "up"},
+         sentiment=30, impact=40, novelty=35, horizon="medium", event_type="other",
+         reason="엔비디아·SK하이닉스 코멘트가 메모리 가격 강세 지속을 시사. 9/30 마이크론 실적 앞둔 낙관."),
+]

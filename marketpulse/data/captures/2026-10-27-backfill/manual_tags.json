@@ -1,0 +1,403 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/27 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "0f7dcffd74adc8fb": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 5
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인 매도 지속 속 증권가 '바닥 근접' 신호 주목(제목)."
+  },
+  "14e630a3fcc773ee": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "한국 증시 평균 거래대금 올해 최저(제목)."
+  },
+  "bc032c6d0b120029": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": -10
+   },
+   "theme_direction": {
+    "rates": "down"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "금리 상승 진정에 회사채로 자금 유입(제목)."
+  },
+  "5754de948a94069c": {
+   "themes": [
+    "geopolitical_risk",
+    "defense"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": -20,
+    "defense": -20
+   },
+   "theme_direction": {
+    "geopolitical_risk": "down",
+    "defense": "down"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "geopolitical",
+   "reason": "김정은 중국 방문 확인으로 사망설 종식 — 급등했던 방산 테마주 일제 하락(요약)."
+  },
+  "e2ab503c2e46905c": {
+   "themes": [
+    "defense"
+   ],
+   "theme_sentiment": {
+    "defense": -25
+   },
+   "theme_direction": {
+    "defense": "down"
+   },
+   "sentiment": -20,
+   "impact": 25,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "방사청 추가 제재 검토 소식에 LIG D&A 장 초반 10%대 급락(요약)."
+  },
+  "ed7fcd1f27a149da": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "마이클 버리, S&P500 10월 고점 형성·닷컴버블식 취약 고점 시사(요약)."
+  },
+  "b7c7314909129b15": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "SK하이닉스 2배 레버리지 ETF, 미국 상장 석 달 만에 청산 — 고점 대비 60% 넘게 하락(요약)."
+  },
+  "921a1583e944b1dc": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 외국인 매도에 1.46% 하락해 5500선 내줌, 코스닥 3% 넘게 하락(요약)."
+  },
+  "90ab16506a22a06a": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "ai": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 55,
+   "novelty": 60,
+   "horizon": "long",
+   "event_type": "macro",
+   "reason": "한은: 내년 미국 빅테크 AI 투자 둔화 시 한국 반도체 수출이 최대 1000억 달러 감소할 수 있다는 시나리오(요약)."
+  },
+  "910484a8de05e8ba": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": -10
+   },
+   "theme_direction": {
+    "rates": "down"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "증시 변동성에 국내외 채권펀드로 4조 원 유입(요약)."
+  },
+  "90a04e315179c245": {
+   "themes": [
+    "semiconductor",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 0,
+    "rates": 0
+   },
+   "theme_direction": {
+    "semiconductor": "neutral",
+    "rates": "neutral"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 20,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "이번 주 빅테크·SK하이닉스 실적과 FOMC 겹쳐(요약)."
+  },
+  "be5886a9f3e0c1c4": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 0,
+    "shareholder_return": 10,
+    "rates": 0
+   },
+   "theme_direction": {
+    "semiconductor": "neutral",
+    "shareholder_return": "up",
+    "rates": "neutral"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "삼성전자·SK하이닉스 주주환원, 빅테크 실적, 미 금리 결정 앞두고 관망세(요약)."
+  },
+  "1c437070f56cde06": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "대기업 PRS 차입 7조 원 육박 — 주가 급락으로 정산 손실 우려(요약)."
+  },
+  "0bd7e9e2aa79b2be": {
+   "themes": [
+    "rates",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "rates": 30,
+    "inflation": 5
+   },
+   "theme_direction": {
+    "rates": "up",
+    "inflation": "up"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "long",
+   "event_type": "macro",
+   "reason": "2조 달러 재정적자와 5% 위 미국채 금리가 가계·정부 조달 비용 부담으로(CNBC 분석 요약)."
+  },
+  "1e89552f79f84129": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장 임박 — 8000억 달러 AI 투자 약정에 시장 주목(제목)."
+  },
+  "f61d08e574496a9b": {
+   "themes": [
+    "usd"
+   ],
+   "theme_sentiment": {
+    "usd": -25
+   },
+   "theme_direction": {
+    "usd": "down"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "원화가치 상승폭 두 달째 세계 1위(제목)."
+  },
+  "a4fea3e08a0844b2": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 거래대금 6월 50조 원대에서 이달 20조 원대로 감소(요약)."
+  },
+  "7e817954ffd62955": {
+   "themes": [
+    "ai",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "ai": 5,
+    "consumer": -10
+   },
+   "theme_direction": {
+    "ai": "up",
+    "consumer": "down"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "마이크로소프트, 비용 억제 위해 약 6만 명 대상 희망퇴직 제안(제목)."
+  },
+  "83a95eeca236e072": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "핌코, 아폴로 주도 스페이스X AI 채권 40억 달러 매입(제목)."
+  },
+  "6d03ba28193f0587": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 10
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "도어대시, 인스타카트 약 170억 달러 인수 협상(제목)."
+  },
+  "2794f18360178d88": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 30
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 IPO 증권신고서 제출에 AI주 강세, 나스닥 0.8% 상승(제목)."
+  },
+  "c99bc29890108300": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -10,
+   "impact": 25,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "룰라 재집권에 브라질 증시 17% 폭락(제목)."
+  }
+ }
+}

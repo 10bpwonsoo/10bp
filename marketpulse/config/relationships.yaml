@@ -1,0 +1,312 @@
+# Market Pulse AI — 사전 정의 관계 그래프 (요구 8)
+#
+#   Event → Theme → Macro Factor → Asset → Sector
+#
+# 노드 id 는 접두사로 종류를 나타낸다.
+#   theme:<id>   themes.yaml 의 테마
+#   macro:<name> factors.yaml 의 매크로 factor
+#   asset:<id>   instruments.yaml 의 자산
+#   sector:<id>  아래 sectors 절에 정의
+#   event:<id>   런타임에 뉴스에서 생성된다 (여기 적지 않는다)
+#
+# 라벨은 레지스트리에서 자동으로 가져온다. 여기에는 관계만 적는다.
+#
+# 중요 — 이 파일의 모든 edge 는 origin="predefined" 다.
+# LLM 이 제안한 관계는 여기 섞이지 않고 origin="llm_proposed",
+# status="candidate" 로 따로 저장되며 화면에서 점선으로 그려진다 (요구 15-11).
+#
+# strength / confidence 는 매크로 상식에 기반한 초기값이며 통계적으로
+# 추정된 값이 아니다. 실데이터가 붙으면 재검토 대상이다.
+
+sectors:
+  - {id: energy,        label: 에너지}
+  - {id: airlines,      label: 항공}
+  - {id: defense,       label: 방산}
+  - {id: growth_equity, label: 성장주}
+  - {id: financials,    label: 금융}
+  - {id: utilities,     label: 유틸리티}
+  - {id: semiconductor, label: 반도체}
+  - {id: korea_equity,  label: 한국 주식}
+  - {id: consumer,      label: 소비재}
+
+edges:
+  # ── 테마 → 매크로/업종 다리 ────────────────────────────
+  # 테마 레지스트리와 매크로 factor 는 이름이 겹치는 것이 있다(Oil, Rates 등).
+  # 둘은 다른 층위다 — 테마는 뉴스가 붙는 자리이고 매크로는 가격에서 계산된
+  # 값이다. 여기서 명시적으로 이어야 이벤트가 매크로까지 전파된다.
+  - {source: theme:inflation,         target: macro:Inflation,    direction: positive, strength: 0.85, confidence: 0.85, lag: immediate, reason: 물가 테마의 정량 대응물이다}
+  - {source: theme:rates,             target: macro:Rates,        direction: positive, strength: 0.85, confidence: 0.85, lag: immediate, reason: 금리 테마의 정량 대응물이다}
+  - {source: theme:usd,               target: macro:USD,          direction: positive, strength: 0.85, confidence: 0.85, lag: immediate, reason: 달러 테마의 정량 대응물이다}
+  - {source: theme:energy,            target: sector:energy,      direction: positive, strength: 0.80, confidence: 0.85, lag: immediate, reason: 에너지 테마는 해당 업종으로 직결된다}
+  - {source: theme:defense,           target: sector:defense,     direction: positive, strength: 0.85, confidence: 0.85, lag: immediate, reason: 방산 테마는 해당 업종으로 직결된다}
+  - {source: theme:consumer,          target: sector:consumer,    direction: positive, strength: 0.80, confidence: 0.80, lag: immediate, reason: 소비 테마는 해당 업종으로 직결된다}
+  - {source: theme:korea_governance,  target: sector:korea_equity, direction: positive, strength: 0.60, confidence: 0.65, lag: days, reason: 지배구조 개선 기대는 한국 주식 전반의 할인율을 낮춘다}
+  - {source: theme:shareholder_return, target: sector:korea_equity, direction: positive, strength: 0.60, confidence: 0.65, lag: days, reason: 주주환원 확대는 한국 주식 재평가 요인이다}
+  - {source: sector:consumer,         target: asset:XLY,          direction: positive, strength: 0.85, confidence: 0.90, lag: immediate, reason: 경기소비재 ETF 가 해당 업종의 가격이다}
+  - {source: sector:energy,           target: asset:XLE,          direction: positive, strength: 0.90, confidence: 0.90, lag: immediate, reason: 에너지 ETF 가 해당 업종의 가격이다}
+  - {source: sector:defense,          target: asset:ITA,          direction: positive, strength: 0.85, confidence: 0.90, lag: immediate, reason: 방산 ETF 가 해당 업종의 가격이다}
+  - {source: sector:airlines,         target: asset:JETS,         direction: positive, strength: 0.85, confidence: 0.90, lag: immediate, reason: 항공 ETF 가 해당 업종의 가격이다}
+  - {source: sector:financials,       target: asset:XLF,          direction: positive, strength: 0.90, confidence: 0.90, lag: immediate, reason: 금융 ETF 가 해당 업종의 가격이다}
+  - {source: sector:utilities,        target: asset:XLU,          direction: positive, strength: 0.90, confidence: 0.90, lag: immediate, reason: 유틸리티 ETF 가 해당 업종의 가격이다}
+
+  # ── 요구 8 의 예시 연쇄 ────────────────────────────────
+  # 중동 분쟁 → 유가 → {에너지, 인플레이션} → 금리 → 성장주
+  - source: theme:geopolitical_risk
+    target: theme:oil
+    direction: positive
+    strength: 0.75
+    confidence: 0.80
+    lag: immediate
+    reason: 주요 산유 지역의 분쟁은 공급 차질 우려를 통해 유가에 즉시 반영된다
+
+  - source: theme:oil
+    target: asset:BRENT
+    direction: positive
+    strength: 0.95
+    confidence: 0.95
+    lag: immediate
+    reason: 브렌트유는 유가 테마의 대표 가격이다
+
+  - source: theme:oil
+    target: asset:WTI
+    direction: positive
+    strength: 0.92
+    confidence: 0.95
+    lag: immediate
+    reason: WTI 는 미국 기준 원유 가격이다
+
+  - source: theme:oil
+    target: sector:energy
+    direction: positive
+    strength: 0.80
+    confidence: 0.85
+    lag: immediate
+    reason: 유가 상승은 정유·에너지 업종의 마진과 실적 기대를 끌어올린다
+
+  - source: theme:oil
+    target: sector:airlines
+    direction: negative
+    strength: 0.70
+    confidence: 0.80
+    lag: hours
+    reason: 연료비가 항공사 비용의 큰 몫이라 유가 상승은 수익성을 압박한다
+
+  - source: theme:oil
+    target: macro:Inflation
+    direction: positive
+    strength: 0.70
+    confidence: 0.75
+    lag: days
+    reason: 에너지 가격은 헤드라인 물가에 직접 반영되고 운송비를 통해 전이된다
+
+  - source: macro:Inflation
+    target: asset:BE10Y
+    direction: positive
+    strength: 0.75
+    confidence: 0.80
+    lag: immediate
+    reason: 기대인플레이션은 물가 압력에 대한 시장의 가격이다
+
+  - source: macro:Inflation
+    target: macro:Rates
+    direction: positive
+    strength: 0.65
+    confidence: 0.70
+    lag: days
+    reason: 물가 압력은 통화정책 경로를 통해 명목금리를 밀어올린다
+
+  - source: macro:Rates
+    target: asset:US10Y
+    direction: positive
+    strength: 0.90
+    confidence: 0.90
+    lag: immediate
+    reason: 미 10년물은 금리 레벨의 대표 지표다
+
+  - source: macro:Rates
+    target: sector:growth_equity
+    direction: negative
+    strength: 0.75
+    confidence: 0.75
+    lag: immediate
+    reason: 할인율 상승은 먼 미래 현금흐름의 현재가치를 더 크게 깎는다
+
+  - source: macro:Rates
+    target: sector:financials
+    direction: positive
+    strength: 0.45
+    confidence: 0.55
+    lag: days
+    reason: 예대마진 확대 기대가 있으나 조달비용과 신용위험이 상쇄한다
+
+  - source: macro:Rates
+    target: sector:utilities
+    direction: negative
+    strength: 0.55
+    confidence: 0.65
+    lag: immediate
+    reason: 배당 수익률로 평가받는 업종은 금리의 대체재 성격이 강하다
+
+  - source: sector:growth_equity
+    target: asset:NDX
+    direction: positive
+    strength: 0.85
+    confidence: 0.90
+    lag: immediate
+    reason: 나스닥100 은 성장주 비중이 높다
+
+  # ── 지정학 ────────────────────────────────────────────
+  - source: theme:geopolitical_risk
+    target: asset:GOLD
+    direction: positive
+    strength: 0.65
+    confidence: 0.70
+    lag: immediate
+    reason: 안전자산 수요가 금으로 이동한다
+
+  - source: theme:geopolitical_risk
+    target: macro:Volatility
+    direction: positive
+    strength: 0.70
+    confidence: 0.75
+    lag: immediate
+    reason: 불확실성 확대는 변동성 프리미엄을 키운다
+
+  - source: theme:geopolitical_risk
+    target: sector:defense
+    direction: positive
+    strength: 0.60
+    confidence: 0.65
+    lag: days
+    reason: 국방 예산 확대 기대가 방산 업종에 반영된다
+
+  - source: macro:Volatility
+    target: asset:VIX
+    direction: positive
+    strength: 0.95
+    confidence: 0.95
+    lag: immediate
+    reason: VIX 는 변동성 레짐의 대표 지표다
+
+  - source: macro:Volatility
+    target: macro:RiskAppetite
+    direction: negative
+    strength: 0.70
+    confidence: 0.75
+    lag: immediate
+    reason: 변동성 상승은 위험자산 보유 비용을 키운다
+
+  # ── AI · 반도체 ───────────────────────────────────────
+  - source: theme:ai
+    target: theme:semiconductor
+    direction: positive
+    strength: 0.85
+    confidence: 0.85
+    lag: immediate
+    reason: AI 수요는 가속기·메모리 수요로 직결된다
+
+  - source: theme:semiconductor
+    target: sector:semiconductor
+    direction: positive
+    strength: 0.95
+    confidence: 0.95
+    lag: immediate
+    reason: 테마와 업종이 사실상 같은 대상을 가리킨다
+
+  - source: sector:semiconductor
+    target: asset:SOXX
+    direction: positive
+    strength: 0.90
+    confidence: 0.90
+    lag: immediate
+    reason: 필라델피아 반도체 지수 추종 상품이다
+
+  - source: sector:semiconductor
+    target: asset:KRX_SEMI
+    direction: positive
+    strength: 0.75
+    confidence: 0.80
+    lag: immediate
+    reason: 국내 반도체 업종은 글로벌 사이클에 동행한다
+
+  - source: theme:semiconductor
+    target: sector:korea_equity
+    direction: positive
+    strength: 0.65
+    confidence: 0.75
+    lag: immediate
+    reason: 반도체가 코스피 시가총액에서 차지하는 비중이 크다
+
+  # ── 달러 · 중국 · 한국 수급 ──────────────────────────
+  - source: macro:USD
+    target: theme:china
+    direction: negative
+    strength: 0.50
+    confidence: 0.60
+    lag: days
+    reason: 달러 강세는 신흥국 자금 유출 압력으로 작용한다
+
+  - source: macro:USD
+    target: asset:USDKRW
+    direction: positive
+    strength: 0.80
+    confidence: 0.85
+    lag: immediate
+    reason: 원달러는 글로벌 달러 흐름을 따라간다
+
+  - source: macro:USD
+    target: macro:KoreaFlow
+    direction: negative
+    strength: 0.55
+    confidence: 0.60
+    lag: days
+    reason: 원화 약세 국면에서 외국인은 환차손을 피해 순매도로 기운다
+
+  - source: macro:KoreaFlow
+    target: sector:korea_equity
+    direction: positive
+    strength: 0.70
+    confidence: 0.75
+    lag: immediate
+    reason: 외국인·기관 수급은 국내 지수의 주요 동인이다
+
+  - source: sector:korea_equity
+    target: asset:KOSPI
+    direction: positive
+    strength: 0.95
+    confidence: 0.95
+    lag: immediate
+    reason: 코스피는 한국 주식의 대표 지수다
+
+  - source: theme:china
+    target: asset:HSCEI
+    direction: positive
+    strength: 0.80
+    confidence: 0.85
+    lag: immediate
+    reason: 항셍 중국기업지수는 중국 익스포저의 대표 가격이다
+
+  - source: theme:china
+    target: asset:COPPER
+    direction: positive
+    strength: 0.60
+    confidence: 0.70
+    lag: days
+    reason: 중국 실물 수요는 구리 가격의 주요 변수다
+
+  # ── 위험선호 ─────────────────────────────────────────
+  - source: macro:RiskAppetite
+    target: asset:SPX
+    direction: positive
+    strength: 0.85
+    confidence: 0.90
+    lag: immediate
+    reason: 대표 위험자산 가격이다
+
+  - source: macro:RiskAppetite
+    target: macro:KoreaFlow
+    direction: positive
+    strength: 0.55
+    confidence: 0.60
+    lag: days
+    reason: 글로벌 위험선호가 회복되면 신흥국으로 자금이 돌아온다

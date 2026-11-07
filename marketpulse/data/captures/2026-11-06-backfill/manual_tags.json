@@ -1,0 +1,539 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/06 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/05 · 11/06 수집분을 합쳤다.",
+ "tags": {
+  "21e507d782fc96d8": {
+   "themes": [
+    "ai",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "geopolitical_risk": -15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "호재가 'AI 규제 우려' 를 지우며 미국 증시 급등(11/04, 제목)."
+  },
+  "36fbda15b6551c45": {
+   "themes": [
+    "semiconductor",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25,
+    "geopolitical_risk": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "선거 불확실성 해소로 반도체만 빼고 미국 증시 급등(11/04, 제목)."
+  },
+  "54a8911db581ce9c": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미 중간선거 후 첫 거래 코스피 장 초반 2% 하락 · 삼성전자·SK하이닉스 약세(제목)."
+  },
+  "5ddb4797b22e63e2": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -50,
+    "ai": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -45,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "반도체 급락에 매도 사이드카 · SK하이닉스 9%·삼성전기 11% 하락(제목)."
+  },
+  "0e6f7b885a92f4f1": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 25
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미 중간선거 불확실성 해소에 현대차·기아 6~7%대 급등(제목)."
+  },
+  "dd4b6486a7b1b071": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -35,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -50,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 4%대 급락 · 매도 사이드카 발동(속보 제목)."
+  },
+  "70b446c7819d5b35": {
+   "themes": [
+    "oil",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "oil": -30,
+    "consumer": 20
+   },
+   "theme_direction": {
+    "oil": "down",
+    "consumer": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "유가 급락과 실적 개선 기대에 제주항공 13% 급등(제목)."
+  },
+  "6bdc96105412ff4c": {
+   "themes": [
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40,
+    "china": 20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "up"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "아시아 증시 혼조 — 반도체 급락에 코스피 거래 일시 정지, 중국은 상대적 강세(제목)."
+  },
+  "c52f94db60c1206b": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "퀄컴·Arm 실적 실망에 아시아 반도체주 하락(제목)."
+  },
+  "1d64a5724b77d76f": {
+   "themes": [
+    "ai",
+    "china",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "china": -15,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "china": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "오라클, 중국 텐센트와 맺은 70억 달러 AI 칩 임대계약 취소(제목)."
+  },
+  "4f2201f29bcaaa50": {
+   "themes": [
+    "korea_governance",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40,
+    "usd": 25
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "usd": "up"
+   },
+   "sentiment": -45,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 '블루 쓰나미' 충격 · 외국인 4조 원 투매로 한국 증시 급락(제목)."
+  },
+  "d8ab4e2af770e62b": {
+   "themes": [
+    "defense",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "defense": -35,
+    "geopolitical_risk": -15
+   },
+   "theme_direction": {
+    "defense": "down",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "미국 블루웨이브에 방산주 급락(제목)."
+  },
+  "f167bec0ca952213": {
+   "themes": [
+    "oil",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "oil": -30,
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "oil": "down",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -10,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미 민주당 압승에 유가 하락 · 금값 급등 — 금융시장 요동(제목)."
+  },
+  "b7af47244a96b282": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40,
+    "ai": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "미국 데이터센터 규제 우려에 코스피 하락 출발 · 삼성전자·SK하이닉스 3~6% 급락, 외국인 순매도(본문)."
+  },
+  "cae575aa26f9e7bc": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -50,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 장중 4%대 급락 · 10시 16분 매도 사이드카(본문)."
+  },
+  "b3a741168e71f92f": {
+   "themes": [
+    "consumer",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "consumer": 25,
+    "energy": 20
+   },
+   "theme_direction": {
+    "consumer": "up",
+    "energy": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "민주당 압승에 친환경차 지원 정책 기대 · 10월 미국 판매 호조로 현대차 강세(본문)."
+  },
+  "e607b985277c0988": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "ai": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "미 민주당 압승에 미국 3대 지수는 올랐지만 반도체주만 큰 폭 하락하는 흐름(본문)."
+  },
+  "3a869c0b4d7ed4d1": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -50,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스닥도 5% 급락 · 매도 사이드카 발동(본문)."
+  },
+  "ce39b4581d60f6a4": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -50,
+    "ai": -40,
+    "korea_governance": -40
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -60,
+   "impact": 65,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "미 중간선거 뒤 AI 데이터센터 규제 우려에 코스피·코스닥 5% 넘게 하락 마감 — 상·하원·주지사 과반 민주당(본문)."
+  },
+  "161058569f8bd521": {
+   "themes": [
+    "rates",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "rates": 35,
+    "inflation": 30
+   },
+   "theme_direction": {
+    "rates": "up",
+    "inflation": "up"
+   },
+   "sentiment": -15,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "영란은행, 이란 전쟁 뒤 첫 인상 · 물가 5% 근접 경고(제목·요약, 4.25% 인상 표결 1명)."
+  },
+  "7d46dec45b15547f": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -50,
+    "ai": -40,
+    "usd": 20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down",
+    "usd": "up"
+   },
+   "sentiment": -50,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 데이터센터 급제동 공포 · 외국인 메모리주 투매 3조 원 육박(제목·본문)."
+  },
+  "af9d1b2f55c1ef4b": {
+   "themes": [
+    "energy",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "energy": 25,
+    "consumer": 20
+   },
+   "theme_direction": {
+    "energy": "up",
+    "consumer": "up"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "반도체 급락 속 친환경·신재생·헬스케어·은행 등 미 민주당 수혜 기대 업종이 도피처(본문)."
+  },
+  "0b35d6e9b2deb176": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -60,
+    "semiconductor": -55
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -65,
+   "impact": 70,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "나스닥 5.5% 급락 — 6년 8개월 만에 최대 낙폭(제목)."
+  },
+  "78ce31d474c5d6b4": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -60,
+    "semiconductor": -50
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -65,
+   "impact": 70,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 공포에 뉴욕증시 급락 · 하루 만에 시가총액 4300조 원 증발(제목)."
+  },
+  "210ca27a9d2bd64d": {
+   "themes": [
+    "ai",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "ai": -55,
+    "geopolitical_risk": 20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -60,
+   "impact": 65,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "'블루 쓰나미' 로 나스닥 시가총액 2.5조 달러 증발 — AI 트레이드 우려(제목)."
+  },
+  "bdcab1cc754f5b56": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "마이크로소프트, 네오클라우드 데이터센터 프로젝트 관리 강화(블룸버그 보도, 제목)."
+  },
+  "36493ec206b033be": {
+   "themes": [
+    "rates",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "rates": 15,
+    "geopolitical_risk": 20
+   },
+   "theme_direction": {
+    "rates": "up",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "민주당 의회의 부채한도 협상 — 지출 양보 요구 · 시장 변동성 · 디폴트 위험 가능성 분석(요약)."
+  }
+ }
+}

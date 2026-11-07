@@ -1,0 +1,406 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/26 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "369c147fdab81029": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "메타 3분기 실적은 AI 수익화 확인, 테슬라는 로봇 투자 단계(요약)."
+  },
+  "a70cd27032551a25": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스 기초 ELS 조기상환 잇단 불발 — 기준가 밑돎(요약)."
+  },
+  "2601c45f5a32e2b7": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -15
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": -15,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "CNBC 조사: 트럼프 경제 지지율 사상 최저, 미국인 80%가 경제를 보통 이하로 평가(요약)."
+  },
+  "97f29b07859474fc": {
+   "themes": [
+    "ai",
+    "rates",
+    "oil"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "rates": -25,
+    "oil": 25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "rates": "down",
+    "oil": "up"
+   },
+   "sentiment": -25,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 투자 불안에 미국채로 자금 이동 — 10년물 5% 밑돌고, WTI 100달러 근접(요약)."
+  },
+  "71d06afe7b6b2532": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "실적 대비 국내 증시 하락 폭 더 커 — 수급 취약·거래대금 급감(요약)."
+  },
+  "e73d26b13b7252d8": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "KB증권: 코스피 6월 9100→5500 급락 뒤 11월 반등 가능성(요약)."
+  },
+  "c2c8b3e89f5aedd8": {
+   "themes": [
+    "korea_governance",
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 25,
+    "semiconductor": 15,
+    "shareholder_return": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 70,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "SK하이닉스, 주주 우려·당국 지적에 솔리다임 IPO(중복상장) 검토 중단(요약)."
+  },
+  "3574c6b6d550237c": {
+   "themes": [
+    "semiconductor",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 0,
+    "rates": 0
+   },
+   "theme_direction": {
+    "semiconductor": "neutral",
+    "rates": "neutral"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 20,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "주간전망: 미국 FOMC 와 삼성전자·SK하이닉스 실적이 이번 주 변수(제목)."
+  },
+  "dd5a88818e633915": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 20,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "AI 투자 불안 속 게임주 재평가, 하락장에서 사상 최고가(제목)."
+  },
+  "177905ed2d536e51": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "대기업 시가총액 한 달 새 1100조 원 증발(제목)."
+  },
+  "716732f7cbe8c2cd": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "실적과 거꾸로 간 삼성전자·SK하이닉스 주가 — 이번 주 반등 여부 주목(제목)."
+  },
+  "0132678e798469ce": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽·오픈AI 상장 추진 — 메모리 투자심리 위축 우려(제목)."
+  },
+  "b170c8c168775b33": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "AI 자금이 메모리에서 소프트웨어로 이동 — 삼성전자·SK하이닉스 소외 우려(제목)."
+  },
+  "75e1f80682fa2cfe": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 0
+   },
+   "theme_direction": {
+    "semiconductor": "neutral"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "메모리주 '저가 매수' vs '위험' — 증권가 의견 엇갈림(제목)."
+  },
+  "bffe7a774816409c": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "외국인, 삼성전자·SK하이닉스 197조 원 순매도(제목)."
+  },
+  "0c99f127a2cf68d6": {
+   "themes": [
+    "usd"
+   ],
+   "theme_sentiment": {
+    "usd": -25
+   },
+   "theme_direction": {
+    "usd": "down"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "원화 초강세 — 원/달러 1200원대 진입 가능성(제목)."
+  },
+  "f7df47b57c7b9d59": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -5
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "빅테크 AI 투자 평가가 '확장'에서 '효율'로 이동(제목)."
+  },
+  "fce1369f43bef56d": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "ai": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "10대 그룹 시총 한 달 새 1000조 원 이상 증발 — AI 과투자·수익성 우려로 반도체주 급락(요약)."
+  },
+  "1a2a97b0c3251e66": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "11월 2일 저PBR 기업 명단 공개 앞두고 62개사 개선계획 공시(요약)."
+  },
+  "25f0a7072d20def7": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": -5,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "솔리다임 상장 중단 여파로 현대차·LG·두산 해외 관계사 미국 IPO 준비 난처(요약)."
+  },
+  "60eae7d9b9da7d97": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10,
+    "ai": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 20,
+   "novelty": 25,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "AI 반도체 고도화로 MLCC·기판 탑재량 증가 전망(인터뷰 요약)."
+  },
+  "d53e39f2a0c78b23": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -5,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "골드만삭스 코스피 12개월 목표 12000→9000 하향, 상승 여력은 크다고 평가(요약)."
+  }
+ }
+}

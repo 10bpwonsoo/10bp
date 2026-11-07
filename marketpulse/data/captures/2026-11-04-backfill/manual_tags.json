@@ -1,0 +1,406 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/04 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/03 · 11/04 수집분을 합쳤다.",
+ "tags": {
+  "69cb361d99d97b68": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up"
+   },
+   "sentiment": 0,
+   "impact": 35,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 중간선거(현지 3일) 카운트다운 — 트럼프 2기 후반 정책 방향(요약)."
+  },
+  "663d40d517996860": {
+   "themes": [
+    "oil"
+   ],
+   "theme_sentiment": {
+    "oil": -30
+   },
+   "theme_direction": {
+    "oil": "down"
+   },
+   "sentiment": 0,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "유가 급락 · 미국 중간선거 앞두고 주목 종목(제목)."
+  },
+  "3cd6778e95eb0f24": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "한투: SK하이닉스 4분기 영업이익 112조 원 전망(제목)."
+  },
+  "9e3a96868bf58902": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피·코스닥 2%대 하락 출발(속보 제목)."
+  },
+  "082f5b5a7ba0b056": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 3%대 하락해 5600선, 삼성전자·SK하이닉스 하락(제목)."
+  },
+  "60c0a88cbdc4a6cb": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "S&P 500 하락 마감, 애플 실적 앞두고 약세(제목)."
+  },
+  "34f7d53199f445e7": {
+   "themes": [
+    "semiconductor",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20,
+    "consumer": -20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "consumer": "down"
+   },
+   "sentiment": -10,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "애플, 메모리 비용 상승으로 연말 분기 마진 하락 예고(제목)."
+  },
+  "5850555bdfd661ea": {
+   "themes": [
+    "ai",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "rates": 10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "오라클, AI 확장 자금 200억 달러 조달(제목)."
+  },
+  "6746053febb38b1b": {
+   "themes": [
+    "rates",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "rates": 20,
+    "inflation": 15
+   },
+   "theme_direction": {
+    "rates": "up",
+    "inflation": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "호주 중앙은행 기준금리 18년 만의 최고로 인상 — 인플레이션 대응(요약)."
+  },
+  "84ed887552b54a91": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 자금 확보 나선 메타·오라클, 지분 희석·이자 부담에 주가 하락(제목)."
+  },
+  "8cb2e9db54621bba": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "마벨, 루멘텀 인수 발표 뒤 급락(제목)."
+  },
+  "09c72d38244ff51b": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "팰런티어 호실적에도 차익실현으로 하락(제목)."
+  },
+  "4b37632d9b1f1144": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "ai": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -40,
+   "impact": 65,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 AI 수익성 우려·외국인 매도에 3.59% 급락 — 외국인·기관 동반 매도(요약)."
+  },
+  "ce217f0e08c0d23a": {
+   "themes": [
+    "semiconductor",
+    "oil",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "oil": -20,
+    "rates": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "oil": "down",
+    "rates": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "유가·미국채 금리 동시 하락에도 AI 회의론에 코스피 3% 넘게 하락(요약)."
+  },
+  "2678e2a74dee7ffb": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 15
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "증시 변동성 확대 속 음식료·제약 등 방어주 부상(요약)."
+  },
+  "377177b64585fa73": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "골드만삭스: 단기 충격 대비 현금 비중 확대 권고(제목)."
+  },
+  "01e6cbdbaa6df67d": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 10,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 9월 구인 752만 건, 전월 대비 33.3만 증가 — 고용 시장 견조(요약)."
+  },
+  "9f43c64edc7e563a": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -30
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장 앞두고 월가가 기업가치 25% 인하 요구 — AI 거품론 확산(요약)."
+  },
+  "b4f7099e45855c42": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 20,
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "기술주 반등에 나스닥 0.83% 상승, 중간선거 앞두고 혼조(제목)."
+  },
+  "9438868967bdc846": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "삼성전자·SK하이닉스 실적 기대 상향(제목)."
+  },
+  "6cf958dd4dacab60": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 5
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "강방천, 반도체 시장 경계 속 장기 관점 유지(요약)."
+  },
+  "ac7065967f1d7102": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "10월 외국인 대규모 매도 vs 연기금 매수 — 반도체 급락, 바이오·이차전지 선방(요약)."
+  }
+ }
+}

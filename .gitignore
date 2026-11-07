@@ -25,3 +25,11 @@ Thumbs.db
 
 # 분석 결과 CSV
 upbit_analysis_*.csv
+
+# Market Pulse AI
+.venv/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+.pytest_cache/
+*.egg-info/

@@ -1,0 +1,392 @@
+{
+ "as_of_utc": "2026-11-05T22:30",
+ "regime_model": {
+  "state": "UPSWING",
+  "composite": 36.0,
+  "confidence": 58.0,
+  "coverage": 0.82,
+  "evidence": [
+   {
+    "key": "memory_pricing",
+    "score": 3.0
+   },
+   {
+    "key": "spot_premium",
+    "score": 94.0
+   },
+   {
+    "key": "contract",
+    "score": 53.0
+   },
+   {
+    "key": "premium_breadth",
+    "score": 0.0
+   },
+   {
+    "key": "hbm",
+    "score": 100.0
+   },
+   {
+    "key": "export",
+    "score": 69.0
+   },
+   {
+    "key": "eps_revision",
+    "score": null
+   },
+   {
+    "key": "equity",
+    "score": -100.0
+   },
+   {
+    "key": "supply_news",
+    "score": null
+   }
+  ],
+  "chips": {
+   "Memory Pricing": "FLAT",
+   "Spot Premium": "STABLE",
+   "Contract": "RISING",
+   "HBM": "TIGHT",
+   "Export Nowcast": "DECELERATING",
+   "EPS Revision": "NO DATA",
+   "Equity Confirm": "DIVERGENCE",
+   "Turning Point": "EARLY SOFTENING"
+  }
+ },
+ "memory_prices": [
+  {
+   "product": "DDR5 16Gb",
+   "tier": "main",
+   "price_usd": 60.667,
+   "updated": "2026-11-05",
+   "chg_1w_pct": -1.0,
+   "chg_1m_pct": 4.3,
+   "chg_3m_pct": 17.8,
+   "chg_6m_pct": 55.6,
+   "chg_1y_pct": 276.2,
+   "chg_since_first_pct": 898.1,
+   "since": "2025-07-01",
+   "observations": 138,
+   "history_1y": "GOOD",
+   "momentum_state": "FIRM"
+  },
+  {
+   "product": "DDR4 16Gb",
+   "tier": "main",
+   "price_usd": 81.679,
+   "updated": "2026-11-05",
+   "chg_1w_pct": -1.1,
+   "chg_1m_pct": -2.3,
+   "chg_3m_pct": -5.8,
+   "chg_6m_pct": 33.6,
+   "chg_1y_pct": null,
+   "chg_since_first_pct": 5.1,
+   "since": "2026-02-02",
+   "observations": 92,
+   "history_1y": "PARTIAL",
+   "momentum_state": "SOFT"
+  },
+  {
+   "product": "DDR4 8Gb",
+   "tier": "main",
+   "price_usd": 46.036,
+   "updated": "2026-11-05",
+   "chg_1w_pct": -1.8,
+   "chg_1m_pct": -0.6,
+   "chg_3m_pct": 9.0,
+   "chg_6m_pct": 43.9,
+   "chg_1y_pct": 315.8,
+   "chg_since_first_pct": 3085.9,
+   "since": "2025-03-04",
+   "observations": 423,
+   "history_1y": "GOOD",
+   "momentum_state": "FLAT"
+  },
+  {
+   "product": "DDR5 16Gb eTT",
+   "tier": "ett",
+   "price_usd": 30.25,
+   "updated": "2026-11-05",
+   "chg_1w_pct": 3.6,
+   "chg_1m_pct": 15.0,
+   "chg_3m_pct": 28.0,
+   "chg_6m_pct": 37.5,
+   "chg_1y_pct": null,
+   "chg_since_first_pct": 199.5,
+   "since": "2025-11-14",
+   "observations": 109,
+   "history_1y": "GOOD",
+   "momentum_state": "STRONG"
+  },
+  {
+   "product": "DDR4 16Gb eTT",
+   "tier": "ett",
+   "price_usd": 13.475,
+   "updated": "2026-11-05",
+   "chg_1w_pct": -2.5,
+   "chg_1m_pct": null,
+   "chg_3m_pct": null,
+   "chg_6m_pct": null,
+   "chg_1y_pct": null,
+   "chg_since_first_pct": -3.2,
+   "since": "2026-10-22",
+   "observations": 5,
+   "history_1y": "PARTIAL",
+   "momentum_state": "WEAK"
+  },
+  {
+   "product": "DDR4 8Gb eTT",
+   "tier": "ett",
+   "price_usd": 5.82,
+   "updated": "2026-11-05",
+   "chg_1w_pct": -2.5,
+   "chg_1m_pct": -2.2,
+   "chg_3m_pct": 38.3,
+   "chg_6m_pct": 6.2,
+   "chg_1y_pct": 58.1,
+   "chg_since_first_pct": 643.3,
+   "since": "2025-03-04",
+   "observations": 417,
+   "history_1y": "GOOD",
+   "momentum_state": "FLAT"
+  },
+  {
+   "product": "NAND 512Gb TLC",
+   "tier": "main",
+   "price_usd": 16.883,
+   "updated": "2026-10-26",
+   "chg_1w_pct": null,
+   "chg_1m_pct": -10.3,
+   "chg_3m_pct": -16.1,
+   "chg_6m_pct": -17.5,
+   "chg_1y_pct": 206.2,
+   "chg_since_first_pct": 529.3,
+   "since": "2025-06-23",
+   "observations": 89,
+   "history_1y": "GOOD",
+   "momentum_state": "WEAK"
+  },
+  {
+   "product": "NAND 256Gb TLC",
+   "tier": "main",
+   "price_usd": 18.365,
+   "updated": "2026-10-26",
+   "chg_1w_pct": null,
+   "chg_1m_pct": 0.0,
+   "chg_3m_pct": 46.5,
+   "chg_6m_pct": 75.3,
+   "chg_1y_pct": 514.6,
+   "chg_since_first_pct": 1129.2,
+   "since": "2025-06-23",
+   "observations": 61,
+   "history_1y": "PARTIAL",
+   "momentum_state": "STRONG"
+  },
+  {
+   "product": "NAND 128Gb TLC",
+   "tier": "main",
+   "price_usd": 9.967,
+   "updated": "2026-10-26",
+   "chg_1w_pct": null,
+   "chg_1m_pct": 0.0,
+   "chg_3m_pct": 27.2,
+   "chg_6m_pct": 51.5,
+   "chg_1y_pct": 379.2,
+   "chg_since_first_pct": 749.7,
+   "since": "2025-06-23",
+   "observations": 61,
+   "history_1y": "PARTIAL",
+   "momentum_state": "FIRM"
+  }
+ ],
+ "spot_premium": [
+  {
+   "spot": "DDR4 16Gb",
+   "contract": "DDR4 16Gb 2Gx8 계약",
+   "comparability": "HIGH",
+   "premium_pct": 57.1,
+   "direction": "STABLE",
+   "contract_anchor_month": "Sep-2026",
+   "contract_stale": false,
+   "proxy": false,
+   "zscore_1y": -1.11,
+   "percentile_1y": 2.0,
+   "mean_1y_pct": 67.4,
+   "z_status": "OK",
+   "raw_premium_obs": 40
+  },
+  {
+   "spot": "DDR4 8Gb",
+   "contract": "DDR4 8Gb 1Gx8 계약",
+   "comparability": "HIGH",
+   "premium_pct": 77.1,
+   "direction": "COMPRESSING",
+   "contract_anchor_month": "Sep-2026",
+   "contract_stale": false,
+   "proxy": false,
+   "zscore_1y": -0.9,
+   "percentile_1y": 11.0,
+   "mean_1y_pct": 116.9,
+   "z_status": "OK",
+   "raw_premium_obs": 251
+  },
+  {
+   "spot": "DDR5 16Gb",
+   "contract": "DDR5 8GB SO-DIMM 계약 ÷ 4칩",
+   "comparability": "LOW",
+   "premium_pct": 82.5,
+   "direction": "STABLE",
+   "contract_anchor_month": "Sep-2026",
+   "contract_stale": false,
+   "proxy": true,
+   "zscore_1y": 1.09,
+   "percentile_1y": 82.0,
+   "mean_1y_pct": 74.1,
+   "z_status": "OK",
+   "raw_premium_obs": 40
+  },
+  {
+   "spot": "NAND 512Gb TLC",
+   "status": "NOT COMPUTED",
+   "reason": "공개 NAND 계약가는 옛 MLC 칩뿐 — TLC 웨이퍼와 비교하지 않는다"
+  }
+ ],
+ "breadth": {
+  "state": "SELECTIVE",
+  "positive_momentum": [
+   3,
+   6
+  ],
+  "products_in_premium": [
+   3,
+   3
+  ]
+ },
+ "contract": {
+  "trend": "RISING",
+  "stale": false,
+  "rows": [
+   {
+    "item": "DDR4 16Gb 2Gx8",
+    "avg_usd": 52.0,
+    "period": "2026-09",
+    "chg_pct": 4.0
+   },
+   {
+    "item": "DDR4 8Gb 1Gx8",
+    "avg_usd": 26.0,
+    "period": "2026-09",
+    "chg_pct": 4.0
+   },
+   {
+    "item": "DDR5 8GB SO-DIMM",
+    "avg_usd": 133.0,
+    "period": "2026-09",
+    "chg_pct": 0.0
+   }
+  ]
+ },
+ "hbm": {
+  "pricing": "FIRM",
+  "capacity": "NO DATA",
+  "anchors": [
+   {
+    "item": "HBM3E 계약가 ($/GB)",
+    "value": 15.6,
+    "date": "2026-07-28",
+    "chg_pct": 20.0
+   },
+   {
+    "item": "HBM4 계약가 ($/GB)",
+    "value": 36.11,
+    "date": "2026-10-01",
+    "chg_pct": 116.62
+   }
+  ]
+ },
+ "export": {
+  "available": true,
+  "latest": "10월 1~20일",
+  "latest_yoy_pct": 222.5,
+  "latest_daily_avg_yoy_pct": 160.5,
+  "nowcast_yoy_mid_pct": 251.0,
+  "nowcast_yoy_range_pct": [
+   188.0,
+   315.0
+  ],
+  "prev_month_yoy_pct": 263.0,
+  "momentum": "DECELERATING",
+  "price_vs_volume": "MIXED (정성)"
+ },
+ "equity": {
+  "status": "DIVERGENCE",
+  "stocks": [
+   {
+    "name": "SK hynix",
+    "ret_1m_pct": -28.7,
+    "confirmation": "DIVERGENCE"
+   },
+   {
+    "name": "Samsung Electronics",
+    "ret_1m_pct": -25.9,
+    "confirmation": "DIVERGENCE"
+   },
+   {
+    "name": "Micron",
+    "ret_1m_pct": -37.2,
+    "confirmation": "DIVERGENCE"
+   }
+  ]
+ },
+ "turning_point": "EARLY SOFTENING",
+ "headlines": [
+  {
+   "category": "SERVER",
+   "headline": "[속보] 美블루웨이브 쇼크에 코스피·코스닥, 5%대 급락 마감",
+   "direction": "↓"
+  },
+  {
+   "category": "SERVER",
+   "headline": "AI데이터센터 급제동 공포 … 외국인, 메모리株 투매 3조 육박",
+   "direction": "↓"
+  },
+  {
+   "category": "SERVER",
+   "headline": "미 데이터센터 규제 우려에 코스피 하락 출발…삼전닉스 3~6%대 급락",
+   "direction": "↓"
+  },
+  {
+   "category": "SERVER",
+   "headline": "Microsoft tightens oversight of neocloud data center projects, Bloomberg News reports",
+   "direction": "↓"
+  },
+  {
+   "category": "SECTOR",
+   "headline": "\"하루 만에 4300조 증발\"…AI 공포에 뉴욕증시 무너졌다 [종합]",
+   "direction": "↓"
+  },
+  {
+   "category": "SECTOR",
+   "headline": "나스닥 6년8개월 만에 최대 낙폭…5.5% 급락에 개미들 비명",
+   "direction": "↓"
+  }
+ ],
+ "data_gaps": [
+  "EPS Revision"
+ ],
+ "displayed_elsewhere": {
+  "numbers": [
+   -100.0,
+   0.0,
+   3.0,
+   36.0,
+   53.0,
+   58.0,
+   69.0,
+   94.0,
+   100.0
+  ],
+  "note": "화면 상단에 이미 보이는 숫자 — MARKET READ 에서 반복하지 않는다"
+ }
+}

@@ -1,0 +1,13 @@
+ANTHROPIC_BASE_URL
+MARKETPULSE_ANTHROPIC_API_KEY
+ANTHROPIC_API_KEY unset
+MARKETPULSE_ANTHROPIC_API_KEY set len=108 prefix=sk-ant-api0
+https://pypi.org/simple/anthropic/ 200
+https://files.pythonhosted.org/ 200
+https://query1.finance.yahoo.com/ 429
+https://www.hankyung.com/feed/finance 200
+https://api.anthropic.com/v1/models 401
+
+# raw latency check
+plain messages.create: ok 2.2s
+web_search tool call: FAIL 60.9s BadRequestError 400 'credit balance is too low' (search tool billing)

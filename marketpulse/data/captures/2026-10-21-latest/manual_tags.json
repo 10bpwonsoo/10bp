@@ -1,0 +1,461 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "27143ee05e369ea6": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "ai": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 70,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "10/20 코스피 외국인·기관 동반 매도로 3% 넘게 하락, 장중 5500 아래 — AI 투자·반도체 실적 불안(RSS 요약)."
+  },
+  "64475b095bf52754": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25,
+    "korea_governance": 5
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "up"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "10/20 코스피 −3.73% 5,552.74(장중 5,493.24), 코스닥 −3.33% 781.97 — 대통령이 언급한 증시 대책에 관심(RSS 요약)."
+  },
+  "1f7061eed5520a77": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "ai": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인 이달 약 18조원 순매도 — AI 기술주 레버리지 헤지펀드의 손절성 청산 가능성(RSS 요약)."
+  },
+  "5fc65e7a770e5ae3": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스 고점 대비 반토막, 개인 10명 중 7명 손실(RSS 요약)."
+  },
+  "aca3950bbe7240dd": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20,
+    "ai": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "노무라: 메모리 업황 강세 지속, CXMT 우려는 과도 — SK하이닉스 470만원·삼성전자 67만원 목표(의견, RSS 요약)."
+  },
+  "80e1b28cf24a2d0f": {
+   "themes": [
+    "rates",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "rates": -5,
+    "consumer": -10
+   },
+   "theme_direction": {
+    "rates": "down",
+    "consumer": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "9월 주택 지표 추가 악화 — 연준이 추가 인상을 저울질하는 시점(RSS 요약)."
+  },
+  "55b7ccbf91ec14c7": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "ai": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "470만원 황제주가 180만원대로 — AI 수혜주 급락(제목에서 확인)."
+  },
+  "3620714b41606437": {
+   "themes": [
+    "oil",
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "oil": -15,
+    "ai": -10,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "oil": "down",
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": 5,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "10/20 뉴욕: 유가 하락·호실적에 다우·S&P500 반등, 나스닥은 부진(제목에서 확인)."
+  },
+  "a3a61c132e7261e4": {
+   "themes": [
+    "defense",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "defense": -30,
+    "geopolitical_risk": -5
+   },
+   "theme_direction": {
+    "defense": "down",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "K방산주 하루 만에 10% 급락, 3개월 만에 최대 낙폭(제목에서 확인)."
+  },
+  "87000c4c101d5fb0": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 반도체주 하루 만에 다시 약세 전환(제목에서 확인)."
+  },
+  "8664f7a60459e376": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "KB: 마이크론 파업 예고 — 삼성·SK 의 메모리 공급 주도권 강화(제목에서 확인)."
+  },
+  "c948b422d2af1706": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 5
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 20,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "머스크: 스페이스X·테슬라 합병 위원회 구성 — 보도 뒤 주가 반색(제목에서 확인)."
+  },
+  "fd481315fc7ffddf": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "스페이스X 매출 +161% — AI·스타링크 쌍끌이(제목에서 확인)."
+  },
+  "c34ba1f9975dcc28": {
+   "themes": [
+    "defense"
+   ],
+   "theme_sentiment": {
+    "defense": -15
+   },
+   "theme_direction": {
+    "defense": "down"
+   },
+   "sentiment": -10,
+   "impact": 25,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "LIG D&A, 방사청 2년간 입찰 제한에 장 초반 10% 급락(제목에서 확인)."
+  },
+  "6bce528605394d84": {
+   "themes": [
+    "semiconductor",
+    "oil",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20,
+    "oil": -10,
+    "rates": -10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "oil": "down",
+    "rates": "down"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "intraday",
+   "event_type": "flow",
+   "reason": "10/21 코스피 국제유가·금리 안정에 반등 출발 — 삼성전자·SK하이닉스 3%대 상승(제목에서 확인)."
+  },
+  "881e0fe5d7873509": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 25,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "'AI 수요 견고' 슈퍼마이크로 실적 서프라이즈에 삼성전자·SK하이닉스 급등(제목에서 확인)."
+  },
+  "394d5472ef0f5642": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35,
+    "ai": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 35,
+   "impact": 70,
+   "novelty": 55,
+   "horizon": "intraday",
+   "event_type": "flow",
+   "reason": "AI 기업 호실적에 삼성전자·SK하이닉스 7% 급등 — 코스피 매수 사이드카 발동(제목에서 확인)."
+  },
+  "f78a7a2b75475936": {
+   "themes": [
+    "korea_governance",
+    "shareholder_return",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20,
+    "shareholder_return": 15,
+    "semiconductor": 5
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "shareholder_return": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "행동주의 얼라인, SK 지분 1.5% 공개 — '하이닉스 지분 가치의 절반도 못 받는다'(제목에서 확인)."
+  },
+  "9c6505e3347e84aa": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "intraday",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스 급등 — 외국인 순매수 재개(제목에서 확인)."
+  },
+  "1f5fad7e809e3d75": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "켄 그리핀: 시장은 AI 버블 한가운데에 있다(의견, 제목에서 확인)."
+  },
+  "b066c2eae0ef6b50": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "호주 AI 데이터센터 운영사 NextDC −42% — 매출 지연, 향후 계획 보류(제목에서 확인)."
+  },
+  "eaec19d0ab211a14": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -5
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 15,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "트럼프: 데이터센터 기업이 지역사회에 '배당' 을 내야 한다(제목에서 확인)."
+  },
+  "2621020a493896a5": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 15,
+    "rates": 10
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "영국 9월 CPI 전년 3.5%(예상 상회) — 자동차 연료비 급등, 금리 인상 기대 굳어져(RSS 요약)."
+  },
+  "4c1511a384088b1e": {
+   "themes": [
+    "china"
+   ],
+   "theme_sentiment": {
+    "china": -10
+   },
+   "theme_direction": {
+    "china": "down"
+   },
+   "sentiment": 5,
+   "impact": 20,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "미국 중국산 태양광 견제 강화 — OCI홀딩스 7%·한화솔루션 4% 상승(제목에서 확인)."
+  }
+ }
+}
