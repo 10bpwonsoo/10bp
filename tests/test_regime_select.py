@@ -200,3 +200,16 @@ def test_llm_path_validates_then_falls_back_to_quant():
     assert s2.source == "quant" and s2.selected_regime in ("RISK_ON", "NEUTRAL") and s2.warnings
     s3 = R.select_regime(ctx, session_read=ok)
     assert s3.source == "session"
+
+
+def test_primary_signal_follows_selected_regime_2026_11_09():
+    """정량 1위(POLICY_DRIVEN)가 아닌 후보(LIQUIDITY_STRESS)를 고르면 PRIMARY SIGNAL 도 그 후보의 Trigger 다."""
+    import json
+    from pathlib import Path
+    from marketpulse.engines import regime_select as RS
+    d = Path(__file__).resolve().parents[1] / "marketpulse" / "data" / "captures" / "2026-11-09-backfill"
+    ctx = json.loads((d / "regime_select_context.json").read_text(encoding="utf-8"))
+    out = json.loads((d / "regime_select_session.json").read_text(encoding="utf-8"))
+    assert ctx["quant_label"] == "POLICY_DRIVEN" and out["selected_regime"] == "LIQUIDITY_STRESS"
+    sel = RS.finalize(out, ctx, source="session")
+    assert sel.primary_signal.startswith("Liquidity -1.07")

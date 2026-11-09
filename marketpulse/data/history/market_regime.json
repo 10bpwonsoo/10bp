@@ -3884,6 +3884,98 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-06",
+   "tab_id": "market_regime",
+   "state": "LIQUIDITY_STRESS",
+   "state_label": "Liquidity Stress",
+   "state_label_ko": "",
+   "state_score": 2.01089223686314,
+   "confidence": 55.0,
+   "component_scores": {
+    "RiskAppetite": 13.794652118203036,
+    "Volatility": 55.079354159463456,
+    "Growth": 26.114562637190225,
+    "Credit": -83.43385231185691,
+    "KoreaFlow": null,
+    "news": -5.494573185663169,
+    "factor:Growth": 0.535,
+    "factor:Inflation": -0.244,
+    "factor:Rates": -1.667,
+    "factor:USD": 2.302,
+    "factor:Liquidity": -1.071,
+    "factor:RiskAppetite": 0.278,
+    "factor:Credit": 2.404,
+    "factor:Volatility": -1.239,
+    "factor:China": -1.191
+   },
+   "key_drivers": [
+    "Nikkei 225 -4.0σ",
+    "USD/CNH +3.0σ",
+    "달러 인덱스 +2.4σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-08T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-09T01:35:42.621772Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "LIQUIDITY_STRESS 55% · 온도 +2",
+   "payload": {
+    "date": "2026-11-06",
+    "as_of": "2026-11-08T22:30:00Z",
+    "label": "LIQUIDITY_STRESS",
+    "secondary_label": "LIQUIDITY_STRESS",
+    "confidence": 55.0,
+    "price_temperature": 7.014535851880679,
+    "news_temperature": -5.494573185663169,
+    "composite": 2.01089223686314,
+    "news_events": 27,
+    "thermo_confidence": 93.74908909624563,
+    "components": {
+     "RiskAppetite": 13.794652118203036,
+     "Volatility": 55.079354159463456,
+     "Growth": 26.114562637190225,
+     "Credit": -83.43385231185691,
+     "KoreaFlow": null,
+     "news": -5.494573185663169
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": 0.535,
+     "Inflation": -0.244,
+     "Rates": -1.667,
+     "USD": 2.302,
+     "Liquidity": -1.071,
+     "RiskAppetite": 0.278,
+     "Credit": 2.404,
+     "Volatility": -1.239,
+     "China": -1.191
+    },
+    "hypotheses": {
+     "POLICY_DRIVEN": 0.75,
+     "LIQUIDITY_STRESS": 0.675
+    },
+    "drivers": [
+     "Nikkei 225 -4.0σ",
+     "USD/CNH +3.0σ",
+     "달러 인덱스 +2.4σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

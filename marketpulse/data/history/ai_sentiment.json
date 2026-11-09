@@ -3522,6 +3522,62 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-06",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 20.9,
+   "confidence": 65.0,
+   "component_scores": {
+    "narrative": null,
+    "price": 7.0,
+    "breadth": 27.3,
+    "fundamentals": null,
+    "macro": 32.0
+   },
+   "key_drivers": [],
+   "data_coverage": 0.65,
+   "data_asof": "2026-11-06T23:59:59Z",
+   "missing_components": [
+    "narrative",
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-11-09T01:35:41.923254Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "FEAR 21",
+   "payload": {
+    "components": {
+     "narrative": null,
+     "price": 7.0,
+     "breadth": 27.3,
+     "fundamentals": null,
+     "macro": 32.0
+    },
+    "component_states": {
+     "narrative": "UNKNOWN",
+     "price": "EXTREME_FEAR",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "FEAR"
+    },
+    "basis": [
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
   }
  ]
 }

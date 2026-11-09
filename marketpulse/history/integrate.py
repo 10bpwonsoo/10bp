@@ -53,7 +53,20 @@ def sync_market(manager: DailySnapshotManager, *, inputs: MarketInputs, snapshot
     days = days or manager.window_days
     dates = past_dates(inputs.series_by_id, as_of, manager.backfill_days)
     live = market_snapshot_from_intelligence(snapshot, config_dir=inputs.config_dir) if snapshot is not None else None
-    if live is None:
+    if live is not None and manager.weekend(live.snapshot_date):
+        # 월요일 07:30 KST 화면(= UTC 일요일)은 금요일 종가 위의 판정이다(2026-11-09). 평일처럼 그 화면 판정(REGIME v2 선택 포함)을
+        # 직전 평일 행으로 기록한다 — 금요일 replay(v1 규칙, 선택 없음)로 따로 계산하면 같은 화면의 MARKET NOW 와 history 마지막 행이 갈린다.
+        d0 = live.snapshot_date
+        while manager.weekend(d0):
+            d0 -= timedelta(days=1)
+        if manager.get_snapshot("market_regime", d0) is None:
+            payload = dict(live.payload or {})
+            if "date" in payload:
+                payload["date"] = d0.isoformat()  # 행 날짜 = 시장 날짜(금). as_of 는 실제 판정 시각(월 07:30 KST) 그대로
+            manager.save_snapshot(live.model_copy(update={"snapshot_date": d0, "payload": payload, "history_source": "RECORDED", "is_final": True,
+                                                          "is_locked": True, "is_backfilled": False, "finalization": "daily_close"}))
+        live = None
+    if live is None and snapshot is None:
         got = market_calculator(inputs, as_of=as_of)(manager.snapshot_date_of(as_of), manager.get_snapshot("market_regime", manager.snapshot_date_of(as_of) - timedelta(days=1)))
         live = got
     _run(manager, "market_regime", dates=dates, calc=market_calculator(inputs, as_of=as_of), live=live, as_of=as_of, backfill=backfill)

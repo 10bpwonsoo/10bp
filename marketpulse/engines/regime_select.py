@@ -340,13 +340,17 @@ def finalize(out: Mapping, ctx: Mapping, *, source: str, status: str = "ok", rea
             warns.append(f"{k}: 출력 {out[k]} → 엔진 계산 {v}")
     cand_models = [RegimeCandidate.model_validate(c) for c in ctx["candidates"]]
     neutral_eq = EquityConfirmation.model_validate(ctx["neutral_reference_equity"]) if ctx.get("neutral_reference_equity") else None
+    # PRIMARY SIGNAL 은 선택한 regime 의 Trigger(2026-11-09) — 정량 1위 후보의 Trigger 를 그대로 쓰면 다른 regime 을 고른 날 화면이 엇갈린다
+    chosen = next((c for c in cand_models if c.label == sel), None)
+    prim = (f"{chosen.trigger_expr.split(' ')[0]} {chosen.trigger_value:+.2f}" if chosen is not None and chosen.trigger_value is not None
+            else str(ctx.get("primary_signal") or ""))
     return RegimeSelection(
         selected_regime=sel, regime_confidence=int(out["regime_confidence"]), selection_status=out.get("selection_status") or "TENTATIVE",
         primary_reason=str(out.get("primary_reason") or ""), alternative_candidates=[AlternativeCandidate(regime=_norm_label(a["regime"]), reason=str(a.get("reason") or "")) for a in out.get("alternative_candidates") or []],
         us_equity_confirmation=us, korea_equity_confirmation=kr, global_equity_confirmation=gl,  # type: ignore[arg-type]
         persistence_assessment=str(out.get("persistence_assessment") or ctx.get("persistence_hint") or ""), data_coverage=int(ctx["data_coverage"]),
         selection_rationale=str(out.get("selection_rationale") or ""), commentary=str(out.get("commentary") or ""), source=source, status=status, reason=reason,  # type: ignore[arg-type]
-        quant_label=str(ctx.get("quant_label") or "NEUTRAL"), candidates=cand_models, neutral_equity=neutral_eq, primary_signal=str(ctx.get("primary_signal") or ""),
+        quant_label=str(ctx.get("quant_label") or "NEUTRAL"), candidates=cand_models, neutral_equity=neutral_eq, primary_signal=prim,
         coverage_detail=dict(ctx.get("coverage") or {}), excluded=list(ctx.get("excluded") or []), warnings=warns)
 
 
