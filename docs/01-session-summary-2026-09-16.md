@@ -627,3 +627,8 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 수정 1 — 월요일 금요일 행: 월요일 07:30 KST 화면(= UTC 일요일)은 저장하지 않고 금요일 행을 replay(v1 규칙, REGIME v2 선택 없음)로 따로 계산해, 같은 화면의 MARKET NOW(LIQUIDITY_STRESS 55)와 history 마지막 행(POLICY_DRIVEN 28.6)이 갈렸다. market_regime 은 평일처럼 그 화면 판정을 직전 평일 행으로 RECORDED 기록(`history/integrate.sync_market`, 행 날짜 = 금 · as_of = 실제 판정 시각). 다른 탭의 금요일 행은 기존 규칙(BACKFILLED, data_asof 금 23:59:59Z). 잠긴 과거 행 변화 없음. 테스트 `test_history_monday_row.py`.
 - 수정 2 — PRIMARY SIGNAL: 정량 1위 후보의 Trigger 를 썼다(11/06 화면: 선택 Risk-Off 인데 'Growth −2.28') → 선택한 regime 의 Trigger(`regime_select.finalize`). 이 저장본부터 — 11/06 저장본은 잠금 그대로. 테스트 추가.
 - history: 11/06(금) 행 7개 탭 잠금(삽입만). COMPLETE · validate · 백엔드 테스트 통과. 스크린샷 `data/archive/screenshots/2026-11-09.jpg`.
+
+### 2026-11-10 — 11/10 Daily Snapshot (07:30 KST)
+- 입력: 00:42Z 수집 한 번에 기본 47 · 종목 94 · 바스켓 52, 단위 불연속 없음. 07:30 KST cutoff 재구성 — 미국 11/09(월) 종가 · 미국채/TIPS/HY OAS · 환율 · 원자재 11/06 관측. **코스피 · 코스닥 · 브렌트의 11/09 일봉은 Yahoo 에 없다**(11/06 다음이 11/10 장중) — 결측 그대로(기사상 11/09 코스피 −0.81% 5018.85, 유가 7% 급락). 그래서 한국 주식 확인은 11/06 값 위에 있다. RSS 창(11/09 07:30~11/10 07:30 KST) 104건 중 27건 수기 태깅. DRAMeXchange 11/09 18:10(GMT+8).
+- 결과: 미국 11/09 급반등 — S&P +2.4% · 나스닥100 +3.4% · SOXX +7.5% · Russell +3.2% · VIX −22%(엔비디아 −4.3% 에도). REGIME v2 선택 RISK_ON 72(세션 — 정량 83.9 보다 낮게: 급락 직후 하루 반등 · 한국 확인은 11/06 값 · 신용/달러는 금요일 관측), US STRONG · KOREA CONTRADICTED · GLOBAL MIXED. 공식 Liquidity Stress / Risk-Off 유지, PENDING Risk-On 1/2. AI LEADERSHIP NARROWING(센티 54), 금리 INFLATION REPRICING(미확인 · 금요일 고용 뒤 단기물 상승), 물가 압력 MIXED, 유가 Macro / Liquidity UNCONFIRMED, 반도체 UPSWING 32.3(현물 약세 지속). 해석 4종 세션 생성본.
+- history: 11/09 행 7개 탭 RECORDED·잠금(삽입만). COMPLETE · validate · 백엔드 테스트 통과. 스크린샷 `data/archive/screenshots/2026-11-10.jpg`. 정적 배포본 9.4MB.

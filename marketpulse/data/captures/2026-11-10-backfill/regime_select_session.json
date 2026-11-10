@@ -1,0 +1,14 @@
+{
+ "selected_regime": "RISK_ON",
+ "regime_confidence": 72,
+ "selection_status": "CONFIRMED",
+ "primary_reason": "미국 지수 · 소형주 · 반도체가 함께 크게 오르고 변동성이 급락해 위험선호가 미국에서 넓게 확인된다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "STRONG",
+ "korea_equity_confirmation": "CONTRADICTED",
+ "global_equity_confirmation": "MIXED",
+ "persistence_assessment": "공식 regime 은 Liquidity Stress / Risk-Off 이고 직전 거래일 선택도 Liquidity Stress 였다. 오늘 Risk-On 이 처음 나와 다음 거래일에도 이어지면 공식 regime 이 바뀌는 전환 후보 상태다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보는 Risk-On 하나(Risk Appetite +2.17, 기준 +0.8)다. 미국은 S&P · Nasdaq · Russell 과 반도체가 함께 크게 오르고 VIX · MOVE 가 크게 내려 확인이 강하다. 한국 확인이 반박으로 나온 것은 KOSPI · KOSDAQ 의 11/09 봉이 없어 11/06 급락 값이 쓰였기 때문이라 그만큼만 무게를 둔다. 달러 강세 · 신용 · 원자재는 금요일 관측이고, 급락 직후 하루 반등이라 정량 신뢰도보다 낮게 둔다.",
+ "commentary": "월요일 미국 주식은 반도체가 급반등하고 소형주까지 크게 오르며 변동성이 급락해, 지난주 급락 뒤 위험 선호가 빠르게 돌아왔다. 한국은 지수 일봉이 비어 있어 확인은 지난 금요일 급락 값에 머물러 있다. 급락 직후의 하루 반등이라 다음 거래일에도 이어지는지가 확인 지점이지만, 지금은 Risk-On 이 가장 자연스럽다."
+}

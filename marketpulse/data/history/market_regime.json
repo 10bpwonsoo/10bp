@@ -3976,6 +3976,97 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-09",
+   "tab_id": "market_regime",
+   "state": "RISK_ON",
+   "state_label": "Risk-On",
+   "state_label_ko": "",
+   "state_score": 44.102936538820515,
+   "confidence": 72.0,
+   "component_scores": {
+    "RiskAppetite": 79.47458079931137,
+    "Volatility": 80.31426372053305,
+    "Growth": 24.969790739674654,
+    "Credit": 50.672060134628,
+    "KoreaFlow": null,
+    "news": 5.448519234251862,
+    "factor:Growth": 0.51,
+    "factor:Inflation": -0.148,
+    "factor:Rates": 0.536,
+    "factor:USD": 2.302,
+    "factor:Liquidity": 1.303,
+    "factor:RiskAppetite": 2.168,
+    "factor:Credit": -1.117,
+    "factor:Volatility": -2.215,
+    "factor:China": -0.748
+   },
+   "key_drivers": [
+    "Russell 2000 +3.2σ",
+    "S&P 500 +2.7σ",
+    "VIX -2.7σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-09T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-10T00:46:43.900611Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "RISK_ON 72% · 온도 +44",
+   "payload": {
+    "date": "2026-11-09",
+    "as_of": "2026-11-09T22:30:00Z",
+    "label": "RISK_ON",
+    "secondary_label": null,
+    "confidence": 72.0,
+    "price_temperature": 69.87254807519962,
+    "news_temperature": 5.448519234251862,
+    "composite": 44.102936538820515,
+    "news_events": 27,
+    "thermo_confidence": 88.55759711590522,
+    "components": {
+     "RiskAppetite": 79.47458079931137,
+     "Volatility": 80.31426372053305,
+     "Growth": 24.969790739674654,
+     "Credit": 50.672060134628,
+     "KoreaFlow": null,
+     "news": 5.448519234251862
+    },
+    "band": "warm",
+    "band_label": "온기",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": 0.51,
+     "Inflation": -0.148,
+     "Rates": 0.536,
+     "USD": 2.302,
+     "Liquidity": 1.303,
+     "RiskAppetite": 2.168,
+     "Credit": -1.117,
+     "Volatility": -2.215,
+     "China": -0.748
+    },
+    "hypotheses": {
+     "RISK_ON": 1.0
+    },
+    "drivers": [
+     "Russell 2000 +3.2σ",
+     "S&P 500 +2.7σ",
+     "VIX -2.7σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }
