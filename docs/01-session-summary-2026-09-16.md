@@ -644,3 +644,14 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 화면: `useScenarioChecks` 가 `focus: calm` 점검을 거른다(`visibleChecks`). 그래서 11/11 이전에 평시가 들어간 채 저장된 날짜(`?date=`)를 열어도 탭이 보이지 않는다. 저장본 · 캡처 파일은 손대지 않았다.
 - 탭 순서: AI 센티 → 반도체 사이클 → 금리 → 유가. 다른 탭 화면 · 판정은 바뀌지 않았다. 일일 점검 스크립트(`check_screen.cjs`)에서도 평시를 뺐다.
 - 테스트: 탭 목록을 기대하던 2건(`test_ai_regime`, `test_scenario_check`)을 고치고, 평시 단건 판정이 여전히 NEUTRAL 인지 확인하는 검사를 남겼다. visibleChecks vitest 를 추가했다.
+
+### 2026-11-12 — 11/12 Daily Snapshot (07:30 KST, 예약 작업)
+- 환경: 컨테이너 재시작으로 `.venv` · `frontend/node_modules` · scratchpad(전날 입력 · RSS 합본)가 지워져 다시 만들었다. 빠진 계열 판정 기준은 11/11 캡처 `series_last_bars.json` 의 계열 목록(값은 쓰지 않음)으로 대신했다.
+- 입력: 첫 수집 때 Yahoo 429 로 기본 47 · 종목 20 · 바스켓 0만 받았다. 재수집과 `fetch_missing` 두 번(간격 5·8초)으로 기본 47 · 종목 94 · 바스켓 52 전부를 받아 합쳤다. 단위 불연속은 없다(VIX 11/05 큰 움직임은 이전에 기사로 확인한 실제 변동). 미국채 · TIPS 마지막 관측은 11/09다(11/11 수요일은 미국 채권시장 휴장일). RSS 는 이 아침 두 번 수집한 것을 합쳤고, 창 안 기사 102건 중 23건을 수기 태깅했다. 11/11 합본은 없어 창 앞부분은 오늘 수집분이 담은 만큼만 들어갔다. DRAMeXchange 11/11 18:10(GMT+8). 반도체 수집은 연결이 끊겨 한 번 다시 받았다.
+- 결과: 미국 11/11 S&P +1.31% · 나스닥100 +2.28% · SOXX +6.01%(코어위브 실적), 코스피 +2.6% · 코스닥 +5.6%. 정량 RISK_ON 52 · 자격 후보 Risk-On(RiskAppetite +1.13, 미국 · 한국 주식 CONFIRMED) → REGIME v2 Risk-On(세션, TENTATIVE, 확신 52). 공식 Liquidity Stress / Risk-Off 는 유지되고, Risk-On 전환 후보는 1/2일째다. 탭별 판정:
+  - AI: LEADERSHIP NARROWING(센티 54)
+  - 금리: RATES IN RANGE(위험·유동성 쪽, 물가 리프라이싱 미확인)
+  - 물가 압력: COOLING BIAS(원화 강세로 환율 전가가 하락 압력으로 바뀜)
+  - 유가: Demand UNCONFIRMED
+  - 반도체: UPSWING 32.5(DDR4 · DDR5 범용 현물 한 주 하락)
+- history: 11/11 행이 7개 탭에 하나씩 삽입만 됐고(기존 행 변화 0), 잠갔다. COMPLETE, 테스트 통과. 평시 탭이 빠진 첫 저장본이다.

@@ -5229,6 +5229,125 @@
     "interpretation": "글로벌 peer 상승 합의 · 국내 반도체 상승 합의 · 메모리 현물 방향 미정(봉 부족) · 컨센서스 데이터 없음. 확보된 신호가 전부 상승 방향이다. DRAM 현물·DDR5 현물·NAND 현물·DXI 메모리 지수은 값은 있으나 봉이 4/20 이라 z 가 없다 — 방향 계산은 봉이 차면 들어간다. HBM3E 계약가 추정·HBM4 계약가 추정은 분기 추정치라 방향 계산에 넣지 않는다."
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-11",
+   "tab_id": "memory_cycle",
+   "state": "UPCYCLE",
+   "state_label": "Upcycle signals",
+   "state_label_ko": "",
+   "state_score": 100.0,
+   "confidence": 50.0,
+   "component_scores": {
+    "memory": null,
+    "peers": 1.0,
+    "korea": 1.0,
+    "eps": null,
+    "memory:DRAM_SPOT": null,
+    "memory:DDR5_SPOT": null,
+    "memory:NAND_SPOT": null,
+    "memory:DXI": null,
+    "memory:HBM3E_CONTRACT": null,
+    "memory:HBM4_CONTRACT": null,
+    "peer:NVDA": 1.231443154162751,
+    "peer:MU": 2.6885693627008482,
+    "peer:TSM": 1.6032025671835919,
+    "peer:AMD": 1.4213378568919528,
+    "peer:AVGO": 1.3950511988629213,
+    "peer:ASML": 0.7182810460395846,
+    "peer:AMAT": 1.6334046758540726,
+    "peer:LRCX": 1.4474222399341725,
+    "peer:TEL": 0.9065307589032937,
+    "peer:SOX": 1.8136499210961066,
+    "peer:SMH": 1.7496389482632064,
+    "korea:SAMSUNG": 0.9036279951398218,
+    "korea:SKHYNIX": 1.082032579624849,
+    "korea:HANMI_SEMI": 1.3521647520490632,
+    "korea:SAMSUNG_EM": 0.9857774382286109
+   },
+   "key_drivers": [],
+   "data_coverage": 0.5,
+   "data_asof": "2026-11-11T22:30:00Z",
+   "missing_components": [
+    "memory",
+    "eps"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-11T23:01:21.568949Z",
+   "model_version": "memory_cycle_v0.1.0",
+   "logic_version": "rules_9de0ac3d",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "글로벌 peer 상승 합의 · 국내 반도체 상승 합의 · 메모리 현물 방향 미정(봉 부족) · 컨센서스 데이터 없음. 확보된 신호가 전부 상승 방향이다. DRAM 현물·DDR5 현물·NAND 현물·DXI 메모리 지수은 값은 있으나 봉이 4/20 이라 z 가 없다 — 방향 계산은 봉이 차",
+   "payload": {
+    "directions": {
+     "memory": null,
+     "peers": 1.0,
+     "korea": 1.0,
+     "eps": null
+    },
+    "memory": {
+     "DRAM_SPOT": {
+      "label": "DRAM 현물 (DDR4 8Gb)",
+      "z": null,
+      "quality": "STALE",
+      "change_1w": null
+     },
+     "DDR5_SPOT": {
+      "label": "DDR5 현물 (16Gb)",
+      "z": null,
+      "quality": "STALE",
+      "change_1w": null
+     },
+     "NAND_SPOT": {
+      "label": "NAND 현물 (512Gb TLC)",
+      "z": null,
+      "quality": "STALE",
+      "change_1w": null
+     },
+     "DXI": {
+      "label": "DXI 메모리 지수",
+      "z": null,
+      "quality": "STALE",
+      "change_1w": null
+     },
+     "HBM3E_CONTRACT": {
+      "label": "HBM3E 계약가 추정 ($/GB)",
+      "z": null,
+      "quality": "PARTIAL",
+      "change_1w": null
+     },
+     "HBM4_CONTRACT": {
+      "label": "HBM4 계약가 추정 ($/GB)",
+      "z": null,
+      "quality": "PARTIAL",
+      "change_1w": null
+     }
+    },
+    "peers": {
+     "NVDA": 1.231443154162751,
+     "MU": 2.6885693627008482,
+     "TSM": 1.6032025671835919,
+     "AMD": 1.4213378568919528,
+     "AVGO": 1.3950511988629213,
+     "ASML": 0.7182810460395846,
+     "AMAT": 1.6334046758540726,
+     "LRCX": 1.4474222399341725,
+     "TEL": 0.9065307589032937,
+     "SOX": 1.8136499210961066,
+     "SMH": 1.7496389482632064
+    },
+    "korea": {
+     "SAMSUNG": 0.9036279951398218,
+     "SKHYNIX": 1.082032579624849,
+     "HANMI_SEMI": 1.3521647520490632,
+     "SAMSUNG_EM": 0.9857774382286109
+    },
+    "interpretation": "글로벌 peer 상승 합의 · 국내 반도체 상승 합의 · 메모리 현물 방향 미정(봉 부족) · 컨센서스 데이터 없음. 확보된 신호가 전부 상승 방향이다. DRAM 현물·DDR5 현물·NAND 현물·DXI 메모리 지수은 값은 있으나 봉이 4/20 이라 z 가 없다 — 방향 계산은 봉이 차면 들어간다. HBM3E 계약가 추정·HBM4 계약가 추정은 분기 추정치라 방향 계산에 넣지 않는다."
+   },
+   "corrections": []
   }
  ]
 }

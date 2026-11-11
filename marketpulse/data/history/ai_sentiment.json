@@ -3808,6 +3808,121 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-11",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 54.4,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 25.5,
+    "price": 76.4,
+    "breadth": 60.2,
+    "fundamentals": 41.2,
+    "macro": 59.8
+   },
+   "key_drivers": [
+    "AI Basket Price",
+    "Breadth >5DMA",
+    "AI Relative Strength",
+    "−AI Basket 1M",
+    "−USD",
+    "−GPU Demand"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-11T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-11T23:01:22.087883Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 54",
+   "payload": {
+    "components": {
+     "narrative": 25.5,
+     "price": 76.4,
+     "breadth": 60.2,
+     "fundamentals": 41.2,
+     "macro": 59.8
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "GREED",
+     "breadth": "GREED",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "가격 · 확산도는 투자심리를 지지하고 있지만 내러티브는 아직 이를 확인하지 못하고 있습니다.",
+    "read": "AI Basket Price · Breadth >5DMA는 여전히 지지적입니다. 그러나 내러티브가 따라오지 않고 AI Basket 1M · USD가 sentiment 를 압박하고 있습니다.",
+    "secondary": "PRICE AHEAD OF NARRATIVE",
+    "support": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 98.0,
+      "display": "+1.9σ"
+     },
+     {
+      "id": "above_ma5",
+      "label": "Breadth >5DMA",
+      "label_ko": "5일선 상회 비율",
+      "component": "breadth",
+      "score": 94.0,
+      "display": "94%"
+     },
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 93.0,
+      "display": "+1.7σ vs NDX"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 0.0,
+      "display": "-14.3%"
+     },
+     {
+      "id": "usd",
+      "label": "USD",
+      "label_ko": "달러",
+      "component": "macro",
+      "score": 7.5,
+      "display": "+1.7σ"
+     },
+     {
+      "id": "gpu_demand",
+      "label": "GPU Demand",
+      "label_ko": "GPU 수요 뉴스",
+      "component": "narrative",
+      "score": 20.4,
+      "display": "-24 · 3건"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }
