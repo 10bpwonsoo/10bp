@@ -32,7 +32,7 @@
    history 7개 파일이 **새 행 1개씩만** 늘었는지(기존 행 변화 0) 확인한다 — 아니면 커밋하지 말고 원인부터.
 8. `.venv/bin/python -m pytest -q -p no:warnings` 전부 통과.
 9. 배포본: `cd frontend && npm run build`, `python tools/daily_snapshot/build_bundle.py marketpulse/data/captures/D-backfill "D Daily Snapshot (07:30 KST) · 미국 <전 영업일> 종가 기준" P/dash/index.html`,
-   `python3 -m http.server` 로 띄워 `node tools/daily_snapshot/check_screen.mjs <url> marketpulse/data/archive/screenshots/D.jpg` — 오류 0 · 가로 스크롤 없음 · 금리 탭 '수집 D'.
+   `python3 -m http.server` 로 띄워 `node tools/daily_snapshot/check_screen.cjs <url> marketpulse/data/archive/screenshots/D.jpg` — 오류 0 · 가로 스크롤 없음 · 금리 탭 '수집 D'.
 10. `docs/01-session-summary-2026-09-16.md` 에 그날 절(입력 · 결측 · 결과 · history) 추가 → 커밋 · push(네트워크 오류는 2·4·8·16초 재시도).
 11. 배포: Artifact 를 **https://claude.ai/artifact/3ERLmXjNkcrbGmfdjwbHzS** 로만 갱신(다른 주소에 올리지 않는다).
 12. 한국어로 짧게 보고: 입력 커버리지 · 결측, 오늘 regime(선택 · 공식 · 전환), 탭별 판정 한 줄씩, 고친 것, 커밋 · 배포 버전.

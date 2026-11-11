@@ -48,7 +48,7 @@ DATA["cockpit"]["live"], DATA["history"]["live"], DATA["daily_history"]["live"],
 # Daily Full Dashboard Archive — 저장소의 최근 저장본을 함께 넣는다(아티팩트 한도 16MB 라 config 의 bundle_max_dates 개).
 import yaml
 ARCH = ROOT / "marketpulse" / "data" / "archive"
-acfg = yaml.safe_load(ROOT / "marketpulse" / "config" / "archive.yaml".read_text(encoding="utf-8"))
+acfg = yaml.safe_load((ROOT / "marketpulse" / "config" / "archive.yaml").read_text(encoding="utf-8"))
 _ix = json.loads((ARCH / "index.json").read_text(encoding="utf-8")) if (ARCH / "index.json").exists() else {}
 aidx = _ix.get("entries") or [r for r in _ix.get("dates", []) if isinstance(r, dict)]
 # 2026-11-04~: 날짜별 저장본을 gzip+base64 로 넣고 화면이 고른 날짜만 브라우저에서 푼다(DecompressionStream).
