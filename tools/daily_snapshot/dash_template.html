@@ -1,0 +1,136 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Pulse AI 대시보드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+@@CSS@@
+
+
+/* 배포본 전용 — 어떤 화면을 보고 있는지 고르는 줄 */
+#export-switch {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 9px 16px; background: var(--surface-2);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono); font-size: 11px;
+}
+#export-switch .xs-label {
+  color: var(--faint); letter-spacing: .12em; text-transform: uppercase; margin-right: 4px;
+}
+#export-switch button {
+  font-family: var(--font-mono); font-size: 11px; padding: 3px 10px;
+  border: 1px solid var(--rule); background: transparent; color: var(--muted);
+  border-radius: var(--radius); cursor: pointer;
+}
+#export-switch button.on { border-color: var(--accent); color: var(--accent); background: var(--accent-wash); }
+#export-switch button:hover { color: var(--ink); }
+#export-switch .xs-note { color: var(--faint); margin-left: auto; max-width: 56ch; }
+@media (max-width: 760px) { #export-switch .xs-note { margin-left: 0; } }
+</style>
+<script>
+
+(function () {
+  var DATA = @@DATA@@;
+  // Daily Full Dashboard Archive — 최근 저장본(날짜별 화면 전체). 과거 화면은 이것만 읽는다.
+  var ARCHIVE = @@ARCHIVE@@;
+  var order = ["live"];
+  var labels = { live: "실데이터 · DELAYED" };
+  var current = new URLSearchParams(location.search).get("view");
+  if (order.indexOf(current) < 0) current = "live";
+
+  // 정적 배포본 표식. 화면의 '지금 업데이트' 가 이것을 보고 새 수집이 불가함을 말한다.
+  window.__MP_STATIC__ = { collected: @@NOTE_JSON@@ };
+  var realFetch = window.fetch.bind(window);
+  function json(body) {
+    return Promise.resolve(new Response(JSON.stringify(body), {
+      status: 200, headers: { "Content-Type": "application/json" }
+    }));
+  }
+  // 저장본은 날짜별 gzip+base64 — 고른 날짜만 풀고, 푼 것은 기억한다(글자 그대로 돌려준다, 다시 만들지 않는다).
+  var unz = {};
+  function doc(date) {
+    if (!unz[date]) {
+      if (typeof DecompressionStream === "undefined") {
+        return Promise.resolve(new Response(JSON.stringify({ detail: "이 브라우저는 저장 화면 압축 해제(DecompressionStream)를 지원하지 않습니다 — 최신 Safari/Chrome 에서 열어 주세요" }), { status: 404, headers: { "Content-Type": "application/json" } }));
+      }
+      var bin = atob(ARCHIVE.z[date]); var u8 = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      unz[date] = new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+    }
+    return unz[date].then(function (t) { return new Response(t, { status: 200, headers: { "Content-Type": "application/json" } }); });
+  }
+  window.fetch = function (input, init) {
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    if (url.indexOf("/api/v1/") < 0) return realFetch(input, init);
+    var snap = DATA.snapshots[current];
+    if (url.indexOf("/api/v1/archive/") >= 0) {
+      var rest = decodeURIComponent(url.split("/api/v1/archive/")[1].split("?")[0]);
+      var idx = ARCHIVE.index;
+      var nf = function (body) { return Promise.resolve(new Response(JSON.stringify({ detail: body }), { status: 404, headers: { "Content-Type": "application/json" } })); };
+      if (rest === "index") return json(idx);
+      if (rest === "dates") return json(idx.map(function (r) { return r.date; }));
+      if (rest === "latest") return idx.length ? doc(idx[0].date) : nf("저장된 화면이 아직 없습니다");
+      if (ARCHIVE.z[rest]) return doc(rest);
+      var ds = idx.map(function (r) { return r.date; }).sort();
+      var before = ds.filter(function (d) { return d < rest; }).slice(-1), after = ds.filter(function (d) { return d > rest; }).slice(0, 1);
+      return nf({ message: rest + " 저장 화면이 없습니다", date: rest, nearest: { before: before, after: after } });
+    }
+    if (url.indexOf("/info") >= 0) {
+      return json({ status: "ok", version: "0.1.0", mode: snap.mode,
+                    scenario: snap.scenario, llm_enabled: false, zscore_window: 60 });
+    }
+    if (url.indexOf("/scenarios") >= 0) return json([]);
+    if (url.indexOf("/scenario-check") >= 0) return json(DATA.scenario_check[current] || []);
+    if (url.indexOf("/oil-regime") >= 0) return json(DATA.oil_regime[current] || {});
+    if (url.indexOf("/rates-regime") >= 0) return json(DATA.rates_regime[current] || {});
+    if (url.indexOf("/ai-regime") >= 0) return json(DATA.ai_regime[current] || {});
+    if (url.indexOf("/semiconductor-cycle") >= 0) { var sc = (DATA.semiconductor_cycle || {})[current]; if (!sc) return new Response(JSON.stringify({ detail: "반도체 사이클 캡처 없음" }), { status: 404, headers: { "content-type": "application/json" } }); return json(sc); }
+    if (url.indexOf("/cockpit") >= 0) return json(DATA.cockpit[current] || {});
+    if (url.indexOf("/api/v1/history/") >= 0) { var tab = url.split("/api/v1/history/")[1].split("?")[0]; var dh = (DATA.daily_history[current] || {})[tab]; return dh ? json(dh) : new Response(JSON.stringify({ detail: "no stored history for " + tab }), { status: 404, headers: { "Content-Type": "application/json" } }); }
+    if (url.indexOf("/analyst-views") >= 0) return json(DATA.analyst_views[current] || { views: [], requested: [], pending: [], missing: [], provider: "unavailable", note: "" });
+    if (url.indexOf("/market-state/history") >= 0) return json(DATA.history[current] || { as_of: snap.as_of, days_requested: 0, points: [], segments: [], changes: 0, days_by_label: {}, current_streak: 0, previous_label: null, confidence_first_half: null, confidence_second_half: null, temperature_first_half: null, temperature_second_half: null, summary: "", note: "" });
+    if (url.indexOf("/news") >= 0) return json(DATA.news[current] || []);
+    if (url.indexOf("/investment") >= 0) {
+      var inv = DATA.investment[current];
+      var m = url.match(/\/investment\/stocks\/([A-Z0-9_]+)/);
+      if (m) {
+        var st = inv && inv.stocks && inv.stocks[m[1]];
+        if (!st) return Promise.resolve(new Response(JSON.stringify({ detail: "unknown stock" }), { status: 404, headers: { "Content-Type": "application/json" } }));
+        return json(st);
+      }
+      if (url.indexOf("/investment/alternative") >= 0) {
+        var g = (url.split("group=")[1] || "").split("&")[0];
+        return json((inv ? inv.alternative : []).filter(function (p) { return !g || p.group === g; }));
+      }
+      return json(inv || {});
+    }
+    if (url.indexOf("/snapshot") >= 0) return json(snap);
+    return json({});
+  };
+
+  function mountSwitcher() {
+    if (document.getElementById("export-switch")) return;
+    var bar = document.createElement("div");
+    bar.id = "export-switch";
+    bar.innerHTML =
+      '<span class="xs-label">' + labels[current] + '</span>' +
+      '<span class="xs-note">@@NOTE_HTML@@</span>';
+    document.body.insertBefore(bar, document.body.firstChild);
+    bar.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-view]");
+      if (!b) return;
+      var u = new URL(location.href);
+      u.searchParams.set("view", b.dataset.view);
+      location.href = u.toString();
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountSwitcher);
+  } else { mountSwitcher(); }
+})();
+
+</script>
+<div id="root"></div>
+<script type="module">
+@@JS@@
+</script>
+

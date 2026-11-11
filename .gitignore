@@ -33,3 +33,4 @@ frontend/dist/
 frontend/*.tsbuildinfo
 .pytest_cache/
 *.egg-info/
+frontend/dist-bundle/
