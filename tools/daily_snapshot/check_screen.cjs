@@ -9,7 +9,7 @@ p.on('pageerror', e => errs.push(e.message));
 await p.goto(url); await p.waitForTimeout(3000);
 if (shot) await p.screenshot({ path: shot, fullPage: true, type: 'jpeg', quality: 60 });
 console.log(JSON.stringify(await p.evaluate(() => ({ now: document.querySelector('[data-testid="ck-now-label"]')?.textContent, rs: document.querySelector('[data-testid="ck-rs"]')?.innerText.slice(0, 300), noregime: document.body.innerText.includes('NO REGIME') }))));
-for (const tab of ['금리', '유가', 'AI 센티', '반도체 사이클', '평시']) {
+for (const tab of ['금리', '유가', 'AI 센티', '반도체 사이클']) {
   await p.locator(`button:has-text("${tab}")`).first().click(); await p.waitForTimeout(1200);
   console.log(tab, JSON.stringify(await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }))));
 }

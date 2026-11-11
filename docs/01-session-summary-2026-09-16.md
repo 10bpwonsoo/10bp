@@ -638,3 +638,9 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 결과: 미국 11/10 CPI 예상 상회 뒤 S&P −0.4% · 나스닥100 −0.6% · MOVE +7.5%. 자격 후보 없음 → REGIME v2 NEUTRAL / MIXED 58(세션), 공식 Liquidity Stress / Risk-Off 유지 · PENDING Neutral 1/2(Risk-On 후보는 하루로 끝). AI AI TRADE MIXED(센티 42), 금리 RATES IN RANGE(물가 리프라이싱 쪽), 물가 압력 MIXED, 유가 Supply CONFIRMED, 반도체 UPSWING 32.1(범용 DRAM 현물 약세 확대). history 11/10 행 7개 탭 잠금(삽입만), COMPLETE · 테스트 통과.
 - 도구 이동: 배포본 빌더 · 입력 병합 · 빠진 계열 재수집 · 날짜별 재구성 · 단위 검사 · 화면 점검을 세션 scratchpad 에서 저장소 `tools/daily_snapshot/` 로(상대 경로, 화면 점검은 CJS `require('playwright')`). 절차 `docs/daily-snapshot-procedure.md`.
 - 루틴: 사용자 요청으로 평일 07:47 KST 예약 작업 'Market Pulse Daily Snapshot 매일 갱신'(이 세션으로 깨움) — 절차 문서 1~12 그대로, 배포는 3ERLmXjNkcrbGmfdjwbHzS 로만. 정책 이벤트 파일 예약(06:40 KST)은 그대로 먼저 돈다.
+
+### 2026-11-11 — 평시 탭 제거 (사용자 요청)
+- `config/scenario_checks.yaml` baseline 에 `tab: false` — AI 센티 · 메모리 업사이클(10/07)과 같은 방식이다. 시나리오 점검 목록에서만 빠지고 평시(calm) 판정 엔진 · 설정 · 화면 코드는 남는다.
+- 화면: `useScenarioChecks` 가 `focus: calm` 점검을 거른다(`visibleChecks`). 그래서 11/11 이전에 평시가 들어간 채 저장된 날짜(`?date=`)를 열어도 탭이 보이지 않는다. 저장본 · 캡처 파일은 손대지 않았다.
+- 탭 순서: AI 센티 → 반도체 사이클 → 금리 → 유가. 다른 탭 화면 · 판정은 바뀌지 않았다. 일일 점검 스크립트(`check_screen.cjs`)에서도 평시를 뺐다.
+- 테스트: 탭 목록을 기대하던 2건(`test_ai_regime`, `test_scenario_check`)을 고치고, 평시 단건 판정이 여전히 NEUTRAL 인지 확인하는 검사를 남겼다. visibleChecks vitest 를 추가했다.

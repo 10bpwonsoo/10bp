@@ -86,8 +86,9 @@ class TestEngine:
         cfg = load_scenario_checks()["checks"]
         assert [c.name for c in out] == [k for k, v in cfg.items() if (v or {}).get("tab", True) is not False]
         assert "ai_sentiment" not in [c.name for c in out] and "memory_upcycle" not in [c.name for c in out]
-        base = next(c for c in out if c.name == "baseline")
-        assert base.current_label.value == "NEUTRAL" and base.label is not None and base.label.value == "NEUTRAL"
+        assert "baseline" not in [c.name for c in out]  # 평시 탭도 tab:false(2026-11-11) — 판정 엔진은 그대로라 단건 점검은 된다
+        base = check_scenario(load_scenario(MOCK_DIR, "baseline"), market, snap.market_state, snap.themes, by_id)
+        assert base.current_label.value == "NEUTRAL"
         for c in out:
             assert 0 <= c.match_score <= 100 and c.verdict and c.note
 

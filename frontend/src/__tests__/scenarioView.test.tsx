@@ -53,3 +53,12 @@ describe("ScenarioView", () => {
     expect(calm.getAttribute("data-on")).toBe(snapshot.market_state.primary_label === "NEUTRAL" ? "1" : "0");
   });
 });
+
+describe("평시 탭 제거(2026-11-11)", () => {
+  it("calm 점검은 탭 목록에서 빠지고 다른 탭은 순서 그대로", async () => {
+    const { visibleChecks } = await import("../api/useScenarioChecks");
+    const mk = (name: string, focus: string) => ({ name, focus }) as unknown as import("../api/types").ScenarioCheck;
+    const out = visibleChecks([mk("ai_sentiment2", "ai_regime_full"), mk("inflation_shock", "rates_regime"), mk("oil_spike", "oil_regime"), mk("baseline", "calm")]);
+    expect(out.map((c) => c.name)).toEqual(["ai_sentiment2", "inflation_shock", "oil_spike"]);
+  });
+});
