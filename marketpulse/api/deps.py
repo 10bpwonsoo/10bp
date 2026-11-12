@@ -774,6 +774,16 @@ class AiRegimeService:
             get_history_service().attach_ai(settings, result, snapshot, series, basket)  # 1M 센티먼트 이력 = 저장 sequence · AI 판정 daily snapshot 기록
         except Exception:
             logger.exception("AI daily snapshot 기록 실패 — 화면은 그대로 진행한다")
+        try:
+            # AI THEME VIEW — 판정 지문이 같으면 이전 결과를 다시 쓴다(새로고침 · 탭 이동마다 LLM 을 부르지 않는다). LLM 이 꺼져 있으면 비움
+            from ..ai import ai_theme_view as ATV
+            from ..ai.client import build_client
+            from ..models.ai_regime import AiThemeView
+            import json as _json
+            tv = ATV.live_view(_json.loads(result.model_dump_json()), client=build_client(settings) if settings.llm_enabled else None)
+            result = result.model_copy(update={"theme_view": AiThemeView(**tv)})
+        except Exception:
+            logger.exception("AI THEME VIEW 실패 — 화면은 그대로 진행한다")
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result

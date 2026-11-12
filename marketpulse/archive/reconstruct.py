@@ -456,6 +456,16 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     (out / "semiconductor_cycle.json").write_text(json.dumps(semi, ensure_ascii=False), encoding="utf-8")
     from ..ai.semi_read import build_context as semi_context
     (out / "semiconductor_read_context.json").write_text(json.dumps(semi_context(semi), ensure_ascii=False, indent=1), encoding="utf-8")
+
+    # 14) AI THEME VIEW (2026-11-12) — 같은 cutoff 의 AI 판정 · 반도체 사이클 · 실시간 탭 regime 을 모두 읽은 LLM 종합(API → 세션 생성본 → 비움)
+    from ..ai import ai_theme_view as ATV
+    from ..models.ai_regime import AiThemeView
+    tv_ctx = ATV.build_context(json.loads(ai.model_dump_json()), semi=semi, cockpit=json.loads(ck.model_dump_json()))
+    (out / "ai_theme_view_context.json").write_text(json.dumps(tv_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
+    tv = ATV.write(tv_ctx, client=client, session_read=reads.get("ai_theme_view"))
+    ai = ai.model_copy(update={"theme_view": AiThemeView(**tv)})
+    (out / "ai_regime.json").write_text(ai.model_dump_json(), encoding="utf-8")
+    summary["ai"]["theme_view"] = [tv["source"], tv["status"], tv["reason"]]
     summary["semiconductor_cycle"] = {"regime": semi["regime"]["label"], "composite": semi["regime"]["composite"], "market_read": semi["market_read"]["source"] + "/" + semi["market_read"]["generator"]}
 
     summary["vintage"] = {

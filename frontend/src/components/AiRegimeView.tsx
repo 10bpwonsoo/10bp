@@ -1,4 +1,4 @@
-import type { AiRegime, AiDriverScore, AiGroupMomentum, AiMacroRow, AiEvidenceItem, IntelligenceSnapshot, ScenarioCheck, MarketStateHistory } from "../api/types";
+import type { AiThemeView, AiRegime, AiDriverScore, AiGroupMomentum, AiMacroRow, AiEvidenceItem, IntelligenceSnapshot, ScenarioCheck, MarketStateHistory } from "../api/types";
 import { ScenarioCheckPanel, scoreColor } from "./ScenarioCheckPanel";
 import { StateHistoryStrip } from "./StateHistoryStrip";
 import { strengthColor } from "./OilRegimeView";
@@ -97,6 +97,29 @@ function MacroRowView({ r }: { r: AiMacroRow }) {
  * extended=false: AI 센티 — Regime → AI vs Market → Drivers → Leadership → Breadth → Narrative×Price → Macro → Stress → What Changes → Diagnostics.
  * extended=true : AI 센티2 — 그 사이에 Fundamental Transmission · Value Chain · Semiconductor Confirmation · Stock Impact · Radar · News→Stock · Expectations vs Fundamentals · What Matters Now 를 끼운다.
  */
+const TV_SRC: Record<string, string> = { llm: "AI 종합", session: "AI 종합 · 세션" };
+
+/** AI THEME VIEW — 기존 판정(아래 카드들)을 모두 읽은 LLM 의 투자 관점 종합. 문장은 생성된 것 그대로(템플릿 없음). 생성되지 않았으면 그렇다고만 적는다 */
+function ThemeView({ v }: { v: AiThemeView }) {
+  if (v.status !== "ok") {
+    return <div className="ai-tv ai-tv-off mono" data-testid="ai-theme-view" data-status={v.status}><span className="ai-k">AI THEME VIEW</span> 생성되지 않음{v.reason ? ` — ${v.reason}` : ""}</div>;
+  }
+  const row = (k: string, t: string, id: string) => (t ? <div className="ai-tv-row" data-testid={`ai-tv-${id}`}><span className="ai-k mono">{k}</span><span>{t}</span></div> : null);
+  return (
+    <div className="ai-tv" data-testid="ai-theme-view" data-status={v.status} data-source={v.source}>
+      <div className="ai-tv-top"><span className="ai-k mono">AI THEME VIEW</span><span className="ai-tv-src mono">{TV_SRC[v.source] ?? v.source}</span></div>
+      <p className="ai-tv-headline" data-testid="ai-tv-headline">{v.headline}</p>
+      <p className="ai-tv-summary" data-testid="ai-tv-summary">{v.summary}</p>
+      <div className="ai-tv-grid">
+        {row("DRIVER", v.driver, "driver")}
+        {row("STRENGTH", v.strength, "strength")}
+        {row("WEAK POINT", v.weak_point, "weak")}
+        {row("NEXT", v.next_watch, "next")}
+      </div>
+    </div>
+  );
+}
+
 export function AiRegimeView({ regime, snapshot, check, history, extended = false }: { regime: AiRegime; snapshot: IntelligenceSnapshot; check: ScenarioCheck; history: MarketStateHistory | null; extended?: boolean }) {
   const a = regime.ai_vs_market; const b = regime.breadth; const n = regime.narrative; const m = regime.macro; const s = regime.stress;
   const dom = regime.drivers.find((d) => d.id === regime.dominant) ?? null;
@@ -147,6 +170,7 @@ export function AiRegimeView({ regime, snapshot, check, history, extended = fals
               </div>
             </div>
           </div>
+          {regime.theme_view ? <ThemeView v={regime.theme_view} /> : null}
           <p className="ai-headline">{regime.headline}</p>
           <p className="ai-impl"><span className="ai-k mono">IMPLICATION</span> {regime.implication}</p>
           {extended ? <StatusStrip regime={regime} /> : null}

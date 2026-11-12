@@ -699,6 +699,21 @@ class DriverVerdict(Base):
     status_meaning: dict[str, str] = Field(default_factory=dict)
 
 
+class AiThemeView(Base):
+    """AI THEME VIEW (2026-11-12) — 기존 판정을 모두 읽은 LLM 의 투자 관점 종합. 필드 구조만 고정, 내용은 생성. status=unavailable 이면 비어 있다(규칙 문장으로 채우지 않는다)."""
+
+    headline: str = ""
+    summary: str = ""
+    driver: str = ""
+    strength: str = ""
+    weak_point: str = ""
+    next_watch: str = ""
+    source: str = Field(default="none", description="llm · session · none")
+    status: str = Field(default="unavailable", description="ok · unavailable")
+    reason: str = ""
+    generated_at: str | None = None
+
+
 class AiRegime(Base):
     as_of: datetime
     regime: RegimeKey
@@ -741,6 +756,7 @@ class AiRegime(Base):
     # ── AI SENTIMENT · GREED & FEAR (2026-09-30) ──
     sentiment: AiSentiment | None = None
     regime_read: str = Field(default="", description="AI REGIME READ — FUNDAMENTAL CONFIRMATION · SUMMARY · 맥락을 대신하는 2~3문장")
+    theme_view: AiThemeView | None = Field(default=None, description="AI THEME VIEW — 투자 관점 종합(LLM). None 이면 이 기능 이전 저장본")
     driver_verdict: DriverVerdict = Field(default_factory=DriverVerdict)
     chain_view: ChainView = Field(default_factory=ChainView)
     stock_view: StockView = Field(default_factory=StockView)

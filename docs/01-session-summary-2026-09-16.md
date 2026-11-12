@@ -679,3 +679,13 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 화면: MARKET NOW = OFFICIAL REGIME 아래 CURRENT CANDIDATE · (공식) SUPPORT 또는 PREVIOUS OFFICIAL · EXIT CONFIRMATION · ENTRY CONFIRMATION · RAW SIGNAL(정량, 연속 일수) · 공식 기준 주식 확인 · TRANSITION STATUS. HISTORY 우측 = CURRENT OFFICIAL · PENDING CANDIDATE · ENTRY · EXIT · PREVIOUS OFFICIAL · RAW SIGNAL · TRANSITION STATUS. 띠는 공식만, 후보는 칸 아래 작은 표식.
   legacy 저장본(11/06 이하)은 예전 표시 그대로.
 - 앞으로: 매일 Daily Snapshot(`build_day.py`)이 같은 규칙으로 상태를 정하고 로그를 쓴다 — REGIME v2 선택 컨텍스트에도 직전 이탈 · 진입 상태와 새 규칙을 알려 준다. 테스트 `tests/test_regime_state.py`, `frontend/src/__tests__/regimeState.test.tsx`.
+
+### 2026-11-12 — AI 센티 탭 AI THEME VIEW 추가 (사용자 요청)
+- 목적: 데이터 → LLM 종합 → AI THEME VIEW → 상세 데이터. 기존 AI 판정(Trade Regime · driver · breadth · narrative · 펀더멘털/반도체 확인 · 스트레스 · Greed & Fear …)과 계산은 그대로.
+- `ai/ai_theme_view.py`: 그 Daily Snapshot 의 AI 판정 전체 + 반도체 사이클 + 실시간 탭 regime(공식 · 후보) + 미국 · 한국 AI/반도체 종목 + 뉴스 + 결측 목록을 컨텍스트로, PM 관점 프롬프트(고정 문구 · 우선순위 없음, 반대 증거 · 미국/한국 괴리 · 결측 미사용 · READ 반복 금지).
+  출력 구조만 고정: headline · summary(2~4문장) · driver · strength · weak_point · next_watch. 검증: 길이 · 문장 수 · 금지어 · 컨텍스트 숫자만 · 숫자 2개 이내 · 화면 숫자 반복 금지 · AI REGIME READ 반복 금지.
+  순서: API → 같은 검증의 세션본 → 비움('생성되지 않음' — 규칙 문장으로 채우지 않는다).
+- 저장: `ai_regime.theme_view` 로 Daily Snapshot 에 저장, 과거 날짜는 저장값 그대로(다시 생성하지 않는다). LIVE(API)는 판정 지문(라벨 · 상태 줄 · 확인 · 스트레스 · 센티 · breadth)이 같으면 이전 결과를 재사용.
+- 11/12: 11/12 저장 데이터만으로 세션 생성(API 401) → 캡처 · 저장본에 `theme_view` 만 더함(`tools/daily_snapshot/ai_theme_view_attach.py`, archive correct · 이전 파일 superseded/). 11/11 이전 저장본에는 만들지 않았다(그 날짜 화면은 영역 없음).
+  헤드라인 "반등은 넓어졌지만 한 달 낙폭 안의 가격 선행 랠리".
+- 화면: AI TRADE REGIME 카드의 레짐 이름 · 핵심 수치 바로 아래, 엔진 헤드라인 위. 테스트 `tests/test_ai_theme_view.py`, `frontend/src/__tests__/aiThemeView.test.tsx`.

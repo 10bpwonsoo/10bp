@@ -751,6 +751,8 @@ export interface AiRegime {
   news_impact: AiNewsImpact[]; expectation_gap: AiGapRow[]; what_matters: AiMattersItem[];
   sentiment?: AiSentiment | null;
   regime_read: string;
+  /** AI THEME VIEW (2026-11-12) — 기존 판정을 모두 읽은 LLM 의 투자 관점 종합. 없으면(이전 저장본) undefined/null, 생성 실패면 status 'unavailable' */
+  theme_view?: AiThemeView | null;
   driver_verdict: AiDriverVerdict;
   chain_view: AiChainView;
   stock_view: AiStockView;
@@ -780,6 +782,7 @@ export interface CkRegimeState {
   entry_regime: string | null; entry_label: string | null; entry_streak: number; entry_required: number; entry_confirmed: boolean;
   changed: boolean; change_kind: "exit" | "entry" | "legacy" | null; counted: boolean; released_label?: string | null; released_on?: string | null;
 }
+export interface AiThemeView { headline: string; summary: string; driver: string; strength: string; weak_point: string; next_watch: string; source: string; status: string; reason: string; generated_at: string | null }
 export interface CkMarketNow { state?: CkRegimeState | null; selection?: RegimeSelection | null; label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
   /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */
   raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: "CONFIRMED" | "UNCONFIRMED_TRANSITION" | "TRANSITION_WATCH" | "CHANGED" | "NO_HISTORY";

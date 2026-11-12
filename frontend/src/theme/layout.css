@@ -2524,9 +2524,11 @@
   /* 1. AI MARKET STATE — 왼쪽 regime·핵심 수치, 오른쪽 Read·Key tension, 아래 상태 타일 */
   .ai.ai-ext [data-testid="ai-regime-card"] > .panel-body {
     display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 28px; align-items: start;
-    grid-template-rows: auto 1fr auto auto auto;
-    grid-template-areas: "head read" "head tension" "headline headline" "impl impl" "strip strip";
+    grid-template-rows: auto 1fr auto auto auto auto;
+    grid-template-areas: "head read" "head tension" "tv tv" "headline headline" "impl impl" "strip strip";
   }
+  /* AI THEME VIEW(2026-11-12) — 레짐 이름 · 핵심 수치 바로 다음, 전체 폭(엔진 헤드라인 · 상태 타일보다 먼저) */
+  .ai.ai-ext [data-testid="ai-regime-card"] .ai-tv { grid-area: tv; }
   .ai.ai-ext [data-testid="ai-regime-card"] .ai-head { grid-area: head; }
   .ai.ai-ext [data-testid="ai-regime-card"] .ai-headline { grid-area: headline; }
   .ai.ai-ext [data-testid="ai-regime-card"] .ai-impl { grid-area: impl; }
@@ -2928,3 +2930,15 @@
 .ck-h-cand { position: absolute; left: 20%; right: 20%; bottom: -5px; height: 3px; border-radius: 2px; pointer-events: none; }
 .ck-h-tr-kind { margin-left: 8px; font-style: normal; font-size: 9.5px; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--rule-soft); border-radius: 3px; padding: 0 4px; }
 @media (max-width: 760px) { .ck-st-row { grid-template-columns: 120px minmax(0, 1fr); } }
+
+/* ── AI THEME VIEW (2026-11-12) — 레짐 이름 다음으로 먼저 읽히게: 헤드라인 크게, 본문 2~4문장, 네 줄 요약 ── */
+.ai-tv { margin: 10px 0 12px; padding: 12px 14px; border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: var(--radius); background: var(--surface-2); }
+.ai-tv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ai-tv-src { font-size: 10px; color: var(--faint); }
+.ai-tv-headline { margin: 4px 0 6px; font-size: 19px; font-weight: 700; line-height: 1.35; color: var(--ink); }
+.ai-tv-summary { margin: 0 0 8px; font-size: 13.5px; line-height: 1.6; color: var(--ink-2); }
+.ai-tv-grid { display: grid; gap: 3px; }
+.ai-tv-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: 12.5px; line-height: 1.45; }
+.ai-tv-row .ai-k { color: var(--muted); font-size: 10px; letter-spacing: .05em; }
+.ai-tv-off { font-size: 11px; color: var(--faint); border-left-color: var(--rule); }
+@media (max-width: 760px) { .ai-tv-headline { font-size: 17px; } .ai-tv-row { grid-template-columns: 78px minmax(0, 1fr); } }

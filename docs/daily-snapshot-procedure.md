@@ -29,6 +29,10 @@
    지난 세션본(예: `captures/2026-11-10-backfill/*_session.json`)의 형식 · 어조를 따른다. 숫자는 컨텍스트 값만, displayed_elsewhere 숫자는 쓰지 않는다.
    공식 regime 전환(Exit/Entry, 2026-11-09~)이 확정되는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
    `ai.transition_read.check(why, ctx)` 가 빈 목록이어야 한다(1~3문장 · 컨텍스트 숫자만 · Exit 이면 Neutral / Mixed 로 간 것을 적는다). 이 파일이 없으면 전환 이유는 화면이 저장 데이터로 고른 문장이 된다.
+   AI THEME VIEW(AI 센티 탭 맨 위): 컨텍스트 단계에서 생기는 `ai_theme_view_context.json` 만 읽고 `ai_theme_view_session.json`
+   ({headline, summary, driver, strength, weak_point, next_watch})을 쓴다 — `ai.ai_theme_view.check(out, ctx)` 가 빈 목록이어야 한다.
+   고정 문구 없이 그날 데이터의 관계를 해석한다(주도 · 확인 · 반대 증거 · 다음 확인점, 미국 · 한국). missing 의 데이터로 결론을 만들지 않는다. AI REGIME READ 문장을 반복하지 않는다.
+   이 파일이 없고 API 도 안 되면 그날 AI THEME VIEW 는 '생성되지 않음' 으로 남는다(규칙 문장으로 채우지 않는다).
    REGIME v2: 자격 후보(또는 NEUTRAL)만 고른다. confidence 는 정량값을 그대로 옮기지 말고 근거(데이터 지연 · 한국 결측 · 하루짜리 이벤트)를 따져 정하고, 이유를 selection_rationale 에 쓴다.
 7. `python tools/daily_snapshot/build_day.py D P/inputs_D full` → `python -m marketpulse.archive validate D`(COMPLETE).
    history 7개 파일이 **새 행 1개씩만** 늘었는지(기존 행 변화 0) 확인한다 — 아니면 커밋하지 말고 원인부터.
