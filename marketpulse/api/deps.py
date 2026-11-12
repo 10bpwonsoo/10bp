@@ -822,7 +822,8 @@ class CockpitService:
         obs = _try(lambda: self._history._base.state_observations(settings)) or []
         stored_days = len({o.as_of.date() for o in obs}) if obs else 0
         result = build_cockpit(snapshot, market, {i.id: i for i in instruments}, history=history, investment=inv, ai_regime=ai, rates_regime=rates, oil_regime=oil,
-                               extra_z=extra, extra_names=names, observations=obs, stored_days=stored_days, config_dir=settings.config_dir)
+                               extra_z=extra, extra_names=names, observations=obs, stored_days=stored_days, config_dir=settings.config_dir,
+                               regime_state_dir=settings.regime_state_dir)
         with self._lock:
             self._cache[key] = (snapshot.as_of, result)
         return result

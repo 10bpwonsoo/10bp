@@ -368,8 +368,24 @@ def quant_commentary(sel: Mapping, ctx: Mapping) -> str:
 
 
 # ── 컨텍스트 · 전체 흐름 ─────────────────────────────────
+def persistence_hint_v2(official: str | None, os_: Mapping) -> str:
+    """exit_entry_v2(2026-11-09~) — 이탈과 진입을 따로 센다. 직전 Daily Snapshot 의 상태를 그대로 알려 준다(오늘 판정은 선택 뒤에 정해진다)."""
+    if os_.get("change_kind") == "exit":
+        prev = f"직전 Daily Snapshot 에서 공식 regime 이 이탈 확인 {os_.get('exit_streak', 0)}/{os_.get('exit_required', 2)} 로 해제돼 Neutral / Mixed 가 됐다"
+    elif os_.get("change_kind") == "entry":
+        prev = f"직전 Daily Snapshot 에서 진입 확인 {os_.get('entry_streak', 0)}/{os_.get('entry_required', 2)} 로 공식 regime 이 바뀌었다"
+    elif os_.get("official") == "neutral":
+        prev = "직전 Daily Snapshot: 공식 Neutral / Mixed" + (f", 진입 후보 {os_.get('entry_label')} {os_.get('entry_streak', 0)}/{os_.get('entry_required', 2)}" if os_.get("entry_regime") else "")
+    else:
+        prev = (f"직전 Daily Snapshot: 공식 지지 {os_.get('support', 'NA')}, 이탈 {os_.get('exit_streak', 0)}/{os_.get('exit_required', 2)}"
+                + (f", 진입 후보 {os_.get('entry_label')} {os_.get('entry_streak', 0)}/{os_.get('entry_required', 2)}" if os_.get("entry_regime") else ""))
+    return (f"공식 {official} · {prev} · 규칙: 공식 regime 이 지지되지 않는 거래일이 2일 이어지면 해제되고(새 후보가 미확정이면 Neutral / Mixed), "
+            "새 후보는 서로 다른 거래일 2일 연속 선택돼야 공식이 된다. 오늘 선택이 다른 후보면 진입 일수는 다시 1일부터다")
+
+
 def build_context(ms: Any, market: Any, instruments_by_id: Mapping[str, Any], inp: EquityInputs, *, history_rows: Sequence[Mapping] = (),
-                  official: str | None = None, events: Sequence[Mapping] = (), news: Sequence[Mapping] = (), as_of: str = "") -> dict:
+                  official: str | None = None, events: Sequence[Mapping] = (), news: Sequence[Mapping] = (), as_of: str = "",
+                  official_state: Mapping | None = None) -> dict:
     cfg = load_config()
     cands, near = build_candidates(ms, market, instruments_by_id, inp, cfg)
     neutral_eq = equity_confirmation("RISK_ON", inp, cfg)
@@ -388,6 +404,8 @@ def build_context(ms: Any, market: Any, instruments_by_id: Mapping[str, Any], in
     hist = list(history_rows)[-10:]
     last_raw = [r.get("raw_state") for r in hist]
     persistence_hint = (f"공식 {official} · 직전 raw {last_raw[-1] if last_raw else '없음'} · 공식 전환은 같은 raw 가 서로 다른 거래일 2일 연속(또는 확신 80 이상)일 때")
+    if official_state:
+        persistence_hint = persistence_hint_v2(official, official_state)
     ql = ms.primary_label.value if hasattr(ms.primary_label, "value") else str(ms.primary_label)
     return {
         "as_of": as_of, "purpose": "현재 미국과 한국을 포함한 주식시장이 어떤 환경에 놓여 있는가",

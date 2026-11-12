@@ -687,6 +687,42 @@ history:
     min_dwell_days: 2
     strong_evidence: 80
     min_dwell_share: 0.5
+  #: ── 공식 regime Exit / Entry 상태 기계 (2026-11-12 요청) — effective_from(KST Daily Snapshot 날짜) 부터 위 display 규칙 대신 쓴다 ──
+  #: 그 전 날짜는 저장값(legacy) 그대로 두고 다시 계산하지 않는다. 첫 적용일의 시작 공식 = 직전 저장 행의 공식.
+  #: EXIT: 공식 regime 이 그날 지지되지 않으면(WEAKENING · BROKEN) exit 1일 — exit_days 연속이면 해제 → 새 후보 미확정이면 NEUTRAL / MIXED.
+  #: ENTRY: 공식과 다른 방향성 후보가 서로 다른 거래일 entry_days 연속 선택되면 공식 전환. Neutral bridge(2-of-3) 는 쓰지 않는다.
+  #: SUPPORT: 오늘 후보 = 공식이면 SUPPORTED. 아니면 core(공식 regime 의 핵심 trigger, state_rules require 와 같은 식) 와
+  #:   그날 주식 확인(REGIME v2 의 위험선호 기준 주식 판독을 공식 regime 이 기대하는 방향으로 돌린 것)을 함께 본다:
+  #:   core 충족 + 주식이 반대가 아님(확인 또는 판독 없음) → SUPPORTED / core 충족 · 주식 확인 · core 가 near_ratio 까지 와 있고 주식이 반대가 아님 → WEAKENING / 나머지 → BROKEN.
+  state_machine:
+    logic_version: exit_entry_v2
+    effective_from: "2026-11-09"
+    entry_days: 2
+    exit_days: 2
+    neutral_bridge: false
+    near_ratio: 0.5
+    core:
+      liquidity_stress: ["Liquidity <= -1.0", "RiskAppetite <= -0.8"]   # LIQUIDITY_STRESS · RISK_OFF require
+      risk_on: ["RiskAppetite >= 0.8"]
+      inflation: ["Inflation >= 1.0"]
+      growth: ["Growth <= -1.0"]
+      policy: ["abs(Rates) >= 1.2"]
+      geopolitical: []          # z(BRENT) 는 저장 행 factor 에 없다 — 주식 확인과 후보로만 본다
+    equity_direction: {risk_on: 1, liquidity_stress: -1, growth: -1, inflation: -1, geopolitical: -1, policy: 0}
+    equity_status: {strong: 0.6, confirmed: 0.25, contradicted: -0.25}   # config/regime_select.yaml status 와 같은 문턱
+  #: MARKET NOW · CURRENT 요약 문구 (exit_entry_v2). {official} {candidate} {prev} {raw} {n} {need} {exit} {entry}
+  state_text:
+    support_ko: {SUPPORTED: "유지 근거 있음", WEAKENING: "근거 약해짐", BROKEN: "근거 깨짐", NA: "해당 없음"}
+    read:
+      confirmed: "공식 레짐은 {official}이고 오늘 데이터도 같은 쪽을 가리킵니다."
+      held_supported: "공식 레짐은 {official}이고 오늘 후보는 {candidate}지만, {official}의 핵심 근거가 아직 유지돼 이탈로 세지 않습니다."
+      exit_watch: "공식 레짐은 아직 {official}이지만 오늘 데이터는 {candidate}을(를) 가리키고, {official}의 근거가 약해져 이탈 확인이 {exit}/{need}일째입니다."
+      exit_watch_entry: "공식 레짐은 아직 {official}이지만 오늘 데이터는 {candidate}을(를) 가리키고, {official}의 근거도 약해져 이탈 확인이 {exit}/{need}일째입니다. {candidate} 진입 확인은 {entry}/{need}일째입니다."
+      exit_confirmed: "{prev}의 근거가 {need}거래일 연속 지지되지 않아 공식 레짐을 해제했고, 새 레짐이 아직 확정되지 않아 지금은 Neutral / Mixed입니다."
+      entry_confirmed: "{candidate}이(가) {need}거래일 연속 선택돼 공식 레짐이 {prev}에서 {official}(으)로 바뀌었습니다."
+      neutral_entry: "공식 레짐은 Neutral / Mixed이고, 오늘 데이터는 {candidate}을(를) 가리켜 진입 확인이 {entry}/{need}일째입니다."
+      neutral_idle: "공식 레짐은 Neutral / Mixed이고, 오늘도 뚜렷한 방향의 후보가 없습니다."
+      live: "장중 값은 일수에 넣지 않습니다 — 공식 레짐은 직전 Daily Snapshot 의 {official} 그대로이고, 지금 후보는 {candidate}입니다."
   #: OFFICIAL vs RAW 전환 상태 문구 (2026-10-07). {cur}=공식 regime, {raw}=오늘 raw 후보, {n}=raw 지속 일수, {need}=확정에 필요한 연속 일수
   transition:
     confirmed: "raw 신호가 공식 regime {cur}과(와) 같은 방향"

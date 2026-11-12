@@ -29,6 +29,7 @@ from ..models.cockpit import (
 from ..models.market import Instrument, MarketSnapshot
 from .korean import fix_particles
 from .regime_history import StateObservation, build_regime_history
+from . import regime_state as RSM
 from .issue_path import Observer, build_issue_path
 from .leadership_intel import build_leadership_intel, leadership_read, load_street_views
 from ..models.snapshot import IntelligenceSnapshot
@@ -118,6 +119,87 @@ class _Z:
             if w.key == iid and w.change_display:
                 return w.change_display
         return ""
+def now_sentence(cfg: Mapping, keyvars: Sequence, tail_label: str) -> str:
+    """MARKET NOW 한 줄 — 오늘 핵심 변수 문구 + 오늘 데이터가 가리키는 regime(tail_label) 꼬리.
+    (2026-11-12: 꼬리를 공식 regime 으로 붙여 '미국 주식 강세 … 유동성 경색 환경' 처럼 모순이 났다 — 공식 · 후보 관계는 MARKET READ 가 말한다)"""
+    flat = float(cfg.get("flat_abs", 0.5))
+    clauses = cfg.get("clauses", {}); parts: list[str] = []
+    for kv in sorted(keyvars, key=lambda k: -abs(float(k["z"] if isinstance(k, Mapping) else k.z))):
+        kid = kv["id"] if isinstance(kv, Mapping) else kv.id; kz = float(kv["z"] if isinstance(kv, Mapping) else kv.z)
+        c = clauses.get(kid)
+        if c and abs(kz) >= flat:
+            ph = c[0] if kz > 0 else c[1]
+            # 브렌트 · WTI 처럼 같은 문구로 읽히는 변수는 한 번만(2026-11-04: "유가 하락·유가 하락이 겹친" 수정)
+            if ph not in parts:
+                parts.append(ph)
+        if len(parts) >= 3:
+            break
+    tail = str(cfg.get("regime_tail", {}).get(tail_label, "이 겹친 환경이다."))
+    if not parts and tail.startswith("있지만 "):
+        # NEUTRAL 꼬리는 'X이(가) 있지만 …' 을 전제한다 — 핵심 변수 문구가 없을 때 '없지만 있지만' 이 겹치지 않게(2026-10-14)
+        return fix_particles("뚜렷한 방향의 핵심 변수가 없고 " + tail[len("있지만 "):])
+    return fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
+
+
+def cross_asset_rows(cfg: Mapping, label: str, items: Sequence[Mapping]) -> tuple[list[CrossAssetRow], int, int, str]:
+    """CROSS-ASSET CONFIRMATION 행 — 공식 regime(label)이 자산마다 기대한 방향과 그날 z 를 대조한다. items = [{key, instrument, instrument_label, z}] (z 없으면 결측).
+    저장본을 새 공식 regime 으로 다시 맞출 때도(저장된 z 그대로) 이 함수를 쓴다."""
+    hi, lo = [float(x) for x in cfg.get("arrow", [2.0, 0.8])]; flat = float(cfg.get("flat_abs", 0.5))
+    ex = cfg.get("explain", {}) or {}
+    regime_short = str((ex.get("regime_short") or {}).get(label, LABEL_TEXT[label]))
+    cm = ex.get("cross_meaning") or {}
+    def _meaning(st: str, key: str) -> str:
+        m = cm.get(st) or {}
+        return str(m.get(key) or m.get("default") or "").replace("{regime}", regime_short)
+    by_key = {str(it["key"]): it for it in items}
+    rows_ca: list[CrossAssetRow] = []; confirm = evaluated = 0
+    for a in cfg.get("cross_assets", []):
+        it = by_key.get(str(a["key"]))
+        if it is None:
+            continue
+        iid = str(it["instrument"]); z = it.get("z"); exp = int((a.get("expect") or {}).get(label, 0))
+        grp = str(a.get("group", "RISK"))
+        if z is None:
+            rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=str(it.get("instrument_label") or iid), group=grp, arrow="?", status="MISSING", note="결측", meaning=_meaning("MISSING", str(a["key"])))); continue  # type: ignore[arg-type]
+        arrow = _arrow(z, hi, lo)
+        if exp == 0:
+            st, note = "NEUTRAL", f"{LABEL_TEXT[label]} 판정은 이 자산에 기대 방향이 없다"
+        elif abs(z) < flat:
+            st, note = "FLAT", "움직임이 작다"
+        elif (z > 0) == (exp > 0):
+            st, note = "CONFIRM", "판정이 기대한 방향"; confirm += 1
+        else:
+            st, note = str(a.get("mismatch", "DIVERGE")), "판정이 기대한 방향과 반대"
+        if st in ("CONFIRM", "DIVERGE", "HEADWIND"): evaluated += 1
+        rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=str(it.get("instrument_label") or iid), group=grp, z=_r(z), arrow=arrow, status=st, note=note, meaning=_meaning(st, str(a["key"]))))  # type: ignore[arg-type]
+    return rows_ca, confirm, evaluated, regime_short
+
+
+def cross_asset_read(cfg: Mapping, rows_ca: Sequence[CrossAssetRow], regime_short: str) -> str:
+    """MARKET READ — 숫자를 반복하지 않고, 확인한 자산군 · 역풍 · 괴리를 1~2문장으로"""
+    ex = cfg.get("explain", {}) or {}
+    gko = ex.get("cross_group_ko") or {}
+    conf_names = [str(gko.get(r.key, r.label)) for r in rows_ca if r.status == "CONFIRM"]
+    head_rows = [r for r in rows_ca if r.status == "HEADWIND"]; div_rows = [r for r in rows_ca if r.status == "DIVERGE"]
+    def _josa(word: str, with_b: str, without_b: str) -> str:
+        ch = word[-1] if word else ""
+        has_b = "가" <= ch <= "힣" and (ord(ch) - 0xAC00) % 28 != 0
+        return word + (with_b if has_b or not ("가" <= ch <= "힣") else without_b)
+    if conf_names:
+        read = f"{_josa('·'.join(conf_names), '이', '가')} {regime_short} 판단을 확인하고 있습니다."
+    else:
+        read = f"{regime_short} 판단을 같은 방향으로 확인하는 자산군이 아직 없습니다."
+    if head_rows:
+        read += " " + " ".join(f"{_josa(str(gko.get(r.key, r.label)) + (' 상승' if (r.z or 0) > 0 else ' 하락'), '이', '가')} 위험자산에 추가 부담을 주고 있습니다." for r in head_rows[:2])
+    if div_rows:
+        read += " 다만 " + _josa("·".join(str(gko.get(r.key, r.label)) for r in div_rows[:2]), "은", "는") + " 전형적인 패턴과 다르게 움직이고 있습니다."
+    return read
+
+
+def cross_asset_texts(label: str, rows_ca: Sequence[CrossAssetRow], confirm: int, evaluated: int, regime_short: str) -> dict:
+    n_rows = len(rows_ca)
+    return dict(sentence=f"{LABEL_TEXT[label]} 판정을 {confirm}/{evaluated} 자산이 확인한다." + (" 반대로 가는 자산은 괴리·역풍으로 아래에 적는다." if evaluated - confirm > 0 else ""),
+                confirm_text=f"{n_rows}개 주요 자산군 중 {confirm}개가 현재 {regime_short} 판단과 같은 방향" + (f" · 평가 제외 {n_rows - evaluated}개(방향 없음·결측)" if n_rows - evaluated > 0 else ""))
 
 
 def now_history_fields(cfg: Mapping, rh: object | None, *, label: str, raw_label: str) -> dict:
@@ -140,8 +222,40 @@ def now_history_fields(cfg: Mapping, rh: object | None, *, label: str, raw_label
     nr = cfg.get("now_read", {}) or {}
     key = {"CONFIRMED": "confirmed", "UNCONFIRMED_TRANSITION": "unconfirmed", "TRANSITION_WATCH": "watch", "CHANGED": "changed", "NO_HISTORY": "no_history"}.get(t_status, "confirmed")
     read = fix_particles(str(nr.get(key, "")).format(official=LABEL_TEXT[label], raw=LABEL_TEXT.get(raw_label, raw_label), prev=LABEL_TEXT.get(prev_s or "", prev_s or ""), n=raw_run_days))
+    st = getattr(rh, "state", None) if rh is not None else None
+    if st is not None:
+        # exit_entry_v2 — 공식 · 후보 · 이탈 · 진입을 섞지 않는다. 후보 = 오늘 선택, 전환 예정 = 진입 후보가 있을 때만
+        read = state_read(cfg, st)
+        potential = f"{LABEL_TEXT[label]} → {LABEL_TEXT.get(inv_tax.get(st.entry_regime or '', ''), st.entry_label or '')}" if st.entry_regime else ""
+        raw_run_days = int(st.raw_persistence_days) if st.raw_signal else raw_run_days
     return dict(persistence_days=streak, previous_label=prev_s, change_text=change_text, raw_persistence_days=raw_run_days, transition_status=t_status, transition_status_ko=t_ko,
-                potential_change_text=potential, required_days=need, conviction_trend=c_trend, read=read, spark=spark)
+                potential_change_text=potential, required_days=need, conviction_trend=c_trend, read=read, spark=spark, state=st)
+
+
+def state_read(cfg: Mapping, st) -> str:
+    """MARKET READ (exit_entry_v2) — 공식 regime · 오늘 후보 · 이탈 진행 · 진입 진행을 구분해 1~2문장. 문구는 config/cockpit.yaml history.state_text.read"""
+    t = (((cfg.get("history") or {}).get("state_text") or {}).get("read") or {})
+    f = dict(official=st.official_label.split(" / ")[0] if st.official != "neutral" else "Neutral / Mixed", candidate=(st.candidate_label or "").split(" / ")[0] if st.candidate != "neutral" else "Neutral / Mixed",
+             prev=(st.exited_label or st.previous_official_label or "").split(" / ")[0], exit=st.exit_streak, entry=st.entry_streak, need=st.exit_required)
+    if not st.counted:
+        k = "live"
+    elif st.changed and st.change_kind == "exit":
+        k = "exit_confirmed"
+    elif st.changed and st.change_kind == "entry":
+        k = "entry_confirmed"
+        f["prev"] = (st.previous_official_label or "").split(" / ")[0] if st.previous_official != "neutral" else "Neutral / Mixed"; f["need"] = st.entry_required
+    elif st.official == "neutral":
+        k = "neutral_entry" if st.entry_regime else "neutral_idle"; f["need"] = st.entry_required
+    elif st.candidate == st.official:
+        k = "confirmed"
+    elif st.support == "SUPPORTED":
+        k = "held_supported"
+    else:
+        k = "exit_watch_entry" if st.entry_regime else "exit_watch"
+    out = str(t.get(k, "")).format(**f)
+    if k == "exit_confirmed" and st.entry_regime:
+        out += f" {f['candidate']} 진입 확인은 {st.entry_streak}/{st.entry_required}일째입니다."
+    return fix_particles(out)
 
 
 def build_cockpit(
@@ -159,6 +273,7 @@ def build_cockpit(
     observations: Sequence[StateObservation] = (),
     stored_days: int | None = None,
     config_dir: Path | None = None,
+    regime_state_dir: Path | None = None,
 ) -> Cockpit:
     cfg = load_cockpit_config(config_dir)
     hi, lo = [float(x) for x in cfg.get("arrow", [2.0, 0.8])]; flat = float(cfg.get("flat_abs", 0.5)); z_ref = float(cfg.get("z_ref", 2.0))
@@ -179,8 +294,17 @@ def build_cockpit(
 
     # ── 1b. MARKET REGIME HISTORY · 1M (실시간 2 전용) ────────
     hz_ids = [str((d.get("horizon") or {}).get("id")) for d in (cfg.get("history", {}).get("drivers") or []) if d.get("horizon")]
+    # 공식 regime Exit / Entry(2026-11-09~) — 저장된 날짜별 상태(regime_state 로그)와 오늘 관측(선택 · 정량 raw · 위험선호 기준 주식 판독)
+    state_log = RSM.RegimeStateLog(regime_state_dir).all() if regime_state_dir is not None else None
+    today_obs = None
+    _pts = list(getattr(history, "points", []) or []) if history is not None else []
+    if _pts and getattr(_pts[-1], "as_of", None) == snapshot.as_of:
+        _lp = _pts[-1]; _sd = RSM.snapshot_date_of(snapshot.as_of)
+        today_obs = RSM.Observation(date=_lp.date.isoformat(), snapshot_date=_sd.isoformat() if _sd else "", candidate=_tax_key(cfg, label), candidate_state=label,
+                                    raw_signal=(ms.selection.quant_label if ms.selection is not None else None), factors=dict(getattr(_lp, "factors", {}) or {}),
+                                    equity_broad=RSM.broad_equity_from_selection(ms.selection))
     regime_history = build_regime_history(history, cfg.get("history", {}), observations=observations, as_of=snapshot.as_of, stored_days=stored_days,
-                                          horizon_z={i: (Z.z1(i), Z.z5(i)) for i in hz_ids}) if history is not None else None
+                                          horizon_z={i: (Z.z1(i), Z.z5(i)) for i in hz_ids}, state_log=state_log, today_obs=today_obs) if history is not None else None
 
     # ── CANONICAL CURRENT REGIME (2026-10-07): 대시보드의 공식 판정은 하나다 — 저장 sequence 위의 confirmed(display) regime. raw 는 후보 신호 ──
     raw_label = label
@@ -196,22 +320,7 @@ def build_cockpit(
     # 핵심 변수: 판정이 기대한 자산(확인된 것) 먼저, 그다음 |z| 순 — 최대 N
     cands = sorted(ms.main_drivers, key=lambda d: (0 if d.instrument_id in confirmed_ids else 1, -abs(d.z)))
     keyvars = [KeyVariable(id=d.instrument_id, label=d.label, z=round(d.z, 2), arrow=_arrow(d.z, hi, lo), change_display=Z.display(d.instrument_id, snapshot)) for d in cands[: int(cfg.get("key_variables_max", 4))]]  # type: ignore[arg-type]
-    clauses = cfg.get("clauses", {}); parts = []
-    for kv in sorted(keyvars, key=lambda k: -abs(k.z)):
-        c = clauses.get(kv.id)
-        if c and abs(kv.z) >= flat:
-            ph = c[0] if kv.z > 0 else c[1]
-            # 브렌트 · WTI 처럼 같은 문구로 읽히는 변수는 한 번만(2026-11-04: "유가 하락·유가 하락이 겹친" 수정)
-            if ph not in parts:
-                parts.append(ph)
-        if len(parts) >= 3:
-            break
-    tail = str(cfg.get("regime_tail", {}).get(label, "이 겹친 환경이다."))
-    if not parts and tail.startswith("있지만 "):
-        # NEUTRAL 꼬리는 'X이(가) 있지만 …' 을 전제한다 — 핵심 변수 문구가 없을 때 '없지만 있지만' 이 겹치지 않게(2026-10-14)
-        sentence = fix_particles("뚜렷한 방향의 핵심 변수가 없고 " + tail[len("있지만 "):])
-    else:
-        sentence = fix_particles(((f"{parts[0]}·{parts[1]}에 {parts[2]}까지 " if len(parts) > 2 else "·".join(parts) + "이(가) ") if parts else "뚜렷한 방향의 핵심 변수가 없지만 ") + tail)
+    sentence = now_sentence(cfg, keyvars, raw_label)
     hf = now_history_fields(cfg, regime_history, label=label, raw_label=raw_label)
     dh = snapshot.data_health
     now = MarketNow(label=label, secondary=None, label_text=LABEL_TEXT[label], conviction=conv, confidence=round(ms.confidence, 1),  # type: ignore[arg-type]
@@ -279,29 +388,11 @@ def build_cockpit(
 
     # ── 3. CROSS-ASSET CONFIRMATION + KEY DIVERGENCES ────────
     ex = cfg.get("explain", {}) or {}
-    regime_short = str((ex.get("regime_short") or {}).get(label, LABEL_TEXT[label]))
-    cm = ex.get("cross_meaning") or {}
-    def _meaning(st: str, key: str) -> str:
-        m = cm.get(st) or {}
-        return str(m.get(key) or m.get("default") or "").replace("{regime}", regime_short)
-    rows_ca: list[CrossAssetRow] = []; confirm = evaluated = 0
+    _items = []
     for a in cfg.get("cross_assets", []):
         ids = [str(i) for i in a.get("ids", [])]; iid = next((i for i in ids if Z.zmax(i)[0] is not None), ids[0])
-        z, _w = Z.zmax(iid); exp = int((a.get("expect") or {}).get(label, 0))
-        grp = str(a.get("group", "RISK"))
-        if z is None:
-            rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=Z.name(iid), group=grp, arrow="?", status="MISSING", note="결측", meaning=_meaning("MISSING", str(a["key"])))); continue  # type: ignore[arg-type]
-        arrow = _arrow(z, hi, lo)
-        if exp == 0:
-            st, note = "NEUTRAL", f"{LABEL_TEXT[label]} 판정은 이 자산에 기대 방향이 없다"
-        elif abs(z) < flat:
-            st, note = "FLAT", "움직임이 작다"
-        elif (z > 0) == (exp > 0):
-            st, note = "CONFIRM", "판정이 기대한 방향"; confirm += 1
-        else:
-            st, note = str(a.get("mismatch", "DIVERGE")), "판정이 기대한 방향과 반대"
-        if st in ("CONFIRM", "DIVERGE", "HEADWIND"): evaluated += 1
-        rows_ca.append(CrossAssetRow(key=str(a["key"]), label=str(a["label"]), instrument=iid, instrument_label=Z.name(iid), group=grp, z=_r(z), arrow=arrow, status=st, note=note, meaning=_meaning(st, str(a["key"]))))  # type: ignore[arg-type]
+        _items.append({"key": str(a["key"]), "instrument": iid, "instrument_label": Z.name(iid), "z": Z.zmax(iid)[0]})
+    rows_ca, confirm, evaluated, regime_short = cross_asset_rows(cfg, label, _items)
     dnotes = ex.get("divergence_notes") or {}
     def _note(assets: Sequence[str]) -> dict:
         ids = list(assets[:2])
@@ -327,28 +418,9 @@ def build_cockpit(
                                   phenomenon=str(nt.get("phenomenon") or rd.label), why=str(nt.get("why") or rd.why), reference=[f"{Z.name(k)} z {v:+.1f}σ" for k, v in list(rd.values.items())[:3] if v is not None]))
     divs.sort(key=lambda d: -d.severity)
     kmax = int(cfg.get("key_divergences_max", 2))
-    # MARKET READ — 숫자를 반복하지 않고, 확인한 자산군 · 역풍 · 괴리를 1~2문장으로
-    gko = ex.get("cross_group_ko") or {}
-    conf_names = [str(gko.get(r.key, r.label)) for r in rows_ca if r.status == "CONFIRM"]
-    head_rows = [r for r in rows_ca if r.status == "HEADWIND"]; div_rows = [r for r in rows_ca if r.status == "DIVERGE"]
-    def _josa(word: str, with_b: str, without_b: str) -> str:
-        ch = word[-1] if word else ""
-        has_b = "가" <= ch <= "힣" and (ord(ch) - 0xAC00) % 28 != 0
-        return word + (with_b if has_b or not ("가" <= ch <= "힣") else without_b)
-    if conf_names:
-        read = f"{_josa('·'.join(conf_names), '이', '가')} {regime_short} 판단을 확인하고 있습니다."
-    else:
-        read = f"{regime_short} 판단을 같은 방향으로 확인하는 자산군이 아직 없습니다."
-    if head_rows:
-        read += " " + " ".join(f"{_josa(str(gko.get(r.key, r.label)) + (' 상승' if (r.z or 0) > 0 else ' 하락'), '이', '가')} 위험자산에 추가 부담을 주고 있습니다." for r in head_rows[:2])
-    if div_rows:
-        read += " 다만 " + _josa("·".join(str(gko.get(r.key, r.label)) for r in div_rows[:2]), "은", "는") + " 전형적인 패턴과 다르게 움직이고 있습니다."
-    n_rows = len(rows_ca)
-    ca = CrossAsset(rows=rows_ca, confirm=confirm, evaluated=evaluated, divergences=divs[:kmax], total_divergences=len(divs),
-                    sentence=f"{LABEL_TEXT[label]} 판정을 {confirm}/{evaluated} 자산이 확인한다." + (" 반대로 가는 자산은 괴리·역풍으로 아래에 적는다." if evaluated - confirm > 0 else ""),
-                    current_view=now.label_text, regime_short=regime_short,
-                    confirm_text=f"{n_rows}개 주요 자산군 중 {confirm}개가 현재 {regime_short} 판단과 같은 방향" + (f" · 평가 제외 {n_rows - evaluated}개(방향 없음·결측)" if n_rows - evaluated > 0 else ""),
-                    market_read=read)
+    read = cross_asset_read(cfg, rows_ca, regime_short)
+    ca = CrossAsset(rows=rows_ca, confirm=confirm, evaluated=evaluated, divergences=divs[:kmax], total_divergences=len(divs), current_view=now.label_text, regime_short=regime_short,
+                    market_read=read, **cross_asset_texts(label, rows_ca, confirm, evaluated, regime_short))
 
     # ── 4. LEADERSHIP + THEME PULSE ──────────────────────────
     lc = cfg.get("leadership", {}); bench = str(lc.get("benchmark", "SPX")); bz5 = Z.z5(bench) or 0.0

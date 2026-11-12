@@ -187,7 +187,7 @@ class _AnalystDir:
         shutil.rmtree(self.tmp, ignore_errors=True)
 
 
-def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read, previous_official, config_dir=None):
+def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read, previous_official, config_dir=None, regime_state_dir=None):
     """REGIME v2 선택을 live.market_state 에 반영한다. 어떤 실패도 화면을 막지 않는다 — 실패하면 v1 판정 그대로."""
     from ..ai.client import build_client
     from ..config.registry import get_universe
@@ -214,7 +214,18 @@ def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read
         news = sorted([{"title": e.event, "type": e.event_type, "themes": list(e.themes), "sentiment": e.sentiment, "impact": e.impact_score, "at": e.timestamp.isoformat()}
                        for e in live.events if e.timestamp <= live.as_of and (e.impact_score or 0) >= 40], key=lambda x: -(x["impact"] or 0))[:10]
         inp = RS.EquityInputs.from_market(market, RS.kr_stock_features(inv, get_universe(config_dir)))
-        ctx = RS.build_context(live.market_state, market, by_iid, inp, history_rows=rows, official=previous_official, events=evs, news=news, as_of=live.as_of.isoformat())
+        prev_state = None
+        if regime_state_dir is not None:
+            from ..engines.regime_state import RegimeStateLog
+            logged = [e for d_, e in sorted(RegimeStateLog(regime_state_dir).all().items()) if (e.get("snapshot_date") or "") < live.as_of.astimezone(KST).date().isoformat()]
+            if logged:
+                prev_state = dict(logged[-1].get("state") or {})
+                if prev_state.get("entry_regime"):
+                    from ..engines.cockpit import load_cockpit_config
+                    _lab = {str(v["key"]): str(v["label"]) for v in ((load_cockpit_config(config_dir).get("history") or {}).get("taxonomy") or {}).values()}
+                    prev_state["entry_label"] = _lab.get(prev_state["entry_regime"], prev_state["entry_regime"])
+        ctx = RS.build_context(live.market_state, market, by_iid, inp, history_rows=rows, official=previous_official, events=evs, news=news, as_of=live.as_of.isoformat(),
+                               official_state=prev_state)
         sel = RS.select_regime(ctx, client=build_client(get_settings()), session_read=session_read)
         return live.model_copy(update={"market_state": RS.apply_selection(live.market_state, sel)}), ctx
     except Exception as e:  # noqa: BLE001
@@ -223,9 +234,39 @@ def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read
         return live, {"error": f"{type(e).__name__}: {e}"}
 
 
+def record_regime_state(ck, live, sh, rr, *, out: Path, cutoff: datetime, regime_state_dir: Path, session_read=None):
+    """오늘 Daily Snapshot 의 공식 regime 상태를 로그에 한 번 쓴다(이미 있으면 그대로). 전환이 확정된 날이면 전환 해설을 함께 저장하고 화면 전환 목록에 붙인다."""
+    from ..ai.client import build_client
+    from ..ai import transition_read as TR
+    from ..config.settings import get_settings
+    from ..engines import regime_state as RSM
+    h = ck.history
+    st = h.state if h is not None else None
+    if st is None or not st.counted:
+        return ck
+    pts = list(getattr(sh, "points", []) or [])
+    lp = pts[-1] if pts else None
+    obs = RSM.Observation(date=st.date, snapshot_date=st.snapshot_date, candidate=st.candidate, candidate_state=st.candidate_state, raw_signal=st.raw_signal,
+                          factors=dict(getattr(lp, "factors", {}) or {}) if lp is not None else {}, equity_broad=RSM.broad_equity_from_selection(live.market_state.selection))
+    log = RSM.RegimeStateLog(regime_state_dir)
+    if log.get(st.date) is not None:
+        return ck
+    tc = None
+    if st.changed:
+        doc = {"cutoff": cutoff.isoformat(), "cockpit": json.loads(ck.model_dump_json()), "snapshot": json.loads(live.model_dump_json()), "rates_regime": json.loads(rr.model_dump_json())}
+        ctx = TR.build_context(doc, st.model_dump(mode="json"), [d.model_dump(mode="json") for d in h.days])
+        (out / "transition_read_context.json").write_text(json.dumps(ctx, ensure_ascii=False, indent=1), encoding="utf-8")
+        tc = TR.write(ctx, client=build_client(get_settings()), session_read=session_read)
+    log.put_once(RSM.log_entry(RSM.State.from_dict(st.model_dump()), obs, transition_comment=tc))
+    if tc:
+        trs = [t.model_copy(update={"comment": tc["text"], "comment_source": tc["source"]}) if t.date == st.date and t.kind != "legacy" else t for t in h.transitions]
+        ck = ck.model_copy(update={"history": h.model_copy(update={"transitions": trs})})
+    return ck
+
+
 def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: Mapping[str, Mapping[str, Any]], extra_news: list[dict],
                 previous_investment: Mapping[str, Any] | None, news_since: datetime | None, origin: str, session_reads: Mapping[str, Any] | None = None,
-                manager=None, previous_official: str | None = None) -> ReconstructResult:
+                manager=None, previous_official: str | None = None, regime_state_dir: Path | None = None) -> ReconstructResult:
     """한 날짜의 화면 전체를 cutoff 기준으로 계산해 out/ 에 캡처 파일로 남긴다."""
     from ..adapters.analyst_view import AnalystViewStore
     from ..adapters.market.scenario import available_scenarios, load_scenario
@@ -296,7 +337,7 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     # 4b) MARKET REGIME v2 (2026-11-04) — 자격 있는 후보 · 미국/한국 주식 확인 · 선택(API → 세션 생성본 → 정량).
     #     선택이 market_state.primary_label 이 되어 history 의 raw 로 저장되고, 공식 전환은 기존 2거래일 persistence 가 정한다.
     live, rs_ctx = _attach_regime_selection(live, market, by_iid, inv, manager=manager, session_read=(session_reads or {}).get("regime_select"),
-                                            previous_official=previous_official, config_dir=settings.config_dir)
+                                            previous_official=previous_official, config_dir=settings.config_dir, regime_state_dir=regime_state_dir)
     (out / "regime_select_context.json").write_text(json.dumps(rs_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
     (out / "live.json").write_text(live.model_dump_json(), encoding="utf-8")
     sel = live.market_state.selection
@@ -380,7 +421,11 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     (out / "state_history.json").write_text(sh.model_dump_json(), encoding="utf-8")
 
     # 10) cockpit
-    ck = build_cockpit(live, market, by_iid, history=sh, investment=inv, ai_regime=ai, rates_regime=rr, oil_regime=oil, extra_z=xz, extra_names=xn)
+    ck = build_cockpit(live, market, by_iid, history=sh, investment=inv, ai_regime=ai, rates_regime=rr, oil_regime=oil, extra_z=xz, extra_names=xn,
+                       regime_state_dir=regime_state_dir)
+    # 10b) 공식 regime Exit / Entry 상태 로그(2026-11-09~) — 그날 상태를 한 번만 쓴다. 전환이 확정된 날은 그날 데이터만으로 전환 해설(API → 세션 생성본)
+    if regime_state_dir is not None:
+        ck = record_regime_state(ck, live, sh, rr, out=out, cutoff=cutoff, regime_state_dir=regime_state_dir, session_read=(session_reads or {}).get("transition_read"))
     (out / "cockpit.json").write_text(ck.model_dump_json(), encoding="utf-8")
     summary["cockpit"] = {"now": ck.market_now.label_text}
 

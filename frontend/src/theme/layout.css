@@ -2909,3 +2909,22 @@
 .ck-rs-cands { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 10.5px; color: var(--muted); }
 .ck-rs-cand { display: flex; flex-wrap: wrap; gap: 2px 10px; }
 .ck-rs-alt { color: var(--faint); word-break: keep-all; overflow-wrap: anywhere; }
+
+/* ── 공식 regime Exit / Entry 상태 (exit_entry_v2, 2026-11-12) — 공식 · 후보 · support · 이탈 · 진입 · raw 를 한 줄씩 ── */
+.ck-now-offk { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: -2px; }
+.ck-st { display: grid; gap: 3px; padding: 7px 8px; margin: 6px 0 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); font-size: 10.5px; }
+.ck-st-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.ck-st-row .ck-k { color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.ck-st-v b { font-size: 11.5px; color: var(--ink); }
+.ck-st-v small { color: var(--muted); font-family: var(--font-sans); font-size: 10.5px; }
+.ck-st-eq { margin-right: 10px; white-space: nowrap; }
+.ck-st-why summary { cursor: pointer; color: var(--muted); font-size: 10px; }
+.ck-st-why ul { margin: 4px 0 0 16px; padding: 0; font-family: var(--font-sans); font-size: 10.5px; color: var(--ink-2); line-height: 1.45; }
+.ck-h-st { display: grid; gap: 3px; padding: 6px 8px; margin-top: 8px; border: 1px solid var(--rule-soft); border-radius: var(--radius); background: var(--surface-2); font-size: 10.5px; }
+.ck-h-st-r { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: baseline; }
+.ck-h-st-r .ck-k { color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.ck-h-st-r b { color: var(--ink); text-align: right; } .ck-h-st-r small { color: var(--muted); }
+.ck-h-cell { position: relative; }
+.ck-h-cand { position: absolute; left: 20%; right: 20%; bottom: -5px; height: 3px; border-radius: 2px; pointer-events: none; }
+.ck-h-tr-kind { margin-left: 8px; font-style: normal; font-size: 9.5px; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--rule-soft); border-radius: 3px; padding: 0 4px; }
+@media (max-width: 760px) { .ck-st-row { grid-template-columns: 120px minmax(0, 1fr); } }

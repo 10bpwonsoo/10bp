@@ -27,9 +27,12 @@
    각 컨텍스트만 읽고 세션본을 쓴 뒤 검증한다:
    `ai.rates_read.check_output(normalize_output(..))` · `ai.inflation_read.check(read, ctx['inflation_map'])` · `ai.semi_read.check_output(..)` · `engines.regime_select.check_output(..)` — 모두 빈 목록이어야 한다.
    지난 세션본(예: `captures/2026-11-10-backfill/*_session.json`)의 형식 · 어조를 따른다. 숫자는 컨텍스트 값만, displayed_elsewhere 숫자는 쓰지 않는다.
+   공식 regime 전환(Exit/Entry, 2026-11-09~)이 확정되는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
+   `ai.transition_read.check(why, ctx)` 가 빈 목록이어야 한다(1~3문장 · 컨텍스트 숫자만 · Exit 이면 Neutral / Mixed 로 간 것을 적는다). 이 파일이 없으면 전환 이유는 화면이 저장 데이터로 고른 문장이 된다.
    REGIME v2: 자격 후보(또는 NEUTRAL)만 고른다. confidence 는 정량값을 그대로 옮기지 말고 근거(데이터 지연 · 한국 결측 · 하루짜리 이벤트)를 따져 정하고, 이유를 selection_rationale 에 쓴다.
 7. `python tools/daily_snapshot/build_day.py D P/inputs_D full` → `python -m marketpulse.archive validate D`(COMPLETE).
    history 7개 파일이 **새 행 1개씩만** 늘었는지(기존 행 변화 0) 확인한다 — 아니면 커밋하지 말고 원인부터.
+   공식 regime 상태 로그 `marketpulse/data/regime_state/<행 날짜>.json` 이 1개 생겼는지도 본다(한 번 쓰고 덮지 않는다 — 이미 있으면 그대로 둔다).
 8. `.venv/bin/python -m pytest -q -p no:warnings` 전부 통과.
 9. 배포본: `cd frontend && npm run build`, `python tools/daily_snapshot/build_bundle.py marketpulse/data/captures/D-backfill "D Daily Snapshot (07:30 KST) · 미국 <전 영업일> 종가 기준" P/dash/index.html`,
    `python3 -m http.server` 로 띄워 `node tools/daily_snapshot/check_screen.cjs <url> marketpulse/data/archive/screenshots/D.jpg` — 오류 0 · 가로 스크롤 없음 · 금리 탭 '수집 D'.

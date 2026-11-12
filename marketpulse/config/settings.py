@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     history_db: str | None = None
     #: Daily Full Dashboard Archive (2026-10-21). 그날 화면 전체를 재현하는 날짜별 JSON — data/archive/YYYY/MM/YYYY-MM-DD.json. 생성 후 불변.
     archive_dir: Path = Field(default=PACKAGE_ROOT / "data" / "archive")
+    #: 공식 regime Exit / Entry 상태 로그(2026-11-12) — 행 날짜별 JSON, Daily Snapshot 이 한 번 쓰고 덮지 않는다
+    regime_state_dir: Path = Field(default=PACKAGE_ROOT / "data" / "regime_state")
 
     #: Anthropic API 키. 보통은 SDK 가 ANTHROPIC_API_KEY 에서 직접 읽는다.
     #: 이 필드(MARKETPULSE_ANTHROPIC_API_KEY)는 실행 환경이 ANTHROPIC_API_KEY

@@ -770,7 +770,17 @@ export interface RegimeSelection { selected_regime: string; regime_confidence: n
   alternative_candidates: { regime: string; reason: string }[]; us_equity_confirmation: RsEquityStatus; korea_equity_confirmation: RsEquityStatus; global_equity_confirmation: RsEquityStatus;
   persistence_assessment: string; data_coverage: number; selection_rationale: string; commentary: string; source: "llm" | "session" | "quant"; status: string; reason: string;
   quant_label: string; candidates: RsCandidate[]; neutral_equity: RsEquity | null; primary_signal: string; coverage_detail: Record<string, number>; excluded: string[]; warnings: string[] }
-export interface CkMarketNow { selection?: RegimeSelection | null; label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
+/** 공식 regime Exit / Entry 상태 (exit_entry_v2, 2026-11-09 Daily Snapshot~). legacy 날짜는 official · candidate 만 의미가 있다 */
+export interface CkRegimeState {
+  logic_version: string; snapshot_date: string; date: string;
+  official: string; official_label: string; previous_official: string | null; previous_official_label: string | null;
+  candidate: string; candidate_label: string; candidate_state: string; raw_signal: string | null; raw_signal_label: string | null; raw_persistence_days: number;
+  support: "SUPPORTED" | "WEAKENING" | "BROKEN" | "NA"; support_reasons: string[]; equity: { us: string; kr: string; global: string } | null;
+  exit_streak: number; exit_required: number; exit_confirmed: boolean; exited_regime: string | null; exited_label: string | null;
+  entry_regime: string | null; entry_label: string | null; entry_streak: number; entry_required: number; entry_confirmed: boolean;
+  changed: boolean; change_kind: "exit" | "entry" | "legacy" | null; counted: boolean; released_label?: string | null; released_on?: string | null;
+}
+export interface CkMarketNow { state?: CkRegimeState | null; selection?: RegimeSelection | null; label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
   /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */
   raw_label: string; raw_text: string; raw_secondary: string | null; raw_persistence_days: number; transition_status: "CONFIRMED" | "UNCONFIRMED_TRANSITION" | "TRANSITION_WATCH" | "CHANGED" | "NO_HISTORY";
   transition_status_ko: string; potential_change_text: string; required_days: number; conviction_trend: "WEAKENING" | "STRENGTHENING" | "STABLE"; read: string;
@@ -815,16 +825,18 @@ export interface CkRegimeIntraday {
   date: string; as_of: string; market_date: string; raw_state: string; raw_regime: string; raw_label: string; evidence_strength: number;
   official_regime: string; official_label: string; transition_status: string; transition_status_ko: string; calculated_at: string; source: string;
 }
-export interface CkRegimeDay { market_date?: string; storage_date?: string; data_asof?: string; merged?: HistoryMergedRow[]; date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean; source: HistorySource; calculated_at: string; model_version: string; logic_version: string; locked: boolean }
+export interface CkRegimeDay { state?: CkRegimeState | null; market_date?: string; storage_date?: string; data_asof?: string; merged?: HistoryMergedRow[]; date: string; raw_state: string; raw_secondary: string | null; dominant_regime: string; end_regime: string; display_regime: string; display_label: string; evidence_strength: number; dominant_driver: string; top_driver_1: string; top_driver_2: string; top_evidence: string[]; dominant_regime_dwell: number | null; observations: number; transition_count: number; key_change: string; data_quality: string; coverage: number; composite: number | null; factors: Record<string, number | null>; bridged: boolean; is_transition: boolean; source: HistorySource; calculated_at: string; model_version: string; logic_version: string; locked: boolean }
 export interface CkRegimeBlock { regime: string; label: string; start: string; end: string; days: number; current: boolean }
-export interface CkRegimeTransition { date: string; from_regime: string; from_label: string; to_regime: string; to_label: string; primary_driver: string; confirmation: string; evidence: string[]; evidence_strength: number }
+export interface CkRegimeTransition { date: string; from_regime: string; from_label: string; to_regime: string; to_label: string; primary_driver: string; confirmation: string; evidence: string[]; evidence_strength: number;
+  /** legacy · exit(공식 해제 → Neutral) · entry(새 후보 진입 확정). comment = 그 Daily Snapshot 에 LLM(세션)이 쓴 전환 이유 — 비면 저장 데이터로 고른 문장 */
+  kind?: "legacy" | "exit" | "entry"; comment?: string; comment_source?: string }
 export interface CkDriverHeat { key: string; label: string; values: (number | null)[]; current: number | null; arrow: CkArrow; label_ui: string; label_ko: string; meaning: string; horizon_label: string; horizons: CkHorizon[]; horizon_read: string }
 export interface CkRegimeShare { regime: string; label: string; days: number; share: number }
 export interface CkHistoryRange { key: string; days: number; available: boolean; reason: string }
 export interface CkRegimeHistory {
   date_basis?: HistoryDateBasis; snapshot_time?: string; intraday?: CkRegimeIntraday | null; gaps?: string[];
   range: string; ranges: CkHistoryRange[]; current_regime: string; current_label: string; duration_days: number; previous_regime: string | null; previous_label: string | null;
-  transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
+  transitions_1m: number; share_pct: number; raw_today: string | null; days: CkRegimeDay[]; state?: CkRegimeState | null; logic_version?: string; logic_effective_from?: string; blocks: CkRegimeBlock[]; composite: (number | null)[]; composite_current: number | null;
   composite_slope: number | null; composite_slope_days: number; drivers: CkDriverHeat[]; share: CkRegimeShare[]; transitions: CkRegimeTransition[]; total_transitions: number; palette: Record<string, string>; note: string;
   history_mode: "stored" | "recomputed"; recorded_days: number; backfilled_days: number; footnote: string;
   /** CANONICAL CURRENT REGIME: current_regime 이 유일한 공식 판정. raw 는 후보 신호 */

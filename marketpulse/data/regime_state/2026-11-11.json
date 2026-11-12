@@ -1,0 +1,53 @@
+{
+ "date": "2026-11-11",
+ "snapshot_date": "2026-11-12",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "factors": {
+   "Growth": 0.274,
+   "Inflation": -0.659,
+   "Rates": 0.519,
+   "USD": 0.196,
+   "Liquidity": 0.371,
+   "RiskAppetite": 1.128,
+   "Credit": -1.411,
+   "Volatility": -0.254,
+   "China": -0.798
+  },
+  "equity_broad": {
+   "us": 0.407,
+   "kr": 0.317
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-12",
+  "date": "2026-11-11",
+  "official": "neutral",
+  "previous_official": "neutral",
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "support": "NA",
+  "support_reasons": [
+   "Neutral / Mixed 는 해제할 방향이 없다 — 새 후보의 진입 확인만 본다"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 2,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "risk_on",
+  "entry_streak": 1,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": false,
+  "change_kind": null,
+  "counted": true
+ },
+ "transition_comment": null,
+ "written_at": "2026-11-12T01:53:08.146660+00:00"
+}

@@ -655,3 +655,27 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - 유가: Demand UNCONFIRMED
   - 반도체: UPSWING 32.5(DDR4 · DDR5 범용 현물 한 주 하락)
 - history: 11/11 행이 7개 탭에 하나씩 삽입만 됐고(기존 행 변화 0), 잠갔다. COMPLETE, 테스트 통과. 평시 탭이 빠진 첫 저장본이다.
+
+### 2026-11-12 — 실시간 탭 공식 regime Exit / Entry 분리 (사용자 요청 · 2026-11-09 Daily Snapshot 부터)
+- 문제: 공식 regime 이 "같은 새 후보가 2거래일 연속" 하나로만 바뀌어, 후보가 Risk-On · Neutral · Risk-On … 으로 바뀌는 동안 이미 근거가 깨진 Liquidity Stress 가 11/02~11/11 공식으로 남았다(11/12 화면 8D). MARKET NOW 문장도 공식 꼬리를 붙여 "미국 주식 강세 … 유동성 경색 환경" 처럼 모순됐다.
+- 규칙(`engines/regime_state.py`, 설정 `config/cockpit.yaml` history.state_machine, logic_version `exit_entry_v2`, effective_from `2026-11-09`):
+  - EXIT: 공식 regime 의 그날 support 를 본다 — 후보가 같으면 SUPPORTED, 아니면 핵심 trigger(state_rules require 와 같은 식) + 그날 주식 확인(REGIME v2 의 위험선호 기준 주식 판독을 공식 방향으로 돌린 것)으로 SUPPORTED · WEAKENING · BROKEN. 지지되지 않는 날(WEAKENING · BROKEN)이 2거래일 이어지면 해제.
+  - ENTRY: 공식과 다른 방향성 후보가 서로 다른 거래일 2일 연속 선택되면 공식. 해제됐는데 새 후보가 미확정이면 공식 = NEUTRAL / MIXED(정상 중간 상태). Neutral bridge 는 끔.
+  - 행(시장 날짜)마다 한 번 · LIVE(장중) 행은 일수에 넣지 않는다 · 날짜 i 는 i 까지의 관측만.
+  - 상태 로그 `data/regime_state/<행 날짜>.json` — Daily Snapshot 이 한 번 쓰고 덮지 않는다(고칠 땐 replace + superseded/).
+- 날짜 경계: effective_from 이전 행의 공식은 예전 규칙 그대로(legacy) — 다시 계산하지 않는다. 첫 적용 행(11/09 Daily Snapshot = 11/06 행)의 시작 상태 = 직전 저장 행의 공식(Liquidity Stress).
+  검증: 11/06 이하 저장본 20개 시점의 공식 history(날짜 · 공식 · 전환 · duration · previous · 전환 수)와 저장본 · history 파일 체크섬이 변경 전과 완전히 같다.
+- 11/09~11/12 재정렬(`tools/daily_snapshot/regime_exit_entry_reprocess.py`, 오름차순, 각 날짜 저장본 데이터만 · `archive correct` — 이전 파일 superseded/):
+
+  | Daily Snapshot | 행 | 공식 | 후보 | 정량 raw | support | EXIT | ENTRY | 상태 |
+  |---|---|---|---|---|---|---|---|---|
+  | 11/09 | 11/06 | Liquidity Stress | Liquidity Stress | POLICY_DRIVEN | SUPPORTED | 0/2 | – | CONFIRMED |
+  | 11/10 | 11/09 | Liquidity Stress | Risk-On | RISK_ON | BROKEN | 1/2 | Risk-On 1/2 | WATCH |
+  | 11/11 | 11/10 | **Neutral / Mixed** | Neutral | NEUTRAL | BROKEN | 2/2 확정 | 리셋 | CHANGED |
+  | 11/12 | 11/11 | Neutral / Mixed | Risk-On | RISK_ON | – | – (11/10 해제) | Risk-On 1/2 | WATCH |
+
+  바뀐 것은 실시간 탭 공식 표시뿐: cockpit.history(공식 띠 · CURRENT · 전환 · 전환 수) · market_now(공식 · 후보 · support · 이탈 · 진입 · 문장 · READ) · cross_asset(새 공식 기준 대조, 저장된 z 그대로) · tone 의 regime 대조 · REGIME v2 선택의 persistence 문장(같은 날 컨텍스트 · 같은 검증의 세션본). 원천 데이터 · factor · 후보 선택 · history 행은 그대로.
+- 전환 이유(RECENT TRANSITIONS): exit_entry_v2 전환은 그 Daily Snapshot 데이터만 담은 컨텍스트로 LLM 이 쓴다(`ai/transition_read.py`, API 401 이라 같은 검증의 세션본). 11/10 Liquidity Stress → Neutral 해설 저장. legacy 전환(11/02 이전)은 예전 문장 그대로.
+- 화면: MARKET NOW = OFFICIAL REGIME 아래 CURRENT CANDIDATE · (공식) SUPPORT 또는 PREVIOUS OFFICIAL · EXIT CONFIRMATION · ENTRY CONFIRMATION · RAW SIGNAL(정량, 연속 일수) · 공식 기준 주식 확인 · TRANSITION STATUS. HISTORY 우측 = CURRENT OFFICIAL · PENDING CANDIDATE · ENTRY · EXIT · PREVIOUS OFFICIAL · RAW SIGNAL · TRANSITION STATUS. 띠는 공식만, 후보는 칸 아래 작은 표식.
+  legacy 저장본(11/06 이하)은 예전 표시 그대로.
+- 앞으로: 매일 Daily Snapshot(`build_day.py`)이 같은 규칙으로 상태를 정하고 로그를 쓴다 — REGIME v2 선택 컨텍스트에도 직전 이탈 · 진입 상태와 새 규칙을 알려 준다. 테스트 `tests/test_regime_state.py`, `frontend/src/__tests__/regimeState.test.tsx`.

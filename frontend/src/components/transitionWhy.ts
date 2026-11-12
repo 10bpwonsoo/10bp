@@ -28,7 +28,7 @@ export interface DayRelease { kind?: string; key?: string; date: string; title: 
 export interface DayPolicy { bank: string; name?: string; date: string; decision: string; tone?: string; decision_label?: string }
 export interface DayNews { event?: string; event_type?: string; themes?: string[]; theme_sentiment?: Record<string, number>; theme_direction?: Record<string, string>; sentiment?: number; impact_score?: number; timestamp?: string; reason?: string }
 
-export type Basis = "event" | "news" | "market" | "internal";
+export type Basis = "event" | "news" | "market" | "internal" | "llm";
 export interface Cand { id: string; group: string; kind: "event" | "news" | "market" | "factor"; phrase: string; chip: string; sign: number; score: number; raw: string; context?: { neg: string; pos: string }; persistent?: boolean; links?: string[] }
 export interface TransitionWhy {
   why: string;

@@ -29,6 +29,42 @@ class KeyVariable(Base):
     change_display: str = ""
 
 
+class RegimeStateView(Base):
+    """공식 regime Exit / Entry 상태(2026-11-09 Daily Snapshot~, logic_version=exit_entry_v2). legacy 날짜는 official · candidate 만 채운다."""
+
+    logic_version: str = Field(default="legacy", description="legacy · exit_entry_v2")
+    snapshot_date: str = Field(default="", description="KST Daily Snapshot 날짜")
+    date: str = Field(default="", description="행(시장) 날짜")
+    official: str = Field(description="그날 끝의 공식 regime(taxonomy key)")
+    official_label: str = ""
+    previous_official: str | None = Field(default=None, description="그날 시작 시점의 공식 regime")
+    previous_official_label: str | None = None
+    candidate: str = Field(description="그날 선택된 후보(taxonomy key) — CURRENT CANDIDATE")
+    candidate_label: str = ""
+    candidate_state: str = ""
+    raw_signal: str | None = Field(default=None, description="정량 raw 신호(StateLabel) — 없으면 None")
+    raw_signal_label: str | None = None
+    raw_persistence_days: int = Field(default=0, description="같은 정량 raw 신호가 이어진 Daily Snapshot 수")
+    support: str = Field(default="NA", description="SUPPORTED · WEAKENING · BROKEN · NA(공식이 Neutral)")
+    support_reasons: list[str] = Field(default_factory=list)
+    equity: dict[str, str] | None = Field(default=None, description="공식 regime 기준 주식 확인 {us, kr, global}")
+    exit_streak: int = 0
+    exit_required: int = 2
+    exit_confirmed: bool = False
+    exited_regime: str | None = None
+    exited_label: str | None = None
+    entry_regime: str | None = Field(default=None, description="공식과 다른 방향성 후보 — PENDING CANDIDATE")
+    entry_label: str | None = None
+    entry_streak: int = 0
+    entry_required: int = 2
+    entry_confirmed: bool = False
+    changed: bool = False
+    change_kind: str | None = Field(default=None, description="exit · entry · legacy")
+    counted: bool = Field(default=True, description="False = 장중 LIVE — 일수에 넣지 않았다")
+    released_label: str | None = Field(default=None, description="공식이 Neutral 일 때, 이탈 확인으로 해제된 직전 공식 regime")
+    released_on: str | None = Field(default=None, description="그 해제가 확정된 행 날짜")
+
+
 class SparkPoint(Base):
     date: str
     label: str
@@ -60,6 +96,8 @@ class MarketNow(Base):
     conviction_trend: str = Field(default="STABLE", description="WEAKENING · STRENGTHENING · STABLE — 전일 대비 확신 변화")
     read: str = Field(default="", description="MARKET READ — 공식 regime 과 raw 신호의 관계 1~2문장")
     spark: list[SparkPoint] = Field(default_factory=list)
+    #: 공식 regime Exit / Entry 상태 (2026-11-09~). None 이면 legacy 저장본
+    state: RegimeStateView | None = None
     last_update: datetime
     coverage: str = ""
     latency: str = ""
@@ -450,6 +488,7 @@ class RegimeDay(Base):
     storage_date: str = Field(default="", description="저장소 키 — as_of 의 UTC 날짜")
     data_asof: str = ""
     merged: list[MergedRow] = Field(default_factory=list, description="같은 snapshot 날짜로 이어져 daily 띠에서 빠진 다른 저장 행")
+    state: RegimeStateView | None = Field(default=None, description="그날 공식 regime 판정 과정 — exit_entry_v2 날짜만 support · exit · entry 가 찬다")
 
 
 class RegimeIntraday(Base):
@@ -489,6 +528,9 @@ class RegimeTransition(Base):
     confirmation: str = Field(default="", description="그날 주도 변수 1~2 — 'HY OAS ↑ / VIX ↑'")
     evidence: list[str] = Field(default_factory=list, description="클릭 시 상세 — factor 변화·raw 판정·확신")
     evidence_strength: float = 0.0
+    kind: str = Field(default="legacy", description="legacy · exit(공식 해제 → Neutral) · entry(새 후보 진입 확정)")
+    comment: str = Field(default="", description="전환 이유 — 그 Daily Snapshot 에 LLM(또는 같은 검증의 세션)이 쓴 문장. 비면 화면이 저장 데이터로 고른다")
+    comment_source: str = Field(default="", description="llm · session · ''")
 
 
 class DriverHeat(Base):
@@ -546,6 +588,10 @@ class RegimeHistory(Base):
     pending_regime: str | None = None
     pending_label: str | None = None
     changed_today: bool = False
+    #: 공식 regime Exit / Entry 상태(오늘) — None 이면 legacy 규칙의 날짜
+    state: RegimeStateView | None = None
+    logic_version: str = Field(default="legacy", description="오늘 공식 regime 을 정한 규칙 — legacy · exit_entry_v2")
+    logic_effective_from: str = Field(default="", description="exit_entry_v2 적용 시작 KST Daily Snapshot 날짜")
     days: list[RegimeDay] = Field(default_factory=list)
     blocks: list[RegimeBlock] = Field(default_factory=list)
     composite: list[float | None] = Field(default_factory=list, description="날짜순 대표 composite(온도계 종합, 없으면 가격 온도)")

@@ -18,7 +18,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Mapping, Sequence
 
-from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeShare, RegimeTransition
+from ..models.cockpit import DriverHeat, HistoryRange, Horizon, RegimeBlock, RegimeDay, RegimeHistory, RegimeShare, RegimeStateView, RegimeTransition
+from . import regime_state as RSM
 
 ARROW_TXT = {"↑↑": "↑↑", "↑": "↑", "↓": "↓", "↓↓": "↓↓", "→": "→", "?": "?"}
 
@@ -125,8 +126,11 @@ def build_regime_history(
     as_of: datetime | None = None,
     stored_days: int | None = None,
     horizon_z: Mapping[str, tuple[float | None, float | None]] | None = None,
+    state_log: Mapping[str, Mapping] | None = None,
+    today_obs: "RSM.Observation | None" = None,
 ) -> RegimeHistory | None:
-    """history = MarketStateHistory(재생). 없거나 비면 None — 카드를 숨긴다."""
+    """history = MarketStateHistory(재생). 없거나 비면 None — 카드를 숨긴다.
+    state_log = 저장된 Exit/Entry 상태(행 날짜 → entry), today_obs = 오늘 Daily Snapshot 의 관측(선택 · 주식 판독). 둘 다 없어도 행 factor 로 판정한다."""
     points = list(getattr(history, "points", []) or [])
     if not points:
         return None
@@ -180,12 +184,31 @@ def build_regime_history(
             source=str(getattr(p, "source", "RECOMPUTED") or "RECOMPUTED"), calculated_at=(getattr(p, "calculated_at", None).isoformat() if getattr(p, "calculated_at", None) else ""),
             model_version=str(getattr(p, "model_version", "") or ""), logic_version=str(getattr(p, "logic_version", "") or ""), locked=bool(getattr(p, "locked", False)),
         ))
-    disp = stabilize(lead_keys + raw_keys, lead_strengths + strengths, lead_dwells + dwells, hcfg)[len(lead_keys):]
+    legacy_all = stabilize(lead_keys + raw_keys, lead_strengths + strengths, lead_dwells + dwells, hcfg)
     labels = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}
+    # ── 공식 regime: effective_from 이전 행은 legacy(위 stabilize) 그대로, 그 뒤는 Exit / Entry 상태 기계(engines/regime_state.py) ──
+    seq = lead + points
+    sm_rows = [RSM.Row(date=p.date.isoformat(), as_of=getattr(p, "as_of", None), key=k, state=(p.label.value if hasattr(p.label, "value") else str(p.label)),
+                       factors=dict(getattr(p, "factors", {}) or {}), source=str(getattr(p, "source", "RECORDED") or "RECORDED"))
+               for p, k in zip(seq, lead_keys + raw_keys)]
+    states_all = RSM.run(sm_rows, legacy_all, hcfg, log=state_log, today=today_obs) if RSM.sm_config(hcfg) else None
+    official_all = [s.official for s in states_all] if states_all else legacy_all
+    disp = official_all[len(lead_keys):]
+    states = states_all[len(lead_keys):] if states_all else [None] * len(rows)
+    raw_runs = [RSM.raw_signal_run(states_all[: len(lead_keys) + i + 1]) for i in range(len(rows))] if states_all else [0] * len(rows)
+
+    def _view(st: "RSM.State | None", rr: int) -> RegimeStateView | None:
+        if st is None:
+            return None
+        lab = lambda k: labels.get(k, k) if k else None  # noqa: E731
+        return RegimeStateView(**{k: v for k, v in st.as_dict().items()}, official_label=labels.get(st.official, st.official), candidate_label=labels.get(st.candidate, st.candidate),
+                               previous_official_label=lab(st.previous_official), exited_label=lab(st.exited_regime), entry_label=lab(st.entry_regime),
+                               raw_signal_label=(labels.get(_tax(hcfg, st.raw_signal)[0]) if st.raw_signal else None), raw_persistence_days=rr)
+
     days: list[RegimeDay] = []
     for i, r in enumerate(rows):
         days.append(RegimeDay(**r, display_regime=disp[i], display_label=labels.get(disp[i], disp[i]), bridged=disp[i] != r["dominant_regime"],
-                              is_transition=i > 0 and disp[i] != disp[i - 1]))
+                              is_transition=i > 0 and disp[i] != disp[i - 1], state=_view(states[i], raw_runs[i])))
 
     blocks: list[RegimeBlock] = []
     for d in days:
@@ -225,8 +248,15 @@ def build_regime_history(
                 ev.append(f"{dk['label']} {a:+.1f} → {b:+.1f}")
         if d.top_driver_1: ev.append(f"주도 변수 {d.top_driver_1}" + (f" · {d.top_driver_2}" if d.top_driver_2 else ""))
         if d.dominant_regime_dwell is not None: ev.append(f"Daily dwell {d.dominant_regime_dwell * 100:.0f}%")
+        kind = (d.state.change_kind if d.state is not None and d.state.logic_version != RSM.LEGACY else None) or "legacy"
+        if kind == "exit" and d.state is not None:
+            ev.insert(0, f"{prev.display_label} 이탈 확인 {d.state.exit_streak}/{d.state.exit_required} — 지지되지 않은 거래일이 이어져 공식 해제, 새 후보 미확정이라 Neutral / Mixed")
+        elif kind == "entry" and d.state is not None:
+            ev.insert(0, f"{d.display_label} 진입 확인 {d.state.entry_streak}/{d.state.entry_required} — 같은 후보가 서로 다른 거래일 연속 선택")
+        tc = ((state_log or {}).get(d.date) or {}).get("transition_comment") or {}
         transitions.append(RegimeTransition(date=d.date, from_regime=prev.display_regime, from_label=prev.display_label, to_regime=d.display_regime, to_label=d.display_label,
-                                            primary_driver=primary, confirmation=conf, evidence=ev, evidence_strength=d.evidence_strength))
+                                            primary_driver=primary, confirmation=conf, evidence=ev, evidence_strength=d.evidence_strength, kind=kind,
+                                            comment=str(tc.get("text") or "") if kind != "legacy" else "", comment_source=str(tc.get("source") or "") if kind != "legacy" else ""))
     total_tr = len(transitions)
     transitions = list(reversed(transitions))[: int(hcfg.get("transitions_max", 3))]
 
@@ -266,13 +296,39 @@ def build_regime_history(
 
     cur = blocks[-1]; prev_b = blocks[-2] if len(blocks) >= 2 else None
     last = days[-1]
+    if last.state is not None and last.state.logic_version != RSM.LEGACY and last.state.official == RSM.NEUTRAL and prev_b is not None:
+        start_day = next((d for d in days if d.date == cur.start), None)
+        if start_day is not None and start_day.state is not None and start_day.state.change_kind == "exit":
+            last.state.released_label = prev_b.label; last.state.released_on = cur.start
     raw_today = None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime)
     # ── CANONICAL CURRENT REGIME: 공식 = display(확정) · raw = 오늘 후보 · 전환 상태 ──
     dcfg = hcfg.get("display") or {}; need_days = int(dcfg.get("min_dwell_days", 2))
     rrun = raw_run(raw_keys)
     inv_tax = {str(v["key"]): str(k) for k, v in (hcfg.get("taxonomy") or {}).items() if str(k) != "RISK_OFF"}
     tcfg = hcfg.get("transition") or {}
-    if last.is_transition:
+    st_today = last.state if (last.state is not None and last.state.logic_version != RSM.LEGACY) else None
+    smcfg = RSM.sm_config(hcfg)
+    if st_today is not None:
+        # exit_entry_v2 — 후보 = 오늘 선택, PENDING = 진입 후보(공식과 다른 방향성 후보), 상태는 exit · entry 진행으로
+        need_days = st_today.entry_required
+        if st_today.changed:
+            t_status = "CHANGED"
+            t_ko = (f"공식 regime 해제: {st_today.exited_label} 이탈 확인 {st_today.exit_streak}/{st_today.exit_required} → Neutral / Mixed (새 후보 미확정)" if st_today.change_kind == "exit"
+                    else f"공식 regime 전환 확정: {st_today.previous_official_label} → {st_today.official_label} (진입 {st_today.entry_streak}/{st_today.entry_required})")
+        elif st_today.entry_regime is None and st_today.exit_streak == 0:
+            t_status = "CONFIRMED"
+            t_ko = (f"오늘 후보도 공식 regime {cur.label}과(와) 같은 쪽" if st_today.candidate == st_today.official
+                    else f"후보는 {st_today.candidate_label}지만 공식 {cur.label}의 근거가 유지돼 전환 진행 없음" if st_today.support == "SUPPORTED"
+                    else f"공식 {cur.label} — 뚜렷한 방향의 새 후보 없음")
+        else:
+            t_status = "TRANSITION_WATCH"
+            parts_ = []
+            if st_today.official != RSM.NEUTRAL:
+                parts_.append(f"{cur.label} 이탈 {st_today.exit_streak}/{st_today.exit_required}")
+            if st_today.entry_regime:
+                parts_.append(f"{st_today.entry_label} 진입 {st_today.entry_streak}/{st_today.entry_required}")
+            t_ko = " · ".join(parts_) + (" — 장중 값은 일수에 넣지 않음" if not st_today.counted else "")
+    elif last.is_transition:
         t_status, t_ko = "CHANGED", str(tcfg.get("changed", "")).format(prev=prev_b.label if prev_b else "", cur=cur.label)
     elif last.dominant_regime == last.display_regime:
         t_status, t_ko = "CONFIRMED", str(tcfg.get("confirmed", "")).format(cur=cur.label)
@@ -292,8 +348,10 @@ def build_regime_history(
         share_pct=next((s.share for s in share if s.regime == cur.regime), 0.0), raw_today=raw_today, days=days, blocks=blocks,
         official_state_label=inv_tax.get(cur.regime, last.raw_state), raw_regime=last.dominant_regime, raw_label=labels.get(last.dominant_regime, last.dominant_regime),
         raw_persistence_days=rrun, required_days=need_days, transition_status=t_status, transition_status_ko=t_ko,
-        pending_regime=None if last.dominant_regime == last.display_regime else last.dominant_regime,
-        pending_label=None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime), changed_today=bool(last.is_transition),
+        pending_regime=(st_today.entry_regime if st_today is not None else (None if last.dominant_regime == last.display_regime else last.dominant_regime)),
+        pending_label=(st_today.entry_label if st_today is not None else (None if last.dominant_regime == last.display_regime else labels.get(last.dominant_regime, last.dominant_regime))),
+        changed_today=bool(last.is_transition), state=st_today, logic_version=st_today.logic_version if st_today is not None else RSM.LEGACY,
+        logic_effective_from=str(smcfg.get("effective_from") or ""),
         composite=comp, composite_current=comp[-1] if comp and comp[-1] is not None else next((c for c in reversed(comp) if c is not None), None),
         composite_slope=slope, composite_slope_days=sd, drivers=heat, share=share, transitions=transitions, total_transitions=total_tr,
         palette=labels,

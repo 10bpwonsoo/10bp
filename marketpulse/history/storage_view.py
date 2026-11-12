@@ -60,6 +60,7 @@ def storage_view(doc: Mapping[str, Any], *, as_of: datetime, manager, config_dir
                 from ..engines.cockpit import now_history_fields
                 hf = now_history_fields(load_cockpit_config(config_dir), rh, label=str(now["label"]), raw_label=str(now.get("raw_label") or now["label"]))
                 hf["spark"] = [sp.model_dump(mode="json") for sp in hf["spark"]]
+                hf["state"] = hf["state"].model_dump(mode="json") if hf.get("state") is not None else None
                 ck2["market_now"] = {**now, **hf}
             out["cockpit"] = ck2
     dh = out.get("daily_history")

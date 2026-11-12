@@ -4,6 +4,7 @@ import { duplicateDates, kstTime, maxLabelsFor, md, mergedNote, snapshotLine, th
 import { sourceLine } from "./DailyHistoryStrip";
 import { fetchArchive, fetchArchiveIndex } from "../api/client";
 import { dayDocDateFor, dayDocMatches, explainTransition, type TransitionDayDoc } from "./transitionWhy";
+import { HistoryStateSummary, SUPPORT_COLOR, entryText, exitText, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
 /**
  * MARKET REGIME HISTORY · 1M — 실시간 2 탭 전용. "최근 한 달 시장의 색이 어떻게 변해 왔는가" 를 3초에 읽게 한다.
@@ -35,21 +36,23 @@ function Context({ h }: { h: CkRegimeHistory }) {
         </div>
       ) : null}
       <div className="ck-h-ctx-main">
-        <span className="ck-k mono">Current</span>
+        <span className="ck-k mono">{isV2(h.state) ? "Current official" : "Current"}</span>
         <b className="ck-h-cur" style={{ color: color(h.current_regime) }} data-testid="ck-h-current">{h.current_label}</b>
       </div>
       <dl className="ck-h-ctx-grid mono">
         <div><dt title="공식 regime 이 이어진 거래일 수">Regime Duration</dt><dd className="num">{h.duration_days}D</dd></div>
-        <div><dt>Previous</dt><dd>{h.previous_label ? short(h.previous_label) : "–"}</dd></div>
+        {isV2(h.state) ? null : <div><dt>Previous</dt><dd>{h.previous_label ? short(h.previous_label) : "–"}</dd></div>}
         <div><dt>1M Transitions</dt><dd className="num">{h.transitions_1m}</dd></div>
         <div><dt>1M Share</dt><dd className="num">{h.share_pct.toFixed(0)}%</dd></div>
       </dl>
+      {/* exit_entry_v2: 후보 · 진입 · 이탈 · raw 를 공식 CURRENT 와 섞지 않는다 */}
+      {isV2(h.state) ? <HistoryStateSummary s={h.state} previousLabel={h.previous_label ? short(h.previous_label) : null} status={h.transition_status} statusKo={h.transition_status_ko} /> : null}
       {/* RAW SIGNAL — 오늘 룰이 가리키는 후보. 공식 CURRENT 와 다르면 전환 상태를 적는다 */}
-      <div className="ck-h-rawbox mono" data-testid="ck-h-raw" data-status={h.transition_status}>
+      {isV2(h.state) ? null : <div className="ck-h-rawbox mono" data-testid="ck-h-raw" data-status={h.transition_status}>
         <span className="ck-k">Raw signal</span><b style={{ color: h.pending_regime ? color(h.raw_regime) : "var(--muted)" }}>{short(h.raw_label || h.current_label)}</b><span className="num">{h.raw_persistence_days}D</span>
         <span className="ck-k">Transition</span><b style={{ color: h.transition_status === "CONFIRMED" ? "var(--ok)" : h.transition_status === "CHANGED" ? "var(--accent)" : "var(--warn)" }}>{(h.transition_status || "").replace(/_/g, " ")}</b>
         {h.transition_status_ko ? <span className="ck-h-raw-ko">{h.transition_status_ko}</span> : null}
-      </div>
+      </div>}
       {h.intraday ? (
         <div className="ck-h-intraday mono" data-testid="ck-h-intraday" title="장중 LIVE 값은 daily history 칸을 덮지 않는다 — 다음 Daily Snapshot 에서 고정된다">
           <span className="ck-k">Intraday LIVE</span><b>{kstTime(h.intraday.as_of) || h.intraday.date}</b>
@@ -71,7 +74,11 @@ function DayTip({ d, palette }: { d: CkRegimeDay; palette: Record<string, string
       <span>Evidence <b className="num">{d.evidence_strength.toFixed(0)}%</b>{d.dominant_regime_dwell !== null ? <> · Dwell <b className="num">{(d.dominant_regime_dwell * 100).toFixed(0)}%</b></> : null}</span>
       {d.dominant_driver ? <span>Driver {d.dominant_driver}</span> : null}
       {d.top_evidence.length > 1 ? <span>{d.top_evidence.slice(0, 2).join(" · ")}</span> : null}
-      {d.bridged ? <span className="ck-h-note">raw {d.raw_state} — 하루짜리라 직전 regime 에 이어짐</span> : null}
+      {isV2(d.state) ? (
+        <span data-testid="ck-h-tip-state">Official <em style={{ color: color(d.display_regime) }}>{short(d.display_label)}</em> · Candidate <em style={{ color: keyColor(d.state.candidate) }}>{keyText(d.state.candidate)}</em>
+          {d.state.official !== "neutral" || d.state.changed ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
+          {d.state.entry_regime || d.state.entry_confirmed ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}</span>
+      ) : d.bridged ? <span className="ck-h-note">raw {d.raw_state} — 하루짜리라 직전 regime 에 이어짐</span> : null}
       <span className="ck-h-src" data-testid="ck-h-tip-source">{sourceLine(d.source, d.calculated_at, d.model_version, "", d.locked)}</span>
       {d.merged && d.merged.length ? <span className="ck-h-note">{mergedNote(d.merged)}</span> : null}
     </div>
@@ -84,7 +91,7 @@ function DayDetail({ d, h, onClose }: { d: CkRegimeDay; h: CkRegimeHistory; onCl
     <div className="ck-h-detail" data-testid="ck-h-detail">
       <div className="ck-h-detail-head mono"><b>{d.date}</b>
         <span>Raw <em>{d.raw_state}</em>{d.raw_secondary ? ` / ${d.raw_secondary}` : ""}</span>
-        <span>Display <em style={{ color: color(d.display_regime) }}>{short(d.display_label)}</em>{d.bridged ? " (bridged)" : d.is_transition ? " (transition)" : ""}</span>
+        <span>{isV2(d.state) ? "Official" : "Display"} <em style={{ color: color(d.display_regime) }}>{short(d.display_label)}</em>{isV2(d.state) ? (d.is_transition ? " (transition)" : "") : d.bridged ? " (bridged)" : d.is_transition ? " (transition)" : ""}</span>
         <button type="button" className="ck-more" onClick={onClose}>닫기</button></div>
       <div className="ck-h-detail-grid mono">
         <span>Dominant <em>{h.palette[d.dominant_regime] ?? d.dominant_regime}</em></span>
@@ -97,6 +104,15 @@ function DayDetail({ d, h, onClose }: { d: CkRegimeDay; h: CkRegimeHistory; onCl
         {d.market_date ? <span data-testid="ck-h-detail-dates">{snapshotLine(d.date, d.market_date)}{d.data_asof ? ` · data ${kstTime(d.data_asof)}` : ""}{d.storage_date ? ` · 저장 키 ${d.storage_date}` : ""}</span> : null}
         {d.merged && d.merged.length ? <span className="ck-h-note">{mergedNote(d.merged)}</span> : null}
       </div>
+      {isV2(d.state) ? (
+        <div className="mono ck-h-detail-ev" data-testid="ck-h-detail-state">
+          Candidate <b style={{ color: keyColor(d.state.candidate) }}>{keyText(d.state.candidate)}</b>
+          {d.state.raw_signal ? <> · Raw {d.state.raw_signal}</> : null}
+          {d.state.official !== "neutral" || d.state.changed ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
+          {d.state.entry_regime || d.state.entry_confirmed ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}
+          {d.state.support_reasons.length && d.state.official !== "neutral" ? <div className="ck-h-note">{d.state.support_reasons.join(" / ")}</div> : null}
+        </div>
+      ) : null}
       {d.top_evidence.length ? <div className="mono ck-h-detail-ev">주도 변수 {d.top_evidence.join(" · ")}</div> : null}
       <div className="ck-h-detail-f mono">{fs.map((f) => <span key={f.label}>{f.label} <b className="num">{f.v === null ? "–" : sg(f.v, 1)}</b></span>)}</div>
     </div>
@@ -140,7 +156,10 @@ function Band({ h }: { h: CkRegimeHistory }) {
         {h.days.map((d, i) => (
           <i key={`${d.date}-${i}`} className={`ck-h-cell${d.is_transition ? " tr" : ""}${curStart && curStart <= d.date ? " cur" : ""}${sel === i ? " sel" : ""}`}
             style={{ background: color(d.display_regime) }} data-testid="ck-h-cell" aria-label={`${d.date} ${d.display_label}`}
-            onMouseEnter={() => setHover(i)} onClick={() => setSel(sel === i ? null : i)} />
+            onMouseEnter={() => setHover(i)} onClick={() => setSel(sel === i ? null : i)}>
+            {/* 공식 띠는 공식 regime 만. 그날 후보가 공식과 다르면 칸 아래에 후보 색 표식만 단다(exit_entry_v2 날짜) */}
+            {isV2(d.state) && d.state.candidate !== d.display_regime ? <b className="ck-h-cand" style={{ background: keyColor(d.state.candidate) }} data-testid="ck-h-cand" title={`후보 ${keyText(d.state.candidate)}`} /> : null}
+          </i>
         ))}
         {tipIdx !== null && h.days[tipIdx] ? <div className="ck-h-tipwrap" style={{ left: `${((tipIdx + 0.5) / n) * 100}%` }}><DayTip d={h.days[tipIdx] as CkRegimeDay} palette={h.palette} /></div> : null}
       </div>
@@ -263,10 +282,13 @@ function Transitions({ h }: { h: CkRegimeHistory }) {
       <span className="ck-k mono">Recent transitions{h.total_transitions > h.transitions.length ? ` · ${h.transitions.length} / ${h.total_transitions}` : ""}</span>
       {h.transitions.map((t) => {
         const i = h.days.findIndex((d) => d.date === t.date);
-        const w = explainTransition(t, i > 0 ? h.days[i - 1]!.date : null, docs[t.date] ?? null, h.days);
+        const w0 = explainTransition(t, i > 0 ? h.days[i - 1]!.date : null, docs[t.date] ?? null, h.days);
+        // exit_entry_v2 전환은 그 Daily Snapshot 에 LLM(또는 같은 검증의 세션)이 그날 데이터로 쓴 이유를 쓴다. 없으면 저장 데이터로 고른 문장
+        const w = t.comment ? { ...w0, why: t.comment, basis: "llm" as const } : w0;
         return (
           <div key={t.date} className={`ck-h-tr${open === t.date ? " open" : ""}`} data-testid="ck-h-transition" data-basis={w.basis} onClick={() => setOpen(open === t.date ? null : t.date)} role="button" tabIndex={0}>
-            <div className="ck-h-tr-l1"><b className="mono">{md(t.date)}</b> <span style={{ color: color(t.from_regime) }}>{short(t.from_label)}</span> <span className="ck-h-tr-ar">→</span> <span style={{ color: color(t.to_regime) }}>{short(t.to_label)}</span></div>
+            <div className="ck-h-tr-l1"><b className="mono">{md(t.date)}</b> <span style={{ color: color(t.from_regime) }}>{short(t.from_label)}</span> <span className="ck-h-tr-ar">→</span> <span style={{ color: color(t.to_regime) }}>{short(t.to_label)}</span>
+              {t.kind === "exit" ? <em className="ck-h-tr-kind mono" data-testid="ck-h-tr-kind">EXIT CONFIRMED · 새 레짐 미확정</em> : t.kind === "entry" ? <em className="ck-h-tr-kind mono" data-testid="ck-h-tr-kind">ENTRY CONFIRMED</em> : null}</div>
             <p className="ck-h-tr-why" data-testid="ck-h-tr-why">{w.why}</p>
             <div className="ck-h-tr-chips" data-testid="ck-h-tr-chips">{w.chips.join(" · ")}</div>
             <div className="ck-h-tr-mean" data-testid="ck-h-tr-meaning">→ {w.meaning}</div>

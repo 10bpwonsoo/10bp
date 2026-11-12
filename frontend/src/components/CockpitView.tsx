@@ -7,6 +7,7 @@ import { LABEL_KO } from "./StateHistoryStrip";
 import { RegimeHistoryCard } from "./RegimeHistoryCard";
 import { MarketToneCard } from "./MarketToneCard";
 import { leaderTitle, radarHeadline, type RadarStatus } from "./radarTitle";
+import { RegimeStateGrid, isV2 } from "./RegimeStatePanel";
 
 /**
  * 실시간 메인 탭 — decision cockpit.
@@ -60,6 +61,7 @@ export const regimeGroup = (l: string | null | undefined): string => REGIME_GROU
 /** MARKET REGIME v2 블록 — 선택 · confidence · coverage · 주식 확인 · WHY. 상세(신호 · 후보)는 펼침에 */
 function RegimeSelectionBlock({ n }: { n: Cockpit["market_now"] }) {
   const s = n.selection!;
+  const v2 = isV2(n.state); // exit_entry_v2 — 후보 · 진입 · 이탈은 위 상태 표가 보인다(여기서 겹쳐 쓰지 않는다)
   // 공식 regime 은 taxonomy 묶음 단위 — RISK_OFF 와 LIQUIDITY_STRESS 는 같은 'Liquidity Stress / Risk-Off' (config/cockpit.yaml taxonomy). 같은 묶음이면 전환 후보가 아니다(2026-11-06)
   const pending = regimeGroup(s.selected_regime) !== regimeGroup(n.label);
   const eq = s.selected_regime === "NEUTRAL" ? s.neutral_equity : s.candidates.find((c) => c.label === s.selected_regime)?.equity ?? null;
@@ -72,7 +74,7 @@ function RegimeSelectionBlock({ n }: { n: Cockpit["market_now"] }) {
         {s.primary_signal ? <span><span className="ck-k">PRIMARY SIGNAL</span> <b>{s.primary_signal}</b></span> : null}
         <span className="ck-rs-src">{RS_SRC[s.source] ?? s.source}</span>
       </div>
-      {pending ? (
+      {pending && !v2 ? (
         <div className="ck-rs-pending mono" data-testid="ck-rs-pending"><span className="ck-k">PENDING CANDIDATE</span> <b style={{ color: LABEL_COLOR[s.selected_regime] ?? "var(--ink)" }}>{RS_DISPLAY[s.selected_regime] ?? s.selected_regime}</b>
           <span className="ck-k">TRANSITION</span> <b>{Math.min(n.raw_persistence_days, n.required_days)} / {n.required_days} DAYS</b></div>
       ) : null}
@@ -118,13 +120,21 @@ function MarketNow({ c }: { c: Cockpit }) {
   return (
     <Card title="Market Now" area="now" testid="ck-now" accent>
       {/* 공식(confirmed) regime — MARKET REGIME HISTORY 의 CURRENT 와 같은 source. raw 는 아래 보조 줄 */}
+      {isV2(n.state) ? <div className="ck-k mono ck-now-offk" data-testid="ck-now-official-k">Official regime</div> : null}
       <div className="ck-now-label" style={{ color: col }} data-testid="ck-now-label">{n.label_text}</div>
       <div className="ck-now-meta mono">
         <span>Conviction <b style={{ color: CONV_COLOR[n.conviction] }}>{n.conviction}</b> <small>{n.confidence.toFixed(0)}%{n.conviction_trend !== "STABLE" ? ` · ${n.conviction_trend}` : ""}</small></span>
         <span title="공식 regime 이 이어진 거래일 수">Regime Duration <b data-testid="ck-now-duration">{n.persistence_days}D</b></span>
-        {n.change_text ? <span>Change <b data-testid="ck-now-change">{n.change_text}</b></span> : n.potential_change_text ? <span title="raw 신호가 가리키는 방향 — 확정 전">{n.transition_status === "TRANSITION_WATCH" ? "Transition watch" : "Potential change"} <b data-testid="ck-now-potential">{n.potential_change_text}</b></span> : null}
+        {n.change_text ? <span>Change <b data-testid="ck-now-change">{n.change_text}</b></span> : n.potential_change_text ? <span title="진입 후보가 확정되면 바뀔 방향 — 확정 전">{n.transition_status === "TRANSITION_WATCH" ? "Transition watch" : "Potential change"} <b data-testid="ck-now-potential">{n.potential_change_text}</b></span> : null}
       </div>
+      {isV2(n.state) ? <RegimeStateGrid s={n.state} /> : null}
       {n.selection ? <RegimeSelectionBlock n={n} /> : null}
+      {isV2(n.state) ? (
+        <div className="ck-now-raw ck-now-tstatus mono" data-testid="ck-now-raw" data-status={n.transition_status}>
+          <span className="ck-k">Transition status</span><b style={{ color: TR_COLOR[n.transition_status] ?? "var(--ink)" }} data-testid="ck-now-status">{n.transition_status === "TRANSITION_WATCH" ? "WATCH" : TR_LABEL[n.transition_status] ?? n.transition_status}</b>
+          {n.transition_status_ko ? <span className="ck-now-raw-ko">{n.transition_status_ko}</span> : null}
+        </div>
+      ) : (
       <div className="ck-now-raw mono" data-testid="ck-now-raw" data-status={n.transition_status}>
         <span className="ck-k">RAW SIGNAL</span>
         <b style={{ color: rawDiffers ? LABEL_COLOR[n.raw_label] ?? "var(--ink)" : "var(--muted)" }}>{n.raw_text}{n.raw_secondary ? ` / ${LABEL_KO[n.raw_secondary] ?? n.raw_secondary}` : ""}</b>
@@ -132,6 +142,7 @@ function MarketNow({ c }: { c: Cockpit }) {
         <span className="ck-k">Status</span><b style={{ color: TR_COLOR[n.transition_status] ?? "var(--ink)" }} data-testid="ck-now-status">{TR_LABEL[n.transition_status] ?? n.transition_status}</b>
         {n.transition_status_ko ? <span className="ck-now-raw-ko">{n.transition_status_ko}</span> : null}
       </div>
+      )}
       <div className="ck-kv" data-testid="ck-key-variables">
         {n.key_variables.map((k) => (
           <div key={k.id} className="ck-kv-row"><span className="ck-kv-l">{k.label}</span><span className="num">{sg(k.z)}σ</span><Arrow a={k.arrow} /><span className="mono ck-kv-c">{k.change_display}</span></div>

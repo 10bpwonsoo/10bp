@@ -517,8 +517,8 @@
    "confidence": 58.0
   }
  ],
- "official_regime": "Liquidity Stress / Risk-Off",
- "persistence_hint": "공식 Liquidity Stress / Risk-Off · 직전 raw NEUTRAL · 공식 전환은 같은 raw 가 서로 다른 거래일 2일 연속(또는 확신 80 이상)일 때",
+ "official_regime": "Neutral / Mixed",
+ "persistence_hint": "공식 Neutral / Mixed · 직전 Daily Snapshot: 공식 지지 BROKEN, 이탈 2/2 · 규칙: 공식 regime 이 지지되지 않는 거래일이 2일 이어지면 해제되고(새 후보가 미확정이면 Neutral / Mixed), 새 후보는 서로 다른 거래일 2일 연속 선택돼야 공식이 된다. 오늘 선택이 다른 후보면 진입 일수는 다시 1일부터다",
  "events": [
   {
    "date": "2026-11-10",

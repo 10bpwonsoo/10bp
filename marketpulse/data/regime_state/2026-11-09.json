@@ -1,0 +1,59 @@
+{
+ "date": "2026-11-09",
+ "snapshot_date": "2026-11-10",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "factors": {
+   "Growth": 0.51,
+   "Inflation": -0.148,
+   "Rates": 0.536,
+   "USD": 2.302,
+   "Liquidity": 1.303,
+   "RiskAppetite": 2.168,
+   "Credit": -1.117,
+   "Volatility": -2.215,
+   "China": -0.748
+  },
+  "equity_broad": {
+   "us": 0.849,
+   "kr": -0.316
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-10",
+  "date": "2026-11-09",
+  "official": "liquidity_stress",
+  "previous_official": "liquidity_stress",
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "support": "BROKEN",
+  "support_reasons": [
+   "핵심 조건: Liquidity ≤ -1.0 미충족(지금 +1.30) · RiskAppetite ≤ -0.8 미충족(지금 +2.17)",
+   "주식 확인(Liquidity Stress / Risk-Off 기준): US CONTRADICTED · KOREA CONFIRMED · GLOBAL MIXED",
+   "오늘 후보는 Risk-On"
+  ],
+  "equity": {
+   "us": "CONTRADICTED",
+   "kr": "CONFIRMED",
+   "global": "MIXED"
+  },
+  "exit_streak": 1,
+  "exit_required": 2,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "risk_on",
+  "entry_streak": 1,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": false,
+  "change_kind": null,
+  "counted": true
+ },
+ "transition_comment": null,
+ "written_at": "2026-11-12T01:53:06.790453+00:00"
+}
