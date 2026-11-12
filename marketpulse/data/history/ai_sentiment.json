@@ -3923,6 +3923,121 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-12",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 48.5,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 24.0,
+    "price": 80.0,
+    "breadth": 44.5,
+    "fundamentals": 38.6,
+    "macro": 45.0
+   },
+   "key_drivers": [
+    "AI Basket Price",
+    "AI Relative Strength",
+    "Volatility (VIX)",
+    "−AI Basket 1M",
+    "−Real Yield",
+    "−USD"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-12T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-12T22:56:42.353634Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 48",
+   "payload": {
+    "components": {
+     "narrative": 24.0,
+     "price": 80.0,
+     "breadth": 44.5,
+     "fundamentals": 38.6,
+     "macro": 45.0
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "EXTREME_GREED",
+     "breadth": "NEUTRAL",
+     "fundamentals": "FEAR",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "가격은 투자심리를 지지하고 있지만 내러티브 · 펀더멘털은 아직 이를 확인하지 못하고 있습니다.",
+    "read": "AI Basket Price · AI Relative Strength는 여전히 지지적입니다. 그러나 내러티브 · 펀더멘털이 따라오지 않고 AI Basket 1M · Real Yield가 sentiment 를 압박하고 있습니다.",
+    "secondary": "PRICE AHEAD OF NARRATIVE",
+    "support": [
+     {
+      "id": "basket_price",
+      "label": "AI Basket Price",
+      "label_ko": "AI 바스켓 가격(z)",
+      "component": "price",
+      "score": 100.0,
+      "display": "+2.5σ (5일)"
+     },
+     {
+      "id": "relative_strength",
+      "label": "AI Relative Strength",
+      "label_ko": "Nasdaq 대비 상대강도(z)",
+      "component": "price",
+      "score": 100.0,
+      "display": "+2.3σ vs NDX"
+     },
+     {
+      "id": "vix",
+      "label": "Volatility (VIX)",
+      "label_ko": "변동성",
+      "component": "macro",
+      "score": 100.0,
+      "display": "-3.8σ (5일)"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 0.0,
+      "display": "-10.3%"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 0.0,
+      "display": "+2.5σ"
+     },
+     {
+      "id": "usd",
+      "label": "USD",
+      "label_ko": "달러",
+      "component": "macro",
+      "score": 2.0,
+      "display": "+1.9σ"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }

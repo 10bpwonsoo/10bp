@@ -704,3 +704,18 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 11/12: 11/12 저장 섹션만으로 세션 생성(API 401) → 캡처 · 저장본에 market_overview 섹션만 더함(`tools/daily_snapshot/market_overview_attach.py`, archive correct). 11/11 이전에는 만들지 않았다.
   헤드라인 "위험선호 회복 시도, 금리와 펀더멘털 확인이 남은 반등".
 - 발견: 실시간 탭 MARKET LEADERSHIP 문장(11/11 · 11/12 저장본)이 "현재 시장은 broad Risk-Off이지만 …" — 공식 regime 재정렬(11/12) 때 리더십 문장은 다시 만들지 않아 예전 공식(Liquidity Stress) 기준으로 남았다. 고치지 않았다(사용자 확인 필요).
+
+### 2026-11-13 — 11/13 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 첫 수집은 Yahoo 429 로 기본 43 · 종목 15 · 바스켓 0이었다. 45초 뒤 재수집해 기본 47 · 종목 94 · 바스켓 52 전부를 받았다(빠진 계열 0). 단위 불연속은 없다.
+  미국채 · TIPS 는 11/10(CPI 발표일) 관측까지 들어왔고, 미국 주식은 11/12 종가다. RSS 는 11/12 합본과 오늘 수집분을 합쳤고, 창 안 기사 98건 중 20건을 태깅했다. DRAMeXchange 11/12.
+- 결과: 엔비디아 CEO 해임 사태 · 금리 인상 우려가 겹쳐 미국 11/12 소폭 하락(소형주 −1.66%), 코스피 −0.6% · 코스닥 −1.2%. CPI 날 미국채는 2년물 +17bp · TIPS10Y +12bp · BE −2bp 로 정책 경로 재평가를 보였다.
+  정량 POLICY_DRIVEN 70 · 자격 후보 Policy Driven(Rates +2.27, 미국 · 한국 주식 PARTIAL) → REGIME v2 Policy Driven(세션, TENTATIVE, 55). 공식은 Neutral / Mixed(3D)이고, Risk-On 진입은 끊겼으며 Policy Driven 이 진입 1/2다(exit_entry_v2). 탭별 판정:
+  - AI: LEADERSHIP NARROWING(센티 48) · THEME VIEW "엔비디아 쇼크에도 반등은 유지, 금리가 새 시험대"
+  - 금리: FED POLICY REPRICING
+  - 물가: COOLING BIAS(에너지만 약한 상승 압력)
+  - 유가: Geopolitical Premium UNCONFIRMED
+  - 반도체: UPSWING 36.6
+  - MARKET OVERVIEW: "금리 재평가와 엔비디아 쇼크, 반등 뒤 정책 변수 시험"(EQUITY Mixed · MACRO Headwind · RISK Elevated)
+- 순서: 해석 4종 세션본 → 컨텍스트 재생성 → AI THEME VIEW · MARKET OVERVIEW 세션본 → full. 두 종합은 금리 · 반도체 해석과 REGIME 선택을 읽기 때문에 이 순서여야 한다.
+  MARKET OVERVIEW 세션본은 숫자 검증만 통과해서는 안 된다 — 컨텍스트에 없던 '거래대금 감소' 와 데이터가 말하지 않는 Quality 스타일을 빼고 다시 썼다.
+- history: 7개 탭에 11/12 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그는 11/12 행으로 1개 늘었다. COMPLETE, 테스트 통과.

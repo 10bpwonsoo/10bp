@@ -4247,6 +4247,97 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-12",
+   "tab_id": "market_regime",
+   "state": "POLICY_DRIVEN",
+   "state_label": "Policy Driven",
+   "state_label_ko": "",
+   "state_score": -11.012927783063017,
+   "confidence": 55.0,
+   "component_scores": {
+    "RiskAppetite": -10.639140730145959,
+    "Volatility": -19.072497072448176,
+    "Growth": -29.162736961248292,
+    "Credit": 36.31164725823619,
+    "KoreaFlow": null,
+    "news": -15.287669696351312,
+    "factor:Growth": -0.601,
+    "factor:Inflation": 0.154,
+    "factor:Rates": 2.27,
+    "factor:USD": 1.12,
+    "factor:Liquidity": 0.05,
+    "factor:RiskAppetite": -0.214,
+    "factor:Credit": -0.761,
+    "factor:Volatility": 0.386,
+    "factor:China": -0.371
+   },
+   "key_drivers": [
+    "US 2Y Yield +2.8σ",
+    "US 10Y Real Yield (TIPS) +2.5σ",
+    "US 5Y Yield +2.4σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-12T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-12T22:56:42.623881Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "POLICY_DRIVEN 55% · 온도 -11",
+   "payload": {
+    "date": "2026-11-12",
+    "as_of": "2026-11-12T22:30:00Z",
+    "label": "POLICY_DRIVEN",
+    "secondary_label": null,
+    "confidence": 55.0,
+    "price_temperature": -8.163099840870819,
+    "news_temperature": -15.287669696351312,
+    "composite": -11.012927783063017,
+    "news_events": 20,
+    "thermo_confidence": 94.28754301445194,
+    "components": {
+     "RiskAppetite": -10.639140730145959,
+     "Volatility": -19.072497072448176,
+     "Growth": -29.162736961248292,
+     "Credit": 36.31164725823619,
+     "KoreaFlow": null,
+     "news": -15.287669696351312
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": -0.601,
+     "Inflation": 0.154,
+     "Rates": 2.27,
+     "USD": 1.12,
+     "Liquidity": 0.05,
+     "RiskAppetite": -0.214,
+     "Credit": -0.761,
+     "Volatility": 0.386,
+     "China": -0.371
+    },
+    "hypotheses": {
+     "POLICY_DRIVEN": 0.85
+    },
+    "drivers": [
+     "US 2Y Yield +2.8σ",
+     "US 10Y Real Yield (TIPS) +2.5σ",
+     "US 5Y Yield +2.4σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

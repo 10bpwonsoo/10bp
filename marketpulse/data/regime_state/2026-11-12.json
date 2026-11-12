@@ -1,0 +1,53 @@
+{
+ "date": "2026-11-12",
+ "snapshot_date": "2026-11-13",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "policy",
+  "candidate_state": "POLICY_DRIVEN",
+  "raw_signal": "POLICY_DRIVEN",
+  "factors": {
+   "Growth": -0.601,
+   "Inflation": 0.154,
+   "Rates": 2.27,
+   "USD": 1.12,
+   "Liquidity": 0.05,
+   "RiskAppetite": -0.214,
+   "Credit": -0.761,
+   "Volatility": 0.386,
+   "China": -0.371
+  },
+  "equity_broad": {
+   "us": 0.059,
+   "kr": -0.142
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-13",
+  "date": "2026-11-12",
+  "official": "neutral",
+  "previous_official": "neutral",
+  "candidate": "policy",
+  "candidate_state": "POLICY_DRIVEN",
+  "raw_signal": "POLICY_DRIVEN",
+  "support": "NA",
+  "support_reasons": [
+   "Neutral / Mixed 는 해제할 방향이 없다 — 새 후보의 진입 확인만 본다"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 2,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "policy",
+  "entry_streak": 1,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": false,
+  "change_kind": null,
+  "counted": true
+ },
+ "transition_comment": null,
+ "written_at": "2026-11-12T22:56:42.658933+00:00"
+}

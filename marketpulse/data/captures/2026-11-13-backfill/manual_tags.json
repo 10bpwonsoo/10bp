@@ -1,0 +1,375 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/13 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/12 합본과 11/13 아침 두 번 수집분을 합쳤다.",
+ "tags": {
+  "ad2d6450f62663be": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 65,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "엔비디아, 젠슨 황 CEO 해임 준비(WSJ 보도, 제목)."
+  },
+  "322bf15412c09587": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황, 보고 라인 임원과의 관계 보도(NYT, 제목)."
+  },
+  "f3445865965014ef": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25,
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 해임설이 미국 반도체 훈풍을 막아 코스피 반등이 이틀 만에 멈춤(제목)."
+  },
+  "716349b38f646d8c": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 해임 위기에 한국 반도체(삼성전자·SK하이닉스)도 긴장(제목)."
+  },
+  "90923f4f0ed360db": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 해임 준비 소식에 엔비디아 시간외 8% 급락(요약)."
+  },
+  "dc3b06a6be40d1f1": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 쇼크에 AI 밸류체인 흔들림 — 삼성전자·SK하이닉스 희비(제목)."
+  },
+  "639b12fdebe7bc32": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 나스닥 상장 임박 — AI 거품론 속 투자심리 시험대(요약)."
+  },
+  "7a0a4c7d6ccdba96": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 퇴진 확정 · 월가 엔비디아 목표 하향(제목)."
+  },
+  "5565ec1baf9ac0e4": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "월가, AMD 가 엔비디아 일부를 대체할 것이라는 기대(제목)."
+  },
+  "4f5a2a82310120da": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 0.61% 내린 5342선 · 코스닥 1.2% 하락 마감(요약)."
+  },
+  "1fac17c1fa4e23ae": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "옵션 만기일 외국인 선물 매수에도 코스피 막판 낙폭 확대(요약)."
+  },
+  "a7b88a8a3265f384": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 스캔들 여파가 엔비디아와 반도체 전반에 반영(요약)."
+  },
+  "edfff256bc4876d6": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "국내 증시 하향 박스권 · 거래대금 14개월 만에 최저 수준(요약)."
+  },
+  "9289ee2c8c846aa6": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "국고채 입찰 담합 과징금으로 증권사 3분기 실적 적자 전환 정정(요약)."
+  },
+  "d43eba9e3dfd0dc3": {
+   "themes": [
+    "ai",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "rates": 30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "rates": "up"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "젠슨 황 사태에 금리 인상 공포까지 겹친 뉴욕 증시(제목)."
+  },
+  "376ede86ac6e092a": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 증시 하락 마감 · 다우 0.36% 하락(제목)."
+  },
+  "d2c698940cdaa134": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 IPO 약 6배 초과 청약(Bloomberg, 제목)."
+  },
+  "a86dce43d739b50d": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 25,
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "세레브라스, AI 수요로 연간 매출 전망치 상향 · 주가 급등(제목)."
+  },
+  "c0c9ef7a304b8af0": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 쇼크로 엔비디아 시가총액 하루 만에 크게 감소(제목)."
+  },
+  "cc7a319a90079054": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "영국 3분기 GDP 0.7% 성장 — AI 가 추가 성장 동력(요약)."
+  }
+ }
+}

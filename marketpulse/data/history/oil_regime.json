@@ -4129,6 +4129,92 @@
     "suspect": false
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-12",
+   "tab_id": "oil_regime",
+   "state": "geopolitical",
+   "state_label": "Geopolitical Premium — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": 39.4,
+   "confidence": 39.4,
+   "component_scores": {
+    "driver:macro_liquidity": 22.0,
+    "driver:demand": 2.4,
+    "driver:supply": 36.8,
+    "driver:geopolitical": 39.4,
+    "brent_z": 0.4554548239074419,
+    "wti_z": 0.18564343325478494,
+    "oil_z": 0.3205491285811134
+   },
+   "key_drivers": [
+    "Geopolitical Premium +39 UNCONFIRMED",
+    "Supply +37 UNCONFIRMED",
+    "Macro / Liquidity +22 UNCONFIRMED"
+   ],
+   "data_coverage": 0.78975,
+   "data_asof": "2026-11-12T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-12T22:56:42.472061Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_3af3b98f",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "지금 유가는 지정학 프리미엄 쪽 증거가 가장 크다(+39, MODERATE) — 공급 (물리적 타이트) +37 보다 3 앞선다. 상태 미확인: 유가가 평탄하다(+0.3σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Geopolitical Premium — UNCONFIRMED",
+    "dominant": "geopolitical",
+    "runner_up": "supply",
+    "margin": 2.6,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": 22.0,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": 2.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": 36.8,
+      "status": "UNCONFIRMED",
+      "coverage": 0.614
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": 39.4,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "neutral",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "neutral",
+     "기대인플레이션 (BE10Y)": "contradicts",
+     "달러 / 금리": "neutral",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "confirms",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "confirms",
+     "구리 / 경기민감": "neutral",
+     "금": "neutral"
+    },
+    "implication": "긴장 뉴스가 유가에 프리미엄을 얹는 국면 — 뉴스가 가격으로 확인되는지가 전부다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
   }
  ]
 }
