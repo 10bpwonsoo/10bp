@@ -1,4 +1,4 @@
-import type {
+import type { MarketOverview,
   MarketStateHistory, ApiInfo, IntelligenceSnapshot, RawNewsItem, ScenarioInfo, ScenarioCheck, OilRegime, RatesRegime, AiRegime, Cockpit, AnalystViews,
   DailyHistory,
   HistoryTab,
@@ -111,6 +111,12 @@ export const fetchOilRegime = (scenario?: string, signal?: AbortSignal) => {
 export const fetchRatesRegime = (scenario?: string, signal?: AbortSignal) => {
   const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
   return get<RatesRegime>(`/api/v1/rates-regime${q}`, signal);
+};
+
+/** MARKET OVERVIEW 탭(2026-11-12) — LLM 시장 종합. 과거 날짜는 저장본의 market_overview 섹션만(없으면 NOT ARCHIVED). */
+export const fetchMarketOverview = (scenario?: string, signal?: AbortSignal) => {
+  const q = scenario ? `?scenario=${encodeURIComponent(scenario)}` : "";
+  return get<MarketOverview>(`/api/v1/market-overview${q}`, signal);
 };
 
 /** 반도체 사이클 탭(2026-10-23). 과거 날짜는 저장본의 semiconductor_cycle 섹션만 — 없으면 NOT ARCHIVED(지금 값으로 메우지 않는다). */

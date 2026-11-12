@@ -19,12 +19,16 @@ import { useCockpit } from "./api/useCockpit";
 import { useSemiconductorCycle } from "./api/semiconductor";
 import { SemiconductorCycleView, SemiconductorNotArchived } from "./components/SemiconductorCycleView";
 import { CockpitView } from "./components/CockpitView";
+import { MarketOverviewView, type DetailTarget } from "./components/MarketOverviewView";
+import { useMarketOverview } from "./api/useMarketOverview";
 import { DashboardGrid } from "./layout/DashboardGrid";
 import { InvestmentSection } from "./investment/InvestmentSection";
 
 const DATE_Q = /^\d{4}-\d{2}-\d{2}$/;
 /** 반도체 사이클 탭(2026-10-23) — 시나리오 점검 탭이 아니라 별도 화면. AI 센티 탭 바로 뒤에 놓는다. */
 const SEMI_TAB = "__semiconductor_cycle__";
+/** MARKET OVERVIEW · 시장 종합(2026-11-12) — 기존 탭 결과를 읽어 한 화면에서 종합. 실시간 탭 바로 뒤. */
+const OVERVIEW_TAB = "__market_overview__";
 
 /** 주소의 날짜 — ?date=YYYY-MM-DD (예전 링크의 #YYYY-MM-DD 도 읽는다). LIVE 는 date 없음. */
 function urlDate(): string | null {
@@ -111,15 +115,18 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
   const { checks } = useScenarioChecks(scenario, snapshot?.as_of ?? null, mode !== null);
   const activeCheck = checkName ? checks.find((c) => c.name === checkName) ?? null : null;
   const semiOpen = checkName === SEMI_TAB;
-  const { cycle: semiCycle, error: semiError } = useSemiconductorCycle(scenario, snapshot?.as_of ?? null, mode !== null && semiOpen && !(archive && archive.semiconductor_cycle == null));
+  const overviewOpen = checkName === OVERVIEW_TAB;
+  const { cycle: semiCycle, error: semiError } = useSemiconductorCycle(scenario, snapshot?.as_of ?? null, mode !== null && (semiOpen || overviewOpen) && !(archive && archive.semiconductor_cycle == null));
+  // MARKET OVERVIEW 종합 — 저장본에 없으면(11/12 이전) 부르지 않고 '저장되지 않음'. 숫자 칸은 아래 기존 훅(같은 날짜)에서 온다
+  const { overview, error: overviewError } = useMarketOverview(scenario, snapshot?.as_of ?? null, mode !== null && overviewOpen && !(archive && archive.market_overview == null));
   // 실시간 탭은 하나(decision cockpit)다 — 2026-10-07 에 기존 그리드 탭을 지우고 이 탭을 '실시간' 으로 불렀다.
   // 기존 대시보드 그리드(Market State → 히트맵 → … → Investment)는 cockpit 의 Details 안에, 그리고 집계를 못 받을 때의 대체 화면으로 남는다.
   const liveLabel = mode === "MOCK" ? "판정만" : "실시간";
   // 시나리오 탭의 반도체·원자재 패널용. 실데이터 탭의 Investment 영역은 자기 훅을 그대로 쓴다.
   const { data: investmentForView } = useInvestment(scenario, mode !== null && activeCheck !== null);
-  const { regime: oilRegime } = useOilRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "oil_regime");
-  const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck?.focus === "rates_regime");
-  const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full"));
+  const { regime: oilRegime } = useOilRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "oil_regime" || overviewOpen) && !(archive && overviewOpen && archive.oil_regime == null));
+  const { regime: ratesRegime } = useRatesRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "rates_regime" || overviewOpen) && !(archive && overviewOpen && archive.rates_regime == null));
+  const { regime: aiRegime } = useAiRegime(scenario, snapshot?.as_of ?? null, mode !== null && (activeCheck?.focus === "ai_regime" || activeCheck?.focus === "ai_regime_full" || overviewOpen) && !(archive && overviewOpen && archive.ai_regime == null));
   // '실시간 2' 탭 — decision cockpit. 집계를 못 받으면 기존 대시보드 그리드로 떨어진다(기능 삭제 아님, 기존 화면은 Details 로도 열린다).
   const { cockpit } = useCockpit(scenario, snapshot?.as_of ?? null, mode !== null && activeCheck === null && !semiOpen);
 
@@ -170,6 +177,11 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
             <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
               {liveLabel}
             </button>
+            {mode !== "MOCK" ? (
+              <button type="button" className="sc-tab mono" aria-pressed={overviewOpen} onClick={() => setCheckName(OVERVIEW_TAB)} data-testid="overview-tab" title="MARKET OVERVIEW — 기존 탭 결과를 읽어 지금 시장을 한 화면에서 종합(판단 → 근거, 상세는 각 탭)">
+                MARKET OVERVIEW <span className="mo-tab-ko">시장 종합</span>
+              </button>
+            ) : null}
             {checks.map((c, i) => (
               <Fragment key={c.name}>
                 <button type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
@@ -213,7 +225,16 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
 
       {snapshot ? (
         <>
-          {semiOpen ? (
+          {overviewOpen ? (
+            <MarketOverviewView cockpit={cockpit} overview={overview} overviewError={overviewError} rates={ratesRegime} oil={oilRegime} ai={aiRegime}
+              semi={archive && archive.semiconductor_cycle == null ? null : semiCycle} archived={!!archive} onDetail={(t: DetailTarget) => {
+                const by = (f: (c: { focus?: string | null }) => boolean) => checks.find(f)?.name ?? null;
+                const next = t === "live" ? null : t === "semi" ? SEMI_TAB : t === "rates" ? by((c) => c.focus === "rates_regime")
+                  : t === "oil" ? by((c) => c.focus === "oil_regime") : by((c) => c.focus === "ai_regime_full" || c.focus === "ai_regime");
+                setCheckName(next);
+                try { window.scrollTo({ top: 0 }); } catch { /* 스크롤 없어도 된다 */ }
+              }} />
+          ) : semiOpen ? (
             archive && archive.semiconductor_cycle == null ? <SemiconductorNotArchived />
               : semiCycle ? <SemiconductorCycleView cycle={semiCycle} />
               : <div className="grid"><section className="panel span-3"><div className="panel-body" style={{ color: "var(--muted)" }} data-testid="semi-loading">{semiError ? semiError.message : "반도체 사이클을 불러오는 중…"}</div></section></div>

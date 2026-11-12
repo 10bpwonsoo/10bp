@@ -31,6 +31,7 @@ CAPTURE_FILES = {
     "daily_history": "daily_history.json",
     "news": "news_live.json",
     "semiconductor_cycle": "semiconductor_cycle.json",
+    "market_overview": "market_overview.json",
 }
 
 
@@ -63,7 +64,13 @@ def live_collectors(settings) -> dict[str, Collector]:
         "daily_history": daily_history,
         "news": lambda: build_news_adapter(settings).fetch_news(limit=50),
         "semiconductor_cycle": lambda: _semi(settings),
+        "market_overview": lambda: _overview(settings),
     }
+
+
+def _overview(settings):
+    from ..api.overview_service import get_market_overview
+    return get_market_overview(settings)
 
 
 def _semi(settings):

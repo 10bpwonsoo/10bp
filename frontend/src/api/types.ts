@@ -782,6 +782,19 @@ export interface CkRegimeState {
   entry_regime: string | null; entry_label: string | null; entry_streak: number; entry_required: number; entry_confirmed: boolean;
   changed: boolean; change_kind: "exit" | "entry" | "legacy" | null; counted: boolean; released_label?: string | null; released_on?: string | null;
 }
+/** MARKET OVERVIEW (2026-11-12) — 기존 탭 결과를 읽은 LLM 시장 종합. 필드 구조만 고정. status 'unavailable' 이면 view 없음 */
+export interface MoDriver { name: string; direction: "POSITIVE" | "NEGATIVE" | "MIXED"; strength: "STRONG" | "MODERATE" | "WEAK"; read: string }
+export interface MoStyle { style: string; view: "POSITIVE" | "IMPROVING" | "NEUTRAL" | "MIXED" | "NEGATIVE"; read: string }
+export interface MoRisk { risk: string; level: "LOW" | "MODERATE" | "ELEVATED" | "HIGH"; read: string }
+export interface MoCatalyst { date: string; event: string; why: string; sensitivity: "HIGH" | "MEDIUM" | "LOW" }
+export interface MoNext { title: string; condition: string; implication: string }
+export interface MarketOverviewView {
+  headline: string; market_view: string; labels: { regime: string; equity: string; macro: string; risk: string }; regime_read: string; key_drivers: MoDriver[];
+  equity_view: { us: string; korea: string; divergence_label: string; divergence: string }; rates_view: string; cross_asset_view: string; ai_semiconductor_view: string;
+  leadership_view: string; style_view: MoStyle[]; sector_view: { positive: string[]; watch: string[]; negative: string[]; read: string }; top_risks: MoRisk[];
+  catalysts: MoCatalyst[]; what_matters_next: MoNext[]; portfolio_implication: { equity_stance: string; style: string; sector: string; risk_control: string; hedge_watch: string };
+}
+export interface MarketOverview { status: "ok" | "unavailable" | string; source: string; reason: string; generated_at: string | null; snapshot_date: string | null; as_of: string | null; view: MarketOverviewView | null }
 export interface AiThemeView { headline: string; summary: string; driver: string; strength: string; weak_point: string; next_watch: string; source: string; status: string; reason: string; generated_at: string | null }
 export interface CkMarketNow { state?: CkRegimeState | null; selection?: RegimeSelection | null; label: string; secondary: string | null; label_text: string; conviction: "HIGH" | "MEDIUM" | "LOW"; confidence: number; persistence_days: number; previous_label: string | null; change_text: string; key_variables: CkKeyVariable[]; sentence: string; interpretation: string; spark: { date: string; label: string }[]; last_update: string; coverage: string; latency: string;
   /** OFFICIAL vs RAW (2026-10-07): label 은 공식(confirmed) regime, raw_* 는 오늘 룰이 가리키는 후보 신호 */

@@ -466,6 +466,16 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     ai = ai.model_copy(update={"theme_view": AiThemeView(**tv)})
     (out / "ai_regime.json").write_text(ai.model_dump_json(), encoding="utf-8")
     summary["ai"]["theme_view"] = [tv["source"], tv["status"], tv["reason"]]
+
+    # 15) MARKET OVERVIEW (2026-11-12) — 같은 cutoff 의 기존 탭 결과(cockpit · 금리 · 유가 · AI · 반도체)를 읽은 LLM 시장 종합(API → 세션 생성본 → 비움)
+    from ..ai import market_overview as MO
+    mo_doc = {"snapshot": json.loads(live.model_dump_json()), "cockpit": json.loads(ck.model_dump_json()), "rates_regime": json.loads(rr.model_dump_json()),
+              "oil_regime": json.loads(oil.model_dump_json()), "ai_regime": json.loads(ai.model_dump_json()), "semiconductor_cycle": semi}
+    mo_ctx = MO.build_context(mo_doc)
+    (out / "market_overview_context.json").write_text(json.dumps(mo_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
+    mo = MO.write(mo_ctx, client=client, session_read=reads.get("market_overview"))
+    (out / "market_overview.json").write_text(json.dumps(mo, ensure_ascii=False), encoding="utf-8")
+    summary["market_overview"] = [mo["source"], mo["status"], mo["reason"]]
     summary["semiconductor_cycle"] = {"regime": semi["regime"]["label"], "composite": semi["regime"]["composite"], "market_read": semi["market_read"]["source"] + "/" + semi["market_read"]["generator"]}
 
     summary["vintage"] = {

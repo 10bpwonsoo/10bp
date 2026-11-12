@@ -29,6 +29,7 @@ def collectors(**override):
         "daily_history": lambda: {"market_regime": {"tab_id": "market_regime"}},
         "news": lambda: [],
         "semiconductor_cycle": lambda: {"as_of": AS_OF, "regime": {"state": "UPSWING"}},
+        "market_overview": lambda: {"as_of": AS_OF, "status": "ok", "source": "session", "view": {"headline": "x"}},
     }
     base.update(override)
     return base

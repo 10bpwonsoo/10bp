@@ -2942,3 +2942,52 @@
 .ai-tv-row .ai-k { color: var(--muted); font-size: 10px; letter-spacing: .05em; }
 .ai-tv-off { font-size: 11px; color: var(--faint); border-left-color: var(--rule); }
 @media (max-width: 760px) { .ai-tv-headline { font-size: 17px; } .ai-tv-row { grid-template-columns: 78px minmax(0, 1fr); } }
+
+/* ── MARKET OVERVIEW · 시장 종합 (2026-11-12) — 섹션당 통카드 하나, 판단 먼저 · 근거 작게. 기존 panel 토큰 그대로 ── */
+.mo-tab-ko { font-size: 10px; color: var(--muted); margin-left: 4px; }
+.mo { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "view" "regime" "drivers" "equity" "rates" "cross" "aisemi" "lead" "style" "risk" "cat" "next" "port"; }
+@media (min-width: 1024px) {
+  .mo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "view view" "regime drivers" "equity equity" "rates cross" "aisemi aisemi" "lead lead" "style style" "risk cat" "next next" "port port"; }
+}
+.mo > .mo-sec { min-width: 0; margin: 0; }
+.mo-sec .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mo-n { color: var(--accent); font-size: 10px; margin-right: 4px; }
+.mo-ko { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 400; }
+.mo-detail { background: none; border: 0; padding: 0; color: var(--accent); font-size: 10px; letter-spacing: .05em; cursor: pointer; white-space: nowrap; }
+.mo-k { font-size: 10px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+.mo-view .panel-body { padding-top: 6px; }
+.mo-headline { margin: 4px 0 10px; font-size: 22px; font-weight: 700; line-height: 1.35; color: var(--ink); }
+.mo-synth { margin: 4px 0 12px; font-size: 14px; line-height: 1.7; color: var(--ink-2); max-width: 980px; }
+.mo-labels { display: flex; flex-wrap: wrap; gap: 8px 28px; padding-top: 10px; border-top: 1px solid var(--rule-soft); }
+.mo-labels span { display: flex; flex-direction: column; gap: 2px; } .mo-labels i { font-style: normal; font-size: 10px; color: var(--muted); letter-spacing: .06em; } .mo-labels b { font-size: 15px; }
+.mo-read { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-2); padding-top: 8px; border-top: 1px solid var(--rule-soft); }
+.mo-none { color: var(--faint); font-size: 11px; }
+.mo-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; }
+.mo-kv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; min-width: 0; }
+.mo-kv b { font-size: 13px; color: var(--ink); overflow-wrap: anywhere; } .mo-kv small { font-size: 10.5px; color: var(--muted); }
+.mo-strip { display: flex; align-items: center; gap: 8px; margin-top: 10px; } .mo-strip-c { display: flex; gap: 2px; flex: 1; min-width: 0; } .mo-strip-c i { flex: 1; height: 10px; border-radius: 2px; }
+.mo-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mo-list li { padding-bottom: 7px; border-bottom: 1px solid var(--rule-soft); } .mo-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.mo-li-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; } .mo-li-h b { font-size: 13px; } .mo-li-h .mono { font-size: 10.5px; }
+.mo-li-t { font-size: 12.5px; line-height: 1.5; color: var(--ink-2); margin-top: 2px; } .mo-sub { color: var(--muted); }
+.mo-eq { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (min-width: 700px) { .mo-eq { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.mo-eq-col { min-width: 0; } .mo-eq-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; } .mo-eq-head b { font-size: 11px; letter-spacing: .06em; }
+.mo-eq-line { margin: 2px 0 6px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+.mo-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; } .mo-tbl td { padding: 3px 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; } .mo-tbl td + td { padding-left: 10px; text-align: right; white-space: nowrap; }
+.mo-tbl td:nth-child(3) { text-align: left; white-space: normal; font-size: 12px; color: var(--ink-2); }
+.mo-tbl tr.ex td { color: var(--faint); }
+.mo-div { margin-top: 10px; font-size: 12.5px; color: var(--ink-2); } .mo-div b { color: var(--accent); margin-right: 6px; font-size: 11px; }
+.mo-note { margin-top: 6px; font-size: 10px; color: var(--faint); }
+.mo-big { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 8px; overflow-wrap: anywhere; } .mo-big small { font-weight: 400; color: var(--muted); }
+.mo-chips { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; } .mo-chips i { font-style: normal; color: var(--muted); } .mo-chips small { color: var(--muted); }
+.mo-excl { font-size: 11px; color: var(--faint); }
+.mo-lead { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 1024px) { .mo-lead { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; } }
+.mo-lead li { min-width: 0; } .mo-lead-h { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; } .mo-lead-h b { font-size: 13px; } .mo-lead-m { font-size: 10px; color: var(--muted); }
+.mo-lead-w { font-size: 12px; color: var(--ink-2); line-height: 1.45; margin-top: 2px; } .mo-lead-s { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+.mo-sector-r { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 8px; font-size: 12.5px; padding: 4px 0; border-bottom: 1px solid var(--rule-soft); } .mo-sector-r b { font-size: 10.5px; }
+.mo-next { margin: 0; padding-left: 18px; display: grid; gap: 8px; } .mo-next li { font-size: 12.5px; line-height: 1.5; }
+.mo-next b { display: block; font-size: 13px; } .mo-next span { color: var(--ink-2); } .mo-next em { display: block; font-style: normal; color: var(--muted); }
+.mo-port { display: grid; gap: 8px; } @media (min-width: 1024px) { .mo-port { grid-template-columns: repeat(5, minmax(0, 1fr)); } .mo-port .mo-note { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .mo-headline { font-size: 18px; } .mo-grid2 { grid-template-columns: minmax(0, 1fr); } }

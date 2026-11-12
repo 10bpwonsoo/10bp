@@ -69,7 +69,7 @@ def build_one(svc: DailyArchiveService, day: date, *, inputs: Path, cutoff: date
         fetch_macro_vintage(out / "macro_raw.json", cutoff)
     tags = json.loads((out / "manual_tags.json").read_text(encoding="utf-8"))["tags"] if (out / "manual_tags.json").exists() else {}
     extra = json.loads((out / "extra_news.json").read_text(encoding="utf-8")) if (out / "extra_news.json").exists() else []
-    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read", "semiconductor_read", "regime_select", "transition_read", "ai_theme_view") if (out / f"{k}_session.json").exists()}
+    reads = {k: json.loads((out / f"{k}_session.json").read_text(encoding="utf-8")) for k in ("rates_read", "inflation_read", "semiconductor_read", "regime_select", "transition_read", "ai_theme_view", "market_overview") if (out / f"{k}_session.json").exists()}
     prev = _previous_archive(svc, day)
     since = _ts(((prev or {}).get("meta") or {}).get("source_asof")) if prev else None
     hist_dir = get_settings().history_dir

@@ -84,6 +84,7 @@
     if (url.indexOf("/rates-regime") >= 0) return json(DATA.rates_regime[current] || {});
     if (url.indexOf("/ai-regime") >= 0) return json(DATA.ai_regime[current] || {});
     if (url.indexOf("/semiconductor-cycle") >= 0) { var sc = (DATA.semiconductor_cycle || {})[current]; if (!sc) return new Response(JSON.stringify({ detail: "반도체 사이클 캡처 없음" }), { status: 404, headers: { "content-type": "application/json" } }); return json(sc); }
+    if (url.indexOf("/market-overview") >= 0) { var mo = (DATA.market_overview || {})[current]; if (!mo) return new Response(JSON.stringify({ detail: "MARKET OVERVIEW 캡처 없음" }), { status: 404, headers: { "content-type": "application/json" } }); return json(mo); }
     if (url.indexOf("/cockpit") >= 0) return json(DATA.cockpit[current] || {});
     if (url.indexOf("/api/v1/history/") >= 0) { var tab = url.split("/api/v1/history/")[1].split("?")[0]; var dh = (DATA.daily_history[current] || {})[tab]; return dh ? json(dh) : new Response(JSON.stringify({ detail: "no stored history for " + tab }), { status: 404, headers: { "Content-Type": "application/json" } }); }
     if (url.indexOf("/analyst-views") >= 0) return json(DATA.analyst_views[current] || { views: [], requested: [], pending: [], missing: [], provider: "unavailable", note: "" });

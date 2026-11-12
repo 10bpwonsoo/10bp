@@ -689,3 +689,18 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 11/12: 11/12 저장 데이터만으로 세션 생성(API 401) → 캡처 · 저장본에 `theme_view` 만 더함(`tools/daily_snapshot/ai_theme_view_attach.py`, archive correct · 이전 파일 superseded/). 11/11 이전 저장본에는 만들지 않았다(그 날짜 화면은 영역 없음).
   헤드라인 "반등은 넓어졌지만 한 달 낙폭 안의 가격 선행 랠리".
 - 화면: AI TRADE REGIME 카드의 레짐 이름 · 핵심 수치 바로 아래, 엔진 헤드라인 위. 테스트 `tests/test_ai_theme_view.py`, `frontend/src/__tests__/aiThemeView.test.tsx`.
+
+### 2026-11-12 — MARKET OVERVIEW · 시장 종합 탭 추가 (사용자 요청)
+- 목적: 기존 탭 결과 → 연결 → 해석 → 투자 판단을 한 화면에. 새 판정 · 새 점수 없음(SOURCE OF TRUTH = 실시간 cockpit · 금리 · 유가 · AI 센티 · 반도체 사이클).
+- 탭: 실시간 바로 뒤 'MARKET OVERVIEW 시장 종합'(실데이터 모드). 다른 탭은 그대로.
+- 13개 섹션: MARKET VIEW(헤드라인 · 종합 · REGIME/EQUITY/MACRO/RISK) → REGIME & STATE(+1M 공식 띠) → DRIVERS → US/KOREA EQUITY(+divergence) → RATES & INFLATION(+EQUITY IMPACT) →
+  OIL/CROSS-ASSET(+READ) → AI & SEMICONDUCTOR(+AI↔SEMI READ) → LEADERSHIP(상위 5 · 대표 종목은 기존 key_stocks 만) → STYLE & SECTOR → RISK MAP → CATALYSTS(그 날짜 이후 일정만) →
+  WHAT MATTERS NEXT → PORTFOLIO IMPLICATION(관점 표현, 매매 지시 아님). 숫자 칸은 같은 날짜의 기존 섹션을 그대로 읽고, 해석 칸은 LLM. 섹션마다 DETAIL → 기존 탭.
+  데스크톱 · iPad 가로 2열, 그 아래 1열 · 가로 스크롤 없음.
+- `ai/market_overview.py`: 저장본 섹션만으로 컨텍스트(결측 · EXCLUDED 목록, 허용 섹터 이름, 그 날짜 이후 일정) · PM 프롬프트(고정 문구 · 우선순위 · 결론 강제 없음) · 구조 고정 출력 ·
+  검증(구조 · enum · 금지어/매매 지시 · 컨텍스트 숫자 · market_view 숫자 2개 · 섹터 이름 · 지난/없는 일정). API → 세션본 → 비움.
+- 저장: 캡처 `market_overview.json` → 저장본 섹션 `market_overview`(config/archive.yaml). 과거 날짜는 저장값 그대로, 없으면 NOT ARCHIVED(숫자 칸은 그 날짜 데이터로 보인다).
+  LIVE API `/api/v1/market-overview` — 후보/공식 regime · driver 구성 · AI/금리/유가/반도체 regime · 다음 일정 · 큰 가격 변화가 같으면 이전 결과 재사용.
+- 11/12: 11/12 저장 섹션만으로 세션 생성(API 401) → 캡처 · 저장본에 market_overview 섹션만 더함(`tools/daily_snapshot/market_overview_attach.py`, archive correct). 11/11 이전에는 만들지 않았다.
+  헤드라인 "위험선호 회복 시도, 금리와 펀더멘털 확인이 남은 반등".
+- 발견: 실시간 탭 MARKET LEADERSHIP 문장(11/11 · 11/12 저장본)이 "현재 시장은 broad Risk-Off이지만 …" — 공식 regime 재정렬(11/12) 때 리더십 문장은 다시 만들지 않아 예전 공식(Liquidity Stress) 기준으로 남았다. 고치지 않았다(사용자 확인 필요).

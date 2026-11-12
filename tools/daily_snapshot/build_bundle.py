@@ -33,6 +33,8 @@ DATA = {
     "daily_history": {"live": rd("daily_history.json")},
     # 반도체 사이클 탭(2026-10-23~) — 캡처에 없으면 null → 화면은 '받지 못했다' (지금 값으로 메우지 않는다)
     "semiconductor_cycle": {"live": rd("semiconductor_cycle.json") if (CAP / "semiconductor_cycle.json").exists() else None},
+    # MARKET OVERVIEW(2026-11-12~) — LLM 시장 종합. 캡처에 없으면 null → 화면은 '저장되지 않음'
+    "market_overview": {"live": rd("market_overview.json") if (CAP / "market_overview.json").exists() else None},
 }
 # History 는 저장 당시 그대로(저장 키 기준) — KST view 로 저장된 섹션(10/22)만 API 와 같은 storage_view 로 다시 조립한다(2026-10-22). 파일은 그대로.
 sys.path.insert(0, str(ROOT))
