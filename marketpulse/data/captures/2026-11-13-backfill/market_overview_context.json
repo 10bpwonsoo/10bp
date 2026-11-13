@@ -828,6 +828,67 @@
     "score": null
    }
   ],
+  "axes": [
+   {
+    "axis": "PRICING",
+    "state": "IMPROVING",
+    "evidence": [
+     {
+      "component": "Memory Pricing",
+      "score": -8.0
+     },
+     {
+      "component": "Spot Premium",
+      "score": 88.0
+     },
+     {
+      "component": "Contract Price",
+      "score": 53.0
+     },
+     {
+      "component": "Breadth",
+      "score": 0.0
+     }
+    ],
+    "unavailable": []
+   },
+   {
+    "axis": "AI MEMORY",
+    "state": "STRONG",
+    "evidence": [
+     {
+      "component": "HBM",
+      "score": 100.0
+     }
+    ],
+    "unavailable": []
+   },
+   {
+    "axis": "FUNDAMENTAL",
+    "state": "STRONG",
+    "evidence": [
+     {
+      "component": "Export Nowcast",
+      "score": 69.0
+     }
+    ],
+    "unavailable": [
+     "EPS Revision",
+     "Supply / Inventory News"
+    ]
+   },
+   {
+    "axis": "EQUITY",
+    "state": "WEAK",
+    "evidence": [
+     {
+      "component": "Equity",
+      "score": -66.0
+     }
+    ],
+    "unavailable": []
+   }
+  ],
   "read": "범용 DRAM 현물은 한 주 새 DDR4 8Gb 2.9%, DDR4 16Gb 2.4% 내리며 약세를 이어 갔지만 DDR5 16Gb 는 거의 제자리라 약세가 주력 제품으로 번지는 속도는 늦춰졌다. 계약가는 아직 오르고 HBM 도 빡빡해 업황의 핵심은 버티고 있지만, 현물이 계약가보다 높은 폭은 DDR4 에서 계속 줄고 있다. 엔비디아 CEO 해임 사태가 반도체주 심리를 흔들었고 메모리 주가는 한 달 기준으로 여전히 크게 빠진 채 가격 둔화와 같은 쪽에 서 있다."
  },
  "news": [

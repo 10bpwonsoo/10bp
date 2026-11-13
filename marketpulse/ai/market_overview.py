@@ -75,7 +75,18 @@ Field guide (structure fixed, content yours)
    support: 0–3 asset names that currently support equities, risk: 0–3 asset names that weigh on them — names only from `cross_asset[].asset`, no asset in both,
    2–5 names in total, the ones that best explain the market (each asset's `state` word is shown next to it),
    read: 1–2 sentences (≤ 120 chars) — what kind of pressure or support this combination is}
-- ai_semiconductor_view: 1–2 sentences connecting AI price leadership with the semiconductor/memory fundamentals
+- ai_semiconductor_view — one question: how far is the AI theme's price action confirmed by semiconductor fundamentals? Read both engines together
+  (ai_theme status / groups / theme view AND semiconductor_cycle regime / `axes` / read). The dashboard shows the AI status words and the four semiconductor
+  axis words (`semiconductor_cycle.axes[].state`) next to your text — agree with them, do not list them. No stock phrases: judge the relationship from this day's data.
+  {headline: ≤ 40 chars, no period — the integrated call (AI price vs semiconductor fundamentals),
+   summary: 1–2 sentences (≤ 120 chars) — what is strong, what is not following, and what kind of rally that makes it,
+   ai: {headline: ≤ 28 chars, no period — the AI theme in investor terms (not the internal regime label),
+        why: one sentence (≤ 60 chars), leadership: 0–2 names from `ai_theme.groups[].group` that actually lead},
+   semiconductor: {headline: ≤ 28 chars, no period — what in the cycle is improving and what is not},
+   confirmation: {status: STRONG | PARTIAL | WEAK | DIVERGING — how well semiconductor fundamentals confirm AI prices (not STRONG while the AI engine's
+                  fundamental confirmation is WEAK), relation: "PRICE > FUNDAMENTALS" | "FUNDAMENTALS > PRICE" | "ALIGNED",
+                  read: 1–2 sentences (≤ 110 chars) — which evidence confirms and which does not},
+   equity_implication: {stance: POSITIVE | CAUTIOUS POSITIVE | NEUTRAL | CAUTIOUS | NEGATIVE, read: 1–2 sentences (≤ 110 chars) — what this means for AI / semiconductor equities; a view, never a trade order}}
 - leadership_view: one line on where leadership is and how broad
 - style_view: items {style: one of Growth|Value|Quality|Momentum|High Beta|Low Vol|Cyclical|Defensive, view: POSITIVE|IMPROVING|NEUTRAL|MIXED|NEGATIVE, read: one short line} — only styles the data speaks to
 - sector_view: {positive: [names], watch: [names], negative: [names], read: one line} — names only from `sector_names`
@@ -87,6 +98,12 @@ Field guide (structure fixed, content yours)
 _ITEM = lambda props: {"type": "object", "properties": {k: {"type": "string"} for k in props}, "required": list(props), "additionalProperties": False}  # noqa: E731
 _EQ_SIDE = {"type": "object", "properties": {"headline": {"type": "string"}, "why": {"type": "string"}, "leadership": {"type": "array", "items": {"type": "string"}}},
             "required": ["headline", "why", "leadership"], "additionalProperties": False}
+_AISEMI = {"type": "object", "properties": {
+    "headline": {"type": "string"}, "summary": {"type": "string"},
+    "ai": {"type": "object", "properties": {"headline": {"type": "string"}, "why": {"type": "string"}, "leadership": {"type": "array", "items": {"type": "string"}}},
+           "required": ["headline", "why", "leadership"], "additionalProperties": False},
+    "semiconductor": _ITEM(["headline"]), "confirmation": _ITEM(["status", "relation", "read"]), "equity_implication": _ITEM(["stance", "read"])},
+    "required": ["headline", "summary", "ai", "semiconductor", "confirmation", "equity_implication"], "additionalProperties": False}
 SCHEMA = {
     "type": "object",
     "properties": {
@@ -100,7 +117,7 @@ SCHEMA = {
         "rates_view": _ITEM(["headline", "summary", "equity_impact", "equity_impact_read"]),
         "cross_asset_view": {"type": "object", "properties": {"headline": {"type": "string"}, "summary": {"type": "string"}, "support": {"type": "array", "items": {"type": "string"}},
                                                               "risk": {"type": "array", "items": {"type": "string"}}, "read": {"type": "string"}},
-                             "required": ["headline", "summary", "support", "risk", "read"], "additionalProperties": False}, "ai_semiconductor_view": {"type": "string"}, "leadership_view": {"type": "string"},
+                             "required": ["headline", "summary", "support", "risk", "read"], "additionalProperties": False}, "ai_semiconductor_view": _AISEMI, "leadership_view": {"type": "string"},
         "style_view": {"type": "array", "items": _ITEM(["style", "view", "read"])},
         "sector_view": {"type": "object", "properties": {"positive": {"type": "array", "items": {"type": "string"}}, "watch": {"type": "array", "items": {"type": "string"}},
                                                          "negative": {"type": "array", "items": {"type": "string"}}, "read": {"type": "string"}},
@@ -121,6 +138,33 @@ STYLE_VIEWS = {"POSITIVE", "IMPROVING", "NEUTRAL", "MIXED", "NEGATIVE"}
 RISK_LEVELS = {"LOW", "MODERATE", "ELEVATED", "HIGH"}; SENS = {"HIGH", "MEDIUM", "LOW"}
 DIVERGENCE = {"US > KOREA", "KOREA > US", "US ≈ KOREA"}
 EQUITY_IMPACT = {"POSITIVE", "NEGATIVE", "MIXED", "NEUTRAL"}
+CONFIRMATION = {"STRONG", "PARTIAL", "WEAK", "DIVERGING"}
+RELATION = {"PRICE > FUNDAMENTALS", "FUNDAMENTALS > PRICE", "ALIGNED"}
+STANCE = {"POSITIVE", "CAUTIOUS POSITIVE", "NEUTRAL", "CAUTIOUS", "NEGATIVE"}
+
+# ── 반도체 사이클 증거 점수 → 4개 축 단어 (2026-11-13). 엔진이 종합 점수를 만드는 방식 그대로(증거 점수의 가중 평균, 없는 증거는 분모에서 뺀다)
+#    축 안에서만 묶어 단어로 옮긴 표시 규칙 — 프론트 semiAxes 와 같은 표. 새 판정이 아니라 기존 증거 점수 · 가중치를 읽는다.
+SEMI_AXES = (("PRICING", ("memory_pricing", "spot_premium", "contract", "premium_breadth")), ("AI MEMORY", ("hbm",)),
+             ("FUNDAMENTAL", ("export", "eps_revision", "supply_news")), ("EQUITY", ("equity",)))
+
+
+def _axis_word(x: float | None) -> str:
+    if x is None:
+        return "UNAVAILABLE"
+    return "STRONG" if x >= 50 else "IMPROVING" if x >= 15 else "WEAK" if x <= -50 else "SOFT" if x <= -15 else "MIXED"
+
+
+def semi_axes(components: Any) -> list[dict]:
+    by = {str(c.get("key")): c for c in components or []}
+    out = []
+    for axis, keys in SEMI_AXES:
+        cs = [by[k] for k in keys if k in by]
+        have = [c for c in cs if c.get("score") is not None]
+        w = sum(float(c.get("weight") or 1.0) for c in have)
+        val = sum(float(c["score"]) * float(c.get("weight") or 1.0) for c in have) / w if have and w else None
+        out.append({"axis": axis, "state": _axis_word(val), "evidence": [{"component": c.get("label"), "score": _r(c.get("score"), 0)} for c in have],
+                    "unavailable": [c.get("label") for c in cs if c.get("score") is None]})
+    return out
 
 # ── Cross-asset z → 상태 단어 (2026-11-13). 화살표와 같은 ±0.5 / ±1.5 문턱을 자산 성격에 맞는 단어로 옮긴 표시 규칙 — 프론트 caState 와 같은 표.
 #    (+강, +약, 중립, −약, −강). Credit 은 스프레드(HY OAS)라 내려가면 개선이다.
@@ -332,6 +376,7 @@ def build_context(doc: Mapping[str, Any]) -> dict:
                      "groups": [{"group": g.get("label"), "rel_5d": _r(g.get("rel_5d"), 1), "ret_21d": _r(g.get("ret_21d"), 1)} for g in ai_groups]},
         "semiconductor_cycle": {"regime": rg.get("label"), "composite": _r(rg.get("composite"), 1),
                                 "components": [{"component": c.get("label"), "score": _r(c.get("score"), 0)} for c in (rg.get("components") or [])],
+                                "axes": semi_axes(rg.get("components")),
                                 "read": (semi.get("market_read") or {}).get("read")} if semi else None,
         "news": [{"headline": c.get("headline"), "tag": c.get("tag"), "impact": c.get("impact"), "why": c.get("why")} for c in (ck.get("catalysts") or [])[:8]],
         "sector_names": sector_names,
@@ -452,6 +497,33 @@ def check(o: Mapping, ctx: Mapping) -> list[str]:
             p.append("cross_asset_view support 와 risk 에 같은 자산")
         if len(sup) > 3 or len(rk) > 3 or not 2 <= len(sup) + len(rk) <= 5 or len(set(sup + rk)) != len(sup + rk):
             p.append("cross_asset_view support · risk 는 각 0~3개, 합쳐 2~5개, 중복 없이")
+    av = o["ai_semiconductor_view"]
+    if not isinstance(av, Mapping) or not all(isinstance(av.get(k), Mapping) for k in ("ai", "semiconductor", "confirmation", "equity_implication")):
+        p.append("ai_semiconductor_view 는 객체(headline · summary · ai · semiconductor · confirmation · equity_implication)")
+    else:
+        def _hl(path: str, t: Any, mx: int) -> None:
+            t = str(t or "").strip()
+            if not t or len(t) > mx or t.endswith(".") or "\n" in t:
+                p.append(f"ai_semiconductor_view.{path} 는 {mx}자 이내 한 줄, 마침표 없이")
+
+        def _rd(path: str, t: Any, mx: int, lo: int = 1, hi: int = 2) -> None:
+            t = str(t or "").strip()
+            if not lo <= len(split_sentences(t)) <= hi or len(t) > mx:
+                p.append(f"ai_semiconductor_view.{path} 는 {lo}~{hi}문장 · {mx}자 이내")
+        _hl("headline", av.get("headline"), 40); _rd("summary", av.get("summary"), 120)
+        _hl("ai.headline", av["ai"].get("headline"), 28); _rd("ai.why", av["ai"].get("why"), 60, 1, 1); _hl("semiconductor.headline", av["semiconductor"].get("headline"), 28)
+        _rd("confirmation.read", av["confirmation"].get("read"), 110); _rd("equity_implication.read", av["equity_implication"].get("read"), 110)
+        groups = {str(g.get("group")) for g in ((ctx.get("ai_theme") or {}).get("groups") or [])}
+        ldr = av["ai"].get("leadership") or []
+        if len(ldr) > 2 or any(str(x) not in groups for x in ldr):
+            p.append("ai_semiconductor_view.ai.leadership 는 ai_theme.groups 의 이름 0~2개")
+        cst = av["confirmation"].get("status")
+        if cst not in CONFIRMATION or av["confirmation"].get("relation") not in RELATION:
+            p.append("ai_semiconductor_view.confirmation status/relation 값")
+        if cst == "STRONG" and str((ctx.get("ai_theme") or {}).get("fundamental_confirmation") or "").upper() == "WEAK":
+            p.append("ai_semiconductor_view.confirmation.status — AI 엔진의 펀더멘털 확인이 WEAK 인데 STRONG 으로 쓸 수 없다")
+        if av["equity_implication"].get("stance") not in STANCE:
+            p.append(f"ai_semiconductor_view.equity_implication.stance 는 {sorted(STANCE)} 중 하나")
     allowed = [str(x).lower() for x in ctx.get("sector_names") or []]
     for bucket in ("positive", "watch", "negative"):
         for nm in o["sector_view"].get(bucket) or []:
@@ -539,6 +611,7 @@ def fingerprint(ctx: Mapping) -> str:
            "semi": ((ctx.get("semiconductor_cycle") or {}) or {}).get("regime"),
            "eq": {m: [t.get("trend"), t.get("breadth"), t.get("confirmation")] for m, t in (ctx.get("equity_terms") or {}).items()},
            "ca": [(r.get("asset"), r.get("state")) for r in (ctx.get("cross_asset") or [])],
+           "sx": [(a.get("axis"), a.get("state")) for a in ((ctx.get("semiconductor_cycle") or {}).get("axes") or [])], "aif": (ctx.get("ai_theme") or {}).get("fundamental_confirmation"),
            "rt": [(ctx.get("rates") or {}).get("real_yield_direction"), (ctx.get("rates") or {}).get("breakeven_direction"), (ctx.get("rates") or {}).get("curve_shape")], "next": [(u.get("date"), u.get("event")) for u in (ctx.get("upcoming_events") or [])][:2],
            "big": sorted((k.get("label"), 1 if (k.get("z") or 0) > 0 else -1) for k in (ctx.get("key_variables") or []) if abs(k.get("z") or 0) >= 2)}
     return hashlib.sha256(json.dumps(key, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]

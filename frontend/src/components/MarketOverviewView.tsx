@@ -1,4 +1,4 @@
-import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoCrossView, MoEquitySide, MoRatesView, OilRegime, RatesRegime, RsSignal } from "../api/types";
+import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoAiSemiView, MoCrossView, MoEquitySide, MoRatesView, OilRegime, RatesRegime, RsSignal } from "../api/types";
 import type { SemiconductorCycle } from "../api/semiconductor";
 import { KEY_COLOR, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
@@ -281,6 +281,99 @@ function CrossBlock({ rows, oil, cv }: { rows: CaRow[]; oil: OilRegime | null; c
   );
 }
 
+/**
+ * 반도체 사이클 증거 점수 → 4개 축 단어(Meaning > Score). 엔진이 종합 점수를 만드는 방식 그대로(가중 평균, 없는 증거는 분모에서 뺀다) 축 안에서만 묶는다 —
+ * 백엔드 SEMI_AXES · semi_axes 와 같은 표(LLM 이 같은 단어를 본다). 새 판정이 아니라 기존 증거 점수 · 가중치를 읽는 표시 규칙.
+ */
+const SEMI_AXES: [string, string[]][] = [["PRICING", ["memory_pricing", "spot_premium", "contract", "premium_breadth"]], ["AI MEMORY", ["hbm"]],
+  ["FUNDAMENTAL", ["export", "eps_revision", "supply_news"]], ["EQUITY", ["equity"]]];
+const SEMI_SHORT: Record<string, string> = { memory_pricing: "Memory", spot_premium: "Spot", contract: "Contract", premium_breadth: "Breadth", hbm: "HBM", export: "Export", eps_revision: "EPS", supply_news: "Supply", equity: "Equity" };
+const axisWord = (x: number | null) => x === null ? "UNAVAILABLE" : x >= 50 ? "STRONG" : x >= 15 ? "IMPROVING" : x <= -50 ? "WEAK" : x <= -15 ? "SOFT" : "MIXED";
+export function semiAxes(components: SemiconductorCycle["regime"]["components"]): { axis: string; state: string; sub: string; missing: string }[] {
+  return SEMI_AXES.map(([axis, keys]) => {
+    const cs = keys.map((k) => components.find((c) => c.key === k)).filter((c): c is NonNullable<typeof c> => !!c);
+    const have = cs.filter((c) => c.score !== null);
+    const w = have.reduce((p, c) => p + (c.weight ?? 1), 0);
+    const val = have.length && w ? have.reduce((p, c) => p + (c.score as number) * (c.weight ?? 1), 0) / w : null;
+    return { axis, state: axisWord(val), sub: [...have].sort((x, y) => (y.score as number) - (x.score as number)).map((c) => `${SEMI_SHORT[c.key] ?? c.label} ${sg(c.score, 0)}`).join(" · "),
+             missing: cs.filter((c) => c.score === null).map((c) => SEMI_SHORT[c.key] ?? c.label).join(" · ") };
+  });
+}
+/** AI 그룹 이름의 화면용 짧은 표기(값 · 이름 자체는 그대로 — LEADERSHIP 한 줄에 들어가게만) */
+const AI_GROUP_SHORT: Record<string, string> = { "Semiconductors / Compute": "Compute Semis", "Networking / Infrastructure": "Networking", "Power / Data Center": "Power · DC", "Software / Application": "Software", "Korea AI Supply Chain": "Korea AI" };
+const WORD_TONE: Record<string, string> = { STRONG: "var(--ok)", IMPROVING: "var(--ok)", WIDENING: "var(--ok)", MIXED: "var(--warn)", SOFT: "var(--warn)", NARROWING: "var(--warn)", WEAK: "var(--crit)", UNAVAILABLE: "var(--faint)" };
+const CONF_TONE: Record<string, string> = { STRONG: "var(--ok)", PARTIAL: "var(--warn)", WEAK: "var(--crit)", DIVERGING: "var(--crit)" };
+const STANCE_TONE: Record<string, string> = { POSITIVE: "var(--ok)", "CAUTIOUS POSITIVE": "var(--ok)", NEUTRAL: "var(--muted)", CAUTIOUS: "var(--warn)", NEGATIVE: "var(--crit)" };
+const RELATION_KO: Record<string, string> = { "PRICE > FUNDAMENTALS": "가격이 펀더멘털보다 앞섬", "FUNDAMENTALS > PRICE": "펀더멘털 대비 주가가 뒤처짐", ALIGNED: "가격과 펀더멘털이 같은 방향" };
+
+/** AI & SEMICONDUCTOR — INTEGRATED VIEW(LLM) → AI THEME 4줄 | SEMICONDUCTOR 4축 → AI ↔ SEMICONDUCTOR 확인 → EQUITY IMPLICATION. 전체 점수표는 DETAIL → */
+function AiSemiBlock({ ai, semi, av, onDetail }: { ai: AiRegime | null; semi: SemiconductorCycle | null; av: MoAiSemiView | string | undefined; onDetail?: (t: DetailTarget) => void }) {
+  const obj = av && typeof av === "object" ? av : null;
+  const legacy = typeof av === "string" ? av : null;
+  const st = (k: string) => ai?.status_strip.find((x) => x.key === k) ?? null;
+  const price = st("price"); const rel = st("relative"); const breadth = st("breadth"); const fund = st("fundamental");
+  const strong = (["infra", "software"] as const).map(st).filter((x): x is NonNullable<typeof x> => !!x && x.tone === "good").map((x) => x.label);
+  const lead = obj ? obj.ai.leadership : null;
+  const axes = semi ? semiAxes(semi.regime.components) : [];
+  const row = (k: string, v: React.ReactNode, sub: React.ReactNode, color?: string, muted?: boolean) => (
+    <div key={k} className={`mo-eqc-r${muted ? " muted" : ""}`} data-k={k} data-testid="mo-as-row"><span className="mo-k mono">{k}</span><b className="mono" style={color ? { color } : undefined}>{v}</b>{sub ? <small className="mono">{sub}</small> : null}</div>
+  );
+  const chip = (k: string, v: string | null | undefined, color?: string) => <span className="mo-as-chip"><i>{k}</i> <b style={color ? { color } : undefined}>{v ?? "–"}</b></span>;
+  return (
+    <div className="mo-syn" data-testid="mo-aisemi-block">
+      <div className="mo-as-top" data-testid="mo-as-integrated">
+        <span className="mo-k mono">INTEGRATED VIEW</span>
+        <div className="mo-as-strip mono" data-testid="mo-as-strip">
+          {chip("AI PRICE", price?.value)}<span className="mo-rs-ar" aria-hidden="true">→</span>{chip("SEMICONDUCTOR", semi?.regime.label)}<span className="mo-rs-ar" aria-hidden="true">→</span>
+          {obj ? chip("CONFIRMATION", obj.confirmation.status, CONF_TONE[obj.confirmation.status]) : chip("FUNDAMENTALS", fund?.value, fund ? WORD_TONE[fund.value] : undefined)}
+        </div>
+        {obj ? <h3 className="mo-hl" data-testid="mo-as-headline">{obj.headline}</h3> : null}
+        {obj ? <p className="mo-sum" data-testid="mo-as-summary">{obj.summary}</p> : null}
+      </div>
+      <div className="mo-eqc mo-as-cols">
+        <div className="mo-eqc-col" data-testid="mo-ai">
+          <div className="mo-eqc-head"><span><b className="mono">AI THEME</b>{ai ? <span className="mo-kick mono" data-testid="mo-ai-regime"> · {ai.regime_label}</span> : null}</span>
+            {onDetail ? <button type="button" className="mo-detail mono" onClick={() => onDetail("ai")}>DETAIL →</button> : null}</div>
+          {ai ? (
+            <>
+              {obj ? <p className="mo-eqc-h" data-testid="mo-ai-headline">{obj.ai.headline}</p> : <span />}
+              {obj ? <p className="mo-eqc-why" data-testid="mo-ai-why"><span className="mo-k mono">WHY</span> {obj.ai.why}</p> : <span />}
+              {row("TREND", price?.value ?? "–", rel ? `vs Nasdaq ${rel.value}` : null, undefined, !price)}
+              {row("LEADERSHIP", lead && lead.length ? lead.map((n) => AI_GROUP_SHORT[n] ?? n).join(" + ") : strong.length ? strong.join(" + ") : "–", null, "var(--ink)", !(lead && lead.length) && !strong.length)}
+              {row("BREADTH", breadth?.value ?? "–", null, breadth ? WORD_TONE[breadth.value] : undefined, !breadth)}
+              {row("FUNDAMENTALS", fund?.value ?? "–", null, fund ? WORD_TONE[fund.value] : undefined, !fund)}
+            </>
+          ) : <Excluded what="AI 센티" />}
+        </div>
+        <div className="mo-eqc-col" data-testid="mo-semi">
+          <div className="mo-eqc-head"><span><b className="mono">SEMICONDUCTOR</b>{semi ? <span className="mo-kick mono" data-testid="mo-semi-regime"> · {semi.regime.label}{semi.regime.composite !== null ? ` ${sg(semi.regime.composite)}` : ""}</span> : null}</span>
+            {onDetail ? <button type="button" className="mo-detail mono" onClick={() => onDetail("semi")}>DETAIL →</button> : null}</div>
+          {semi ? (
+            <>
+              {obj ? <p className="mo-eqc-h" data-testid="mo-semi-headline">{obj.semiconductor.headline}</p> : <span />}
+              <span />
+              {axes.map((a) => row(a.axis, a.state === "UNAVAILABLE" ? "Unavailable" : a.state, [a.sub, a.missing ? `${a.missing} 없음` : ""].filter(Boolean).join(" · ") || null, WORD_TONE[a.state], a.state === "UNAVAILABLE"))}
+            </>
+          ) : <Excluded what="반도체 사이클" />}
+        </div>
+      </div>
+      {obj ? (
+        <>
+          <div className="mo-impact" style={{ borderColor: CONF_TONE[obj.confirmation.status] }} data-testid="mo-as-confirmation">
+            <div className="mo-impact-h"><span className="mo-k mono">AI ↔ SEMICONDUCTOR</span><b className="mono" style={{ color: CONF_TONE[obj.confirmation.status] }}>{obj.confirmation.status} CONFIRMATION</b>
+              <small className="mono" title={RELATION_KO[obj.confirmation.relation]}>{obj.confirmation.relation}</small></div>
+            <p>{obj.confirmation.read}</p>
+          </div>
+          <div className="mo-impact" style={{ borderColor: STANCE_TONE[obj.equity_implication.stance] }} data-testid="mo-as-implication">
+            <div className="mo-impact-h"><span className="mo-k mono">EQUITY IMPLICATION</span><b className="mono" style={{ color: STANCE_TONE[obj.equity_implication.stance] }}>{obj.equity_implication.stance}</b></div>
+            <p>{obj.equity_implication.read}</p>
+          </div>
+        </>
+      ) : <Read k="AI ↔ SEMICONDUCTOR READ" t={legacy} testid="mo-aisemi-read" />}
+    </div>
+  );
+}
+
 export function MarketOverviewView({ cockpit: c, overview, overviewError, rates, oil, ai, semi, onDetail, archived }: {
   cockpit: Cockpit | null; overview: MarketOverview | null; overviewError?: string | null; rates: RatesRegime | null; oil: OilRegime | null; ai: AiRegime | null;
   semi: SemiconductorCycle | null; onDetail?: (t: DetailTarget) => void; archived?: boolean;
@@ -359,33 +452,9 @@ export function MarketOverviewView({ cockpit: c, overview, overviewError, rates,
         <CrossBlock rows={caRows} oil={oil} cv={v?.cross_asset_view} />
       </Sec>
 
-      {/* 7. AI & SEMICONDUCTOR CYCLE — 두 엔진을 나란히, 아래에 연결 해석 */}
+      {/* 7. AI & SEMICONDUCTOR CYCLE — 통합 판단 → AI 주가 → 반도체 업황 → 서로 확인되는가 → 주식 의미 */}
       <Sec n={7} title="AI & Semiconductor Cycle" area="aisemi" testid="mo-aisemi">
-        <div className="mo-eq">
-          <div className="mo-eq-col" data-testid="mo-ai">
-            <div className="mo-eq-head"><b className="mono">AI THEME</b>{onDetail ? <button type="button" className="mo-detail mono" onClick={() => onDetail("ai")}>DETAIL →</button> : null}</div>
-            {ai ? (
-              <>
-                <div className="mo-big mono">{ai.regime_label}</div>
-                <table className="mo-tbl mono"><tbody>
-                  {ai.status_strip.filter((x) => /Relative|Price|Breadth|Fundamental|Infra|Software/i.test(x.label)).map((x) => <tr key={x.key}><td>{x.label}</td><td>{x.value}</td></tr>)}
-                </tbody></table>
-              </>
-            ) : <Excluded what="AI 센티" />}
-          </div>
-          <div className="mo-eq-col" data-testid="mo-semi">
-            <div className="mo-eq-head"><b className="mono">SEMICONDUCTOR CYCLE</b>{onDetail ? <button type="button" className="mo-detail mono" onClick={() => onDetail("semi")}>DETAIL →</button> : null}</div>
-            {semi ? (
-              <>
-                <div className="mo-big mono">{semi.regime.label}{semi.regime.composite !== null ? <small> {sg(semi.regime.composite)}</small> : null}</div>
-                <table className="mo-tbl mono"><tbody>
-                  {semi.regime.components.map((x) => <tr key={x.key} className={x.score === null ? "ex" : ""}><td>{x.label}</td><td className="num">{x.score === null ? "EXCLUDED" : sg(x.score, 0)}</td></tr>)}
-                </tbody></table>
-              </>
-            ) : <Excluded what="반도체 사이클" />}
-          </div>
-        </div>
-        <Read k="AI ↔ SEMICONDUCTOR READ" t={v?.ai_semiconductor_view} testid="mo-aisemi-read" />
+        <AiSemiBlock ai={ai} semi={semi} av={v?.ai_semiconductor_view} onDetail={onDetail} />
       </Sec>
 
       {/* 8. MARKET LEADERSHIP */}

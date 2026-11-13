@@ -82,7 +82,30 @@
   ],
   "read": "신용과 변동성이 받쳐 주어 위험 회피 확산은 제한적이며, 지금의 압력은 전면 Risk-Off보다 할인율 재평가 성격에 가깝습니다."
  },
- "ai_semiconductor_view": "AI 주가는 주간 상대강도가 크게 확대됐지만 반도체·인프라 펀더멘털은 이를 확인하지 못해 가격이 업황보다 앞서 있습니다. 반도체 사이클은 HBM·계약가가 버티고 범용 DRAM 약세는 주력 제품으로 번지는 속도가 늦춰졌지만, 메모리 주가는 한 달 기준으로 여전히 약합니다.",
+ "ai_semiconductor_view": {
+  "headline": "AI 주가는 강하지만 반도체 확인은 절반만",
+  "summary": "AI 가격과 상대강도는 강하지만 반도체 쪽은 HBM·계약가·수출만 받쳐 주고 현물과 반도체 주가는 따라오지 못합니다.",
+  "ai": {
+   "headline": "가격 강세 유지, 펀더멘털 확인은 약함",
+   "why": "가격과 상대강도는 강하지만 펀더멘털 확인이 약합니다.",
+   "leadership": [
+    "Semiconductors / Compute",
+    "Networking / Infrastructure"
+   ]
+  },
+  "semiconductor": {
+   "headline": "HBM·계약가·수출은 견조, 주가는 부진"
+  },
+  "confirmation": {
+   "status": "PARTIAL",
+   "relation": "PRICE > FUNDAMENTALS",
+   "read": "HBM·계약가·수출은 AI 강세를 뒷받침하지만 범용 현물 약세와 메모리 주가 부진이 남아 가격이 업황보다 앞서 있습니다."
+  },
+  "equity_implication": {
+   "stance": "CAUTIOUS POSITIVE",
+   "read": "AI 리더십은 유지되지만 반도체 주가와 현물 가격이 함께 돌아서기 전에는 강세의 지속성을 낮게 보는 편이 맞습니다."
+  }
+ },
  "leadership_view": "1주 상대강도 기준으로 뚜렷한 리더 테마가 없고 반도체·AI도 하루 기준 제자리라, 시장 내부 주도권은 비어 있는 상태다",
  "style_view": [
   {

@@ -132,3 +132,28 @@ def test_rates_and_cross_asset_view_structure_checked():
     assert any("같은 자산" in p for p in MO.check(bad, c))
     bad = json.loads(json.dumps(SESSION)); bad["cross_asset_view"]["support"] = []; bad["cross_asset_view"]["risk"] = ["Rates"]
     assert any("합쳐 2~5개" in p for p in MO.check(bad, c))
+
+
+def test_semi_axes_from_existing_component_scores():
+    """AI & SEMICONDUCTOR 재구성(2026-11-13) — 증거 점수 · 가중치를 축 안에서만 묶어 단어로. 없는 증거는 분모에서 빼고 따로 알린다."""
+    ax = {a["axis"]: a for a in MO.build_context(DOC)["semiconductor_cycle"]["axes"]}
+    assert [ax[k]["state"] for k in ("PRICING", "AI MEMORY", "FUNDAMENTAL", "EQUITY")] == ["IMPROVING", "STRONG", "STRONG", "WEAK"]
+    assert ax["FUNDAMENTAL"]["unavailable"] == ["EPS Revision", "Supply / Inventory News"]
+    assert MO.semi_axes([{"key": "hbm", "label": "HBM", "score": None, "weight": 0.6}])[1]["state"] == "UNAVAILABLE"
+    assert MO._axis_word(-20) == "SOFT" and MO._axis_word(0) == "MIXED"
+
+
+def test_ai_semiconductor_view_structure_checked():
+    c = MO.build_context(DOC)
+    v = SESSION["ai_semiconductor_view"]
+    assert v["confirmation"]["status"] in MO.CONFIRMATION and v["equity_implication"]["stance"] in MO.STANCE
+    bad = json.loads(json.dumps(SESSION)); bad["ai_semiconductor_view"] = "AI 주가는 강하지만 반도체는 확인하지 못한다"
+    assert any("객체" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["ai_semiconductor_view"]["confirmation"]["status"] = "STRONG"
+    assert any("WEAK 인데 STRONG" in p for p in MO.check(bad, c))  # AI 엔진의 펀더멘털 확인(WEAK)을 뒤집지 못한다
+    bad = json.loads(json.dumps(SESSION)); bad["ai_semiconductor_view"]["ai"]["leadership"] = ["Quantum"]
+    assert any("ai.leadership" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["ai_semiconductor_view"]["equity_implication"]["stance"] = "BUY"
+    assert any("stance" in p or "금지어" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["ai_semiconductor_view"]["confirmation"]["relation"] = "PRICE LEADS"
+    assert any("status/relation" in p for p in MO.check(bad, c))

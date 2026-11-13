@@ -766,3 +766,23 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 11/13: 세션본을 새 형식으로 쓰고 archive correct 2회(구조 변경, 문장 길이 조정 — 이전본 `superseded/2026-11-13.20261113T011432Z.json` · `…T011813Z.json`). 바뀐 것은 rates_view · cross_asset_view · meta 뿐.
   금리 "Fed 재평가로 실질금리 상승, 성장주에 부담"(NEGATIVE), cross-asset "금리·달러 상승에도 신용·변동성은 안정"(SUPPORT Credit · Volatility · Equity / RISK Rates · USD).
   11/12 이전 저장본: 금리는 판정을 크게 + 예전 한 줄을 EQUITY IMPACT 로, cross-asset 은 자산을 역할별(RISK ASSETS · RATES · VOLATILITY · MACRO ASSETS)로 묶고 예전 문장을 READ 로 — 다시 만들지 않았다.
+
+### 2026-11-13 — MARKET OVERVIEW · AI & SEMICONDUCTOR CYCLE 재구성 (AI 주가 → 반도체 업황 → 서로 확인되는가 → 주식 의미)
+- 요청: AI 점수표 + 반도체 점수표 나열 대신 "AI 테마 주가는 강한데 반도체 펀더멘털이 따라오는가" 를 한눈에. 원천 데이터 · 계산은 그대로.
+- 화면(`AiSemiBlock`): INTEGRATED VIEW(상태 한 줄 `AI PRICE STRONG → SEMICONDUCTOR UPSWING → CONFIRMATION PARTIAL` + LLM headline · 요약) →
+  AI THEME | SEMICONDUCTOR(데스크톱 50/50, 모바일 세로) → AI ↔ SEMICONDUCTOR 확인(상태 배지 + PRICE > FUNDAMENTALS 등 관계 + 1~2문장) → EQUITY IMPLICATION.
+  - AI THEME 4줄: TREND(Price, 보조 `vs Nasdaq` 상대강도) · LEADERSHIP(LLM 이 ai_theme.groups 에서 고른 0~2개, 없으면 AI 엔진의 Infra/Software 강세) · BREADTH · FUNDAMENTALS — 모두 AI 센티 탭 status 값 그대로.
+    내부 regime label(LEADERSHIP NARROWING)은 제목 옆 작은 글씨, headline 은 LLM.
+  - SEMICONDUCTOR 4축: PRICING(Memory · Spot · Contract · Breadth) · AI MEMORY(HBM) · FUNDAMENTAL(Export · EPS · Supply) · EQUITY — 엔진이 종합 점수를 만드는 방식 그대로
+    (증거 점수의 가중 평균, 없는 증거는 분모에서 뺌) 축 안에서만 묶어 STRONG ≥50 · IMPROVING ≥15 · MIXED · SOFT ≤−15 · WEAK ≤−50 단어로. 점수는 작은 보조 글씨(모바일 숨김),
+    없는 증거(EPS · Supply)는 "없음" 으로 작게 — EXCLUDED 를 신호처럼 쓰지 않는다. UPSWING +36.6 은 제목 옆 작은 글씨.
+  - 점수표 2개는 없앴다(DETAIL → AI 센티 · 반도체 사이클 탭에 그대로).
+- LLM(`marketpulse/ai/market_overview.py`): ai_semiconductor_view = {headline, summary, ai{headline, why, leadership[]}, semiconductor{headline},
+  confirmation{status, relation, read}, equity_implication{stance, read}}. 두 엔진을 함께 읽고 관계를 그날 데이터로 판단(고정 문구 없음).
+  검증: 길이 · 문장 수 · 값 집합 · leadership 이름 · AI 엔진의 펀더멘털 확인이 WEAK 이면 status 를 STRONG 으로 쓸 수 없다. 컨텍스트에 `semiconductor_cycle.axes` 추가, LIVE 지문에 축 단어 · AI 펀더멘털 확인 추가.
+  축 표는 백엔드 `SEMI_AXES · semi_axes` 와 프론트 `semiAxes` 가 같다(양쪽 테스트가 같은 11/13 사례를 본다).
+- 높이(11/13): 모바일 655 → 636px, 데스크톱 396 → 486px. 요청한 −35~45% 에는 못 미쳤다 — 통합 판단 · 확인 · 주식 의미 3개 영역이 새로 들어갔기 때문.
+  모바일은 4개 항목을 2×2 로 접고 점수 보조 줄 · WHY 를 숨겨 처음 구현(897px)에서 줄인 값이다.
+- 11/13: 세션본 ai_semiconductor_view 를 새 형식으로 써서 archive correct(이전본 `superseded/2026-11-13.20261113T020110Z.json`, 바뀐 것은 그 필드와 meta 뿐).
+  "AI 주가는 강하지만 반도체 확인은 절반만" · PARTIAL · PRICE > FUNDAMENTALS · CAUTIOUS POSITIVE. 11/12 이전 저장본은 다시 만들지 않았다 —
+  축 단어 · 엔진 판정은 그 날짜 데이터로 보이고, 예전 문장은 AI ↔ SEMICONDUCTOR READ 로, 확인 자리는 AI 엔진의 FUNDAMENTALS 값.

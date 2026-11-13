@@ -3046,3 +3046,21 @@
 .mo-m4 { gap: 6px 16px; margin: 4px 0 0; } .mo-m4-i { display: block; } .mo-m4-i .mo-k { display: block; } .mo-m4-i small { margin-left: 6px; }
 .mo-sr { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; } .mo-sr-r { grid-template-columns: 64px minmax(0, 1fr) auto; column-gap: 6px; }
 @media (max-width: 479px) { .mo-sr-r small { display: none; } .mo-hl { font-size: 15.5px; } }
+
+/* MARKET OVERVIEW · AI & SEMICONDUCTOR 재구성(2026-11-13) — 통합 판단 → AI | 반도체(각 4줄) → 확인 → 주식 의미 */
+.mo-as-top { display: grid; gap: 5px; }
+.mo-as-strip { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 11px; }
+.mo-as-chip i { font-style: normal; color: var(--muted); font-size: 10px; letter-spacing: .05em; } .mo-as-chip b { font-size: 12px; font-weight: 700; color: var(--ink); }
+.mo-as-cols { margin-top: 4px; } .mo-as-cols .mo-eqc-col { padding: 8px 0; }
+.mo-as-cols .mo-eqc-r { grid-template-columns: 96px minmax(0, 1fr); }
+.mo-impact-h small { font-size: 10px; color: var(--muted); letter-spacing: .04em; }
+@media (max-width: 699px) { .mo-as-cols .mo-eqc-r small { grid-column: 2; } .mo-as-cols .mo-eqc-r[data-k="TREND"] small { display: block; } }
+.mo-eqc-head .mo-kick { font-weight: 400; } .mo-impact-h { flex-wrap: wrap; row-gap: 0; } .mo-impact-h > * { white-space: nowrap; }
+/* 모바일: 4개 항목을 2×2 로(LEADERSHIP 은 한 줄 전체), 점수 보조 줄 · WHY 는 넓은 화면에서만 */
+@media (max-width: 699px) {
+  .mo-as-cols .mo-eqc-col { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 12px; row-gap: 4px; }
+  .mo-as-cols .mo-eqc-col > :not(.mo-eqc-r) { grid-column: 1 / -1; } .mo-as-cols .mo-eqc-col > span:empty, .mo-as-cols .mo-eqc-why { display: none; }
+  .mo-as-cols .mo-eqc-r { grid-template-columns: auto minmax(0, 1fr); column-gap: 6px; } .mo-as-cols .mo-eqc-r small { display: none !important; }
+  .mo-as-cols .mo-eqc-r[data-k="LEADERSHIP"] { grid-column: 1 / -1; order: 9; }
+}
+@media (min-width: 700px) { .mo-as-cols .mo-eqc-r { grid-template-columns: 96px auto minmax(0, 1fr); column-gap: 10px; } .mo-as-cols .mo-eqc-r small { grid-column: 3; } }

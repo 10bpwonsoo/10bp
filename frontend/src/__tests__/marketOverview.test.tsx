@@ -6,9 +6,11 @@ import aiFx from "../__fixtures__/ai_regime.json";
 import moFx from "../__fixtures__/market_overview.json";
 import rrFx from "../__fixtures__/rates_regime.json";
 import oilFx from "../__fixtures__/oil_regime.json";
+import semiFx from "../__fixtures__/semiconductor_cycle.json";
+import type { SemiconductorCycle } from "../api/semiconductor";
 import neFx from "../__fixtures__/neutral_equity_1113.json";
 import type { AiRegime, CkRegimeState, Cockpit, MarketOverview, OilRegime, RatesRegime, RsSignal } from "../api/types";
-import { MarketOverviewView, caState, eqTerms } from "../components/MarketOverviewView";
+import { MarketOverviewView, caState, eqTerms, semiAxes } from "../components/MarketOverviewView";
 
 const cockpit = ckFx as unknown as Cockpit;
 const ai = aiFx as unknown as AiRegime;
@@ -193,5 +195,54 @@ describe("RATES & INFLATION · CROSS-ASSET — 판단 → 원인 → 핵심 데�
     expect(screen.queryByTestId("mo-cross-headline")).toBeNull();
     expect(screen.getByTestId("mo-cross-rows").textContent).toMatch(/RISK ASSETS.*RATES.*VOLATILITY.*MACRO ASSETS/);
     expect(screen.getByTestId("mo-cross-read").textContent).toContain("교차자산 한 줄");
+  });
+});
+
+describe("AI & SEMICONDUCTOR — 통합 판단 → AI | 반도체 → 확인 → 주식 의미", () => {
+  const comp = [["memory_pricing", "Memory Pricing", -8, 1], ["spot_premium", "Spot Premium", 87.5, 0.8], ["contract", "Contract Price", 53.3, 0.8], ["premium_breadth", "Breadth", 0, 0.5], ["hbm", "HBM", 100, 0.6],
+    ["export", "Export Nowcast", 68.8, 1], ["eps_revision", "EPS Revision", null, 0.8], ["equity", "Equity", -66.1, 0.6], ["supply_news", "Supply / Inventory News", null, 0.4]]
+    .map(([key, label, score, weight]) => ({ key, label, score, weight, tone: "neutral" }));
+  const base = semiFx as unknown as SemiconductorCycle;
+  const semi = { ...base, regime: { ...base.regime, label: "UPSWING", composite: 36.6, components: comp } } as unknown as SemiconductorCycle;
+  const strip = [["price", "Price", "STRONG", "good"], ["relative", "AI Relative Strength", "STRONG", "good"], ["infra", "AI Infra", "STRONG", "good"], ["software", "Software", "STRONG", "good"],
+    ["breadth", "Breadth", "WIDENING", "good"], ["fundamental", "Fundamental Confirmation", "WEAK", "bad"]].map(([key, label, value, tone]) => ({ key, label, value, tone, detail: "", meaning: "" }));
+  const ai2 = { ...ai, regime_label: "LEADERSHIP NARROWING", status_strip: strip } as unknown as AiRegime;
+  const av = mo.view!.ai_semiconductor_view as Exclude<MarketOverview["view"], null>["ai_semiconductor_view"] & object;
+
+  it("증거 점수 → 4개 축 단어(백엔드 semi_axes 와 같은 표), 없는 증거는 축을 만들지 않고 작게", () => {
+    const ax = semiAxes(semi.regime.components);
+    expect(ax.map((a) => [a.axis, a.state])).toEqual([["PRICING", "IMPROVING"], ["AI MEMORY", "STRONG"], ["FUNDAMENTAL", "STRONG"], ["EQUITY", "WEAK"]]);
+    expect(ax[0]!.sub).toBe("Spot +88 · Contract +53 · Breadth +0 · Memory -8");
+    expect(ax[2]!.missing).toBe("EPS · Supply");
+  });
+
+  it("INTEGRATED VIEW 가 맨 위 — 상태 한 줄(AI PRICE → SEMICONDUCTOR → CONFIRMATION) · headline, 각 4줄, 확인 · 주식 의미가 아래", () => {
+    const { container } = render(<MarketOverviewView cockpit={cockpit} overview={mo} rates={null} oil={null} ai={ai2} semi={semi} />);
+    if (typeof av !== "object") throw new Error("fixture");
+    expect(screen.getByTestId("mo-as-strip").textContent).toMatch(/AI PRICE STRONG.*SEMICONDUCTOR UPSWING.*CONFIRMATION PARTIAL/);
+    expect(screen.getByTestId("mo-as-headline").textContent).toBe(av.headline);
+    expect(screen.getByTestId("mo-ai-regime").className).toContain("mo-kick"); // 내부 regime label 은 작은 보조 줄
+    expect(screen.getByTestId("mo-ai-headline").textContent).toBe(av.ai.headline);
+    expect(screen.getByTestId("mo-semi-regime").textContent).toBe(" · UPSWING +36.6");
+    expect(screen.getByTestId("mo-semi-headline").textContent).toBe(av.semiconductor.headline);
+    expect(within(screen.getByTestId("mo-ai")).getAllByTestId("mo-as-row").map((r) => r.getAttribute("data-k"))).toEqual(["TREND", "LEADERSHIP", "BREADTH", "FUNDAMENTALS"]);
+    expect(within(screen.getByTestId("mo-semi")).getAllByTestId("mo-as-row").map((r) => r.getAttribute("data-k"))).toEqual(["PRICING", "AI MEMORY", "FUNDAMENTAL", "EQUITY"]);
+    expect(screen.getByTestId("mo-ai").textContent).toMatch(/LEADERSHIPCompute Semis \+ Networking/); // 이름은 화면용 짧은 표기
+    expect(screen.getByTestId("mo-as-confirmation").textContent).toMatch(/AI ↔ SEMICONDUCTORPARTIAL CONFIRMATIONPRICE > FUNDAMENTALS/);
+    expect(screen.getByTestId("mo-as-implication").textContent).toContain(av.equity_implication.read);
+    const box = screen.getByTestId("mo-aisemi");
+    expect(box.textContent).not.toMatch(/EXCLUDED/);
+    expect(container.querySelectorAll("[data-testid='mo-aisemi'] table")).toHaveLength(0);
+    const ids = ["mo-as-integrated", "mo-ai", "mo-semi", "mo-as-confirmation", "mo-as-implication"].map((id) => box.querySelector(`[data-testid='${id}']`)!);
+    for (let i = 1; i < ids.length; i++) expect(ids[i - 1]!.compareDocumentPosition(ids[i]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("예전 저장본(한 줄 문자열) — 축 단어와 엔진 판정은 그대로, 문장은 READ 로, 확인 자리는 AI 엔진의 FUNDAMENTALS", () => {
+    const old = { ...mo, view: { ...mo.view!, ai_semiconductor_view: "AI·반도체 한 줄" } } as MarketOverview;
+    render(<MarketOverviewView cockpit={cockpit} overview={old} rates={null} oil={null} ai={ai2} semi={semi} />);
+    expect(screen.queryByTestId("mo-as-headline")).toBeNull();
+    expect(screen.getByTestId("mo-as-strip").textContent).toMatch(/FUNDAMENTALS WEAK/);
+    expect(screen.getByTestId("mo-ai").textContent).toMatch(/LEADERSHIPAI Infra \+ Software/);
+    expect(screen.getByTestId("mo-aisemi-read").textContent).toContain("AI·반도체 한 줄");
   });
 });

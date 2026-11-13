@@ -785,6 +785,10 @@ export interface CkRegimeState {
 /** MARKET OVERVIEW (2026-11-12) — 기존 탭 결과를 읽은 LLM 시장 종합. 필드 구조만 고정. status 'unavailable' 이면 view 없음 */
 export interface MoRatesView { headline: string; summary: string; equity_impact: "POSITIVE" | "NEGATIVE" | "MIXED" | "NEUTRAL"; equity_impact_read: string }
 export interface MoCrossView { headline: string; summary: string; support: string[]; risk: string[]; read: string }
+export interface MoAiSemiView {
+  headline: string; summary: string; ai: { headline: string; why: string; leadership: string[] }; semiconductor: { headline: string };
+  confirmation: { status: "STRONG" | "PARTIAL" | "WEAK" | "DIVERGING"; relation: string; read: string }; equity_implication: { stance: string; read: string };
+}
 export interface MoEquitySide { headline: string; why: string; leadership: string[] }
 export interface MoDriver { name: string; direction: "POSITIVE" | "NEGATIVE" | "MIXED"; strength: "STRONG" | "MODERATE" | "WEAK"; read: string }
 export interface MoStyle { style: string; view: "POSITIVE" | "IMPROVING" | "NEUTRAL" | "MIXED" | "NEGATIVE"; read: string }
@@ -796,7 +800,7 @@ export interface MarketOverviewView {
   /** 2026-11-13~ : global_read + 시장별 {headline, why, leadership}. 그 이전 저장본은 us · korea 가 한 줄 문자열 */
   equity_view: { global_read?: string; us: MoEquitySide | string; korea: MoEquitySide | string; divergence_label: string; divergence: string }; 
   /** 2026-11-13~ : 객체(headline · summary …). 그 이전 저장본은 한 줄 문자열 */
-  rates_view: MoRatesView | string; cross_asset_view: MoCrossView | string; ai_semiconductor_view: string;
+  rates_view: MoRatesView | string; cross_asset_view: MoCrossView | string; ai_semiconductor_view: MoAiSemiView | string;
   leadership_view: string; style_view: MoStyle[]; sector_view: { positive: string[]; watch: string[]; negative: string[]; read: string }; top_risks: MoRisk[];
   catalysts: MoCatalyst[]; what_matters_next: MoNext[]; portfolio_implication: { equity_stance: string; style: string; sector: string; risk_control: string; hedge_watch: string };
 }

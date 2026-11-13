@@ -36,7 +36,9 @@
    MARKET OVERVIEW(시장 종합 탭): `market_overview_context.json` 만 읽고 `market_overview_session.json`(headline · market_view · labels · state_summary · regime_read · key_drivers ·
    equity_view{global_read 2~3문장 · us/korea{headline ≤28자 · why 한 문장(확인 상태의 이유) · leadership 0~2개(leadership_names 만)} · divergence_label US > KOREA|KOREA > US|US ≈ KOREA · divergence} ·
    rates_view{headline ≤40자(원인 + 주식 영향) · summary 한 문장 · equity_impact POSITIVE|NEGATIVE|MIXED|NEUTRAL · equity_impact_read ≤110자} ·
-   cross_asset_view{headline ≤40자 · summary 한 문장 · support/risk(cross_asset 자산 이름, 각 0~3 · 합 2~5) · read ≤120자} · ai_semiconductor_view · leadership_view · style_view · sector_view · top_risks · catalysts · what_matters_next ·
+   cross_asset_view{headline ≤40자 · summary 한 문장 · support/risk(cross_asset 자산 이름, 각 0~3 · 합 2~5) · read ≤120자} ·
+   ai_semiconductor_view{headline ≤40자 · summary 1~2문장 · ai{headline ≤28자 · why · leadership(ai_theme.groups 이름 0~2)} · semiconductor{headline} ·
+   confirmation{status STRONG|PARTIAL|WEAK|DIVERGING · relation · read ≤110자} · equity_implication{stance · read ≤110자}} · leadership_view · style_view · sector_view · top_risks · catalysts · what_matters_next ·
    portfolio_implication)을 쓴다 — `ai.market_overview.check(out, ctx)` 가 빈 목록이어야 한다. catalysts 는 upcoming_events(그 날짜 이후)만, 섹터 이름은 sector_names 만,
    매매 지시 대신 Overweight bias · Neutral · Underweight bias · Watch. 없으면 그날 종합은 '저장되지 않음'(숫자 칸은 그대로 보인다).
    REGIME v2: 자격 후보(또는 NEUTRAL)만 고른다. confidence 는 정량값을 그대로 옮기지 말고 근거(데이터 지연 · 한국 결측 · 하루짜리 이벤트)를 따져 정하고, 이유를 selection_rationale 에 쓴다.
