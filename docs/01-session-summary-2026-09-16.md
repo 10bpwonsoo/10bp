@@ -719,3 +719,15 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 순서: 해석 4종 세션본 → 컨텍스트 재생성 → AI THEME VIEW · MARKET OVERVIEW 세션본 → full. 두 종합은 금리 · 반도체 해석과 REGIME 선택을 읽기 때문에 이 순서여야 한다.
   MARKET OVERVIEW 세션본은 숫자 검증만 통과해서는 안 된다 — 컨텍스트에 없던 '거래대금 감소' 와 데이터가 말하지 않는 Quality 스타일을 빼고 다시 썼다.
 - history: 7개 탭에 11/12 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그는 11/12 행으로 1개 늘었다. COMPLETE, 테스트 통과.
+
+### 2026-11-13 — MARKET OVERVIEW · REGIME & MARKET STATE 압축 (표시만 변경)
+- 요청: 8칸 세로 블록(OFFICIAL · CURRENT CANDIDATE · CONFIDENCE · TRANSITION · US · KOREA · GLOBAL · STATUS)을 없애고 같은 정보를 빠르게 읽히게. 계산값 · Regime 판정은 그대로.
+- 화면(`MarketOverviewView.tsx` `RegimeState`): ① LLM 한 줄 상태 요약 → ② `OFFICIAL → CANDIDATE` 라벨 + "NEUTRAL / MIXED → POLICY DRIVEN"(공식은 중립색, 후보는 그 regime 색)
+  → ③ `TRANSITION WATCH · 1 / 2 DAYS · CONF 55` 한 줄(전환 상태는 amber, 진행일은 한 번만) → ④ `EQUITY CONFIRMATION  US △ 부분 확인 · KOREA △ 부분 확인 · GLOBAL △ 부분 확인`
+  (✓ 확인 녹색 · △ 부분 amber · ✕ 반대 적색, 한글 보조어는 화면에만 — 내부 값은 PARTIAL 그대로) → 간격 → OFFICIAL · 1M 띠 → REGIME READ. DETAIL → 유지.
+  경우별: 진입 진행 / 오늘 공식 전환(TRANSITION CONFIRMED) / 이탈 확정(REGIME RELEASED · EXIT CONFIRMED) / 이탈만 진행(EXIT WATCH) / 후보 없음(OFFICIAL 만, 화살표 없음).
+  legacy 저장본(≤11/08)은 raw 가 다른 쪽으로 진행 중(TRANSITION_WATCH)일 때만 화살표 — 같은 방향(CONFIRMED)은 STABLE.
+- 높이(390px 모바일): 요약 영역 335px → 146px(−56%), 섹션 전체 529 → 342px. 데스크톱 · iPad 는 같은 위계를 가로로. 가로 스크롤 없음.
+- LLM 출력(`marketpulse/ai/market_overview.py`): `state_summary` 필수 추가(40자 이내 한 줄, 마침표 없음), `regime_read` 는 1~2문장 · 170자 이내로 검증.
+  11/13 세션본에 두 값을 다시 써서 archive correct(이전본 `superseded/2026-11-13.20261113T001553Z.json`). 바뀐 것은 market_overview 섹션의 regime_read · state_summary 와 meta 뿐.
+  11/12 이전 저장본에는 state_summary 가 없어 요약 줄을 숨긴다(만들어 넣지 않음).

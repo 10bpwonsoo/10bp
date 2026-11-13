@@ -8,7 +8,7 @@
   "macro": "Headwind",
   "risk": "Elevated"
  },
- "regime_read": "공식 레짐은 Neutral / Mixed이고, 어제의 Risk-On 후보는 하루로 끝났으며 오늘은 Policy Driven이 진입 확인 1/2일째입니다. 금리 신호는 뚜렷하지만 미국·한국 주식 확인이 모두 PARTIAL이라 정책 주도 환경으로 굳어질지는 다음 거래일에 달려 있습니다.",
+ "regime_read": "공식 레짐은 Neutral / Mixed이고 Policy Driven 전환이 1/2일째 진행 중입니다. 금리 신호는 강하지만 미국·한국 주식 확인이 아직 부분적이라 다음 거래일 확인이 필요합니다.",
  "key_drivers": [
   {
    "name": "연준 정책 경로 · 단기금리",
@@ -170,5 +170,7 @@
   "sector": "컴퓨트·네트워킹 Watch, 소비재 Underweight bias",
   "risk_control": "실질금리 상승에 민감한 성장주 집중도 관리",
   "hedge_watch": "PPI · 2년물 금리 · 엔비디아 경영 공백 여파"
- }
+ },
+ "state_summary": "정책 주도 전환 시도, 주식 확인은 아직 제한적",
+ "_note_regime": "2026-11-12 사용자 요청 — REGIME & MARKET STATE 화면 정리: state_summary 를 더하고 regime_read 를 1~2문장으로 다시 썼다(같은 날 컨텍스트 · 같은 검증). 다른 필드는 그대로."
 }

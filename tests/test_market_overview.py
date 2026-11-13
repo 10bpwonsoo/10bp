@@ -1,20 +1,20 @@
-"""MARKET OVERVIEW (2026-11-12) — 기존 섹션만 읽는 LLM 종합: 구조 고정 · 검증 · 결측 · 지난 일정 금지 · 매매 지시 금지 · 저장/캐시."""
+"""MARKET OVERVIEW (2026-11-12, 11/13 상태 요약 추가) — 기존 섹션만 읽는 LLM 종합: 구조 고정 · 검증 · 결측 · 지난 일정 금지 · 매매 지시 금지 · 저장/캐시."""
 import json
 from pathlib import Path
 
 from marketpulse.ai import market_overview as MO
 
 ROOT = Path(__file__).resolve().parents[1]
-DOC = json.loads((ROOT / "marketpulse/data/archive/2026/11/2026-11-12.json").read_text(encoding="utf-8"))
-SESSION = {k: v for k, v in json.loads((ROOT / "marketpulse/data/captures/2026-11-12-backfill/market_overview_session.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
+DOC = json.loads((ROOT / "marketpulse/data/archive/2026/11/2026-11-13.json").read_text(encoding="utf-8"))
+SESSION = {k: v for k, v in json.loads((ROOT / "marketpulse/data/captures/2026-11-13-backfill/market_overview_session.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
 
 
 def test_context_reads_existing_sections_only():
     c = MO.build_context(DOC)
-    assert c["snapshot_date"] == "2026-11-12"
-    assert c["market_regime"]["official"] == "NEUTRAL / MIXED" and c["market_regime"]["candidate"] == "Risk-On"
+    assert c["snapshot_date"] == "2026-11-13"
+    assert c["market_regime"]["official"] == "NEUTRAL / MIXED" and c["market_regime"]["candidate"] == "Policy Driven"
     assert c["rates"]["regime"] and c["oil"]["regime"] and c["ai_theme"]["regime"] and c["semiconductor_cycle"]["regime"]
-    assert all(u["date"] >= "2026-11-12" for u in c["upcoming_events"])  # 지난 일정은 catalyst 후보가 아니다
+    assert all(u["date"] >= "2026-11-13" for u in c["upcoming_events"])  # 지난 일정은 catalyst 후보가 아니다
     assert any("EXCLUDED" in m or "없음" in m for m in c["missing"])
 
 
@@ -37,6 +37,10 @@ def test_check_accepts_session_and_rejects_bad_output():
     assert any("컨텍스트에 없는 숫자" in p for p in MO.check(bad, c))
     bad = json.loads(json.dumps(SESSION)); bad["labels"]["equity"] = "Great"
     assert any("labels.equity" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["state_summary"] = "정책 주도 전환 시도가 이어지고 있지만 미국과 한국 주식 확인은 아직 제한적인 상태입니다."
+    assert any("state_summary" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["regime_read"] = "공식은 중립입니다. 후보는 정책 주도입니다. 주식 확인은 부분적입니다."
+    assert any("regime_read" in p for p in MO.check(bad, c))
 
 
 def test_no_rule_fallback():
@@ -56,7 +60,7 @@ def test_live_cache_only_on_meaningful_change():
 
     MO._LIVE.clear()
     a = MO.live_overview(DOC, client=Fake())
-    tick = json.loads(json.dumps(DOC)); tick["snapshot"]["as_of"] = "2026-11-11T23:00:00Z"
+    tick = json.loads(json.dumps(DOC)); tick["snapshot"]["as_of"] = "2026-11-12T23:00:00Z"
     b = MO.live_overview(tick, client=Fake())
     assert a["status"] == "ok" and b["view"] == a["view"] and len(calls) == 1
     moved = json.loads(json.dumps(DOC)); moved["cockpit"]["market_now"]["state"]["candidate_label"] = "Neutral / Mixed"

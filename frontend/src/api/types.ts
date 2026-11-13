@@ -789,7 +789,7 @@ export interface MoRisk { risk: string; level: "LOW" | "MODERATE" | "ELEVATED" |
 export interface MoCatalyst { date: string; event: string; why: string; sensitivity: "HIGH" | "MEDIUM" | "LOW" }
 export interface MoNext { title: string; condition: string; implication: string }
 export interface MarketOverviewView {
-  headline: string; market_view: string; labels: { regime: string; equity: string; macro: string; risk: string }; regime_read: string; key_drivers: MoDriver[];
+  headline: string; market_view: string; labels: { regime: string; equity: string; macro: string; risk: string }; state_summary?: string; regime_read: string; key_drivers: MoDriver[];
   equity_view: { us: string; korea: string; divergence_label: string; divergence: string }; rates_view: string; cross_asset_view: string; ai_semiconductor_view: string;
   leadership_view: string; style_view: MoStyle[]; sector_view: { positive: string[]; watch: string[]; negative: string[]; read: string }; top_risks: MoRisk[];
   catalysts: MoCatalyst[]; what_matters_next: MoNext[]; portfolio_implication: { equity_stance: string; style: string; sector: string; risk_control: string; hedge_watch: string };

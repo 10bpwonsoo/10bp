@@ -48,7 +48,9 @@ Field guide (structure fixed, content yours)
 - headline: one-line market call (≤ 50 chars, no period)
 - market_view: 3–5 sentences linking regime, equities (US/Korea), rates, credit, oil, AI/semis, leadership, events — the core investment logic now
 - labels: regime (short regime name as the engines state it), equity (Bullish|Improving|Mixed|Weak), macro (Tailwind|Neutral|Headwind), risk (Low|Moderate|Elevated|High)
-- regime_read: 1–2 sentences on the official vs candidate regime and transition
+- state_summary: one short line (≤ 40 chars, no period) telling an investor the market state before any number — what the official regime is doing,
+  where it is trying to go and how well equities confirm it (e.g. the idea of "a policy-driven shift is being attempted, equity confirmation still limited" — your own words)
+- regime_read: 1–2 short sentences (≤ 170 chars) on the official vs candidate regime, how far the transition is confirmed and what the equity/rates/cross-asset evidence says
 - key_drivers: 3–5 items {name, direction: POSITIVE|NEGATIVE|MIXED, strength: STRONG|MODERATE|WEAK, read: one line}
 - equity_view: {us, korea: one line each, divergence_label: "US > KOREA" | "KOREA > US" | "US + KOREA CONFIRMED" | "US + KOREA WEAK" | "MIXED", divergence: one line}
 - rates_view: one line — what the rates move means for equities
@@ -68,7 +70,7 @@ SCHEMA = {
     "properties": {
         "headline": {"type": "string"}, "market_view": {"type": "string"},
         "labels": _ITEM(["regime", "equity", "macro", "risk"]),
-        "regime_read": {"type": "string"},
+        "state_summary": {"type": "string"}, "regime_read": {"type": "string"},
         "key_drivers": {"type": "array", "items": _ITEM(["name", "direction", "strength", "read"])},
         "equity_view": _ITEM(["us", "korea", "divergence_label", "divergence"]),
         "rates_view": {"type": "string"}, "cross_asset_view": {"type": "string"}, "ai_semiconductor_view": {"type": "string"}, "leadership_view": {"type": "string"},
@@ -81,7 +83,7 @@ SCHEMA = {
         "what_matters_next": {"type": "array", "items": _ITEM(["title", "condition", "implication"])},
         "portfolio_implication": _ITEM(["equity_stance", "style", "sector", "risk_control", "hedge_watch"]),
     },
-    "required": ["headline", "market_view", "labels", "regime_read", "key_drivers", "equity_view", "rates_view", "cross_asset_view", "ai_semiconductor_view",
+    "required": ["headline", "market_view", "labels", "state_summary", "regime_read", "key_drivers", "equity_view", "rates_view", "cross_asset_view", "ai_semiconductor_view",
                  "leadership_view", "style_view", "sector_view", "top_risks", "catalysts", "what_matters_next", "portfolio_implication"],
     "additionalProperties": False,
 }
@@ -241,6 +243,12 @@ def check(o: Mapping, ctx: Mapping) -> list[str]:
         p.append(f"market_view 문장 수 {n} — 3~5문장")
     if len(str(o["market_view"])) > 650:
         p.append("market_view 650자 이내")
+    ss = str(o["state_summary"]).strip()
+    if len(ss) > 40 or ss.endswith(".") or "\n" in ss:
+        p.append("state_summary 는 40자 이내 한 줄, 마침표 없이")
+    rr_ = str(o["regime_read"]).strip()
+    if not 1 <= len(split_sentences(rr_)) <= 2 or len(rr_) > 170:
+        p.append("regime_read 는 1~2문장 · 170자 이내")
     lab = o["labels"]
     for k, allowed in ENUM.items():
         if lab.get(k) not in allowed:

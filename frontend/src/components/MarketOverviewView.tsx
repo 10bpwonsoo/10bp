@@ -1,6 +1,6 @@
 import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, OilRegime, RatesRegime, RsSignal } from "../api/types";
 import type { SemiconductorCycle } from "../api/semiconductor";
-import { KEY_COLOR, entryText, exitText, isV2, keyColor, keyText } from "./RegimeStatePanel";
+import { KEY_COLOR, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
 /**
  * MARKET OVERVIEW · 시장 종합 (2026-11-12).
@@ -41,6 +41,63 @@ function sigText(g: RsSignal): string {
   if (g.state === "EXCLUDED" || g.value === null) return "EXCLUDED";
   if (/상승 비율/.test(g.label)) return `${(g.value * 100).toFixed(0)}% 상승`;
   return arrowOf(g.value);
+}
+
+/** 주식 확인 상태 → 화면 표기(내부 값은 그대로). △ 부분 · ✓ 확인 · ✕ 반대 */
+const EQ_UI: Record<string, { sym: string; ko: string; color: string }> = {
+  STRONG: { sym: "✓", ko: "강한 확인", color: "var(--ok)" }, CONFIRMED: { sym: "✓", ko: "확인", color: "var(--ok)" }, PARTIAL: { sym: "△", ko: "부분 확인", color: "var(--warn)" },
+  MIXED: { sym: "△", ko: "엇갈림", color: "var(--warn)" }, CONTRADICTED: { sym: "✕", ko: "반대", color: "var(--crit)" }, UNAVAILABLE: { sym: "–", ko: "데이터 없음", color: "var(--faint)" },
+};
+
+/** 공식 regime 이 지금 어디로 가려 하는가 — 상태 기계(exit_entry_v2) 값을 한 줄로. legacy 저장본은 공식 · raw 로 */
+function regimeFlow(c: Cockpit): { from: string; fromKey: string | null; to: string | null; toKey: string | null; progress: string | null; status: string; sub: string } {
+  const n = c.market_now; const st = n.state;
+  if (!isV2(st)) { // legacy 저장본: raw 가 다른 쪽으로 진행 중(TRANSITION_WATCH)일 때만 화살표
+    const watch = n.transition_status === "TRANSITION_WATCH";
+    return { from: n.label_text, fromKey: null, to: watch ? n.raw_text : null, toKey: null, progress: watch ? `${Math.min(n.raw_persistence_days, n.required_days)} / ${n.required_days} DAYS` : null,
+             status: watch ? "TRANSITION WATCH" : n.transition_status === "CHANGED" ? "TRANSITION CONFIRMED" : "STABLE", sub: n.transition_status_ko };
+  }
+  if (st.changed && st.change_kind === "entry") return { from: keyText(st.previous_official), fromKey: st.previous_official, to: keyText(st.official), toKey: st.official, progress: "CONFIRMED", status: "TRANSITION CONFIRMED", sub: "오늘 공식 전환" };
+  if (st.changed && st.change_kind === "exit") return { from: keyText(st.exited_regime), fromKey: st.exited_regime, to: keyText("neutral"), toKey: "neutral", progress: "EXIT CONFIRMED", status: "REGIME RELEASED", sub: "이전 레짐 해제 · 새 레짐 미확정" };
+  if (st.entry_regime) return { from: keyText(st.official), fromKey: st.official, to: keyText(st.entry_regime), toKey: st.entry_regime, progress: `${Math.min(st.entry_streak, st.entry_required)} / ${st.entry_required} DAYS`,
+                                status: "TRANSITION WATCH", sub: st.official !== "neutral" && st.exit_streak > 0 ? `전환 확인 중 · ${keyText(st.official)} 이탈 ${st.exit_streak}/${st.exit_required}` : "" };
+  if (st.official !== "neutral" && st.exit_streak > 0) return { from: keyText(st.official), fromKey: st.official, to: null, toKey: null, progress: `EXIT ${Math.min(st.exit_streak, st.exit_required)} / ${st.exit_required}`, status: "EXIT WATCH", sub: "공식 레짐 근거가 약해지는 중" };
+  return { from: keyText(st.official), fromKey: st.official, to: null, toKey: null, progress: null, status: "STABLE", sub: st.candidate === st.official ? "오늘 후보도 같은 쪽" : "뚜렷한 새 후보 없음" };
+}
+
+function RegimeState({ c, summary }: { c: Cockpit; summary?: string }) {
+  const sel = c.market_now.selection;
+  const f = regimeFlow(c);
+  const watch = f.status !== "STABLE";
+  const eq = (["us", "kr", "global"] as const).map((m) => ({ m, label: m === "us" ? "US" : m === "kr" ? "KOREA" : "GLOBAL",
+    v: m === "us" ? sel?.us_equity_confirmation : m === "kr" ? sel?.korea_equity_confirmation : sel?.global_equity_confirmation }));
+  return (
+    <div className="mo-rs" data-testid="mo-regime-state" data-status={f.status}>
+      {summary ? <p className="mo-rs-sum" data-testid="mo-state-summary">{summary}</p> : null}
+      <span className="mo-k mono">{f.to ? "OFFICIAL → CANDIDATE" : "OFFICIAL"}</span>
+      <div className="mo-rs-flow mono" data-testid="mo-regime-flow">
+        <span className="mo-rs-from">{f.from}</span>
+        {f.to ? <><span className="mo-rs-ar" aria-hidden="true">→</span><span className="mo-rs-to" style={{ color: f.toKey ? keyColor(f.toKey) : "var(--ink)" }} data-testid="mo-regime-to">{f.to}</span></> : null}
+      </div>
+      <div className="mo-rs-tr mono" data-testid="mo-regime-transition">
+        <b style={{ color: watch ? "var(--warn)" : "var(--muted)" }}>{f.status}</b>
+        {f.progress ? <b className="mo-rs-days" style={{ color: watch ? "var(--warn)" : "var(--ink)" }} data-testid="mo-regime-days">{f.progress}</b> : null}
+        {sel ? <span className="mo-rs-conf" data-testid="mo-regime-conf">CONF {sel.regime_confidence}</span> : null}
+        {f.sub ? <span className="mo-rs-sub">{f.sub}</span> : null}
+      </div>
+      {sel ? (
+        <div className="mo-rs-eq mono" data-testid="mo-regime-equity">
+          <span className="mo-k">EQUITY CONFIRMATION</span>
+          <span className="mo-rs-badges">
+            {eq.map(({ m, label, v }) => {
+              const u = EQ_UI[v ?? "UNAVAILABLE"] ?? EQ_UI.UNAVAILABLE!;
+              return <span key={m} className="mo-rs-badge" title={`${label} ${v ?? "UNAVAILABLE"}`} data-state={v ?? "UNAVAILABLE"}><i>{label}</i> <b style={{ color: u.color }}>{u.sym} {u.ko}</b></span>;
+            })}
+          </span>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function Equity({ c, ov }: { c: Cockpit; ov: MarketOverview | null }) {
@@ -99,7 +156,6 @@ export function MarketOverviewView({ cockpit: c, overview, overviewError, rates,
   const v = overview?.status === "ok" ? overview.view : null;
   const now = c?.market_now;
   const st = now?.state ?? null;
-  const sel = now?.selection ?? null;
   const days = c?.history?.days ?? [];
   const yb10 = rates?.yield_breakdown?.tenors?.find((t) => t.tenor === "10Y") ?? null;
   const caRows = c?.cross_asset.rows ?? [];
@@ -134,29 +190,16 @@ export function MarketOverviewView({ cockpit: c, overview, overviewError, rates,
         </div>
       </section>
 
-      {/* 2. REGIME & MARKET STATE */}
+      {/* 2. REGIME & MARKET STATE — 공식 → 후보 · 전환 진행 · 주식 확인을 세 줄로(같은 값, 표시만 압축) */}
       <Sec n={2} title="Regime & Market State" area="regime" detail="live" onDetail={onDetail} testid="mo-regime">
-        {now ? (
-          <>
-            <div className="mo-grid2">
-              <Kv k="OFFICIAL" v={now.label_text} color={st ? keyColor(st.official) : undefined} />
-              <Kv k="CURRENT CANDIDATE" v={st ? keyText(st.candidate) : now.raw_text} color={st ? keyColor(st.candidate) : undefined} />
-              <Kv k="REGIME CONFIDENCE" v={sel ? sel.regime_confidence : "–"} />
-              {isV2(st) ? <Kv k="TRANSITION" v={st.entry_regime ? `${keyText(st.entry_regime)} ${entryText(st).text}` : exitText(st).text} /> : <Kv k="TRANSITION" v={now.transition_status.replace(/_/g, " ")} />}
-              <Kv k="US" v={sel?.us_equity_confirmation ?? "–"} color={EQ_TONE[sel?.us_equity_confirmation ?? ""]} />
-              <Kv k="KOREA" v={sel?.korea_equity_confirmation ?? "–"} color={EQ_TONE[sel?.korea_equity_confirmation ?? ""]} />
-              <Kv k="GLOBAL" v={sel?.global_equity_confirmation ?? "–"} color={EQ_TONE[sel?.global_equity_confirmation ?? ""]} />
-              <Kv k="STATUS" v={now.transition_status === "TRANSITION_WATCH" ? "WATCH" : now.transition_status.replace(/_/g, " ")} />
-            </div>
-            {days.length ? (
-              <div className="mo-strip" data-testid="mo-regime-strip" title={days.map((d) => `${d.date} ${d.display_label}`).join("\n")}>
-                <span className="mo-k mono">OFFICIAL · 1M</span>
-                <span className="mo-strip-c">{days.map((d) => <i key={d.date} style={{ background: KEY_COLOR[d.display_regime] ?? "var(--rule)" }} />)}</span>
-              </div>
-            ) : null}
-            <Read k="REGIME READ" t={v?.regime_read} testid="mo-regime-read" />
-          </>
-        ) : <Excluded what="실시간 regime" />}
+        {now ? <RegimeState c={c!} summary={v?.state_summary} /> : <Excluded what="실시간 regime" />}
+        {now && days.length ? (
+          <div className="mo-strip" data-testid="mo-regime-strip" title={days.map((d) => `${d.date} ${d.display_label}`).join("\n")}>
+            <span className="mo-k mono">OFFICIAL · 1M</span>
+            <span className="mo-strip-c">{days.map((d) => <i key={d.date} style={{ background: KEY_COLOR[d.display_regime] ?? "var(--rule)" }} />)}</span>
+          </div>
+        ) : null}
+        {now ? <Read k="REGIME READ" t={v?.regime_read} testid="mo-regime-read" /> : null}
       </Sec>
 
       {/* 3. WHAT IS DRIVING THE MARKET */}
