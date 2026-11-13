@@ -33,8 +33,8 @@
    ({headline, summary, driver, strength, weak_point, next_watch})을 쓴다 — `ai.ai_theme_view.check(out, ctx)` 가 빈 목록이어야 한다.
    고정 문구 없이 그날 데이터의 관계를 해석한다(주도 · 확인 · 반대 증거 · 다음 확인점, 미국 · 한국). missing 의 데이터로 결론을 만들지 않는다. AI REGIME READ 문장을 반복하지 않는다.
    이 파일이 없고 API 도 안 되면 그날 AI THEME VIEW 는 '생성되지 않음' 으로 남는다(규칙 문장으로 채우지 않는다).
-   MARKET OVERVIEW(시장 종합 탭): `market_overview_context.json` 만 읽고 `market_overview_session.json`(headline · market_view · labels · regime_read · key_drivers ·
-   equity_view · rates_view · cross_asset_view · ai_semiconductor_view · leadership_view · style_view · sector_view · top_risks · catalysts · what_matters_next ·
+   MARKET OVERVIEW(시장 종합 탭): `market_overview_context.json` 만 읽고 `market_overview_session.json`(headline · market_view · labels · state_summary · regime_read · key_drivers ·
+   equity_view{global_read 2~3문장 · us/korea{headline ≤28자 · why 한 문장(확인 상태의 이유) · leadership 0~2개(leadership_names 만)} · divergence_label US > KOREA|KOREA > US|US ≈ KOREA · divergence} · rates_view · cross_asset_view · ai_semiconductor_view · leadership_view · style_view · sector_view · top_risks · catalysts · what_matters_next ·
    portfolio_implication)을 쓴다 — `ai.market_overview.check(out, ctx)` 가 빈 목록이어야 한다. catalysts 는 upcoming_events(그 날짜 이후)만, 섹터 이름은 sector_names 만,
    매매 지시 대신 Overweight bias · Neutral · Underweight bias · Watch. 없으면 그날 종합은 '저장되지 않음'(숫자 칸은 그대로 보인다).
    REGIME v2: 자격 후보(또는 NEUTRAL)만 고른다. confidence 는 정량값을 그대로 옮기지 말고 근거(데이터 지연 · 한국 결측 · 하루짜리 이벤트)를 따져 정하고, 이유를 selection_rationale 에 쓴다.

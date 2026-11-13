@@ -4,8 +4,9 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import ckFx from "../__fixtures__/cockpit.json";
 import aiFx from "../__fixtures__/ai_regime.json";
 import moFx from "../__fixtures__/market_overview.json";
-import type { AiRegime, CkRegimeState, Cockpit, MarketOverview } from "../api/types";
-import { MarketOverviewView } from "../components/MarketOverviewView";
+import neFx from "../__fixtures__/neutral_equity_1113.json";
+import type { AiRegime, CkRegimeState, Cockpit, MarketOverview, RsSignal } from "../api/types";
+import { MarketOverviewView, eqTerms } from "../components/MarketOverviewView";
 
 const cockpit = ckFx as unknown as Cockpit;
 const ai = aiFx as unknown as AiRegime;
@@ -84,5 +85,54 @@ describe("MARKET OVERVIEW", () => {
     expect(screen.getByTestId("mo-regime-flow").textContent).not.toContain("→");
     expect(screen.queryByTestId("mo-regime-days")).toBeNull();
     expect(screen.getByTestId("mo-regime-state").getAttribute("data-status")).toBe("STABLE");
+  });
+
+});
+
+describe("EQUITY MARKET — 해석 먼저, 미국 vs 한국 같은 형식", () => {
+  const ne = neFx as unknown as { us: RsSignal[]; kr: RsSignal[] };
+  const mk = (s: RsSignal[]) => ({ status: "PARTIAL", score: 0, available: 6, total: 7, coverage: 0.8, signals: s });
+  const sel = { ...(cockpit.market_now.selection ?? {}), us_equity_confirmation: "PARTIAL", korea_equity_confirmation: "PARTIAL", global_equity_confirmation: "PARTIAL",
+    neutral_equity: { us: mk(ne.us), kr: mk(ne.kr), global: mk([]) } };
+  const c = { ...cockpit, market_now: { ...cockpit.market_now, selection: sel } } as unknown as Cockpit;
+
+  it("지수 값 → 시장 성격 단어(백엔드 equity_terms 와 같은 문턱)", () => {
+    const us = eqTerms(ne.us, "us"); const kr = eqTerms(ne.kr, "kr");
+    expect([us.trend, us.breadth, us.style[0]]).toEqual(["POSITIVE", "UNAVAILABLE", "LARGE > SMALL"]);
+    expect(us.trendSub).toBe("S&P 500 ↑ · Nasdaq 100 ↑ · Russell 2000 →");
+    expect([kr.trend, kr.breadth]).toEqual(["NEUTRAL", "WEAK"]);
+    expect(kr.breadthSub).toBe("상승 참여율 31% · 대표 36종목 기준");
+  });
+
+  it("GLOBAL READ → US | KOREA(headline · 작은 status · why · 4개 핵심) → US ↔ KOREA, 지수 목록 없음", () => {
+    const { container } = render(<MarketOverviewView cockpit={c} overview={mo} rates={null} oil={null} ai={ai} semi={null} />);
+    const box = screen.getByTestId("mo-equity"); const ev = mo.view!.equity_view;
+    expect(screen.getByTestId("mo-eq-global").textContent).toContain(ev.global_read!);
+    for (const m of ["us", "kr"] as const) {
+      const side = (m === "us" ? ev.us : ev.korea) as { headline: string; why: string; leadership: string[] };
+      expect(screen.getByTestId(`mo-eq-${m}-headline`).textContent).toBe(side.headline);
+      expect(screen.getByTestId(`mo-eq-${m}-status`).textContent).toBe("PARTIAL");
+      expect(screen.getByTestId(`mo-eq-${m}-why`).textContent).toContain(side.why);
+      expect(screen.getByTestId(`mo-eq-${m}-lead`).textContent).toContain(side.leadership.join(" / "));
+    }
+    expect(screen.getByTestId("mo-eq-us-breadth").className).toContain("muted");
+    expect(screen.getByTestId("mo-eq-us-breadth").textContent).toMatch(/Unavailable/);
+    expect(screen.getByTestId("mo-eq-kr-breadth").textContent).toMatch(/WEAK.*상승 참여율 31%/);
+    expect(box.textContent).not.toMatch(/EXCLUDED/);
+    expect(box.textContent).not.toMatch(/한국 대표 종목 상승 비율/);
+    expect(container.querySelectorAll("[data-testid='mo-equity'] table")).toHaveLength(0);
+    const ids = ["mo-eq-global", "mo-eq-us", "mo-eq-kr", "mo-divergence"].map((id) => box.querySelector(`[data-testid='${id}']`)!);
+    for (let i = 1; i < ids.length; i++) expect(ids[i - 1]!.compareDocumentPosition(ids[i]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId("mo-divergence").textContent).toMatch(/US ↔ KOREA.*US > KOREA/);
+  });
+
+  it("예전 저장본(us · korea 가 한 줄 문자열) — 그 문장을 그대로, GLOBAL READ 는 '없음'", () => {
+    const old = { ...mo, view: { ...mo.view!, equity_view: { us: "미국 한 줄", korea: "한국 한 줄", divergence_label: "MIXED", divergence: "차이 한 줄" } } } as MarketOverview;
+    render(<MarketOverviewView cockpit={c} overview={old} rates={null} oil={null} ai={ai} semi={null} />);
+    expect(screen.getByTestId("mo-eq-global").textContent).toMatch(/종합 코멘트 없음/);
+    expect(screen.getByTestId("mo-eq-us-headline").textContent).toBe("미국 한 줄");
+    expect(screen.queryByTestId("mo-eq-us-why")).toBeNull();
+    expect(screen.getByTestId("mo-eq-us-lead").textContent).toBe("LEADERSHIP–");
+    expect(screen.getByTestId("mo-eq-us-trend").textContent).toMatch(/POSITIVE/);
   });
 });

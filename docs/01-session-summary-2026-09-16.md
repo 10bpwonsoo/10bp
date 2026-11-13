@@ -731,3 +731,21 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - LLM 출력(`marketpulse/ai/market_overview.py`): `state_summary` 필수 추가(40자 이내 한 줄, 마침표 없음), `regime_read` 는 1~2문장 · 170자 이내로 검증.
   11/13 세션본에 두 값을 다시 써서 archive correct(이전본 `superseded/2026-11-13.20261113T001553Z.json`). 바뀐 것은 market_overview 섹션의 regime_read · state_summary 와 meta 뿐.
   11/12 이전 저장본에는 state_summary 가 없어 요약 줄을 숨긴다(만들어 넣지 않음).
+
+### 2026-11-13 — MARKET OVERVIEW · EQUITY MARKET 재구성 (해석 먼저, 미국 vs 한국 비교)
+- 요청: 미국 · 한국 지표 세로 나열(DATA DUMP)을 버리고 GLOBAL EQUITY READ → US | KOREA 같은 형식 비교 → US ↔ KOREA → DETAIL. 원천 데이터 · 계산 · 판정은 그대로.
+- 화면(`MarketOverviewView.tsx` `Equity` · `EqMarket` · `eqTerms`): 시장마다 headline(가장 큼) · 작은 status 배지(PARTIAL 등, 실시간 탭 값) · WHY 한 줄 ·
+  TREND / LEADERSHIP / BREADTH / STYLE 4줄. 데스크톱 · iPad 는 두 시장을 같은 행으로 맞춘 2열(subgrid), 모바일은 US → KOREA 세로.
+  - TREND: 지수 방향(S&P 500 · Nasdaq 100 / KOSPI · KOSDAQ 평균 z)을 STRONG · POSITIVE · NEUTRAL · NEGATIVE · WEAK 로, 지수 화살표는 작은 보조 줄(모바일은 숨김).
+  - BREADTH: BROAD · IMPROVING · MIXED · NARROW · WEAK · Unavailable 로 통일. 미국은 상승종목 비율 데이터가 없어 muted "Unavailable"(EXCLUDED 를 크게 쓰지 않는다),
+    한국은 대표 36종목 상승 참여율(31% → WEAK)을 "상승 참여율 31% · 대표 36종목 기준" 보조 줄로.
+  - STYLE: SMALL/LARGE(Russell−S&P) · CYCLICAL/DEFENSIVE, 한국은 KOSDAQ/KOSPI · 경기민감/지수 — "A > B" · "A ≈ B" 상대 구조 1~2개.
+  - 문턱은 기존 화살표와 같은 ±0.5 기준을 단어로 옮긴 표시 규칙이고, 백엔드 `equity_terms` 와 프론트 `eqTerms` 가 같은 값을 쓴다(양쪽 테스트가 같은 11/13 사례를 본다).
+  - 색은 headline · status 배지 · BREADTH 단어 · LEADERSHIP 만. 나머지 줄은 중립색. 지수별 값 표는 없앴다(DETAIL → 실시간 탭에 그대로 있다).
+- LLM(`marketpulse/ai/market_overview.py`): equity_view = {global_read 2~3문장, us/korea {headline, why, leadership[]}, divergence_label(US > KOREA · KOREA > US · US ≈ KOREA), divergence}.
+  컨텍스트에 `equity_terms`(화면과 같은 단어) · `korea_sector_moves`(투자 섹션의 한국 대표 종목을 업종별로 묶은 5일 평균 · 하루 상승 수 — 판정 아님) · `leadership_names` 추가.
+  leadership 는 leadership_names 에 있는 이름만 통과, LEADERSHIP × BREADTH 관계를 해석하게 했다. LIVE 지문에 시장별 trend · breadth · 확인 상태 추가.
+  reconstruct · LIVE 서비스는 이제 investment 섹션도 컨텍스트에 넘긴다(새 데이터 아님 — 같은 cutoff 의 기존 섹션).
+- 11/13: 세션본 equity_view 를 새 형식으로 다시 써서 archive correct(이전본 `superseded/2026-11-13.20261113T003841Z.json`, 바뀐 것은 market_overview.equity_view · meta 뿐).
+  미국 "반도체 주도 대형주 반등, 소형주는 소외"(Semiconductors / Compute · Networking / Infrastructure), 한국 "지수는 제자리, 전력기기·반도체만 버팀"(Electrical · Semiconductor), US > KOREA.
+  11/12 이전 저장본은 예전 한 줄 문장을 headline 자리에 그대로 보이고 GLOBAL READ · WHY · LEADERSHIP 은 '없음' — 다시 만들지 않았다.

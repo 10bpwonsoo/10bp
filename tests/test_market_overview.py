@@ -72,3 +72,36 @@ def test_archive_section_stored():
     mo = DOC.get("market_overview")
     assert mo and mo["status"] == "ok" and mo["source"] in ("llm", "session") and mo["view"]["headline"]
     assert mo["as_of"] == DOC["snapshot"]["as_of"]
+
+
+def test_equity_terms_words_from_existing_signals():
+    """EQUITY MARKET 재구성(2026-11-13) — 기존 neutral_equity 신호값을 단어로만 옮긴다. 없는 신호는 UNAVAILABLE."""
+    t = MO.build_context(DOC)["equity_terms"]
+    assert t["us"]["trend"] == "POSITIVE" and t["us"]["breadth"] == "UNAVAILABLE" and t["us"]["style"][0] == "LARGE > SMALL"
+    assert t["korea"]["trend"] == "NEUTRAL" and t["korea"]["breadth"] == "WEAK" and t["korea"]["participation_pct"] == 31
+    assert t["us"]["confirmation"] == "PARTIAL" and t["korea"]["confirmation"] == "PARTIAL"
+    assert MO._breadth_ratio_word(0.7) == "BROAD" and MO._breadth_ratio_word(0.4) == "NARROW" and MO._breadth_z_word(None) == "UNAVAILABLE"
+    assert MO._rel_word(0.1, "SMALL", "LARGE") == "SMALL ≈ LARGE" and MO._rel_word(-0.6, "SMALL", "LARGE") == "LARGE > SMALL"
+
+
+def test_korea_sector_moves_from_representative_stocks():
+    ks = MO.korea_sector_moves(DOC["investment"])
+    assert ks and ks[0]["avg_ret_5d_pct"] >= ks[-1]["avg_ret_5d_pct"]
+    assert {"Semiconductor", "Shipbuilding"} <= {k["sector"] for k in ks}
+    assert sum(k["stocks"] for k in ks) == 36
+    assert MO.korea_sector_moves(None) == []
+
+
+def test_equity_view_structure_checked():
+    c = MO.build_context(DOC)
+    assert SESSION["equity_view"]["us"]["leadership"] and SESSION["equity_view"]["global_read"]
+    bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["korea"]["leadership"] = ["Biotech"]
+    assert any("leadership" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["us"]["headline"] = "반도체가 이끄는 대형 성장주 중심의 반등이 이어지지만 소형주는 소외되고 있다"
+    assert any("us.headline" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["divergence_label"] = "MIXED"
+    assert any("divergence_label" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["global_read"] = "미국과 한국 모두 반등입니다."
+    assert any("global_read" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["korea"] = "한 줄 문자열"
+    assert any("korea" in p for p in MO.check(bad, c))

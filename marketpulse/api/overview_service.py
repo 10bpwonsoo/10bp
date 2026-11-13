@@ -31,5 +31,6 @@ def get_market_overview(settings: Settings) -> dict:
 
     doc = {"snapshot": _try(lambda: deps.get_service().get(settings)), "cockpit": _try(lambda: deps.get_cockpit_service().get(settings)),
            "rates_regime": _try(lambda: deps.get_rates_regime_service().get(settings)), "oil_regime": _try(lambda: deps.get_oil_regime_service().get(settings)),
-           "ai_regime": _try(lambda: deps.get_ai_regime_service().get(settings)), "semiconductor_cycle": _try(lambda: get_semiconductor_cycle_service().get(settings))}
+           "ai_regime": _try(lambda: deps.get_ai_regime_service().get(settings)), "semiconductor_cycle": _try(lambda: get_semiconductor_cycle_service().get(settings)),
+           "investment": _try(lambda: deps.get_investment_service().get(settings))}
     return MO.live_overview(doc, client=build_client(settings) if settings.llm_enabled else None)

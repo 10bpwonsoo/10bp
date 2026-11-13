@@ -1,4 +1,4 @@
-import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, OilRegime, RatesRegime, RsSignal } from "../api/types";
+import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoEquitySide, OilRegime, RatesRegime, RsSignal } from "../api/types";
 import type { SemiconductorCycle } from "../api/semiconductor";
 import { KEY_COLOR, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
@@ -36,12 +36,6 @@ const Kv = ({ k, v, color, sub }: { k: string; v: React.ReactNode; color?: strin
   <div className="mo-kv"><span className="mo-k mono">{k}</span><b style={color ? { color } : undefined}>{v}</b>{sub ? <small>{sub}</small> : null}</div>
 );
 const Excluded = ({ what }: { what: string }) => <div className="mo-excl mono">{what} · EXCLUDED — 이 날짜 데이터 없음</div>;
-
-function sigText(g: RsSignal): string {
-  if (g.state === "EXCLUDED" || g.value === null) return "EXCLUDED";
-  if (/상승 비율/.test(g.label)) return `${(g.value * 100).toFixed(0)}% 상승`;
-  return arrowOf(g.value);
-}
 
 /** 주식 확인 상태 → 화면 표기(내부 값은 그대로). △ 부분 · ✓ 확인 · ✕ 반대 */
 const EQ_UI: Record<string, { sym: string; ko: string; color: string }> = {
@@ -100,30 +94,77 @@ function RegimeState({ c, summary }: { c: Cockpit; summary?: string }) {
   );
 }
 
+/**
+ * 주식 신호 → 화면 단어 (2026-11-13). 새 계산이 아니라 기존 neutral_equity 신호값을 읽는 표시 규칙 —
+ * 백엔드 marketpulse/ai/market_overview.py equity_terms 와 같은 문턱(LLM 이 같은 단어를 보고 쓴다). 문턱을 바꾸면 양쪽을 같이.
+ */
+export type EqTerms = { trend: string; trendSub: string; breadth: string; breadthSub: string; style: string[] };
+const trendWord = (z: number | null) => z === null ? "UNAVAILABLE" : z >= 1.5 ? "STRONG" : z >= 0.5 ? "POSITIVE" : z <= -1.5 ? "WEAK" : z <= -0.5 ? "NEGATIVE" : "NEUTRAL";
+const breadthZ = (z: number | null) => z === null ? "UNAVAILABLE" : z >= 1.0 ? "BROAD" : z >= 0.5 ? "IMPROVING" : z <= -1.0 ? "WEAK" : z <= -0.5 ? "NARROW" : "MIXED";
+const breadthRatio = (r: number | null) => r === null ? "UNAVAILABLE" : r >= 0.65 ? "BROAD" : r >= 0.5 ? "MIXED" : r >= 0.35 ? "NARROW" : "WEAK";
+const relWord = (v: number | null, a: string, b: string) => v === null ? null : v >= 0.5 ? `${a} > ${b}` : v <= -0.5 ? `${b} > ${a}` : `${a} ≈ ${b}`;
+export function eqTerms(sigs: RsSignal[], m: "us" | "kr"): EqTerms {
+  const g = (k: string) => sigs.find((x) => x.key === k) ?? null;
+  const val = (k: string) => { const x = g(k); return x && x.state !== "EXCLUDED" && x.value !== null ? x.value : null; };
+  const mean = (xs: (number | null)[]) => { const a = xs.filter((x): x is number => x !== null); return a.length ? a.reduce((p, q) => p + q, 0) / a.length : null; };
+  const idx = (m === "us" ? ["spx", "ndx", "rut"] : ["kospi", "kosdaq"]).map(g).filter((x): x is RsSignal => !!x && x.state !== "EXCLUDED" && x.value !== null);
+  const trend = trendWord(mean(m === "us" ? [val("spx"), val("ndx")] : [val("kospi"), val("kosdaq")]));
+  const trendSub = idx.map((x) => `${x.label} ${arrowOf(x.value)}`).join(" · ");
+  if (m === "us") {
+    const b = val("breadth_us");
+    return { trend, trendSub, breadth: breadthZ(b), breadthSub: b === null ? "상승종목 비율 데이터 없음" : "S&P 500 상승종목 비율 기준",
+             style: [relWord(val("small_rel"), "SMALL", "LARGE"), relWord(val("cyc_def"), "CYCLICAL", "DEFENSIVE")].filter((x): x is string => !!x) };
+  }
+  const whole = val("breadth_kospi"); const proxy = val("breadth_kr");
+  const n = /(\d+)개/.exec(g("breadth_kr")?.note ?? "")?.[1];
+  return { trend, trendSub, breadth: whole !== null ? breadthZ(whole) : breadthRatio(proxy),
+           breadthSub: whole !== null ? "KOSPI 상승종목 비율 기준" : proxy !== null ? `상승 참여율 ${Math.round(proxy * 100)}%${n ? ` · 대표 ${n}종목 기준` : ""}` : "상승종목 비율 데이터 없음",
+           style: [relWord(val("kosdaq_rel"), "KOSDAQ", "KOSPI"), relWord(val("cyc_kr"), "CYCLICAL", "INDEX")].filter((x): x is string => !!x) };
+}
+const BREADTH_TONE: Record<string, string> = { BROAD: "var(--ok)", IMPROVING: "var(--ok)", MIXED: "var(--warn)", NARROW: "var(--warn)", WEAK: "var(--crit)", UNAVAILABLE: "var(--faint)" };
+
+function EqMarket({ m, title, conf, side, sigs }: { m: "us" | "kr"; title: string; conf: string | undefined; side: MoEquitySide | string | undefined; sigs: RsSignal[] | null }) {
+  const t = sigs ? eqTerms(sigs, m) : null;
+  const obj = side && typeof side === "object" ? side : null;
+  const headline = obj ? obj.headline : typeof side === "string" ? side : null;
+  const lead = obj ? obj.leadership : null;
+  const row = (k: string, v: React.ReactNode, sub: React.ReactNode, color?: string, muted?: boolean, testid?: string) => (
+    <div className={`mo-eqc-r${muted ? " muted" : ""}`} data-k={k} data-testid={testid}><span className="mo-k mono">{k}</span><b className="mono" style={color ? { color } : undefined}>{v}</b>{sub ? <small className="mono">{sub}</small> : null}</div>
+  );
+  return (
+    <div className="mo-eqc-col" data-testid={`mo-eq-${m}`}>
+      <div className="mo-eqc-head"><b className="mono">{title}</b>{conf ? <span className="mo-eqc-badge mono" style={{ color: EQ_TONE[conf] ?? "var(--ink)", borderColor: EQ_TONE[conf] ?? "var(--rule)" }} data-testid={`mo-eq-${m}-status`}>{conf}</span> : null}</div>
+      {headline ? <p className={`mo-eqc-h${obj ? "" : " legacy"}`} data-testid={`mo-eq-${m}-headline`}>{headline}</p> : <p className="mo-eqc-h mo-none mono">해석 없음</p>}
+      {obj?.why ? <p className="mo-eqc-why" data-testid={`mo-eq-${m}-why`}><span className="mo-k mono">WHY {conf ?? ""}</span> {obj.why}</p> : <span />}
+      {t ? (
+        <>
+          {row("TREND", t.trend, t.trendSub, undefined, t.trend === "UNAVAILABLE", `mo-eq-${m}-trend`)}
+          {row("LEADERSHIP", lead === null ? "–" : lead.length ? lead.join(" / ") : "뚜렷한 주도 없음", null, lead && lead.length ? "var(--ink)" : undefined, !lead || !lead.length, `mo-eq-${m}-lead`)}
+          {row("BREADTH", t.breadth === "UNAVAILABLE" ? "Unavailable" : t.breadth, t.breadthSub, BREADTH_TONE[t.breadth], t.breadth === "UNAVAILABLE", `mo-eq-${m}-breadth`)}
+          {row("STYLE", t.style[0] ?? "–", t.style[1] ?? null, undefined, !t.style.length, `mo-eq-${m}-style`)}
+        </>
+      ) : <Excluded what="주식 신호" />}
+    </div>
+  );
+}
+
+/** EQUITY MARKET — 해석 먼저(GLOBAL EQUITY READ) → 미국 vs 한국 같은 형식 비교 → 둘의 차이. 개별 지수 값은 DETAIL → (실시간 탭) */
 function Equity({ c, ov }: { c: Cockpit; ov: MarketOverview | null }) {
   const sel = c.market_now.selection;
   const ne = sel?.neutral_equity ?? null;
   const v = ov?.view?.equity_view;
-  const side = (m: "us" | "kr", title: string, conf: string | undefined, line: string | undefined) => (
-    <div className="mo-eq-col" data-testid={`mo-eq-${m}`}>
-      <div className="mo-eq-head"><b className="mono">{title}</b>{conf ? <span className="mono" style={{ color: EQ_TONE[conf] ?? "var(--ink)" }}>{conf}</span> : null}</div>
-      {line ? <p className="mo-eq-line">{line}</p> : null}
-      {ne ? (
-        <table className="mo-tbl mono"><tbody>
-          {ne[m].signals.map((g) => <tr key={g.key} className={g.state === "EXCLUDED" ? "ex" : ""} title={g.note || undefined}><td>{g.label}</td><td className="num">{sigText(g)}</td></tr>)}
-        </tbody></table>
-      ) : <Excluded what="주식 신호" />}
-    </div>
-  );
   return (
-    <>
-      <div className="mo-eq">
-        {side("us", "US EQUITY", sel?.us_equity_confirmation, v?.us)}
-        {side("kr", "KOREA EQUITY", sel?.korea_equity_confirmation, v?.korea)}
+    <div className="mo-eqx">
+      {v?.global_read ? (
+        <div className="mo-eqx-global" data-testid="mo-eq-global"><span className="mo-k mono">GLOBAL EQUITY READ</span><p>{v.global_read}</p></div>
+      ) : <p className="mo-read mo-none mono" data-testid="mo-eq-global">GLOBAL EQUITY READ · 종합 코멘트 없음</p>}
+      <div className="mo-eqc">
+        <EqMarket m="us" title="US EQUITY" conf={sel?.us_equity_confirmation} side={v?.us} sigs={ne ? ne.us.signals : null} />
+        <EqMarket m="kr" title="KOREA EQUITY" conf={sel?.korea_equity_confirmation} side={v?.korea} sigs={ne ? ne.kr.signals : null} />
       </div>
-      {v ? <div className="mo-div" data-testid="mo-divergence"><b className="mono">{v.divergence_label}</b> {v.divergence}</div> : null}
-      <div className="mo-note mono">화살표 = 위험선호 기준 신호 방향(5일 z 혼합) · 확인 상태는 실시간 탭 REGIME v2 와 같은 값</div>
-    </>
+      {v ? <div className="mo-div" data-testid="mo-divergence"><span className="mo-k mono">US ↔ KOREA</span> <b className="mono">{v.divergence_label}</b> {v.divergence}</div> : null}
+      <div className="mo-note mono">TREND = 지수 방향(1D·5D z 혼합, 위험선호 기준) · BREADTH · STYLE 은 실시간 탭 확인 신호를 단어로 옮긴 것 · 지수별 값은 DETAIL →</div>
+    </div>
   );
 }
 

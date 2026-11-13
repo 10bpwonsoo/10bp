@@ -52,7 +52,16 @@ Field guide (structure fixed, content yours)
   where it is trying to go and how well equities confirm it (e.g. the idea of "a policy-driven shift is being attempted, equity confirmation still limited" — your own words)
 - regime_read: 1–2 short sentences (≤ 170 chars) on the official vs candidate regime, how far the transition is confirmed and what the equity/rates/cross-asset evidence says
 - key_drivers: 3–5 items {name, direction: POSITIVE|NEGATIVE|MIXED, strength: STRONG|MODERATE|WEAK, read: one line}
-- equity_view: {us, korea: one line each, divergence_label: "US > KOREA" | "KOREA > US" | "US + KOREA CONFIRMED" | "US + KOREA WEAK" | "MIXED", divergence: one line}
+- equity_view — synthesis and comparison, not a list of indices. `equity_terms` are the dashboard's own words for each market (trend, breadth, style, confirmation)
+  and are shown next to your text: your text must agree with them, never restate them as a list. Read leadership × breadth together
+  (e.g. strong leaders + weak participation = leaders strong but the rally is not broadening; strong leaders + improving breadth = leadership spreading):
+  {global_read: 2–3 sentences (≤ 260 chars) on the US and Korean equity market as one picture — what leads, how broad, which style — and how to read equities overall,
+   us: {headline: ≤ 28 chars, no period — what kind of market this is (e.g. leadership-driven rebound / rally not broadening, in your words),
+        why: one sentence (≤ 70 chars) on why its confirmation status (`equity_terms.us.confirmation`) is what it is — the concrete reason,
+        leadership: 0–2 names of what is actually leading (names only from `leadership_names`; [] if nothing leads)},
+   korea: same shape as us (Korea leadership may use `korea_sector_moves`),
+   divergence_label: "US > KOREA" | "KOREA > US" | "US ≈ KOREA",
+   divergence: 1–2 sentences (≤ 140 chars) on what the two markets share and where they differ}
 - rates_view: one line — what the rates move means for equities
 - cross_asset_view: 1–2 sentences
 - ai_semiconductor_view: 1–2 sentences connecting AI price leadership with the semiconductor/memory fundamentals
@@ -65,6 +74,8 @@ Field guide (structure fixed, content yours)
 - portfolio_implication: {equity_stance, style, sector, risk_control, hedge_watch} — one short line each"""
 
 _ITEM = lambda props: {"type": "object", "properties": {k: {"type": "string"} for k in props}, "required": list(props), "additionalProperties": False}  # noqa: E731
+_EQ_SIDE = {"type": "object", "properties": {"headline": {"type": "string"}, "why": {"type": "string"}, "leadership": {"type": "array", "items": {"type": "string"}}},
+            "required": ["headline", "why", "leadership"], "additionalProperties": False}
 SCHEMA = {
     "type": "object",
     "properties": {
@@ -72,7 +83,9 @@ SCHEMA = {
         "labels": _ITEM(["regime", "equity", "macro", "risk"]),
         "state_summary": {"type": "string"}, "regime_read": {"type": "string"},
         "key_drivers": {"type": "array", "items": _ITEM(["name", "direction", "strength", "read"])},
-        "equity_view": _ITEM(["us", "korea", "divergence_label", "divergence"]),
+        "equity_view": {"type": "object", "properties": {"global_read": {"type": "string"}, "us": _EQ_SIDE, "korea": _EQ_SIDE,
+                                                         "divergence_label": {"type": "string"}, "divergence": {"type": "string"}},
+                        "required": ["global_read", "us", "korea", "divergence_label", "divergence"], "additionalProperties": False},
         "rates_view": {"type": "string"}, "cross_asset_view": {"type": "string"}, "ai_semiconductor_view": {"type": "string"}, "leadership_view": {"type": "string"},
         "style_view": {"type": "array", "items": _ITEM(["style", "view", "read"])},
         "sector_view": {"type": "object", "properties": {"positive": {"type": "array", "items": {"type": "string"}}, "watch": {"type": "array", "items": {"type": "string"}},
@@ -92,7 +105,83 @@ DIRS = {"POSITIVE", "NEGATIVE", "MIXED"}; STRENGTHS = {"STRONG", "MODERATE", "WE
 STYLES = {"Growth", "Value", "Quality", "Momentum", "High Beta", "Low Vol", "Cyclical", "Defensive"}
 STYLE_VIEWS = {"POSITIVE", "IMPROVING", "NEUTRAL", "MIXED", "NEGATIVE"}
 RISK_LEVELS = {"LOW", "MODERATE", "ELEVATED", "HIGH"}; SENS = {"HIGH", "MEDIUM", "LOW"}
-DIVERGENCE = {"US > KOREA", "KOREA > US", "US + KOREA CONFIRMED", "US + KOREA WEAK", "MIXED"}
+DIVERGENCE = {"US > KOREA", "KOREA > US", "US ≈ KOREA"}
+
+# ── 주식 신호 → 화면 단어 (2026-11-13). 새 계산이 아니라 기존 neutral_equity 신호값을 읽는 표시 규칙 — 프론트 MarketOverviewView 의 eqTerms 와 같은 문턱.
+#    값은 위험선호 기준 z(1D·5D 혼합) · 대표 종목 상승 비율(0~1). 문턱을 바꾸면 양쪽을 같이 바꾼다(tests/test_market_overview · marketOverview.test 가 같은 사례를 본다).
+def _trend_word(z: float | None) -> str:
+    if z is None:
+        return "UNAVAILABLE"
+    return "STRONG" if z >= 1.5 else "POSITIVE" if z >= 0.5 else "WEAK" if z <= -1.5 else "NEGATIVE" if z <= -0.5 else "NEUTRAL"
+
+
+def _breadth_z_word(z: float | None) -> str:
+    if z is None:
+        return "UNAVAILABLE"
+    return "BROAD" if z >= 1.0 else "IMPROVING" if z >= 0.5 else "WEAK" if z <= -1.0 else "NARROW" if z <= -0.5 else "MIXED"
+
+
+def _breadth_ratio_word(r: float | None) -> str:
+    if r is None:
+        return "UNAVAILABLE"
+    return "BROAD" if r >= 0.65 else "MIXED" if r >= 0.5 else "NARROW" if r >= 0.35 else "WEAK"
+
+
+def _rel_word(v: float | None, a: str, b: str) -> str | None:
+    if v is None:
+        return None
+    return f"{a} > {b}" if v >= 0.5 else f"{b} > {a}" if v <= -0.5 else f"{a} ≈ {b}"
+
+
+def equity_terms(ne: Mapping[str, Any], conf: Mapping[str, Any] | None = None) -> dict:
+    """neutral_equity(us · kr 신호) → {us, korea}: trend · breadth · style 단어와 그 근거값. 없는 신호는 UNAVAILABLE(0 으로 메우지 않는다)."""
+    conf = conf or {}
+
+    def val(m: str, key: str) -> float | None:
+        for g in ((ne.get(m) or {}).get("signals") or []):
+            if g.get("key") == key and g.get("state") != "EXCLUDED" and g.get("value") is not None:
+                return float(g["value"])
+        return None
+
+    def mean(xs: list[float | None]) -> float | None:
+        a = [x for x in xs if x is not None]
+        return sum(a) / len(a) if a else None
+
+    us_b = val("us", "breadth_us")
+    kr_whole = val("kr", "breadth_kospi"); kr_proxy = val("kr", "breadth_kr")
+    kr_b = _breadth_z_word(kr_whole) if kr_whole is not None else _breadth_ratio_word(kr_proxy)
+    return {
+        "us": {"trend": _trend_word(mean([val("us", "spx"), val("us", "ndx")])), "breadth": _breadth_z_word(us_b),
+               "breadth_basis": "S&P 500 상승종목 비율" if us_b is not None else "상승종목 비율 데이터 없음",
+               "style": [x for x in (_rel_word(val("us", "small_rel"), "SMALL", "LARGE"), _rel_word(val("us", "cyc_def"), "CYCLICAL", "DEFENSIVE")) if x],
+               "confirmation": conf.get("us")},
+        "korea": {"trend": _trend_word(mean([val("kr", "kospi"), val("kr", "kosdaq")])), "breadth": kr_b,
+                  "breadth_basis": ("KOSPI 상승종목 비율" if kr_whole is not None else
+                                    f"상승 참여율 {round(kr_proxy * 100)}% (대표 종목 기준)" if kr_proxy is not None else "상승종목 비율 데이터 없음"),
+                  "participation_pct": None if kr_proxy is None else round(kr_proxy * 100),
+                  "style": [x for x in (_rel_word(val("kr", "kosdaq_rel"), "KOSDAQ", "KOSPI"), _rel_word(val("kr", "cyc_kr"), "CYCLICAL", "INDEX")) if x],
+                  "confirmation": conf.get("korea")},
+    }
+
+
+def korea_sector_moves(inv: Mapping[str, Any] | None) -> list[dict]:
+    """한국 대표 종목(투자 섹션, 같은 cutoff) → 업종별 묶음: 종목 수 · 5일 평균 수익률 · 하루 상승 종목 수 · 대표 이름. 리더십 후보를 읽는 근거(판정 아님)."""
+    stocks = (inv or {}).get("stocks") or {}
+    groups: dict[str, list[tuple[str, float | None, float | None]]] = {}
+    for s in stocks.values() if isinstance(stocks, Mapping) else []:
+        meta = s.get("meta") or {}; pr = ((s.get("feature") or {}).get("price")) or {}
+        if meta.get("market") not in ("KOSPI", "KOSDAQ") or not meta.get("sector"):
+            continue
+        groups.setdefault(str(meta["sector"]), []).append((str(meta.get("name") or meta.get("id")), pr.get("ret_5d"), pr.get("ret_1d")))
+    out = []
+    for sec, rows in groups.items():
+        r5 = [x[1] for x in rows if x[1] is not None]
+        if not r5:
+            continue
+        top = sorted((x for x in rows if x[1] is not None), key=lambda x: -x[1])[:2]
+        out.append({"sector": sec.replace("_", " ").title(), "stocks": len(rows), "avg_ret_5d_pct": round(sum(r5) / len(r5), 1),
+                    "up_1d": sum(1 for x in rows if (x[2] or 0) > 0), "top": [t[0] for t in top]})
+    return sorted(out, key=lambda x: -x["avg_ret_5d_pct"])
 FORBIDDEN = ["확률", "매수", "매도", "전망", "목표가", "BUY", "SELL", "사야", "팔아야"]
 
 
@@ -151,6 +240,9 @@ def build_context(doc: Mapping[str, Any]) -> dict:
     ai_groups = (ai.get("leadership") or {}).get("groups") or []
     sector_names = sorted({str(r.get("label")) for r in lead_rows if r.get("label")} | {str(g.get("label")) for g in ai_groups if g.get("label")}
                           | {str(r.get("label")) for r in ((rr.get("market_implication") or {}).get("rows") or []) if r.get("label")})
+    ksm = korea_sector_moves(doc.get("investment"))
+    if not ksm:
+        missing.append("한국 대표 종목 업종 묶음 없음")
     ev = rr.get("events") or {}
     upcoming = [{"date": u.get("date"), "event": u.get("name"), "importance": u.get("importance"), "note": u.get("note"), "days_ahead": u.get("days_ahead")}
                 for u in (ev.get("upcoming") or []) if str(u.get("date") or "") >= sd]
@@ -177,6 +269,8 @@ def build_context(doc: Mapping[str, Any]) -> dict:
                             "evidence": [f"{e.get('label')} {e.get('display') or ''}".strip() for e in (d.get("evidence") or []) if e.get("available", True)][:3]} for d in (ck.get("drivers") or [])],
         "market_tone": {"state": (ck.get("tone") or {}).get("state"), "read": (ck.get("tone") or {}).get("read")},
         "us_equity_signals": sigs("us"), "korea_equity_signals": sigs("kr"),
+        "equity_terms": equity_terms(ne, {"us": sel.get("us_equity_confirmation"), "korea": sel.get("korea_equity_confirmation")}),
+        "korea_sector_moves": ksm,
         "key_variables": [{"label": k.get("label"), "z": _r(k.get("z"), 1), "change": k.get("change_display")} for k in (now.get("key_variables") or [])],
         "cross_asset": [{"asset": r.get("label"), "instrument": r.get("instrument_label"), "z": _r(r.get("z"), 1), "arrow": r.get("arrow")} for r in ((ck.get("cross_asset") or {}).get("rows") or [])],
         "divergences": [d.get("title") + ": " + (d.get("meaning") or "") for d in ((ck.get("cross_asset") or {}).get("divergences") or [])][:3],
@@ -202,6 +296,7 @@ def build_context(doc: Mapping[str, Any]) -> dict:
         "news": [{"headline": c.get("headline"), "tag": c.get("tag"), "impact": c.get("impact"), "why": c.get("why")} for c in (ck.get("catalysts") or [])[:8]],
         "sector_names": sector_names,
     }
+    ctx["leadership_names"] = sorted(set(sector_names) | {k["sector"] for k in ksm})
     ctx["missing"] = sorted(set(missing))
     ctx["displayed_elsewhere"] = {"numbers": [x for x in [ctx["rates"]["us10y_level"], ctx["ai_theme"]["rel_vs_nasdaq_5d_pp"], sel.get("regime_confidence"),
                                                           ctx["semiconductor_cycle"]["composite"] if ctx["semiconductor_cycle"] else None] if x is not None],
@@ -265,8 +360,31 @@ def check(o: Mapping, ctx: Mapping) -> list[str]:
     for r in o["top_risks"]:
         if r.get("level") not in RISK_LEVELS:
             p.append(f"top_risks '{r.get('risk')}' level 값")
-    if o["equity_view"].get("divergence_label") not in DIVERGENCE:
+    ev_ = o["equity_view"]
+    if ev_.get("divergence_label") not in DIVERGENCE:
         p.append("equity_view.divergence_label 값")
+    gr = str(ev_.get("global_read") or "").strip()
+    if not 2 <= len(split_sentences(gr)) <= 3 or len(gr) > 260:
+        p.append("equity_view.global_read 는 2~3문장 · 260자 이내")
+    dv = str(ev_.get("divergence") or "").strip()
+    if not 1 <= len(split_sentences(dv)) <= 2 or len(dv) > 140:
+        p.append("equity_view.divergence 는 1~2문장 · 140자 이내")
+    names = [str(x).lower() for x in ctx.get("leadership_names") or ctx.get("sector_names") or []]
+    for side in ("us", "korea"):
+        sd_ = ev_.get(side) or {}
+        if not isinstance(sd_, Mapping):
+            p.append(f"equity_view.{side} 는 headline · why · leadership 객체"); continue
+        h = str(sd_.get("headline") or "").strip(); w = str(sd_.get("why") or "").strip()
+        if not h or len(h) > 28 or h.endswith(".") or "\n" in h:
+            p.append(f"equity_view.{side}.headline 은 28자 이내 한 줄, 마침표 없이")
+        if not w or len(w) > 70 or len(split_sentences(w)) != 1:
+            p.append(f"equity_view.{side}.why 는 한 문장 · 70자 이내")
+        ld_ = sd_.get("leadership") or []
+        if len(ld_) > 2:
+            p.append(f"equity_view.{side}.leadership 는 2개 이내")
+        for nm in ld_:
+            if str(nm).lower() not in names:
+                p.append(f"equity_view.{side}.leadership '{nm}' 는 leadership_names 에 없다")
     allowed = [str(x).lower() for x in ctx.get("sector_names") or []]
     for bucket in ("positive", "watch", "negative"):
         for nm in o["sector_view"].get(bucket) or []:
@@ -351,7 +469,8 @@ def fingerprint(ctx: Mapping) -> str:
     key = {"off": mr.get("official"), "cand": mr.get("candidate"), "ts": mr.get("transition_status"),
            "drv": [(d.get("driver"), d.get("direction")) for d in (ctx.get("market_drivers") or [])][:4],
            "ai": (ctx.get("ai_theme") or {}).get("regime"), "rates": (ctx.get("rates") or {}).get("regime"), "oil": (ctx.get("oil") or {}).get("regime"),
-           "semi": ((ctx.get("semiconductor_cycle") or {}) or {}).get("regime"), "next": [(u.get("date"), u.get("event")) for u in (ctx.get("upcoming_events") or [])][:2],
+           "semi": ((ctx.get("semiconductor_cycle") or {}) or {}).get("regime"),
+           "eq": {m: [t.get("trend"), t.get("breadth"), t.get("confirmation")] for m, t in (ctx.get("equity_terms") or {}).items()}, "next": [(u.get("date"), u.get("event")) for u in (ctx.get("upcoming_events") or [])][:2],
            "big": sorted((k.get("label"), 1 if (k.get("z") or 0) > 0 else -1) for k in (ctx.get("key_variables") or []) if abs(k.get("z") or 0) >= 2)}
     return hashlib.sha256(json.dumps(key, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
 

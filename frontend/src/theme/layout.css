@@ -3005,3 +3005,22 @@
 .mo-rs-badges { display: flex; flex-wrap: wrap; gap: 4px 12px; } .mo-rs-badge i { font-style: normal; color: var(--muted); } .mo-rs-badge b { font-weight: 600; }
 .mo-sec[data-testid="mo-regime"] .mo-strip { margin-top: 12px; }
 @media (max-width: 760px) { .mo-rs-flow { font-size: 17px; } }
+
+/* MARKET OVERVIEW · EQUITY MARKET 재구성(2026-11-13) — 해석 먼저, 미국 vs 한국 같은 형식, 지수 값은 DETAIL */
+.mo-eqx { display: grid; gap: 12px; }
+.mo-eqx-global p { margin: 3px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+.mo-eqc { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.mo-eqc-col { display: grid; gap: 5px; align-content: start; padding: 10px 0; border-top: 1px solid var(--rule-soft); min-width: 0; }
+.mo-eqc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; } .mo-eqc-head > b { font-size: 11px; letter-spacing: .06em; color: var(--muted); }
+.mo-eqc-badge { font-size: 10px; letter-spacing: .05em; border: 1px solid; border-radius: 3px; padding: 0 5px; line-height: 1.6; }
+.mo-eqc-h { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.35; color: var(--ink); } .mo-eqc-h.legacy { font-size: 13px; font-weight: 600; }
+.mo-eqc-why { margin: 0 0 2px; font-size: 12px; line-height: 1.45; color: var(--ink-2); } .mo-eqc-why .mo-k { margin-right: 4px; }
+.mo-eqc-r { display: grid; grid-template-columns: 82px minmax(0, 1fr); column-gap: 8px; align-items: baseline; font-size: 12px; }
+.mo-eqc-r b { font-weight: 600; color: var(--ink-2); overflow-wrap: anywhere; } .mo-eqc-r small { grid-column: 2; font-size: 10.5px; color: var(--faint); }
+.mo-eqc-r.muted b { color: var(--faint); font-weight: 400; }
+@media (min-width: 700px) {
+  .mo-eqc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(7, auto); column-gap: 22px; }
+  .mo-eqc-col { grid-row: span 7; grid-template-rows: subgrid; gap: 5px; }
+}
+.mo-eqx .mo-div { margin-top: 0; padding-top: 10px; border-top: 1px solid var(--rule-soft); line-height: 1.5; } .mo-eqx .mo-div .mo-k { margin-right: 6px; }
+@media (max-width: 699px) { .mo-eqc-r[data-k="TREND"] small, .mo-eqc-r[data-k="STYLE"] small { display: none; } .mo-eqc-h { font-size: 15px; } .mo-eqx-global p { font-size: 13px; } }
