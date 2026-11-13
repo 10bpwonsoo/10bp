@@ -1,0 +1,133 @@
+# 종목의 **사업 구조** 노출 (2026-09-16 신설). 통계 상관과 구분한다.
+#
+# 통계 노출(rolling beta/corr)은 "지난 60일 같이 움직였는가" 고, 여기 적힌
+# 것은 "이 회사의 매출·원가·수요가 실제로 그 변수에 달려 있는가" 다. 둘이
+# 다를 때가 정보다 — 원가 노출은 큰데 최근 상관이 없다면 시장이 아직 그
+# 변수를 이 종목에 연결하지 않은 것이다.
+#
+# kind      revenue 매출 / cost 원가 / demand 수요 대리 / financial 금융(환율·금리)
+# direction 변수가 오를 때 이익이 가는 방향 (+1 수혜, -1 피해)
+# importance high 1.0 / medium 0.6 / low 0.3   (intelligence.yaml)
+# rationale 한 줄. 화면에 그대로 나간다.
+#
+# 이 값들은 사업보고서·상식에 기반한 초기값이지 추정치가 아니다. 틀리면 여기서 고친다.
+
+SAMSUNG:
+  DRAM_SPOT:  {kind: revenue, direction: 1,  importance: high,   rationale: "메모리 ASP. DS 부문 이익의 최대 변수"}
+  NAND_SPOT:  {kind: revenue, direction: 1,  importance: medium, rationale: "낸드 ASP"}
+  SOX:        {kind: demand,  direction: 1,  importance: medium, rationale: "글로벌 반도체 수요 심리"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 매출 비중이 높아 원화 약세가 이익에 유리"}
+  US10Y:      {kind: financial, direction: -1, importance: low,  rationale: "성장주 할인율"}
+SKHYNIX:
+  DRAM_SPOT:  {kind: revenue, direction: 1,  importance: high,   rationale: "DRAM 이익 비중이 삼성보다 높다"}
+  NAND_SPOT:  {kind: revenue, direction: 1,  importance: medium, rationale: "솔리다임 포함 낸드"}
+  NVDA:       {kind: demand,  direction: 1,  importance: high,   rationale: "HBM 최대 고객"}
+  SOX:        {kind: demand,  direction: 1,  importance: medium, rationale: "반도체 수요 심리"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 매출"}
+HANMI_SEMI:
+  SKHYNIX:    {kind: demand,  direction: 1,  importance: high,   rationale: "HBM TC 본더 최대 고객"}
+  SOX:        {kind: demand,  direction: 1,  importance: medium, rationale: "장비 투자 사이클"}
+SAMSUNG_EM:
+  SOX:        {kind: demand,  direction: 1,  importance: medium, rationale: "MLCC·기판 수요"}
+  USDKRW:     {kind: financial, direction: 1, importance: low,   rationale: "달러 매출"}
+LG_ENSOL:
+  LITHIUM_ETF: {kind: cost,   direction: -1, importance: medium, rationale: "양극재 원가지만 판가 연동 계약이 있어 시차 후 중립"}
+  NICKEL_PROXY: {kind: cost,  direction: -1, importance: medium, rationale: "삼원계 원가"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 매출"}
+SAMSUNG_SDI:
+  LITHIUM_ETF: {kind: cost,   direction: -1, importance: medium, rationale: "원가"}
+LGCHEM:
+  BRENT:      {kind: cost,    direction: -1, importance: high,   rationale: "나프타 원가는 유가를 따른다"}
+  NAPHTHA_PROXY: {kind: cost, direction: -1, importance: high,   rationale: "직접 원가"}
+  LITHIUM_ETF: {kind: revenue, direction: 1, importance: medium, rationale: "양극재 자회사"}
+LOTTE_CHEM:
+  BRENT:      {kind: cost,    direction: -1, importance: high,   rationale: "나프타 원가"}
+  NAPHTHA_PROXY: {kind: cost, direction: -1, importance: high,   rationale: "직접 원가"}
+  CSI300:     {kind: demand,  direction: 1,  importance: medium, rationale: "중국 석유화학 수요"}
+KUMHO_PETRO:
+  BRENT:      {kind: cost,    direction: -1, importance: medium, rationale: "부타디엔 원가"}
+POSCO:
+  IRON_ORE:   {kind: cost,    direction: -1, importance: high,   rationale: "원가의 절반. 단기에는 재고 평가로 같은 방향일 수도"}
+  STEEL_ETF:  {kind: revenue, direction: 1,  importance: high,   rationale: "제품 가격·업황"}
+  CSI300:     {kind: demand,  direction: 1,  importance: medium, rationale: "중국 철강 수요·수출가"}
+  LITHIUM_ETF: {kind: revenue, direction: 1, importance: low,    rationale: "리튬 사업"}
+HYUNDAI_STEEL:
+  IRON_ORE:   {kind: cost,    direction: -1, importance: high,   rationale: "원가"}
+  STEEL_ETF:  {kind: revenue, direction: 1,  importance: high,   rationale: "제품 가격"}
+KOREA_ZINC:
+  ZINC_PROXY: {kind: revenue, direction: 1,  importance: high,   rationale: "주력 제품"}
+  SILVER:     {kind: revenue, direction: 1,  importance: medium, rationale: "부산물 은"}
+  GOLD:       {kind: revenue, direction: 1,  importance: low,    rationale: "부산물 금"}
+HYUNDAI_MOTOR:
+  USDKRW:     {kind: financial, direction: 1, importance: high,  rationale: "미국 매출 비중. 원화 약세 수혜"}
+  ALUMINUM:   {kind: cost,    direction: -1, importance: low,    rationale: "차체 원가"}
+  US10Y:      {kind: demand,  direction: -1, importance: medium, rationale: "미국 자동차 할부 금리"}
+KIA:
+  USDKRW:     {kind: financial, direction: 1, importance: high,  rationale: "미국 매출"}
+  US10Y:      {kind: demand,  direction: -1, importance: medium, rationale: "할부 금리"}
+HYUNDAI_MOBIS:
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "해외 매출"}
+KOREAN_AIR:
+  BRENT:      {kind: cost,    direction: -1, importance: high,   rationale: "연료비가 영업비용의 25~30%"}
+  JET_FUEL_PROXY: {kind: cost, direction: -1, importance: high,  rationale: "항공유 직접 원가"}
+  USDKRW:     {kind: financial, direction: -1, importance: high, rationale: "달러 부채·리스와 연료비. 원화 약세가 비용"}
+HMM:
+  SCFI:       {kind: revenue, direction: 1,  importance: high,   rationale: "컨테이너 운임이 곧 매출"}
+  BRENT:      {kind: cost,    direction: -1, importance: medium, rationale: "벙커유"}
+  DRY_BULK_ETF: {kind: revenue, direction: 1, importance: low,   rationale: "벌크 부문 일부"}
+PAN_OCEAN:
+  DRY_BULK_ETF: {kind: revenue, direction: 1, importance: high,  rationale: "건화물 운임이 매출"}
+  IRON_ORE:   {kind: demand,  direction: 1,  importance: medium, rationale: "철광석 물동량"}
+HD_HHI:
+  NATGAS:     {kind: demand,  direction: 1,  importance: medium, rationale: "LNG 운반선 발주 사이클"}
+  STEEL_ETF:  {kind: cost,    direction: -1, importance: medium, rationale: "후판 원가"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 수주"}
+HANWHA_OCEAN:
+  NATGAS:     {kind: demand,  direction: 1,  importance: medium, rationale: "LNG선"}
+  STEEL_ETF:  {kind: cost,    direction: -1, importance: medium, rationale: "후판"}
+HANWHA_AERO:
+  ITA:        {kind: demand,  direction: 1,  importance: medium, rationale: "글로벌 방산 예산 사이클"}
+  USDKRW:     {kind: financial, direction: 1, importance: low,   rationale: "수출 계약"}
+LIG_NEX1:
+  ITA:        {kind: demand,  direction: 1,  importance: medium, rationale: "방산 사이클"}
+LS_ELECTRIC:
+  COPPER:     {kind: cost,    direction: -1, importance: medium, rationale: "전선·변압기 원재료. 다만 수주 단가 전가 가능"}
+  US10Y:      {kind: demand,  direction: 1,  importance: low,    rationale: "미국 전력 인프라 투자와 동행하는 경향"}
+HD_ELECTRIC:
+  COPPER:     {kind: cost,    direction: -1, importance: medium, rationale: "변압기 원재료"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "미국 수출"}
+HYOSUNG_HEAVY:
+  COPPER:     {kind: cost,    direction: -1, importance: medium, rationale: "변압기 원재료"}
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "미국 수출"}
+DOOSAN_ENER:
+  URANIUM_ETF: {kind: demand, direction: 1,  importance: medium, rationale: "원전 사이클 기대"}
+SOIL:
+  BRENT:      {kind: revenue, direction: 1,  importance: medium, rationale: "재고 평가 이익. 단기 동행, 정제마진이 본질"}
+  DIESEL_PROXY: {kind: revenue, direction: 1, importance: high,  rationale: "디젤 크랙"}
+  GASOLINE:   {kind: revenue, direction: 1,  importance: medium, rationale: "휘발유 크랙"}
+SK_INNOVATION:
+  BRENT:      {kind: revenue, direction: 1,  importance: medium, rationale: "재고 평가"}
+  DIESEL_PROXY: {kind: revenue, direction: 1, importance: high,  rationale: "디젤 크랙"}
+KEPCO:
+  NATGAS:     {kind: cost,    direction: -1, importance: high,   rationale: "LNG 발전 연료비"}
+  COAL_PROXY: {kind: cost,    direction: -1, importance: high,   rationale: "석탄 연료비"}
+  KR10Y:      {kind: financial, direction: -1, importance: medium, rationale: "부채 이자"}
+  USDKRW:     {kind: cost,    direction: -1, importance: medium, rationale: "달러 연료 수입"}
+NAVER:
+  US10Y:      {kind: financial, direction: -1, importance: medium, rationale: "성장주 할인율"}
+KAKAO:
+  KR10Y:      {kind: financial, direction: -1, importance: medium, rationale: "성장주 할인율"}
+KB:
+  KR10Y:      {kind: revenue, direction: 1,  importance: high,   rationale: "순이자마진"}
+  US10Y:      {kind: revenue, direction: 1,  importance: low,    rationale: "글로벌 금리"}
+SHINHAN:
+  KR10Y:      {kind: revenue, direction: 1,  importance: high,   rationale: "순이자마진"}
+CELLTRION:
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 매출"}
+SAMSUNG_BIO:
+  USDKRW:     {kind: financial, direction: 1, importance: medium, rationale: "달러 수주"}
+CJ_CJ:
+  CORN:       {kind: cost,    direction: -1, importance: high,   rationale: "사료·전분 원가"}
+  WHEAT:      {kind: cost,    direction: -1, importance: medium, rationale: "제분 원가"}
+  SOYBEAN:    {kind: cost,    direction: -1, importance: medium, rationale: "대두유 원가"}
+  USDKRW:     {kind: cost,    direction: -1, importance: medium, rationale: "곡물 수입"}

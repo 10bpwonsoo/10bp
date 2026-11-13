@@ -1,0 +1,143 @@
+# Market Pulse AI — Market State 룰셋 (설계서 STEP 5.3)
+#
+# require + support 2단 구조
+# --------------------------
+#   score = 0                                    require 미충족
+#         = base + (1-base)·Σ(w_k · passed_k)    require 충족 시
+#
+# 왜 require gate 가 필요한가: 순수 가중합만 쓰면 핵심 조건 없이도 라벨이
+# 켜진다. 인플레이션 지표가 전혀 안 움직였는데 금리와 변동성만으로
+# "Inflation Shock" 이 뜨면 그 시스템은 신뢰를 잃는다. require 가 오탐을
+# 막고 support 가 강도를 준다.
+#
+# 표현식 문법
+# -----------
+#   Inflation >= 1.0        factor 이름 (factors.yaml)
+#   z(BRENT) >= 1.0         instrument 의 z_1d
+#   abs(Rates) >= 1.2       절댓값. 방향이 양쪽 다 의미 있을 때
+#
+# expected_response
+# -----------------
+# 이 상태라면 각 자산이 어느 방향으로 움직여야 하는가. cross-asset
+# confirmation 이 이 표와 실제를 대조한다. 방향이 본질적으로 모호한
+# 상태(POLICY_DRIVEN)는 비워 둔다 — 틀린 기대표를 쓰느니 확인을 포기하고
+# confidence 계산에서 제외하는 편이 정직하다.
+
+states:
+  RISK_OFF:
+    description: 위험자산 회피. 주식 약세와 변동성·스프레드 확대가 동반된다.
+    require:
+      - {id: ro_core, expr: "RiskAppetite <= -0.8"}
+    support:
+      - {id: ro_vol,    expr: "Volatility >= 0.5",  weight: 0.30}
+      - {id: ro_credit, expr: "Credit >= 0.5",      weight: 0.25}
+      - {id: ro_flow,   expr: "KoreaFlow <= -0.3",  weight: 0.25}
+      - {id: ro_usd,    expr: "USD >= 0.3",         weight: 0.20}
+    expected_response:
+      SPX: -1
+      NDX: -1
+      KOSPI: -1
+      VIX: 1
+      GOLD: 1
+      DXY: 1
+      US_HY_OAS: 1
+
+  RISK_ON:
+    description: 위험선호 확대. 주식 강세와 변동성·스프레드 축소.
+    require:
+      - {id: rn_core, expr: "RiskAppetite >= 0.8"}
+    support:
+      - {id: rn_vol,    expr: "Volatility <= -0.3", weight: 0.30}
+      - {id: rn_growth, expr: "Growth >= 0.3",      weight: 0.25}
+      - {id: rn_flow,   expr: "KoreaFlow >= 0.3",   weight: 0.25}
+      - {id: rn_credit, expr: "Credit <= -0.3",     weight: 0.20}
+    expected_response:
+      SPX: 1
+      NDX: 1
+      KOSPI: 1
+      RUT: 1
+      VIX: -1
+      US_HY_OAS: -1
+
+  INFLATION_SHOCK:
+    description: 물가 충격. 원자재와 기대인플레이션이 밀어올리고 금리가 따라간다.
+    require:
+      - {id: inf_core, expr: "Inflation >= 1.0"}
+    support:
+      - {id: inf_rates,  expr: "Rates >= 0.8",         weight: 0.30}
+      - {id: inf_risk,   expr: "RiskAppetite <= -0.5", weight: 0.30}
+      - {id: inf_vol,    expr: "Volatility >= 0.5",    weight: 0.20}
+      - {id: inf_growth, expr: "Growth <= 0.0",        weight: 0.20}
+    expected_response:
+      BRENT: 1
+      WTI: 1
+      BE10Y: 1
+      US10Y: 1
+      GOLD: 1
+      NDX: -1
+      DXY: 1
+
+  GROWTH_SHOCK:
+    description: 성장 충격. 경기민감 자산이 무너지고 금리는 내린다.
+    require:
+      - {id: gs_core, expr: "Growth <= -1.0"}
+    support:
+      - {id: gs_risk,  expr: "RiskAppetite <= -0.5", weight: 0.30}
+      - {id: gs_rates, expr: "Rates <= -0.3",        weight: 0.25}
+      - {id: gs_china, expr: "China <= -0.3",        weight: 0.25}
+      - {id: gs_vol,   expr: "Volatility >= 0.5",    weight: 0.20}
+    expected_response:
+      RUT: -1
+      COPPER_GOLD: -1
+      CURVE_2S10S: -1
+      US10Y: -1
+      SPX: -1
+      VIX: 1
+
+  LIQUIDITY_STRESS:
+    description: 유동성 경색. 스프레드와 채권 변동성이 함께 튄다.
+    require:
+      - {id: ls_core, expr: "Liquidity <= -1.0"}
+    support:
+      - {id: ls_credit, expr: "Credit >= 0.8",        weight: 0.35}
+      - {id: ls_vol,    expr: "Volatility >= 0.8",    weight: 0.35}
+      - {id: ls_risk,   expr: "RiskAppetite <= -0.5", weight: 0.30}
+    expected_response:
+      US_HY_OAS: 1
+      MOVE: 1
+      VIX: 1
+      SPX: -1
+      DXY: 1
+
+  GEOPOLITICAL_RISK:
+    description: 지정학 리스크. 유가와 금이 함께 오르고 방산은 강세, 항공은 약세다.
+    require:
+      - {id: geo_oil, expr: "z(BRENT) >= 1.0"}
+    support:
+      - {id: geo_gold,    expr: "z(GOLD) >= 0.8",   weight: 0.30}
+      - {id: geo_vol,     expr: "Volatility >= 0.5", weight: 0.25}
+      - {id: geo_defense, expr: "z(ITA) >= 0.5",    weight: 0.25}
+      - {id: geo_air,     expr: "z(JETS) <= -0.5",  weight: 0.20}
+    expected_response:
+      BRENT: 1
+      WTI: 1
+      GOLD: 1
+      VIX: 1
+      ITA: 1
+      JETS: -1
+      DXY: 1
+
+  POLICY_DRIVEN:
+    description: >
+      정책 요인 주도. 금리가 크게 움직이되 실물 성장 지표는 조용하다.
+      방향이 양쪽 다 의미 있어 절댓값으로 판정한다.
+    require:
+      - {id: pd_core, expr: "abs(Rates) >= 1.2"}
+    support:
+      - {id: pd_usd,    expr: "abs(USD) >= 0.5",    weight: 0.30}
+      - {id: pd_quiet,  expr: "abs(Growth) <= 0.5", weight: 0.30}
+      - {id: pd_vol,    expr: "Volatility >= 0.3",  weight: 0.20}
+      - {id: pd_infl,   expr: "Inflation <= 0.5",   weight: 0.20}
+    # 금리 상승 정책인지 하락 정책인지에 따라 기대 반응이 정반대다.
+    # 방향을 특정할 수 없으므로 기대표를 두지 않는다.
+    expected_response: {}

@@ -1,0 +1,795 @@
+{
+ "as_of_utc": "2026-11-12T22:30:00Z",
+ "ai_trade_regime": {
+  "label": "LEADERSHIP NARROWING",
+  "label_ko": "리더십 축소",
+  "subtitle": "LEADERSHIP NARROWING / FUNDAMENTALS WEAK",
+  "implication": "지수는 버티는데 참여 종목이 줄어든다 — 소수 종목이 끌고 가는 랠리. 랠리 후반부 신호이며 breadth 회복 없이는 취약하다.",
+  "signal_strength": "STRONG",
+  "dominant_driver": "broad_risk_off",
+  "runner_up": "semi_cycle"
+ },
+ "status_strip": [
+  {
+   "label": "Narrative",
+   "value": "NEUTRAL−",
+   "detail": "AI 뉴스 톤 -12",
+   "meaning": "뉴스·AI 투자 스토리가 소폭 부정"
+  },
+  {
+   "label": "AI Relative Strength",
+   "value": "STRONG",
+   "detail": "Nasdaq 대비 5일 상대 z +2.3σ",
+   "meaning": "AI 가 시장 대비 상대강도 우위"
+  },
+  {
+   "label": "Price",
+   "value": "STRONG",
+   "detail": "바스켓 +2.5σ",
+   "meaning": "실제 가격이 AI 기대를 확인"
+  },
+  {
+   "label": "Semiconductor Confirm.",
+   "value": "WEAK",
+   "detail": "반도체·인프라 데이터가 AI 내러티브를 확인하지 못한다.",
+   "meaning": "반도체 펀더멘털 확인 약함"
+  },
+  {
+   "label": "AI Infra",
+   "value": "STRONG",
+   "detail": "데이터센터 인프라·전력·네트워킹 세그먼트의 1주 상대 %p",
+   "meaning": "AI 인프라(데이터센터·전력·네트워킹) 가격이 리더십 확인"
+  },
+  {
+   "label": "Software",
+   "value": "STRONG",
+   "detail": "소프트웨어 1주 상대 +2.7%p",
+   "meaning": "소프트웨어까지 AI 랠리 확산"
+  },
+  {
+   "label": "Breadth",
+   "value": "WIDENING",
+   "detail": "바스켓 32종목 중 20일선 위 28% · 5일선 위 81% · 오늘 상승 41% · 20일선 상회 비율 1주 +19%p (넓어진다) — 지수는 오르는데 참여가 줄어든다: Leadership Narrowing.",
+   "meaning": "상승에 참여하는 종목 수가 증가"
+  },
+  {
+   "label": "Macro",
+   "value": "TAILWIND",
+   "detail": "AI 가 약세가 아니다(상승) — 설명할 약세가 없다. 매크로 3/6 요인이 같은 방향.",
+   "meaning": "금리·Credit 환경이 AI 자산에 우호적"
+  },
+  {
+   "label": "Fundamental Confirmation",
+   "value": "WEAK",
+   "detail": "반도체·인프라 데이터가 AI 내러티브를 확인하지 못한다.",
+   "meaning": "펀더멘털이 약해지고 있음"
+  }
+ ],
+ "ai_vs_nasdaq": {
+  "basket_ret_1d": -0.4,
+  "basket_ret_5d": 12.5,
+  "basket_ret_21d": -10.3,
+  "ndx_ret_5d": 6.2,
+  "rel_5d_pp": 5.9,
+  "rel_z_5d": 2.3,
+  "verdict": "outperform"
+ },
+ "drivers": [
+  {
+   "driver": "Macro / Rates",
+   "score": -89.0,
+   "strength": "STRONG",
+   "status": "CONTRADICTED",
+   "why": "driver 는 AI 하락 압력인데 바스켓은 반대(+2.5σ)다."
+  },
+  {
+   "driver": "Broad Risk-Off",
+   "score": 88.0,
+   "strength": "STRONG",
+   "status": "CONFIRMED",
+   "why": "driver 방향(상승)과 AI 바스켓(+2.5σ)이 같다."
+  },
+  {
+   "driver": "Semiconductor Cycle",
+   "score": 61.0,
+   "strength": "STRONG",
+   "status": "CONFIRMED",
+   "why": "driver 방향(상승)과 AI 바스켓(+2.5σ)이 같다."
+  },
+  {
+   "driver": "AI Narrative",
+   "score": -32.0,
+   "strength": "MODERATE",
+   "status": "CONTRADICTED",
+   "why": "driver 는 AI 하락 압력인데 바스켓은 반대(+2.5σ)다."
+  },
+  {
+   "driver": "AI-specific Fundamental Stress",
+   "score": 28.0,
+   "strength": "WEAK",
+   "status": "CONFIRMED",
+   "why": "driver 방향(상승)과 AI 바스켓(+2.5σ)이 같다."
+  }
+ ],
+ "driver_verdict": {
+  "gap": "AI OUTPERFORMANCE",
+  "gap_value": "+5.9%p vs Nasdaq · 1W",
+  "primary": "Broad Risk-Off",
+  "primary_status": "CONFIRMED"
+ },
+ "leadership_groups": [
+  {
+   "group": "Semiconductors / Compute",
+   "ret_5d": 19.2,
+   "rel_5d": 13.0,
+   "ret_21d": -12.4,
+   "role": "strong"
+  },
+  {
+   "group": "Memory",
+   "ret_5d": 10.2,
+   "rel_5d": 4.0,
+   "ret_21d": -16.3,
+   "role": "strong"
+  },
+  {
+   "group": "Hyperscalers",
+   "ret_5d": 3.9,
+   "rel_5d": -2.3,
+   "ret_21d": -5.6,
+   "role": "laggard"
+  },
+  {
+   "group": "Networking / Infrastructure",
+   "ret_5d": 19.4,
+   "rel_5d": 13.1,
+   "ret_21d": -15.2,
+   "role": "leader"
+  },
+  {
+   "group": "Power / Data Center",
+   "ret_5d": 15.0,
+   "rel_5d": 8.7,
+   "ret_21d": -7.4,
+   "role": "strong"
+  },
+  {
+   "group": "Software / Application",
+   "ret_5d": 5.6,
+   "rel_5d": -0.6,
+   "ret_21d": -8.3,
+   "role": "lagging"
+  },
+  {
+   "group": "Korea AI Supply Chain",
+   "ret_5d": 0.9,
+   "rel_5d": 1.6,
+   "ret_21d": -17.3,
+   "role": "strong"
+  }
+ ],
+ "leadership_read": "Networking / Infrastructure · Semiconductors / Compute가 Nasdaq 을 실제로 outperform 해 AI 내부 leadership 은 Networking / Infrastructure · Semiconductors / Compute에 있으며, Hyperscalers → Networking / Infrastructure 순위 변동은 leadership 변화 가능성일 뿐 아직 rotation 으로 확인되지 않았습니다. Networking / Infrastructure는 실제로 outperform 하지만 breadth 가 좁아 소수 종목이 끄는 상대강도입니다. Software / Application은 단기·중기 상대성과와 breadth 가 함께 약해 가장 구조적인 laggard 입니다.",
+ "breadth": {
+  "above_ma20_pct": 28.0,
+  "change_1w_pts": 19.0,
+  "advancing_pct": 41.0,
+  "trend": "widening",
+  "narrowing_with_index_up": true,
+  "by_group": {
+   "semis_compute": 33.0,
+   "memory": 0.0,
+   "hyperscalers": 40.0,
+   "networking_infra": 33.0,
+   "power_datacenter": 40.0,
+   "software_app": 17.0,
+   "korea_ai": 12.0
+  },
+  "read": "단기 모멘텀은 종목별로 엇갈리고, 20일선 위 종목은 아직 과반에 못 미쳐 반등이 중기 추세로 확인되지 않았습니다. Hyperscalers · Power / Data Center은 아직 중기 breadth 가 상대적으로 견조한 반면, Memory는 내부 참여도가 크게 약해져 있습니다. 20DMA breadth 가 빠르게 넓어지고 있어 이 확산이 이어지는지가 추세 확인의 핵심 신호입니다."
+ },
+ "narrative": {
+  "news_tone": -12.0,
+  "news_count": 13,
+  "news_momentum": 12.0,
+  "quadrant": "PRICE RESILIENCE",
+  "sentence": "뉴스 -12 ↓ · 가격 +2.5σ ↑ — 악재에도 가격이 버틴다.",
+  "topics": [
+   {
+    "topic": "AI Capex",
+    "count": 0,
+    "tone": null
+   },
+   {
+    "topic": "GPU Demand",
+    "count": 4,
+    "tone": -31.0
+   },
+   {
+    "topic": "Hyperscaler Spending",
+    "count": 0,
+    "tone": null
+   },
+   {
+    "topic": "Monetization",
+    "count": 0,
+    "tone": null
+   },
+   {
+    "topic": "Competition",
+    "count": 0,
+    "tone": null
+   },
+   {
+    "topic": "Regulation / Safety",
+    "count": 0,
+    "tone": null
+   },
+   {
+    "topic": "Valuation / Funding",
+    "count": 2,
+    "tone": 19.0
+   }
+  ]
+ },
+ "macro": {
+  "verdict": "not_weak",
+  "sentence": "AI 가 약세가 아니다(상승) — 설명할 약세가 없다. 매크로 3/6 요인이 같은 방향.",
+  "rows": [
+   {
+    "factor": "Rates (US 10Y)",
+    "z": 1.8,
+    "status": "DOES_NOT_EXPLAIN"
+   },
+   {
+    "factor": "Real Yield (TIPS 10Y)",
+    "z": 2.5,
+    "status": "DOES_NOT_EXPLAIN"
+   },
+   {
+    "factor": "USD (DXY)",
+    "z": 1.9,
+    "status": "DOES_NOT_EXPLAIN"
+   },
+   {
+    "factor": "VIX",
+    "z": -3.8,
+    "status": "EXPLAINS"
+   },
+   {
+    "factor": "HY OAS",
+    "z": -1.2,
+    "status": "EXPLAINS"
+   },
+   {
+    "factor": "S&P 500",
+    "z": 2.8,
+    "status": "EXPLAINS"
+   }
+  ]
+ },
+ "ai_specific_stress": {
+  "level": "MODERATE",
+  "score": 3,
+  "max": 8,
+  "components": [
+   {
+    "c": "AI vs Nasdaq 상대 모멘텀(5일 z)",
+    "value": "+2.3σ",
+    "points": 0
+   },
+   {
+    "c": "반도체 상대 강도(5일 z)",
+    "value": "+2.5σ",
+    "points": 0
+   },
+   {
+    "c": "하이퍼스케일러 20일선 상회 비율",
+    "value": "40%",
+    "points": 2
+   },
+   {
+    "c": "AI 뉴스 톤",
+    "value": "-12",
+    "points": 1
+   }
+  ]
+ },
+ "fundamental_confirmation": {
+  "level": "WEAK",
+  "confirming": [],
+  "lagging": [
+   "Compute / Accelerator",
+   "Memory / HBM",
+   "Foundry",
+   "Advanced Packaging",
+   "Equipment"
+  ],
+  "sentence": "반도체·인프라 데이터가 AI 내러티브를 확인하지 못한다."
+ },
+ "semiconductor_confirmation": [
+  {
+   "area": "Compute / Accelerator",
+   "status": "MIXED",
+   "detail": "가격 ↑↑ · 상대 ↑↑ · breadth → · 뉴스 ↓↓ · EPS ?"
+  },
+  {
+   "area": "Memory / HBM",
+   "status": "MIXED",
+   "detail": "가격 ↑↑ · 상대 ↑↑ · breadth ↓↓ · 뉴스 ↓↓ · EPS ?"
+  },
+  {
+   "area": "Commodity Memory",
+   "status": "UNCONFIRMED",
+   "detail": "잴 계열이 없다"
+  },
+  {
+   "area": "Foundry",
+   "status": "MIXED",
+   "detail": "가격 ↑↑ · 상대 ↑↑ · breadth ↓↓ · 뉴스 ↓↓ · EPS ?"
+  },
+  {
+   "area": "Advanced Packaging",
+   "status": "MIXED",
+   "detail": "가격 ↑↑ · 상대 ↑↑ · breadth ↓↓ · 뉴스 ↓↓ · EPS ?"
+  },
+  {
+   "area": "Equipment",
+   "status": "MIXED",
+   "detail": "가격 ↑↑ · 상대 ↑↑ · breadth ↓↓ · 뉴스 ↓↓ · EPS ?"
+  }
+ ],
+ "transmission_chain": [
+  {
+   "stage": "AI Narrative",
+   "status": "MIXED",
+   "score": -31.0,
+   "evidence": "AI 뉴스 톤 -12 (13건)"
+  },
+  {
+   "stage": "Hyperscaler Capex",
+   "status": "DETERIORATING",
+   "score": -54.0,
+   "evidence": "driver 톤 – · Hyperscalers / Cloud 상대 z -1.1σ"
+  },
+  {
+   "stage": "GPU / Compute",
+   "status": "MIXED",
+   "score": 27.0,
+   "evidence": "Compute / GPU 상대 z +2.6σ · 펀더멘털 -47"
+  },
+  {
+   "stage": "HBM",
+   "status": "MIXED",
+   "score": -9.0,
+   "evidence": "메모리 데이터 HBM3E_CONTRACT STRONG, HBM4_CONTRACT STRONG · driver 톤 -31"
+  },
+  {
+   "stage": "Commodity Memory",
+   "status": "UNCONFIRMED",
+   "score": null,
+   "evidence": "메모리 데이터 DRAM_SPOT N/A, DDR5_SPOT N/A, NAND_SPOT N/A, DXI N/A"
+  },
+  {
+   "stage": "Foundry / Packaging",
+   "status": "MIXED",
+   "score": 24.0,
+   "evidence": "Foundry 상대 z +2.6σ · 펀더멘털 -47 · Advanced Packaging 상대 z +1.8σ · 펀더멘털 -47"
+  },
+  {
+   "stage": "Semiconductor Equipment",
+   "status": "MIXED",
+   "score": 17.0,
+   "evidence": "Semiconductor Equipment 상대 z +1.6σ · 펀더멘털 -47"
+  },
+  {
+   "stage": "Data Center Infrastructure",
+   "status": "STRONG",
+   "score": 59.0,
+   "evidence": "Data Center Infrastructure 상대 z +1.4σ · 펀더멘털 – · Power / Cooling 상대 z +1.0σ · 펀더멘털 –"
+  },
+  {
+   "stage": "EPS Revision",
+   "status": "UNCONFIRMED",
+   "score": null,
+   "evidence": "컨센서스 없음 — EPS revision 은 아직 못 잰다"
+  }
+ ],
+ "value_chain_snapshot": {
+  "fundamentals": "Weak",
+  "fundamentals_ko": "약화",
+  "price_leadership": "Networking / GPU / Compute",
+  "semi_confirmation": "확인 영역 없음",
+  "key_gap": "DC Infra fundamentals > DC Infra price",
+  "read": "AI 펀더멘털은 약화이고 펀더멘털과 가격이 함께 확인되는 밸류체인은 아직 없음"
+ },
+ "expectation_gap": [
+  {
+   "segment": "Compute / GPU",
+   "market_pricing": 62.0,
+   "fundamental": 27.0,
+   "note": "기대가 펀더멘털보다 앞서 있다"
+  },
+  {
+   "segment": "Memory / HBM",
+   "market_pricing": 34.0,
+   "fundamental": 47.0,
+   "note": "비교적 확인된 움직임"
+  },
+  {
+   "segment": "Foundry",
+   "market_pricing": 50.0,
+   "fundamental": 27.0,
+   "note": "기대가 펀더멘털보다 앞서 있다"
+  },
+  {
+   "segment": "Semiconductor Equipment",
+   "market_pricing": 49.0,
+   "fundamental": 27.0,
+   "note": "기대가 펀더멘털보다 앞서 있다"
+  },
+  {
+   "segment": "Advanced Packaging",
+   "market_pricing": 53.0,
+   "fundamental": 27.0,
+   "note": "기대가 펀더멘털보다 앞서 있다"
+  },
+  {
+   "segment": "Networking",
+   "market_pricing": 58.0,
+   "fundamental": null,
+   "note": "펀더멘털 근거 없음 — 기대만 있다"
+  },
+  {
+   "segment": "Hyperscalers / Cloud",
+   "market_pricing": 26.0,
+   "fundamental": null,
+   "note": "펀더멘털 근거 없음 — 기대만 있다"
+  },
+  {
+   "segment": "Data Center Infrastructure",
+   "market_pricing": 55.0,
+   "fundamental": null,
+   "note": "펀더멘털 근거 없음 — 기대만 있다"
+  },
+  {
+   "segment": "Power / Cooling",
+   "market_pricing": 43.0,
+   "fundamental": null,
+   "note": "펀더멘털 근거 없음 — 기대만 있다"
+  },
+  {
+   "segment": "AI Software / Applications",
+   "market_pricing": 40.0,
+   "fundamental": 64.0,
+   "note": "펀더멘털 대비 가격 반영이 제한적이다"
+  }
+ ],
+ "what_matters": [
+  {
+   "item": "Hyperscaler Capex 증가율이 유지되는가",
+   "status": "DETERIORATING",
+   "current": "-53.5"
+  },
+  {
+   "item": "AI rally 가 Software / Infra 까지 broaden 되는가",
+   "status": "WATCH",
+   "current": "+0.9"
+  },
+  {
+   "item": "장기금리 상승에도 AI relative strength 가 유지되는가",
+   "status": "CONFIRMING",
+   "current": "+2.3"
+  },
+  {
+   "item": "AI breadth(20일선 상회)가 회복되는가",
+   "status": "CONFIRMING",
+   "current": "+19.0"
+  },
+  {
+   "item": "하이퍼스케일러가 동반 약세에서 벗어나는가",
+   "status": "CONFIRMING",
+   "current": "-1.0"
+  }
+ ],
+ "ai_sentiment_greed_fear": {
+  "index": 48.0,
+  "state": "NEUTRAL",
+  "components": [
+   {
+    "component": "NARRATIVE",
+    "score": 24.0,
+    "state": "FEAR",
+    "read": "AI 뉴스 흐름 부정적"
+   },
+   {
+    "component": "PRICE",
+    "score": 80.0,
+    "state": "EXTREME GREED",
+    "read": "가격이 심리를 확인"
+   },
+   {
+    "component": "BREADTH",
+    "score": 44.0,
+    "state": "NEUTRAL",
+    "read": "상승 확산 범위가 좁음"
+   },
+   {
+    "component": "FUNDAMENTALS",
+    "score": 39.0,
+    "state": "FEAR",
+    "read": "펀더멘털이 약해지고 있음"
+   },
+   {
+    "component": "MACRO",
+    "score": 45.0,
+    "state": "NEUTRAL",
+    "read": "매크로 환경은 중립적"
+   }
+  ]
+ },
+ "ai_news": [
+  {
+   "event": "\"젠슨 황 불륜이 끝이 아니다\"…금리 인상 공포 겹친 증시 [월가 업&다운]",
+   "tone": -25.0,
+   "primary_segments": []
+  },
+  {
+   "event": "하루 만에 240조 증발…젠슨 황 쇼크에 개미들도 '날벼락'",
+   "tone": -30.0,
+   "primary_segments": []
+  },
+  {
+   "event": "U.S. stocks lower at close of trade; Dow Jones Industrial Average down 0.36%",
+   "tone": -10.0,
+   "primary_segments": []
+  },
+  {
+   "event": "Anthropic’s IPO is about six times oversubscribed, Bloomberg News reports",
+   "tone": 20.0,
+   "primary_segments": [
+    "AI Software / Applications",
+    "Compute / GPU"
+   ]
+  },
+  {
+   "event": "Cerebras lifts annual sales forecast on strong AI-linked demand, shares surge",
+   "tone": 25.0,
+   "primary_segments": []
+  },
+  {
+   "event": "월가선 엔비디아 목표가 '반토막' … 서학개미 평가액 한달새 7조 증발",
+   "tone": -30.0,
+   "primary_segments": [
+    "Compute / GPU",
+    "Memory / HBM"
+   ]
+  }
+ ],
+ "us_ai_stocks_largest_moves": [
+  {
+   "name": "AMD",
+   "segments": [
+    "compute"
+   ],
+   "ret_5d": 44.7,
+   "rel_5d": 38.5,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Cloudflare",
+   "segments": [
+    "software"
+   ],
+   "ret_5d": 30.3,
+   "rel_5d": 24.0,
+   "overall": "STRONG"
+  },
+  {
+   "name": "Arista",
+   "segments": [
+    "networking"
+   ],
+   "ret_5d": 29.8,
+   "rel_5d": 23.6,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Ciena",
+   "segments": [
+    "networking"
+   ],
+   "ret_5d": 27.4,
+   "rel_5d": 21.1,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Lam Research",
+   "segments": [
+    "equipment"
+   ],
+   "ret_5d": 26.2,
+   "rel_5d": 20.0,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Broadcom",
+   "segments": [
+    "compute",
+    "networking"
+   ],
+   "ret_5d": 25.0,
+   "rel_5d": 18.8,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Credo",
+   "segments": [
+    "networking"
+   ],
+   "ret_5d": 24.5,
+   "rel_5d": 18.2,
+   "overall": "MIXED"
+  },
+  {
+   "name": "Marvell",
+   "segments": [
+    "networking"
+   ],
+   "ret_5d": 23.1,
+   "rel_5d": 16.9,
+   "overall": "MIXED"
+  }
+ ],
+ "korea_ai_semis_stocks": [
+  {
+   "name": "삼성전자",
+   "segments": [
+    "memory_hbm"
+   ],
+   "ret_5d": 3.2,
+   "rel_5d": 4.0,
+   "ret_21d": -10.3,
+   "overall": "MIXED"
+  },
+  {
+   "name": "SK하이닉스",
+   "segments": [
+    "memory_hbm"
+   ],
+   "ret_5d": -0.8,
+   "rel_5d": -0.0,
+   "ret_21d": -11.6,
+   "overall": "MIXED"
+  },
+  {
+   "name": "한미반도체",
+   "segments": [
+    "equipment",
+    "packaging"
+   ],
+   "ret_5d": 7.6,
+   "rel_5d": 8.3,
+   "ret_21d": -16.4,
+   "overall": "MIXED"
+  },
+  {
+   "name": "HD현대일렉트릭",
+   "segments": [
+    "power"
+   ],
+   "ret_5d": 5.2,
+   "rel_5d": 6.0,
+   "ret_21d": -22.2,
+   "overall": "MIXED"
+  },
+  {
+   "name": "효성중공업",
+   "segments": [
+    "power"
+   ],
+   "ret_5d": 2.6,
+   "rel_5d": 3.3,
+   "ret_21d": -14.0,
+   "overall": "MIXED"
+  },
+  {
+   "name": "LS ELECTRIC",
+   "segments": [
+    "power"
+   ],
+   "ret_5d": -4.1,
+   "rel_5d": -3.3,
+   "ret_21d": -29.7,
+   "overall": "NEGATIVE PRESSURE"
+  },
+  {
+   "name": "두산에너빌리티",
+   "segments": [
+    "power"
+   ],
+   "ret_5d": -4.3,
+   "rel_5d": -3.5,
+   "ret_21d": -32.0,
+   "overall": "NEGATIVE PRESSURE"
+  }
+ ],
+ "ai_regime_read": "AI 펀더멘털은 약해지고 있고 가격 confirmation 과 시장 breadth 도 이를 확인합니다. Networking · Compute / GPU는 상대적으로 견조하지만 매크로 환경도 AI 확산을 받치고 있습니다.",
+ "global_market_context": {
+  "market_label": "POLICY_DRIVEN",
+  "market_confidence": 55.0,
+  "thermometer": -11.0,
+  "band": "neutral",
+  "note": "Global market regime 은 맥락 입력이다 — AI 판정에는 상대 z 로만 들어간다"
+ },
+ "semiconductor_cycle": {
+  "state": "UPSWING",
+  "composite": 36.6,
+  "components": [
+   {
+    "c": "Memory Pricing",
+    "score": -8.0
+   },
+   {
+    "c": "Spot Premium",
+    "score": 88.0
+   },
+   {
+    "c": "Contract Price",
+    "score": 53.0
+   },
+   {
+    "c": "Breadth",
+    "score": 0.0
+   },
+   {
+    "c": "HBM",
+    "score": 100.0
+   },
+   {
+    "c": "Export Nowcast",
+    "score": 69.0
+   },
+   {
+    "c": "EPS Revision",
+    "score": null
+   },
+   {
+    "c": "Equity",
+    "score": -66.0
+   },
+   {
+    "c": "Supply / Inventory News",
+    "score": null
+   }
+  ],
+  "read": "범용 DRAM 현물은 한 주 새 DDR4 8Gb 2.9%, DDR4 16Gb 2.4% 내리며 약세를 이어 갔지만 DDR5 16Gb 는 거의 제자리라 약세가 주력 제품으로 번지는 속도는 늦춰졌다. 계약가는 아직 오르고 HBM 도 빡빡해 업황의 핵심은 버티고 있지만, 현물이 계약가보다 높은 폭은 DDR4 에서 계속 줄고 있다. 엔비디아 CEO 해임 사태가 반도체주 심리를 흔들었고 메모리 주가는 한 달 기준으로 여전히 크게 빠진 채 가격 둔화와 같은 쪽에 서 있다."
+ },
+ "market_regime": {
+  "official": "NEUTRAL / MIXED",
+  "candidate": "Policy Driven",
+  "market_read": "공식 레짐은 Neutral / Mixed이고, 오늘 데이터는 Policy Driven을 가리켜 진입 확인이 1/2일째입니다."
+ },
+ "missing": [
+  "EPS revision / 컨센서스 — 종목 전부 없음",
+  "EPS revision — Advanced Packaging",
+  "EPS revision — Commodity Memory",
+  "EPS revision — Compute / Accelerator",
+  "EPS revision — Equipment",
+  "EPS revision — Foundry",
+  "EPS revision — Memory / HBM"
+ ],
+ "displayed_elsewhere": {
+  "numbers": [
+   5.9,
+   2.3,
+   3.0,
+   28.0,
+   48.5,
+   -89.3,
+   88.4,
+   61.0,
+   -31.8,
+   28.2
+  ],
+  "note": "화면에 이미 보이는 숫자 — 다시 나열하지 않는다"
+ }
+}

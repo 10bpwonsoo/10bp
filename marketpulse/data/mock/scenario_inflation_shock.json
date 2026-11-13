@@ -1,0 +1,344 @@
+{
+  "name": "inflation_shock",
+  "title": "물가 충격 — 유가 급등이 금리를 밀어올림",
+  "description": "설계서 STEP 14 의 검증 케이스다. Oil +2σ / Rates +1.5σ / VIX +1.5σ / Equity -1.2σ 입력에서 Inflation Shock 판정이 어떤 룰로 발동하는지 확인한다. 국내 수급은 아직 본격 이탈하지 않아 Risk-Off 의 KoreaFlow 조건만 실패한다 — 이것이 두 판정의 순위를 가른다.",
+  "seed": 20260912,
+  "bars": 180,
+  "class_defaults": {
+    "equity": {
+      "vol": 0.0105,
+      "mean_reversion": 0.02
+    },
+    "rate": {
+      "vol": 0.045,
+      "mean_reversion": 0.05,
+      "floor": 0.05
+    },
+    "fx": {
+      "vol": 0.0045,
+      "mean_reversion": 0.03
+    },
+    "commodity": {
+      "vol": 0.0155,
+      "mean_reversion": 0.02
+    },
+    "volatility": {
+      "vol": 0.055,
+      "mean_reversion": 0.1,
+      "floor": 8.0
+    },
+    "credit": {
+      "vol": 6.0,
+      "mean_reversion": 0.06,
+      "floor": 120.0
+    },
+    "flow": {
+      "vol": 420.0,
+      "mean_reversion": 0.35
+    },
+    "breadth": {
+      "vol": 0.085,
+      "mean_reversion": 0.4
+    }
+  },
+  "regimes": {
+    "KOSPI": {
+      "base": 2684.0
+    },
+    "KOSPI200": {
+      "base": 358.4
+    },
+    "KOSDAQ": {
+      "base": 762.0,
+      "vol": 0.0135
+    },
+    "SPX": {
+      "base": 5847.0,
+      "vol": 0.0092
+    },
+    "NDX": {
+      "base": 20830.0,
+      "vol": 0.0121
+    },
+    "RUT": {
+      "base": 2312.0,
+      "vol": 0.0128
+    },
+    "HSCEI": {
+      "base": 7248.0,
+      "vol": 0.0142
+    },
+    "NIKKEI": {
+      "base": 39820.0,
+      "vol": 0.0118
+    },
+    "SX5E": {
+      "base": 5012.0,
+      "vol": 0.0098
+    },
+    "XLK": {
+      "base": 245.6,
+      "vol": 0.0124
+    },
+    "XLE": {
+      "base": 91.8,
+      "vol": 0.0131
+    },
+    "XLF": {
+      "base": 48.3,
+      "vol": 0.0096
+    },
+    "XLU": {
+      "base": 79.4,
+      "vol": 0.0089
+    },
+    "XLY": {
+      "base": 205.1,
+      "vol": 0.0112
+    },
+    "SOXX": {
+      "base": 246.2,
+      "vol": 0.0178
+    },
+    "ITA": {
+      "base": 148.3,
+      "vol": 0.0105
+    },
+    "JETS": {
+      "base": 24.1,
+      "vol": 0.0152
+    },
+    "KRX_SEMI": {
+      "base": 4118.0,
+      "vol": 0.0165
+    },
+    "US2Y": {
+      "base": 3.85,
+      "vol": 0.042
+    },
+    "US10Y": {
+      "base": 4.22,
+      "vol": 0.048
+    },
+    "US30Y": {
+      "base": 4.54,
+      "vol": 0.05
+    },
+    "KR3Y": {
+      "base": 2.94,
+      "vol": 0.03
+    },
+    "KR10Y": {
+      "base": 3.17,
+      "vol": 0.034
+    },
+    "BE10Y": {
+      "base": 2.31,
+      "vol": 0.021
+    },
+    "USDKRW": {
+      "base": 1362.0,
+      "vol": 0.0041
+    },
+    "DXY": {
+      "base": 103.4,
+      "vol": 0.0032
+    },
+    "USDJPY": {
+      "base": 148.2,
+      "vol": 0.0048
+    },
+    "EURUSD": {
+      "base": 1.0863,
+      "vol": 0.0035
+    },
+    "USDCNH": {
+      "base": 7.213,
+      "vol": 0.0026
+    },
+    "WTI": {
+      "base": 78.4,
+      "vol": 0.0172,
+      "floor": 20.0
+    },
+    "BRENT": {
+      "base": 82.1,
+      "vol": 0.0168,
+      "floor": 20.0
+    },
+    "GOLD": {
+      "base": 2412.0,
+      "vol": 0.0094,
+      "floor": 800.0
+    },
+    "COPPER": {
+      "base": 4.28,
+      "vol": 0.0131,
+      "floor": 1.0
+    },
+    "NATGAS": {
+      "base": 2.95,
+      "vol": 0.031,
+      "floor": 0.5
+    },
+    "VIX": {
+      "base": 14.8,
+      "vol": 0.058,
+      "floor": 9.0,
+      "cap": 80.0
+    },
+    "MOVE": {
+      "base": 98.0,
+      "vol": 0.036,
+      "floor": 40.0,
+      "cap": 250.0
+    },
+    "VKOSPI": {
+      "base": 16.2,
+      "vol": 0.05,
+      "floor": 9.0,
+      "cap": 70.0
+    },
+    "US_HY_OAS": {
+      "base": 318.0,
+      "vol": 5.6
+    },
+    "KR_FOREIGN_NET": {
+      "base": 0.0,
+      "vol": 430.0,
+      "mean_reversion": 0.38
+    },
+    "KR_INSTITUTION_NET": {
+      "base": 0.0,
+      "vol": 360.0,
+      "mean_reversion": 0.42
+    },
+    "KR_RETAIL_NET": {
+      "base": 0.0,
+      "vol": 390.0,
+      "mean_reversion": 0.4
+    },
+    "KR_TRADING_VALUE": {
+      "base": 11500.0,
+      "vol": 880.0,
+      "mean_reversion": 0.3,
+      "floor": 3000.0
+    },
+    "KOSPI_ADV_RATIO": {
+      "base": 0.5,
+      "vol": 0.082,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "SPX_ADV_RATIO": {
+      "base": 0.52,
+      "vol": 0.078,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "KOSPI_NHNL": {
+      "base": 4.0,
+      "vol": 26.0,
+      "mean_reversion": 0.35
+    }
+  },
+  "quiet_z": 0.85,
+  "shocks": {
+    "BRENT": 2.1,
+    "WTI": 2.0,
+    "GOLD": 1.2,
+    "COPPER": 0.55,
+    "NATGAS": 0.9,
+    "BE10Y": 1.8,
+    "US10Y": 1.6,
+    "US2Y": 1.4,
+    "US30Y": 1.3,
+    "KR10Y": 1.2,
+    "KR3Y": 1.05,
+    "VIX": 1.5,
+    "VKOSPI": 1.3,
+    "MOVE": 1.1,
+    "SPX": -1.2,
+    "NDX": -1.6,
+    "RUT": -1.5,
+    "SX5E": -1.0,
+    "NIKKEI": -0.9,
+    "HSCEI": -0.8,
+    "KOSPI": -1.1,
+    "KOSPI200": -1.15,
+    "KOSDAQ": -1.4,
+    "XLE": 1.6,
+    "XLK": -1.5,
+    "SOXX": -1.7,
+    "KRX_SEMI": -1.55,
+    "XLY": -1.3,
+    "XLF": -0.7,
+    "XLU": 0.4,
+    "ITA": 0.3,
+    "JETS": -0.4,
+    "DXY": 0.9,
+    "USDKRW": 1.3,
+    "EURUSD": -0.85,
+    "USDJPY": 0.8,
+    "USDCNH": 0.5,
+    "US_HY_OAS": 1.0,
+    "KR_FOREIGN_NET": -0.4,
+    "KR_INSTITUTION_NET": 0.1,
+    "KR_RETAIL_NET": 0.6,
+    "KR_TRADING_VALUE": 1.2,
+    "KOSPI_ADV_RATIO": -1.3,
+    "KOSPI_NHNL": -1.2,
+    "SPX_ADV_RATIO": -1.1
+  },
+  "news": [
+    {
+      "id": "mock-inf-001",
+      "hours_ago": 1.0,
+      "publisher": "Mock Newswire",
+      "title": "중동 해상 수송로 긴장 고조… 브렌트유 장중 5% 급등",
+      "body": "주요 원유 수송로 인근에서 긴장이 고조되면서 브렌트유가 장중 5% 넘게 급등했다. 정유·해운 업계는 운임과 보험료 상승 가능성을 점검하고 있다."
+    },
+    {
+      "id": "mock-inf-002",
+      "hours_ago": 2.0,
+      "publisher": "Mock Newswire",
+      "title": "기대인플레이션 지표 반등… 미 국채 10년물 금리 16bp 상승",
+      "body": "유가 급등이 기대인플레이션 지표를 밀어올리면서 미 국채 10년물 금리가 16bp 올랐다. 채권시장은 연준의 금리 인하 시점이 늦춰질 가능성을 가격에 반영하기 시작했다."
+    },
+    {
+      "id": "mock-inf-003",
+      "hours_ago": 2.5,
+      "publisher": "Mock Newswire",
+      "title": "금리 급등에 성장주 급락… 나스닥 2% 넘게 하락, 반도체 낙폭 확대",
+      "body": "금리 급등으로 할인율 부담이 커지면서 성장주가 급락했다. 나스닥100이 2% 넘게 내렸고 반도체 업종의 낙폭이 가장 컸다."
+    },
+    {
+      "id": "mock-inf-004",
+      "hours_ago": 3.5,
+      "publisher": "Mock Newswire",
+      "title": "원달러 환율 장중 1380원대… 수입 물가 부담 확대 우려",
+      "body": "달러 강세와 유가 상승이 겹치며 원달러 환율이 장중 1380원대로 올라섰다. 수입 물가 부담이 커질 것이라는 우려가 나온다."
+    },
+    {
+      "id": "mock-inf-005",
+      "hours_ago": 4.5,
+      "publisher": "Mock Newswire",
+      "title": "정유·에너지주 강세, 항공주는 약세… 업종 간 온도차",
+      "body": "유가 상승 수혜가 기대되는 정유·에너지 업종이 강세를 보인 반면 연료비 부담이 커지는 항공 업종은 약세를 나타냈다."
+    },
+    {
+      "id": "mock-inf-006",
+      "hours_ago": 6.0,
+      "publisher": "Mock Newswire",
+      "title": "외국인 순매도 전환했으나 규모는 제한적",
+      "body": "외국인 투자자가 순매도로 돌아섰지만 규모는 제한적이었다. 기관은 소폭 순매수를 유지했다."
+    },
+    {
+      "id": "mock-inf-007",
+      "hours_ago": 8.0,
+      "publisher": "Mock Newswire",
+      "title": "하이일드 스프레드 확대… 신용시장도 경계",
+      "body": "미국 하이일드 스프레드가 확대되면서 신용시장에서도 경계감이 나타났다. 다만 절대 수준은 과거 스트레스 국면에 비해 낮다."
+    }
+  ]
+}

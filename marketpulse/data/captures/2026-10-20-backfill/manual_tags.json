@@ -1,0 +1,22 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "df3736d067c2fac0": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -5
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 10,
+   "novelty": 20,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "분석: AI 확산의 고용 충격이 여성에게 더 클 수 있다(역사적 사례, RSS 요약)."
+  }
+ }
+}

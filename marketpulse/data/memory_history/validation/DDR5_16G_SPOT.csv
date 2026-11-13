@@ -1,0 +1,2 @@
+product,reference_period,published_at,value,value_type,basis,source,source_type,grade,source_url,note
+DDR5_16G_SPOT,2026-05,2026-05-29T17:02:00+09:00,7.1,CHANGE_PCT,"PC DRAM fixed (contract) price, DDR5 16Gb chip, month-over-month",zdnet_korea_citing_trendforce,PUBLIC_FIXED_REFERENCE,D,https://zdnet.co.kr/view/?no=20260529170256,"트렌드포스 2분기 PC D램 고정거래가 기사 — 'DDR5 16Gb 칩이 전월비 7.1% 상승'. 고정가(계약) 변화율이라 현물과 같은 계열이 아니다 — 방향 검증용으로만. 검색 결과 인용문으로 확인(이 세션에서 원문 열람 불가)"

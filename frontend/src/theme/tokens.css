@@ -1,0 +1,191 @@
+/*
+ * Market Pulse AI — 디자인 토큰
+ *
+ * 설계서 STEP 10: "화려함보다 정보 밀도, 가독성, 즉시성."
+ *
+ * 설계서는 Tailwind 를 적었으나 토큰 기반 CSS 로 간다. 이유는 두 가지다.
+ *   1. 고밀도 금융 표에 필요한 것(등폭 숫자, 헤어라인 괘선, 방향 색 체계)은
+ *      유틸리티 클래스로 쓰면 JSX 가 읽을 수 없게 길어진다.
+ *   2. 빌드 의존성이 하나 줄면 데모가 죽을 경로도 하나 준다 (STEP 7.7).
+ * Recharts 는 그릴 시계열이 생기는 P1/P2 에서 도입한다.
+ *
+ * 색 체계에서 상승/하락은 한국 시장 관례를 따른다. 상승 적색, 하락 청색.
+ */
+
+:root {
+  color-scheme: dark light;
+
+  /* 다크 우선. 트레이딩 데스크의 기본 환경이다. */
+  --bg: #101109;
+  --surface: #191b12;
+  --surface-2: #21241a;
+  --surface-3: #2a2e21;
+  --ink: #e9e8dc;
+  --ink-2: #c6c5b7;
+  --muted: #919482;
+  --faint: #676a5b;
+  --rule: #2c2f24;
+  --rule-soft: #23261c;
+  --rule-hi: #434836;
+
+  --accent: #d8a84f;
+  --accent-dim: #9d7a37;
+  --accent-wash: #241f12;
+
+  /* 방향: 한국 관례 (상승 적 / 하락 청) */
+  --up: #e2756a;
+  --up-dim: #8d4139;
+  --down: #6fa9e2;
+  --down-dim: #3a627f;
+  --flat: #8b8e7c;
+
+  /* 상태 (방향색과 구분되는 별도 체계) */
+  --crit: #e2705f;
+  --warn: #d8a84f;
+  --ok: #7fb98c;
+  --info: #6fa9e2;
+
+  /* Market State 라벨 — 라벨마다 다른 색상(hue). 방향색(적/청)은 Risk-On/Off 에만 쓴다. */
+  --lbl-risk-on: #e2756a;
+  --lbl-risk-off: #6fa9e2;
+  --lbl-inflation: #e8934a;
+  --lbl-growth: #b48ce6;
+  --lbl-liquidity: #4fc3c0;
+  --lbl-policy: #7fb98c;
+  --lbl-geopolitical: #c2b24a;
+  --lbl-neutral: #6b6e5f;
+
+  /* AI SENTIMENT · GREED & FEAR 반원 게이지 밴드 — 심리 상태이지 좋고 나쁨이 아니다: 탈색 청 → 청회 → 웜 그레이 → 앰버 → 적갈 */
+  --gf-xf: #4a6a94;
+  --gf-f: #5f7488;
+  --gf-n: #8a877a;
+  --gf-g: #b08a45;
+  --gf-xg: #a75a4a;
+  --gf-track: #2a2e21;
+
+  /* 온도계 밴드 = 공포·탐욕. 결빙(극단적 공포) → 과열(극단적 탐욕) 발산형 */
+  --band-frozen: #3d78c2;
+  --band-cool: #7fb0e0;
+  --band-neutral: #8b8e7c;
+  --band-warm: #e69a90;
+  --band-overheated: #d9463a;
+  --band-unknown: #4a4c42;
+
+  --font-sans: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SFMono-Regular",
+    Menlo, monospace;
+
+  --gap: 14px;
+  --pad: 16px;
+  --radius: 3px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f3f3ee;
+    --surface: #fbfbf7;
+    --surface-2: #ececE3;
+    --surface-3: #e0e0d5;
+    --ink: #1a1c15;
+    --ink-2: #3c3f32;
+    --muted: #6a6d5e;
+    --faint: #96998a;
+    --rule: #d9d9cf;
+    --rule-soft: #e6e6dc;
+    --rule-hi: #b9bbad;
+
+    --accent: #8a5f16;
+    --accent-dim: #b08a3c;
+    --accent-wash: #f6efdd;
+
+    --up: #b8332a;
+    --up-dim: #d99189;
+    --down: #1c5795;
+    --down-dim: #8fb3d6;
+    --flat: #77796a;
+
+    --crit: #9c2f24;
+    --warn: #8a5f16;
+    --ok: #386643;
+    --info: #1c5795;
+
+    --lbl-risk-on: #b8332a;
+    --lbl-risk-off: #1c5795;
+    --lbl-inflation: #c25e12;
+    --lbl-growth: #6f3fb8;
+    --lbl-liquidity: #1e8785;
+    --lbl-policy: #386643;
+
+    --gf-xf: #6f8fb8;
+    --gf-f: #93a5b6;
+    --gf-n: #b9b5a6;
+    --gf-g: #cfae6b;
+    --gf-xg: #c27f6e;
+    --gf-track: #e6e6dc;
+    --lbl-geopolitical: #7d7014;
+    --lbl-neutral: #9a9c8e;
+
+    --band-frozen: #1c5795;
+    --band-cool: #7ba7d4;
+    --band-neutral: #a9ab9d;
+    --band-warm: #e09a92;
+    --band-overheated: #b8332a;
+    --band-unknown: #cfd0c6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--up);
+}
+.down {
+  color: var(--down);
+}
+.flat {
+  color: var(--flat);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,934 @@
+{
+ "as_of_utc": "2026-10-14 01:26",
+ "data_status": {
+  "stale": [
+   "TIPS10Y(2026-10-09)",
+   "TIPS5Y(2026-10-09)",
+   "US10Y(2026-10-09)",
+   "US2Y(2026-10-09)",
+   "US30Y(2026-10-09)",
+   "US5Y(2026-10-09)"
+  ],
+  "missing": [],
+  "timing_note": "미국채 마지막 관측 2026-10-09, 미국 주식 마지막 관측 2026-10-13 — 같은 날 반응으로 묶지 않는다",
+  "note": "STALE = 마지막 관측이 오래됨, MISSING = 계열 없음(0 아님). 변화 단위: level 계열은 bp, 가격 계열은 %."
+ },
+ "rates": {
+  "tenors": [
+   {
+    "id": "US2Y",
+    "label": "US2Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 4.8,
+    "chg_unit": "bp",
+    "chg_1d": 5.0,
+    "chg_5d": -3.0,
+    "chg_20d": 17.0,
+    "z_1d": 0.8,
+    "z_5d": -0.7
+   },
+   {
+    "id": "US5Y",
+    "label": "US5Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 5.02,
+    "chg_unit": "bp",
+    "chg_1d": 3.0,
+    "chg_5d": -4.0,
+    "chg_20d": 24.0,
+    "z_1d": 0.4,
+    "z_5d": -1.0
+   },
+   {
+    "id": "US10Y",
+    "label": "US10Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 5.24,
+    "chg_unit": "bp",
+    "chg_1d": 2.0,
+    "chg_5d": -4.0,
+    "chg_20d": 28.0,
+    "z_1d": 0.2,
+    "z_5d": -1.1
+   },
+   {
+    "id": "US30Y",
+    "label": "US30Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 5.6,
+    "chg_unit": "bp",
+    "chg_1d": 0.0,
+    "chg_5d": -3.0,
+    "chg_20d": 25.0,
+    "z_1d": -0.2,
+    "z_5d": -0.9
+   }
+  ],
+  "curve": {
+   "2s10s": {
+    "level_bp": 44.0,
+    "last_obs": "2026-10-09",
+    "chg_1d_bp": -3.0,
+    "chg_5d_bp": -1.0
+   },
+   "5s30s": {
+    "level_bp": 58.0,
+    "last_obs": "2026-10-09",
+    "chg_1d_bp": -3.0,
+    "chg_5d_bp": 1.0
+   }
+  },
+  "real_yield": [
+   {
+    "id": "TIPS10Y",
+    "label": "TIPS10Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 2.91,
+    "chg_unit": "bp",
+    "chg_1d": 4.0,
+    "chg_5d": -1.0,
+    "chg_20d": 31.0,
+    "z_1d": 0.7,
+    "z_5d": -0.7
+   },
+   {
+    "id": "TIPS5Y",
+    "label": "TIPS5Y",
+    "status": "STALE",
+    "last_obs": "2026-10-09",
+    "level": 2.68,
+    "chg_unit": "bp",
+    "chg_1d": 6.0,
+    "chg_5d": -1.0,
+    "chg_20d": 30.0,
+    "z_1d": 1.1,
+    "z_5d": -0.6
+   }
+  ],
+  "breakeven": [
+   {
+    "id": "BE10Y",
+    "label": "BE10Y",
+    "status": "OK",
+    "last_obs": "2026-10-13",
+    "level": 2.33,
+    "chg_unit": "bp",
+    "chg_1d": 0.0,
+    "chg_5d": -3.0,
+    "chg_20d": -4.0,
+    "z_1d": -0.1,
+    "z_5d": -1.2
+   },
+   {
+    "id": "BE5Y",
+    "label": "BE5Y",
+    "status": "OK",
+    "last_obs": "2026-10-13",
+    "level": 2.33,
+    "chg_unit": "bp",
+    "chg_1d": -1.0,
+    "chg_5d": -3.0,
+    "chg_20d": -7.0,
+    "z_1d": -0.4,
+    "z_5d": -0.7
+   }
+  ],
+  "term_premium_proxy": {
+   "model_score": -36.0,
+   "status": "CONFIRMED",
+   "note": "엔진 driver 점수(−100 하락 압력 … +100 상승 압력). 기간 프리미엄 직접 추정치가 아니다."
+  },
+  "decomposition": [
+   {
+    "tenor": "10Y",
+    "window_days": 5,
+    "nominal_bp": -4.0,
+    "breakeven_bp": -3.0,
+    "real_measured_bp": -1.0
+   },
+   {
+    "tenor": "5Y",
+    "window_days": 5,
+    "nominal_bp": -4.0,
+    "breakeven_bp": -3.0,
+    "real_measured_bp": -1.0
+   }
+  ]
+ },
+ "regime_model": {
+  "label": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+  "headline": "금리를 움직이는 증거는 기간 프리미엄·공급 쪽이 가장 크다(-36, MODERATE) — 연준 정책 경로 +29 보다 7 앞선다. 물가 리프라이싱은 미확인(-2). 상태: driver 방향(하락)과 10년 금리(-1.1σ)가 같다.",
+  "rate_direction": "down",
+  "signal_strength": "MODERATE",
+  "inflation_status": "UNCONFIRMED",
+  "curve_shape": "bear_flattening",
+  "curve_lead": "long",
+  "drivers": [
+   {
+    "id": "inflation_repricing",
+    "label": "Inflation Repricing",
+    "score": -2.0,
+    "status": "UNCONFIRMED"
+   },
+   {
+    "id": "fed_policy",
+    "label": "Fed Policy",
+    "score": 29.0,
+    "status": "CONTRADICTED"
+   },
+   {
+    "id": "growth",
+    "label": "Growth",
+    "score": -5.0,
+    "status": "UNCONFIRMED"
+   },
+   {
+    "id": "term_premium",
+    "label": "Term Premium / Supply",
+    "score": -36.0,
+    "status": "CONFIRMED"
+   },
+   {
+    "id": "risk_liquidity",
+    "label": "Risk / Liquidity",
+    "score": -3.0,
+    "status": "UNCONFIRMED"
+   }
+  ],
+  "dominant": "term_premium",
+  "margin_vs_second": 7.0,
+  "confirmations": [
+   {
+    "label": "Breakeven (기대인플레)",
+    "status": "CONFIRMED",
+    "note": "Term Premium / Supply 아래서 기대 방향(−)과 같다"
+   },
+   {
+    "label": "Oil",
+    "status": "MIXED",
+    "note": "Term Premium / Supply 과 직접 관련 없는 줄"
+   },
+   {
+    "label": "Commodities (구리)",
+    "status": "MIXED",
+    "note": "Term Premium / Supply 과 직접 관련 없는 줄"
+   },
+   {
+    "label": "USD",
+    "status": "MIXED",
+    "note": "움직임이 작다(|z| < 0.5)"
+   },
+   {
+    "label": "Rates — 2Y",
+    "status": "NOT_CONFIRMED",
+    "note": "Term Premium / Supply 아래서는 − 여야 하는데 반대다"
+   },
+   {
+    "label": "Rates — 10Y / 30Y",
+    "status": "NOT_CONFIRMED",
+    "note": "Term Premium / Supply 아래서는 + 여야 하는데 반대다"
+   },
+   {
+    "label": "Equities (S&P)",
+    "status": "MIXED",
+    "note": "움직임이 작다(|z| < 0.5)"
+   },
+   {
+    "label": "Growth / Tech (Nasdaq)",
+    "status": "CONFIRMED",
+    "note": "Term Premium / Supply 아래서 기대 방향(−)과 같다"
+   },
+   {
+    "label": "Banks (XLF)",
+    "status": "CONFIRMED",
+    "note": "Term Premium / Supply 아래서 기대 방향(+)과 같다"
+   },
+   {
+    "label": "HY OAS",
+    "status": "MIXED",
+    "note": "움직임이 작다(|z| < 0.5)"
+   },
+   {
+    "label": "VIX",
+    "status": "MIXED",
+    "note": "움직임이 작다(|z| < 0.5)"
+   },
+   {
+    "label": "Gold",
+    "status": "MIXED",
+    "note": "움직임이 작다(|z| < 0.5)"
+   }
+  ],
+  "divergences": []
+ },
+ "macro": {
+  "releases": [
+   {
+    "name": "Nonfarm Payrolls",
+    "period": "2026-09",
+    "date": "2026-10-02",
+    "surprise": "WEAK",
+    "actuals": [
+     {
+      "label": "Payrolls",
+      "actual": 29.0,
+      "consensus": 84.0,
+      "prior": 133.0,
+      "unit": "k"
+     },
+     {
+      "label": "Unemployment",
+      "actual": 4.2,
+      "consensus": 4.1,
+      "prior": 4.1,
+      "unit": "%"
+     }
+    ],
+    "rates_reaction_bp": {
+     "US2Y": 5.0,
+     "US10Y": 4.0,
+     "date": "2026-10-02"
+    }
+   },
+   {
+    "name": "US PCE",
+    "period": "2026-08",
+    "date": "2026-09-30",
+    "surprise": "COOL",
+    "actuals": [
+     {
+      "label": "PCE YoY",
+      "actual": 3.4,
+      "consensus": 3.7,
+      "prior": null,
+      "unit": "%"
+     },
+     {
+      "label": "PCE MoM",
+      "actual": 0.3,
+      "consensus": 0.4,
+      "prior": null,
+      "unit": "%"
+     },
+     {
+      "label": "Core PCE MoM",
+      "actual": 0.2,
+      "consensus": 0.3,
+      "prior": 0.1,
+      "unit": "%"
+     },
+     {
+      "label": "Core PCE YoY",
+      "actual": 3.0,
+      "consensus": 3.3,
+      "prior": 3.3,
+      "unit": "%"
+     }
+    ],
+    "rates_reaction_bp": {
+     "US2Y": -1.0,
+     "US10Y": 3.0,
+     "date": "2026-09-30"
+    }
+   },
+   {
+    "name": "US CPI",
+    "period": "2026-08",
+    "date": "2026-09-11",
+    "surprise": "HOT",
+    "actuals": [
+     {
+      "label": "CPI YoY",
+      "actual": 3.4,
+      "consensus": 3.4,
+      "prior": null,
+      "unit": "%"
+     },
+     {
+      "label": "CPI MoM",
+      "actual": 0.4,
+      "consensus": 0.4,
+      "prior": null,
+      "unit": "%"
+     },
+     {
+      "label": "Core CPI MoM",
+      "actual": 0.3,
+      "consensus": 0.2,
+      "prior": null,
+      "unit": "%"
+     },
+     {
+      "label": "Core CPI YoY",
+      "actual": 2.4,
+      "consensus": 2.4,
+      "prior": 2.5,
+      "unit": "%"
+     }
+    ],
+    "rates_reaction_bp": {
+     "US2Y": 7.0,
+     "US10Y": 1.0,
+     "date": "2026-09-11"
+    }
+   }
+  ],
+  "policy": [
+   {
+    "bank": "FED",
+    "date": "2026-09-16",
+    "decision": "HIKE +25bp",
+    "tone": "HAWKISH",
+    "rate": "3.75–4.00%",
+    "line": "물가 경계 유지 · 23년 이후 첫 인상, 추가 경로는 데이터 의존",
+    "next_meeting": "2026-10-28"
+   },
+   {
+    "bank": "ECB",
+    "date": "2026-09-10",
+    "decision": "HIKE +25bp",
+    "tone": "HAWKISH",
+    "rate": "2.50%",
+    "line": "에너지발 물가에 두 번째 인상 · 추가 단계는 열어 둠",
+    "next_meeting": "2026-10-29"
+   },
+   {
+    "bank": "BOJ",
+    "date": "2026-09-18",
+    "decision": "HIKE +25bp",
+    "tone": "HAWKISH",
+    "rate": "1.25%",
+    "line": "31년 만의 최고 금리 · 물가 상방 위험 대응",
+    "next_meeting": "2026-10-30"
+   },
+   {
+    "bank": "BOK",
+    "date": "2026-08-27",
+    "decision": "HIKE +25bp",
+    "tone": "HAWKISH",
+    "rate": "3.00%",
+    "line": "두 달 연속 인상 · 추가 인상 시기·속도 점검",
+    "next_meeting": "2026-10-22"
+   }
+  ],
+  "upcoming": [
+   {
+    "date": "2026-10-14",
+    "name": "US CPI (9월)",
+    "importance": "HIGH",
+    "days_ahead": 0
+   },
+   {
+    "date": "2026-10-15",
+    "name": "US PPI · 소매판매 (9월)",
+    "importance": "MED",
+    "days_ahead": 1
+   },
+   {
+    "date": "2026-10-22",
+    "name": "BOK 금통위",
+    "importance": "MED",
+    "days_ahead": 8
+   },
+   {
+    "date": "2026-10-28",
+    "name": "FOMC",
+    "importance": "HIGH",
+    "days_ahead": 14
+   },
+   {
+    "date": "2026-10-29",
+    "name": "ECB 통화정책회의",
+    "importance": "MED",
+    "days_ahead": 15
+   }
+  ],
+  "missing": [
+   "ECB 표결",
+   "Nonfarm Payrolls Avg Hourly Earnings"
+  ]
+ },
+ "cross_asset": [
+  {
+   "id": "SPX",
+   "label": "S&P 500",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 7805.45,
+   "chg_unit": "%",
+   "chg_1d": -0.02,
+   "chg_5d": -0.17,
+   "chg_20d": 2.9,
+   "z_1d": -0.1,
+   "z_5d": -0.3
+  },
+  {
+   "id": "NDX",
+   "label": "Nasdaq 100",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 30569.48,
+   "chg_unit": "%",
+   "chg_1d": -0.31,
+   "chg_5d": -2.1,
+   "chg_20d": 5.64,
+   "z_1d": -0.4,
+   "z_5d": -1.0
+  },
+  {
+   "id": "SOXX",
+   "label": "Semis (SOXX)",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 543.9,
+   "chg_unit": "%",
+   "chg_1d": -0.17,
+   "chg_5d": -7.73,
+   "chg_20d": 9.03,
+   "z_1d": -0.1,
+   "z_5d": -1.4
+  },
+  {
+   "id": "XLF",
+   "label": "Banks/Financials (XLF)",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 54.82,
+   "chg_unit": "%",
+   "chg_1d": -0.42,
+   "chg_5d": 1.5,
+   "chg_20d": -3.23,
+   "z_1d": -0.5,
+   "z_5d": 1.2
+  },
+  {
+   "id": "CYC_DEF",
+   "label": "Cyclicals vs Defensives",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 2.68,
+   "chg_unit": "%",
+   "chg_1d": -0.49,
+   "chg_5d": -1.13,
+   "chg_20d": -0.51,
+   "z_1d": -0.4,
+   "z_5d": -0.4
+  },
+  {
+   "id": "RUT",
+   "label": "Russell 2000",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 2783.37,
+   "chg_unit": "%",
+   "chg_1d": -0.4,
+   "chg_5d": -1.66,
+   "chg_20d": -3.03,
+   "z_1d": -0.4,
+   "z_5d": -0.8
+  },
+  {
+   "id": "DXY",
+   "label": "DXY",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 102.17,
+   "chg_unit": "%",
+   "chg_1d": -0.01,
+   "chg_5d": -0.07,
+   "chg_20d": 1.86,
+   "z_1d": -0.1,
+   "z_5d": -0.2
+  },
+  {
+   "id": "USDKRW",
+   "label": "USD/KRW",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 1339.28,
+   "chg_unit": "%",
+   "chg_1d": 0.39,
+   "chg_5d": -0.03,
+   "chg_20d": -1.78,
+   "z_1d": 0.9,
+   "z_5d": 0.6
+  },
+  {
+   "id": "USDJPY",
+   "label": "USD/JPY",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 158.46,
+   "chg_unit": "%",
+   "chg_1d": -0.04,
+   "chg_5d": 0.1,
+   "chg_20d": 2.06,
+   "z_1d": 0.0,
+   "z_5d": 0.2
+  },
+  {
+   "id": "GOLD",
+   "label": "Gold",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 4173.4,
+   "chg_unit": "%",
+   "chg_1d": -0.09,
+   "chg_5d": 0.79,
+   "chg_20d": -4.88,
+   "z_1d": -0.1,
+   "z_5d": 0.2
+  },
+  {
+   "id": "BRENT",
+   "label": "Brent",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 107.04,
+   "chg_unit": "%",
+   "chg_1d": 1.28,
+   "chg_5d": 6.83,
+   "chg_20d": 1.14,
+   "z_1d": 0.3,
+   "z_5d": 0.8
+  },
+  {
+   "id": "WTI",
+   "label": "WTI",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 95.29,
+   "chg_unit": "%",
+   "chg_1d": 1.22,
+   "chg_5d": 7.94,
+   "chg_20d": -6.97,
+   "z_1d": 0.3,
+   "z_5d": 1.0
+  },
+  {
+   "id": "COPPER",
+   "label": "Copper",
+   "status": "OK",
+   "last_obs": "2026-10-14",
+   "level": 6.72,
+   "chg_unit": "%",
+   "chg_1d": -0.02,
+   "chg_5d": 1.94,
+   "chg_20d": 4.56,
+   "z_1d": -0.1,
+   "z_5d": 0.6
+  },
+  {
+   "id": "VIX",
+   "label": "VIX",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 15.27,
+   "chg_unit": "%",
+   "chg_1d": 0.39,
+   "chg_5d": 1.73,
+   "chg_20d": -11.22,
+   "z_1d": 0.1,
+   "z_5d": 0.3
+  },
+  {
+   "id": "MOVE",
+   "label": "MOVE",
+   "status": "OK",
+   "last_obs": "2026-10-13",
+   "level": 101.09,
+   "chg_unit": "%",
+   "chg_1d": 2.66,
+   "chg_5d": -11.01,
+   "chg_20d": 20.49,
+   "z_1d": 0.4,
+   "z_5d": -1.6
+  },
+  {
+   "id": "US_HY_OAS",
+   "label": "US HY OAS",
+   "status": "OK",
+   "last_obs": "2026-10-12",
+   "level": 311.0,
+   "chg_unit": "bp",
+   "chg_1d": 0.0,
+   "chg_5d": -1.0,
+   "chg_20d": 40.0,
+   "z_1d": -0.1,
+   "z_5d": -0.3
+  },
+  {
+   "id": "growth_vs_broad",
+   "label": "Growth vs broad (NDX − SPX)",
+   "status": "OK",
+   "chg_unit": "%p",
+   "chg_1d": -0.29,
+   "chg_5d": -1.93
+  }
+ ],
+ "headlines": [
+  {
+   "time_utc": "2026-10-13 18:05",
+   "source": "CNBC Markets",
+   "title": "The latest inflation data is expected to show price increases are accelerating",
+   "summary": "CNBC 미리보기: 9월 CPI 컨센서스 전월 +0.6%·전년 +3.6% — 물가 상승이 다시 빨라질 것으로 예상(발표 전 전망치 — 실제치 아님).",
+   "themes": [
+    "inflation",
+    "rates"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 17:51",
+   "source": "매일경제 증권",
+   "title": "[뉴스&분석] 中 반도체 공습에 … 6천피 턱걸이",
+   "summary": "코스피 5거래일 연속 하락·장중 6,000 붕괴 — 고금리·고유가 압박 속 중국 메모리 기술 추격 우려가 투자심리를 얼렸다.",
+   "themes": [
+    "semiconductor",
+    "china",
+    "rates",
+    "oil"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 15:36",
+   "source": "매일경제 증권",
+   "title": "[속보] ‘검은 화요일’ 코스피, 5.5% 급락해 6035 마감…‘6000피’ 턱걸이",
+   "summary": "10/13 코스피 −348.89p(−5.46%) 6,035.35 마감, 장중 5,900선까지 — 외국인 거센 매도. 6,000선 턱걸이.",
+   "themes": [
+    "semiconductor",
+    "china"
+   ]
+  },
+  {
+   "time_utc": "2026-10-14 00:12",
+   "source": "한국경제 마켓",
+   "title": "코스피, 상승 출발해 6100선 회복…삼전닉스 동반 강세",
+   "summary": "10/14 코스피 상승 출발 9시6분 6,110.41(+1.24%), 외국인 +177억·기관 +34억. 삼성전자 +2.59% 23.8만·하이닉스 +2.29% 147.6만. 키움 한지영: CPI 대기·중국발 반도체 노이즈에도 연준 인사들의 완화적 발언, 5거래일 연쇄 급락 뒤 저가 매수. 코스닥 −0.54% 832.55.",
+   "themes": [
+    "semiconductor",
+    "rates"
+   ]
+  },
+  {
+   "time_utc": "2026-10-14 00:54",
+   "source": "Investing.com",
+   "title": "U.S. stock futures muted after chip losses drag Wall Street; CPI data awaited",
+   "summary": "미국 지수선물 보합 — 반도체 손실이 월가를 끌어내린 뒤 CPI 대기(제목에서 확인).",
+   "themes": [
+    "inflation",
+    "rates",
+    "semiconductor"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 17:47",
+   "source": "매일경제 증권",
+   "title": "반도체 기둥 휘청이자 주르르 … 韓증시, 일본·대만 낙폭의 3배",
+   "summary": "중동발 유가 급등 → 금리 급등에 글로벌 증시가 흔들리지만 미국은 차분 — 반도체 비중이 큰 한국 증시 낙폭이 일본·대만의 3배.",
+   "themes": [
+    "semiconductor",
+    "geopolitical_risk",
+    "oil",
+    "rates"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 10:31",
+   "source": "매일경제 증권",
+   "title": "[속보] 코스피, 6000선도 무너졌다…삼전·하이닉스 동반 급락",
+   "summary": "10/13 장중 코스피 −6% 넘게 급락해 6,000선 아래 — 중국 반도체 기술 추격 우려 속 삼성전자·SK하이닉스 동반 급락, 코스닥도 −4%대 810선.",
+   "themes": [
+    "semiconductor",
+    "china"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 08:58",
+   "source": "한국경제 마켓",
+   "title": "블랙록, 6년 만에 美국채 '비중확대'",
+   "summary": "블랙록, 6년 만에 미국채 비중확대(같은 건 — 10/12 Investing 보도와 동일).",
+   "themes": [
+    "rates"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 22:16",
+   "source": "한국경제 마켓",
+   "title": "中 반도체 추격·은행 실적 실망에 3대 지수 일제 하락 [뉴욕증시 브리핑]",
+   "summary": "뉴욕 10/13 — 다우 −0.35% 51,670.10, S&P −0.02% 7,805.45, 나스닥 −0.15% 27,204.38, 필라델피아 반도체 −0.23%(5일 연속). 마이크론 −3.62%·어플라이드 −6.69%, 엔비디아 +0.97%. 씨티 −5.6%·웰스파고 −3.1%(순이익 증가에도 기대 미달). 브렌트 105.69(−0.90%)·WTI 94.14(+0.43%) — 미·러 경",
+   "themes": [
+    "semiconductor",
+    "china",
+    "oil",
+    "geopolitical_risk"
+   ]
+  },
+  {
+   "time_utc": "2026-10-13 14:17",
+   "source": "매일경제 증권",
+   "title": "“中 반도체 기술 격차 2~3년 … 코스피 5000까지 밀릴 수도”",
+   "summary": "'창신메모리 쇼크' 긴급진단 — 중국과의 반도체 기술 격차 2~3년, 코스피 5,000까지 밀릴 수 있다는 의견.",
+   "themes": [
+    "semiconductor",
+    "china"
+   ]
+  }
+ ],
+ "displayed_elsewhere": {
+  "numbers": [
+   -36.0,
+   -5.0,
+   -4.0,
+   -3.0,
+   -2.0,
+   5.24,
+   7.0,
+   29.0,
+   36.0
+  ],
+  "note": "화면 상단에 이미 보이는 숫자 — MARKET READ 에서 반복하지 않는다"
+ },
+ "inflation_map": {
+  "signal": "MIXED",
+  "signal_ko": "압력이 엇갈림",
+  "confirmation": "PARTIAL",
+  "confirmation_ko": "부분 확인",
+  "available_components": 5,
+  "total_components": 5,
+  "score_scale": "점수 −100 강한 물가 하락 압력 · 0 중립 · +100 강한 물가 상승 압력 — 결측은 0 이 아니라 계산에서 빠진다",
+  "official_components": 4,
+  "proxy_components": 1,
+  "news_components": 1,
+  "unavailable_components": 0,
+  "components": [
+   {
+    "label": "Realized Inflation",
+    "label_ko": "실제 물가",
+    "state": "COOLING",
+    "state_ko": "강한 하락 압력",
+    "score": -72.0,
+    "source_class": "PRIMARY",
+    "source": "BLS / BEA via FRED",
+    "is_original_data": true,
+    "proxy_components": null,
+    "fallback_reason": null,
+    "stale": false,
+    "in_signal": true,
+    "evidence": null,
+    "values": [
+     "CPI 3.35% YoY · 3M 연율 0.2% [PRIMARY]",
+     "Core CPI 2.45% YoY · 3M 연율 2.0% [PRIMARY]",
+     "PCE 3.42% YoY · 3M 연율 1.0% [PRIMARY]",
+     "Core PCE 3.01% YoY · 3M 연율 2.0% [PRIMARY]"
+    ],
+    "comment": null,
+    "missing": null
+   },
+   {
+    "label": "Market-Implied Inflation",
+    "label_ko": "시장 기대인플레이션",
+    "state": "EASING",
+    "state_ko": "하락 압력",
+    "score": -46.4,
+    "source_class": "PRIMARY",
+    "source": "MARKET",
+    "is_original_data": true,
+    "proxy_components": null,
+    "fallback_reason": null,
+    "stale": false,
+    "in_signal": true,
+    "evidence": "10Y BE -1.2σ · 5Y BE -0.7σ",
+    "values": null,
+    "comment": null,
+    "missing": null
+   },
+   {
+    "label": "Energy / Commodity Inputs",
+    "label_ko": "에너지·원자재",
+    "state": "MILD PRESSURE",
+    "state_ko": "약한 상승 압력",
+    "score": 21.2,
+    "source_class": "PRIMARY",
+    "source": "MARKET",
+    "is_original_data": true,
+    "proxy_components": null,
+    "fallback_reason": null,
+    "stale": false,
+    "in_signal": true,
+    "evidence": "Brent +0.8σ · RBOB -1.6σ · WTI +1.0σ",
+    "values": null,
+    "comment": null,
+    "missing": null
+   },
+   {
+    "label": "Wage / Services",
+    "label_ko": "임금·서비스",
+    "state": "EASING",
+    "state_ko": "둔화",
+    "score": -40.6,
+    "source_class": "PROXY",
+    "source": "AHE · ECI · Services CPI · Core Services PCE",
+    "is_original_data": false,
+    "proxy_components": [
+     "AHE",
+     "ECI",
+     "Services CPI",
+     "Core Services PCE"
+    ],
+    "fallback_reason": "실제 Wage / Services 단일 원데이터 미연결",
+    "stale": false,
+    "in_signal": true,
+    "evidence": null,
+    "values": [
+     "AHE +0.1% MoM · 3M 연율 2.4% [PRIMARY]",
+     "ECI +0.8% QoQ · 1Q 연율 3.5% [PRIMARY]",
+     "Services CPI +0.3% MoM · 3M 연율 2.4% [PRIMARY]",
+     "Core Services PCE +0.4% MoM · 3M 연율 2.1% [PRIMARY]"
+    ],
+    "comment": "임금·서비스 인플레이션 둔화 속도가 전체 물가보다 느림",
+    "missing": null
+   },
+   {
+    "label": "FX Pass-through",
+    "label_ko": "환율 전가",
+    "state": "PRESSURE",
+    "state_ko": "상승 압력",
+    "score": 32.5,
+    "source_class": "PRIMARY",
+    "source": "MARKET",
+    "is_original_data": true,
+    "proxy_components": null,
+    "fallback_reason": null,
+    "stale": false,
+    "in_signal": true,
+    "evidence": "USD/KRW +0.8σ · DXY -0.2σ",
+    "values": null,
+    "comment": null,
+    "missing": null
+   },
+   {
+    "label": "Inflation News Pulse",
+    "label_ko": "뉴스 흐름",
+    "state": "MILD UPWARD",
+    "state_ko": "약한 상방 서사",
+    "score": 12.0,
+    "source_class": "NEWS",
+    "source": "뉴스 톤(테마)",
+    "is_original_data": false,
+    "proxy_components": null,
+    "fallback_reason": null,
+    "stale": false,
+    "in_signal": false,
+    "evidence": "Inflation commentary ↑ · Energy → · Power / Energy ↑ · Supply / Freight → · 기사 9건",
+    "values": null,
+    "comment": "최근 뉴스 흐름은 물가 상방 쪽이지만 공식 CPI/PCE 에서 재가속 확인이 필요",
+    "missing": null
+   }
+  ]
+ }
+}

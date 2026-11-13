@@ -1,0 +1,58 @@
+[
+ {
+  "url": "https://www.blockmedia.co.kr/archives/1158128",
+  "title": "코스피, 반도체주 폭등에 6%대 급등 마감…6000선 회복",
+  "publisher": "blockmedia.co.kr",
+  "published_at": "2026-10-28T14:59:00+00:00",
+  "timestamp_quality": "DATE_ONLY",
+  "themes": [
+   "semiconductor",
+   "ai",
+   "korea_governance"
+  ],
+  "theme_sentiment": {
+   "semiconductor": 45,
+   "ai": 25,
+   "korea_governance": 15
+  },
+  "theme_direction": {
+   "semiconductor": "up",
+   "ai": "up",
+   "korea_governance": "up"
+  },
+  "sentiment": 45,
+  "impact": 70,
+  "novelty": 50,
+  "horizon": "short",
+  "event_type": "flow",
+  "reason": "10/28 코스피 반도체주 급등에 6%대 상승 마감, 6000선 회복(검색 결과 제목 — 원문 미열람). 시장 계열과 일치: KOSPI 6012.44 · +6.63%. 발행 시각 미확인 → 10/28 KST 마지막 시각으로 둠."
+ },
+ {
+  "url": "https://www.trendforce.com/news/?p=65818",
+  "title": "SK hynix posts record Q3 2026 revenue above 100 trillion won and ~83 trillion won operating profit; 100 trillion won shareholder return plan",
+  "publisher": "TrendForce / investinglive.com",
+  "published_at": "2026-10-28T14:59:00+00:00",
+  "timestamp_quality": "DATE_ONLY",
+  "themes": [
+   "semiconductor",
+   "shareholder_return",
+   "ai"
+  ],
+  "theme_sentiment": {
+   "semiconductor": 45,
+   "shareholder_return": 40,
+   "ai": 20
+  },
+  "theme_direction": {
+   "semiconductor": "up",
+   "shareholder_return": "up",
+   "ai": "up"
+  },
+  "sentiment": 40,
+  "impact": 75,
+  "novelty": 70,
+  "horizon": "medium",
+  "event_type": "earnings",
+  "reason": "SK하이닉스 10/28 3분기 잠정 실적: 매출 약 104.6조 원(첫 100조 돌파) · 영업이익 약 83.3조 원(이익률 약 80%), 예상 상회. DRAM ASP 전분기 대비 20%대 후반·NAND 20%대 중반 상승, 올해 주주환원 약 100조 원 계획(검색 결과 요약 — 원문 미열람). 발행 시각 미확인 → 10/28 KST 마지막 시각으로 둠."
+ }
+]

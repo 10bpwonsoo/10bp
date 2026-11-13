@@ -1,0 +1,17 @@
+updated_at,close,change_pct,high,low,item,collected_at,source
+2026-09-29T23:59:00+08:00,46.3210,0.23,85.0,25.0,DDR4 8Gb (1Gx8) 3200,2026-09-29,"legacy collector row (replay/alternative, session date only)"
+2026-09-30T23:59:00+08:00,46.3210,0.0,85.0,25.0,DDR4 8Gb (1Gx8) 3200,2026-10-01,"legacy collector row (replay/alternative, session date only)"
+2026-10-06T23:59:00+08:00,46.3210,0.0,85.0,24.8,DDR4 8Gb (1Gx8) 3200,2026-10-06,"legacy collector row (replay/alternative, session date only)"
+2026-10-07T23:59:00+08:00,46.3570,0.08,85.0,24.8,DDR4 8Gb (1Gx8) 3200,2026-10-07,"legacy collector row (replay/alternative, session date only)"
+2026-10-22T18:10:00+08:00,47.0000,0.46,85.0,25.5,DDR4 8Gb (1Gx8) 3200,2026-10-23T00:31:52+00:00,dramexchange.com home
+2026-10-26T11:00:00+08:00,47.1070,0.0,85.0,25.5,DDR4 8Gb (1Gx8) 3200,2026-10-26T05:53:30+00:00,dramexchange.com home
+2026-10-26T18:10:00+08:00,47.0000,-0.23,85.0,25.5,DDR4 8Gb (1Gx8) 3200,2026-10-27T01:08:17+00:00,dramexchange.com home
+2026-11-02T18:10:00+08:00,46.8210,-0.09,84.0,26.0,DDR4 8Gb (1Gx8) 3200,2026-11-03T01:21:39+00:00,dramexchange.com home
+2026-11-04T11:00:00+08:00,46.8210,0.0,84.2,25.8,DDR4 8Gb (1Gx8) 3200,2026-11-04T04:02:16+00:00,dramexchange.com home
+2026-11-05T11:00:00+08:00,46.0360,-0.46,83.0,25.8,DDR4 8Gb (1Gx8) 3200,2026-11-05T05:20:43+00:00,dramexchange.com home
+2026-11-05T18:10:00+08:00,46.0360,-0.46,83.0,25.8,DDR4 8Gb (1Gx8) 3200,2026-11-05T23:15:44+00:00,dramexchange.com home
+2026-11-06T18:10:00+08:00,45.6070,-0.93,82.0,25.0,DDR4 8Gb (1Gx8) 3200,2026-11-09T01:25:19+00:00,dramexchange.com home
+2026-11-09T18:10:00+08:00,45.2140,-0.86,82.0,25.0,DDR4 8Gb (1Gx8) 3200,2026-11-10T00:42:04+00:00,dramexchange.com home
+2026-11-10T18:10:00+08:00,45.0000,-0.47,82.0,24.8,DDR4 8Gb (1Gx8) 3200,2026-11-11T00:40:50+00:00,dramexchange.com home
+2026-11-11T18:10:00+08:00,44.8930,-0.24,82.0,24.8,DDR4 8Gb (1Gx8) 3200,2026-11-11T22:48:29+00:00,dramexchange.com home
+2026-11-12T18:10:00+08:00,44.7140,-0.4,82.0,24.8,DDR4 8Gb (1Gx8) 3200,2026-11-12T22:47:56+00:00,dramexchange.com home

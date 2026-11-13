@@ -1,0 +1,358 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/22 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "2621020a493896a5": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 30,
+    "rates": 25
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "영국 9월 CPI 3.5%(예상 상회, 연료비) — 금리 인상 기대 강화(CNBC RSS 요약)."
+  },
+  "80e1b28cf24a2d0f": {
+   "themes": [
+    "rates",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "rates": 10,
+    "consumer": -25
+   },
+   "theme_direction": {
+    "rates": "up",
+    "consumer": "down"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "미국 9월 주택지표 악화 — Fed 추가 인상 검토 와중의 경기 경고(CNBC RSS 요약)."
+  },
+  "e35552431fe542d0": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10,
+    "shareholder_return": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "SK하이닉스 40조 자사주 매입을 한 달 앞당겨 종료(제목)."
+  },
+  "8f91f2a183522664": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "shareholder_return": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "shareholder_return": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "SK하이닉스 40조 자사주 매입 21일 종료 — 매수 수요 소진으로 수급 공백 우려(요약)."
+  },
+  "1d8c29533c222842": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "월가 'AI 빚투' 리스크 대비 — 빅테크 CDS 거래 급증(제목)."
+  },
+  "4d57a85f09fb382f": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35,
+    "ai": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 30,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "모리츠 포트 '메모리 병목 지속, 최소 3년 반도체 강세' 전망(제목)."
+  },
+  "e209b33b4e3e06d0": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 30,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인 삼성전자·SK하이닉스 1조 순매수에 코스피 반등(제목)."
+  },
+  "de3c0d93ae404fa5": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자 +4.49%·하이닉스 +2.94% — 외국인 매수·개인 1조 매도, 코스피 반등 주도(요약)."
+  },
+  "7f057cad118badf4": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 65,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 반도체 반등에 +3.29% 마감(5735.66), 코스닥 +1.4%(요약)."
+  },
+  "2b8c237c467fb3cd": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 30,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 30,
+   "impact": 50,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 AI 서버주(SMCI·테슬라·스페이스X) 강세가 코스피 매수 사이드카·반등을 이끌었다(요약)."
+  },
+  "83873e6ad57061ec": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "트럼프 대통령, 데이터센터 중요성 강조 글(요약 — 영상 소개)."
+  },
+  "271d2489fde0f905": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "증시 변동성에 투자자예탁금 6거래일 연속 감소·신용잔고 30조원대로(요약)."
+  },
+  "900613f2b07b1274": {
+   "themes": [
+    "geopolitical_risk",
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 20,
+    "inflation": 20,
+    "rates": 20
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up",
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -20,
+   "impact": 25,
+   "novelty": 20,
+   "horizon": "long",
+   "event_type": "macro",
+   "reason": "중동 갈등의 에너지 가격 상승·금리 인상 본격화로 금융시장 흔들림 언급(인터뷰 요약)."
+  },
+  "3d81829fd8668ad1": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10,
+    "ai": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "한·미 반도체주가 AI 뉴스에 민감하게 출렁 — AI 버블 의구심 여전(요약)."
+  },
+  "414fdcdba3660859": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼전·하이닉스 단일종목 레버리지 ETP 개인 손실 80일간 6.3조원(요약)."
+  },
+  "e93201b5fe8ed3f4": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "얼라인파트너스 SK㈜ 지분 1.5% 공개, 지주사 할인 해소 요구(요약)."
+  },
+  "74934da9a3c3bb83": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30,
+    "ai": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 30,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "long",
+   "event_type": "supply",
+   "reason": "삼성전기-엔비디아 AI 반도체 패키지기판 장기 공급·전용 팹 공동 투자(요약)."
+  },
+  "f572de188d630344": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 25
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "스페이스X 훈풍에 기술주 강세, 나스닥 +1.05%(10/21 뉴욕 마감 브리핑, 제목)."
+  },
+  "5e594d4ee5900e00": {
+   "themes": [
+    "energy"
+   ],
+   "theme_sentiment": {
+    "energy": 15
+   },
+   "theme_direction": {
+    "energy": "up"
+   },
+   "sentiment": 15,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "LS일렉트릭 3분기 매출 1.8조(+54%), 100분기 연속 흑자 — 전력기기 수요(요약)."
+  }
+ }
+}
