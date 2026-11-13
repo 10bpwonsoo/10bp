@@ -105,3 +105,30 @@ def test_equity_view_structure_checked():
     assert any("global_read" in p for p in MO.check(bad, c))
     bad = json.loads(json.dumps(SESSION)); bad["equity_view"]["korea"] = "한 줄 문자열"
     assert any("korea" in p for p in MO.check(bad, c))
+
+
+def test_cross_asset_state_words_and_rates_directions():
+    """RATES · CROSS-ASSET 재구성(2026-11-13) — z 와 bp 를 단어로만 옮긴다(계산 없음). Credit 은 스프레드라 내려가면 IMPROVING."""
+    c = MO.build_context(DOC)
+    st = {r["asset"]: r["state"] for r in c["cross_asset"]}
+    assert st == {"Equity": "STRONG", "Rates": "RISING", "Credit": "IMPROVING", "Volatility": "CALMING", "USD": "STRONG", "Oil": "NEUTRAL", "Gold": "STABLE"}
+    assert c["rates"]["real_yield_direction"] == "RISING" and c["rates"]["breakeven_direction"] == "FALLING"
+    assert MO.ca_state("CREDIT", 2.0) == "STRESSED" and MO.ca_state("VOLATILITY", 0.7) == "RISING" and MO.ca_state("OIL", None) == "UNAVAILABLE"
+    assert MO.bp_dir(0.4) == "FLAT" and MO.bp_dir(None) is None
+
+
+def test_rates_and_cross_asset_view_structure_checked():
+    c = MO.build_context(DOC)
+    assert SESSION["rates_view"]["equity_impact"] in MO.EQUITY_IMPACT and SESSION["cross_asset_view"]["support"]
+    bad = json.loads(json.dumps(SESSION)); bad["rates_view"] = "금리 상승은 성장주에 부담이다"
+    assert any("객체" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["rates_view"]["equity_impact"] = "BEARISH"
+    assert any("equity_impact" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["rates_view"]["headline"] = "연준 정책 경로 재평가가 실질금리와 단기금리를 함께 끌어올리면서 성장주 밸류에이션 부담이 커지고 있다"
+    assert any("rates_view.headline" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["cross_asset_view"]["support"] = ["Credit", "Bitcoin"]
+    assert any("Bitcoin" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["cross_asset_view"]["risk"] = ["Rates", "Credit"]
+    assert any("같은 자산" in p for p in MO.check(bad, c))
+    bad = json.loads(json.dumps(SESSION)); bad["cross_asset_view"]["support"] = []; bad["cross_asset_view"]["risk"] = ["Rates"]
+    assert any("합쳐 2~5개" in p for p in MO.check(bad, c))

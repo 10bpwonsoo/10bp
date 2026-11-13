@@ -4,9 +4,11 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import ckFx from "../__fixtures__/cockpit.json";
 import aiFx from "../__fixtures__/ai_regime.json";
 import moFx from "../__fixtures__/market_overview.json";
+import rrFx from "../__fixtures__/rates_regime.json";
+import oilFx from "../__fixtures__/oil_regime.json";
 import neFx from "../__fixtures__/neutral_equity_1113.json";
-import type { AiRegime, CkRegimeState, Cockpit, MarketOverview, RsSignal } from "../api/types";
-import { MarketOverviewView, eqTerms } from "../components/MarketOverviewView";
+import type { AiRegime, CkRegimeState, Cockpit, MarketOverview, OilRegime, RatesRegime, RsSignal } from "../api/types";
+import { MarketOverviewView, caState, eqTerms } from "../components/MarketOverviewView";
 
 const cockpit = ckFx as unknown as Cockpit;
 const ai = aiFx as unknown as AiRegime;
@@ -134,5 +136,62 @@ describe("EQUITY MARKET — 해석 먼저, 미국 vs 한국 같은 형식", () =
     expect(screen.queryByTestId("mo-eq-us-why")).toBeNull();
     expect(screen.getByTestId("mo-eq-us-lead").textContent).toBe("LEADERSHIP–");
     expect(screen.getByTestId("mo-eq-us-trend").textContent).toMatch(/POSITIVE/);
+  });
+});
+
+describe("RATES & INFLATION · CROSS-ASSET — 판단 → 원인 → 핵심 데이터 → 주식 의미", () => {
+  const rates = { ...(rrFx as unknown as RatesRegime), yield_breakdown: { tenors: [{ tenor: "10Y", real_bp: 13, breakeven_bp: -10 }] } } as unknown as RatesRegime;
+  const oil = oilFx as unknown as OilRegime;
+  const z: Record<string, number> = { EQUITY: 2.76, RATES: 1.84, CREDIT: -1.19, VOLATILITY: -3.82, USD: 1.92, OIL: 0.46, GOLD: -0.41 };
+  const c = { ...cockpit, cross_asset: { ...cockpit.cross_asset, rows: cockpit.cross_asset.rows.map((r) => ({ ...r, z: z[r.key] ?? r.z })) } } as Cockpit;
+
+  it("z → 상태 단어(백엔드 ca_state 와 같은 표)", () => {
+    expect(["EQUITY", "RATES", "CREDIT", "VOLATILITY", "USD", "OIL", "GOLD"].map((k) => caState(k, z[k]!))).toEqual(["STRONG", "RISING", "IMPROVING", "CALMING", "STRONG", "NEUTRAL", "STABLE"]);
+    expect(caState("CREDIT", 2)).toBe("STRESSED");
+    expect(caState("OIL", null)).toBe("UNAVAILABLE");
+  });
+
+  it("금리: 판정 · EQUITY HEADWIND → headline → 원인 한 줄 → 핵심 4개 → EQUITY IMPACT 강조(세로 7칸 없음)", () => {
+    render(<MarketOverviewView cockpit={c} overview={mo} rates={rates} oil={oil} ai={ai} semi={null} />);
+    const rv = mo.view!.rates_view as { headline: string; summary: string; equity_impact: string; equity_impact_read: string };
+    const box = screen.getByTestId("mo-rates");
+    expect(screen.getByTestId("mo-rates-regime").textContent).toMatch(/TERM PREMIUM SHOCK · EQUITY HEADWIND/);
+    expect(screen.getByTestId("mo-rates-headline").textContent).toBe(rv.headline);
+    expect(screen.getByTestId("mo-rates-summary").textContent).toBe(rv.summary);
+    const m = screen.getByTestId("mo-rates-metrics");
+    expect(m.querySelectorAll(".mo-m4-i")).toHaveLength(4);
+    expect(m.textContent).toMatch(/10Y YIELD5\.17%5D \+16bp.*REAL YIELD\+13bpRISING.*BREAKEVEN-10bpFALLING.*CURVE/);
+    expect(screen.getByTestId("mo-rates-impact").textContent).toMatch(/EQUITY IMPACTNEGATIVE/);
+    expect(screen.getByTestId("mo-rates-impact").textContent).toContain(rv.equity_impact_read);
+    for (const gone of ["PRIMARY DRIVER", "INFLATION PRESSURE", "DIRECTION"]) expect(within(box).queryByText(gone)).toBeNull();
+    const ids = ["mo-rates-headline", "mo-rates-summary", "mo-rates-metrics", "mo-rates-impact"].map((id) => box.querySelector(`[data-testid='${id}']`)!);
+    for (let i = 1; i < ids.length; i++) expect(ids[i - 1]!.compareDocumentPosition(ids[i]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("Cross-asset: headline → SUPPORT / RISK(상태 단어, σ 는 보조) → OIL 은 작은 줄 → READ", () => {
+    render(<MarketOverviewView cockpit={c} overview={mo} rates={rates} oil={oil} ai={ai} semi={null} />);
+    const cv = mo.view!.cross_asset_view as { headline: string; summary: string; support: string[]; risk: string[]; read: string };
+    expect(screen.getByTestId("mo-cross-headline").textContent).toBe(cv.headline);
+    expect(screen.getByTestId("mo-cross-support").textContent).toMatch(/SUPPORT.*CreditIMPROVING.*VolatilityCALMING.*EquitySTRONG/);
+    expect(screen.getByTestId("mo-cross-risk").textContent).toMatch(/RISK.*RatesRISING.*USDSTRONG/);
+    expect(screen.getAllByTestId("mo-cross-row")).toHaveLength(cv.support.length + cv.risk.length);
+    expect(screen.getByTestId("mo-cross-others").textContent).toMatch(/Gold STABLE/);
+    expect(screen.getByTestId("mo-cross-others").textContent).not.toMatch(/Oil/);
+    const oilEl = screen.getByTestId("mo-oil-regime");
+    expect(oilEl.textContent).toMatch(/OIL NEUTRAL/);
+    expect(oilEl.className).not.toContain("mo-big"); // 유가 판정을 headline 처럼 크게 두지 않는다
+    expect(screen.getByTestId("mo-cross-read").textContent).toContain(cv.read);
+    expect(screen.getByTestId("mo-cross").textContent).not.toMatch(/4\.98|5\.17/); // 금리 숫자는 반복하지 않는다
+  });
+
+  it("예전 저장본(한 줄 문자열) · 종합 없음 — 판정은 크게, 자산은 역할별 묶음, 문장은 그대로", () => {
+    const old = { ...mo, view: { ...mo.view!, rates_view: "금리 한 줄", cross_asset_view: "교차자산 한 줄" } } as MarketOverview;
+    render(<MarketOverviewView cockpit={c} overview={old} rates={rates} oil={oil} ai={ai} semi={null} />);
+    expect(screen.queryByTestId("mo-rates-headline")).toBeNull();
+    expect(screen.getByTestId("mo-rates-regime").className).toContain("mo-big");
+    expect(screen.getByTestId("mo-rates-impact").textContent).toContain("금리 한 줄");
+    expect(screen.queryByTestId("mo-cross-headline")).toBeNull();
+    expect(screen.getByTestId("mo-cross-rows").textContent).toMatch(/RISK ASSETS.*RATES.*VOLATILITY.*MACRO ASSETS/);
+    expect(screen.getByTestId("mo-cross-read").textContent).toContain("교차자산 한 줄");
   });
 });

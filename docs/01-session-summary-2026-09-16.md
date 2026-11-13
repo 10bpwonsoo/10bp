@@ -749,3 +749,20 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 11/13: 세션본 equity_view 를 새 형식으로 다시 써서 archive correct(이전본 `superseded/2026-11-13.20261113T003841Z.json`, 바뀐 것은 market_overview.equity_view · meta 뿐).
   미국 "반도체 주도 대형주 반등, 소형주는 소외"(Semiconductors / Compute · Networking / Infrastructure), 한국 "지수는 제자리, 전력기기·반도체만 버팀"(Electrical · Semiconductor), US > KOREA.
   11/12 이전 저장본은 예전 한 줄 문장을 headline 자리에 그대로 보이고 GLOBAL READ · WHY · LEADERSHIP 은 '없음' — 다시 만들지 않았다.
+
+### 2026-11-13 — MARKET OVERVIEW · RATES & INFLATION / OIL · MACRO · CROSS-ASSET 재구성 (판단 → 원인 → 핵심 데이터 → 주식 의미)
+- 요청: 두 섹션이 상세 탭처럼 숫자를 세로로 나열 — "그래서 지금 무슨 환경인가" 를 먼저. 금리 · 유가 · cross-asset 데이터, regime, score, driver, 계산식은 그대로.
+- RATES & INFLATION(`RatesBlock`): 금리 판정(엔진) + `· EQUITY HEADWIND`(LLM equity_impact) 작은 줄 → LLM headline(가장 큼) → 원인 한 줄 →
+  핵심 4개만(10Y YIELD 4.98% · 5D +3bp / REAL YIELD +13bp · RISING / BREAKEVEN −10bp · FALLING / CURVE BEAR FLATTENING, 모바일 2×2 · 데스크톱 한 줄, 테두리 없음) →
+  EQUITY IMPACT 강조 영역(NEGATIVE 등 + 1~2문장). DIRECTION · PRIMARY DRIVER · INFLATION PRESSURE 칸은 없앴다 — headline · 요약이 물가 압력 vs 실질금리 관계를 설명한다. 전체는 DETAIL → 금리 탭.
+- OIL / MACRO / CROSS-ASSET(`CrossBlock`): LLM headline · 한 줄 → SUPPORT / RISK(LLM 이 고른 자산 2~5개, 자산 옆 상태 단어는 z 를 옮긴 표시 규칙: Equity STRONG ·
+  Rates RISING · Credit IMPROVING(스프레드라 하락 = 개선) · Volatility CALMING · USD STRONG …, σ 는 작게 · 모바일에서는 숨김) → OTHER 한 줄 → OIL 작은 줄(NEUTRAL + 유가 판정) → CROSS-ASSET READ.
+  유가 판정을 headline 처럼 크게 두지 않는다 — 유가가 주요 driver 일 때만 LLM 이 headline 에 올린다. 금리 숫자는 이 섹션에서 반복하지 않는다.
+- LLM(`marketpulse/ai/market_overview.py`): rates_view = {headline, summary, equity_impact, equity_impact_read}, cross_asset_view = {headline, summary, support[], risk[], read}.
+  cross_asset_view 는 rates_view 에 이어 읽히게(금리 부담 → 신용 · 변동성이 확인하는가 → 전면 Risk-Off 인가 할인율 조정인가) 쓰도록 했다. 고정 문구 · 목록 선택 없음.
+  검증: 길이 · 문장 수 · equity_impact 값 · support/risk 자산 이름(cross_asset 에 있고 결측이 아닌 것) · 중복 · 개수. 컨텍스트에 자산별 state 단어 · real/breakeven 방향 추가, LIVE 지문에도 반영.
+  상태 단어 표는 백엔드 `CA_WORDS · ca_state · bp_dir` 와 프론트 `caState · bpDir` 가 같다(양쪽 테스트가 같은 11/13 사례를 본다).
+- 높이(390px 모바일, 11/13): 금리 섹션 521 → 339px(−35%). Cross-asset 은 260 → 374px — 이전에는 화살표 줄과 문장뿐이었고 이제 headline · 요약 · SUPPORT/RISK 가 들어갔다.
+- 11/13: 세션본을 새 형식으로 쓰고 archive correct 2회(구조 변경, 문장 길이 조정 — 이전본 `superseded/2026-11-13.20261113T011432Z.json` · `…T011813Z.json`). 바뀐 것은 rates_view · cross_asset_view · meta 뿐.
+  금리 "Fed 재평가로 실질금리 상승, 성장주에 부담"(NEGATIVE), cross-asset "금리·달러 상승에도 신용·변동성은 안정"(SUPPORT Credit · Volatility · Equity / RISK Rates · USD).
+  11/12 이전 저장본: 금리는 판정을 크게 + 예전 한 줄을 EQUITY IMPACT 로, cross-asset 은 자산을 역할별(RISK ASSETS · RATES · VOLATILITY · MACRO ASSETS)로 묶고 예전 문장을 READ 로 — 다시 만들지 않았다.

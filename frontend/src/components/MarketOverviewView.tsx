@@ -1,4 +1,4 @@
-import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoEquitySide, OilRegime, RatesRegime, RsSignal } from "../api/types";
+import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoCrossView, MoEquitySide, MoRatesView, OilRegime, RatesRegime, RsSignal } from "../api/types";
 import type { SemiconductorCycle } from "../api/semiconductor";
 import { KEY_COLOR, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
@@ -190,6 +190,97 @@ function Leadership({ c }: { c: Cockpit }) {
   );
 }
 
+/** 5일 bp 변화 → 방향 단어(백엔드 bp_dir 와 같은 규칙: 1bp 미만은 FLAT) */
+const bpDir = (bp: number | null | undefined) => bp === null || bp === undefined ? null : Math.abs(bp) < 1 ? "FLAT" : bp > 0 ? "RISING" : "FALLING";
+const IMPACT: Record<string, { word: string; color: string }> = {
+  NEGATIVE: { word: "HEADWIND", color: "var(--crit)" }, POSITIVE: { word: "TAILWIND", color: "var(--ok)" }, MIXED: { word: "MIXED", color: "var(--warn)" }, NEUTRAL: { word: "NEUTRAL", color: "var(--muted)" },
+};
+
+/** RATES & INFLATION — 금리 판정(엔진) + 주식 영향을 한 줄로, LLM headline · 원인 한 줄, 핵심 4개(10Y · REAL · BREAKEVEN · CURVE), EQUITY IMPACT 강조. 나머지는 DETAIL → 금리 탭 */
+function RatesBlock({ rates, rv }: { rates: RatesRegime; rv: MoRatesView | string | undefined }) {
+  const obj = rv && typeof rv === "object" ? rv : null;
+  const legacy = typeof rv === "string" ? rv : null;
+  const yb = rates.yield_breakdown?.tenors?.find((t) => t.tenor === "10Y") ?? null;
+  const short = rates.regime_label.split(" — ")[0];
+  const imp = obj ? IMPACT[obj.equity_impact] ?? null : null;
+  const bp = (x: number | null | undefined) => (x === null || x === undefined ? "–" : sg(x, 0, "bp"));
+  const m: { k: string; v: string; sub: string | null }[] = [
+    { k: "10Y YIELD", v: rates.rate_move.level === null ? "–" : `${rates.rate_move.level.toFixed(2)}%`, sub: `5D ${sg(rates.rate_move.change_5d_bp, 0, "bp")}` },
+    { k: "REAL YIELD", v: bp(yb?.real_bp), sub: bpDir(yb?.real_bp) },
+    { k: "BREAKEVEN", v: bp(yb?.breakeven_bp), sub: bpDir(yb?.breakeven_bp) },
+    { k: "CURVE", v: rates.curve_move?.shape ?? rates.curve.shape.replace(/_/g, " ").toUpperCase(), sub: rates.curve_move?.window_label ?? null },
+  ];
+  return (
+    <div className="mo-syn" data-testid="mo-rates-block">
+      <div className={obj ? "mo-kick mono" : "mo-big mono"} data-testid="mo-rates-regime">{short}{imp ? <> · <b style={{ color: imp.color }}>EQUITY {imp.word}</b></> : null}</div>
+      {obj ? <h3 className="mo-hl" data-testid="mo-rates-headline">{obj.headline}</h3> : null}
+      {obj ? <p className="mo-sum" data-testid="mo-rates-summary">{obj.summary}</p> : null}
+      <div className="mo-m4 mono" data-testid="mo-rates-metrics">
+        {m.map((x) => <div key={x.k} className="mo-m4-i"><span className="mo-k">{x.k}</span><b>{x.v}</b>{x.sub ? <small>{x.sub}</small> : null}</div>)}
+      </div>
+      {obj ? (
+        <div className="mo-impact" style={{ borderColor: imp?.color }} data-testid="mo-rates-impact">
+          <div className="mo-impact-h"><span className="mo-k mono">EQUITY IMPACT</span><b className="mono" style={{ color: imp?.color }}>{obj.equity_impact}</b></div>
+          <p>{obj.equity_impact_read}</p>
+        </div>
+      ) : <Read k="EQUITY IMPACT" t={legacy} testid="mo-rates-impact" />}
+    </div>
+  );
+}
+
+/**
+ * Cross-asset z → 상태 단어(Meaning > Number). 화살표와 같은 ±0.5 / ±1.5 문턱 — 백엔드 CA_WORDS · ca_state 와 같은 표(LLM 이 같은 단어를 본다).
+ * (+강, +약, 중립, −약, −강). Credit 은 스프레드(HY OAS)라 내려가면 개선.
+ */
+const CA_WORDS: Record<string, [string, string, string, string, string]> = {
+  EQUITY: ["STRONG", "FIRM", "FLAT", "SOFT", "WEAK"], RATES: ["RISING", "RISING", "STABLE", "FALLING", "FALLING"], CREDIT: ["STRESSED", "WIDENING", "STABLE", "IMPROVING", "IMPROVING"],
+  VOLATILITY: ["SPIKING", "RISING", "STABLE", "CALMING", "CALMING"], USD: ["STRONG", "STRONG", "STABLE", "WEAK", "WEAK"], OIL: ["SURGING", "RISING", "NEUTRAL", "FALLING", "SLIDING"],
+  GOLD: ["RISING", "RISING", "STABLE", "FALLING", "FALLING"],
+};
+export function caState(key: string, z: number | null): string {
+  const w = CA_WORDS[key.toUpperCase()] ?? ["RISING", "RISING", "STABLE", "FALLING", "FALLING"];
+  return z === null ? "UNAVAILABLE" : z >= 1.5 ? w[0] : z >= 0.5 ? w[1] : z <= -1.5 ? w[4] : z <= -0.5 ? w[3] : w[2];
+}
+const CA_ROLES: [string, string[]][] = [["RISK ASSETS", ["EQUITY", "CREDIT"]], ["RATES", ["RATES"]], ["VOLATILITY", ["VOLATILITY"]], ["MACRO ASSETS", ["USD", "OIL", "GOLD"]]];
+type CaRow = Cockpit["cross_asset"]["rows"][number];
+
+/** OIL / MACRO / CROSS-ASSET — LLM headline · 한 줄 → SUPPORT / RISK(자산 · 상태 단어, σ 는 작게) → OIL 보조 줄 → CROSS-ASSET READ. 금리 숫자는 반복하지 않는다 */
+function CrossBlock({ rows, oil, cv }: { rows: CaRow[]; oil: OilRegime | null; cv: MoCrossView | string | undefined }) {
+  const obj = cv && typeof cv === "object" ? cv : null;
+  const legacy = typeof cv === "string" ? cv : null;
+  const by = new Map(rows.map((r) => [r.label, r]));
+  const item = (r: CaRow) => (
+    <div key={r.key} className={`mo-sr-r${r.z === null ? " muted" : ""}`} title={r.instrument_label} data-testid="mo-cross-row">
+      <span>{r.label}</span><b className="mono">{caState(r.key, r.z)}</b><small className="mono num">{r.z === null ? "결측" : `${sg(r.z)}σ`}</small>
+    </div>
+  );
+  const pick = (names: string[]) => names.map((n) => by.get(n)).filter((r): r is CaRow => !!r);
+  const used = new Set(obj ? [...obj.support, ...obj.risk] : []);
+  const others = rows.filter((r) => !used.has(r.label) && r.key !== "OIL");
+  const oilRow = rows.find((r) => r.key === "OIL") ?? null;
+  return (
+    <div className="mo-syn" data-testid="mo-cross-block">
+      {obj ? <h3 className="mo-hl" data-testid="mo-cross-headline">{obj.headline}</h3> : null}
+      {obj ? <p className="mo-sum" data-testid="mo-cross-summary">{obj.summary}</p> : null}
+      {obj && rows.length ? (
+        <div className="mo-sr" data-testid="mo-cross-rows">
+          <div className="mo-sr-c" data-testid="mo-cross-support"><span className="mo-k mono" style={{ color: "var(--ok)" }}>SUPPORT</span>{pick(obj.support).map(item)}{obj.support.length ? null : <div className="mo-sr-r muted"><span>–</span></div>}</div>
+          <div className="mo-sr-c" data-testid="mo-cross-risk"><span className="mo-k mono" style={{ color: "var(--crit)" }}>RISK</span>{pick(obj.risk).map(item)}{obj.risk.length ? null : <div className="mo-sr-r muted"><span>–</span></div>}</div>
+        </div>
+      ) : rows.length ? (
+        <div className="mo-sr" data-testid="mo-cross-rows">
+          {CA_ROLES.map(([role, keys]) => { const rs = rows.filter((r) => keys.includes(r.key)); return rs.length ? <div key={role} className="mo-sr-c"><span className="mo-k mono">{role}</span>{rs.map(item)}</div> : null; })}
+        </div>
+      ) : null}
+      {obj && others.length ? <div className="mo-sr-o mono" data-testid="mo-cross-others"><span className="mo-k">OTHER</span> {others.map((r) => `${r.label} ${caState(r.key, r.z)}`).join(" · ")}</div> : null}
+      {oil ? (
+        <div className="mo-sr-o mono" data-testid="mo-oil-regime"><span className="mo-k">OIL</span> <b>{oilRow ? caState("OIL", oilRow.z) : "–"}</b> <small>{oil.regime_label}</small></div>
+      ) : <div className="mo-sr-o mono mo-none" data-testid="mo-oil-regime">OIL · 이 날짜 데이터 없음</div>}
+      <Read k="CROSS-ASSET READ" t={obj ? obj.read : legacy} testid="mo-cross-read" />
+    </div>
+  );
+}
+
 export function MarketOverviewView({ cockpit: c, overview, overviewError, rates, oil, ai, semi, onDetail, archived }: {
   cockpit: Cockpit | null; overview: MarketOverview | null; overviewError?: string | null; rates: RatesRegime | null; oil: OilRegime | null; ai: AiRegime | null;
   semi: SemiconductorCycle | null; onDetail?: (t: DetailTarget) => void; archived?: boolean;
@@ -198,7 +289,6 @@ export function MarketOverviewView({ cockpit: c, overview, overviewError, rates,
   const now = c?.market_now;
   const st = now?.state ?? null;
   const days = c?.history?.days ?? [];
-  const yb10 = rates?.yield_breakdown?.tenors?.find((t) => t.tenor === "10Y") ?? null;
   const caRows = c?.cross_asset.rows ?? [];
   const sdate = overview?.snapshot_date ?? null;
   const upcoming = (rates?.events?.upcoming ?? []).filter((u) => !sdate || u.date >= sdate);
@@ -259,34 +349,14 @@ export function MarketOverviewView({ cockpit: c, overview, overviewError, rates,
         {c ? <Equity c={c} ov={overview} /> : <Excluded what="주식시장" />}
       </Sec>
 
-      {/* 5. RATES & INFLATION */}
+      {/* 5. RATES & INFLATION — 판단 → 원인 → 핵심 4개 → 주식 영향 */}
       <Sec n={5} title="Rates & Inflation" area="rates" detail="rates" onDetail={onDetail} testid="mo-rates">
-        {rates ? (
-          <>
-            <div className="mo-big mono" data-testid="mo-rates-regime">{rates.regime_label.split(" — ")[0]}</div>
-            <div className="mo-grid2">
-              <Kv k="US 10Y" v={rates.rate_move.level === null ? "–" : `${rates.rate_move.level.toFixed(2)}%`} sub={`5D ${sg(rates.rate_move.change_5d_bp, 0, "bp")}`} />
-              <Kv k="DIRECTION" v={rates.top?.direction_en ?? rates.rate_move.direction.toUpperCase()} />
-              <Kv k="CURVE" v={rates.curve_move?.shape ?? rates.curve.shape.replace(/_/g, " ").toUpperCase()} />
-              <Kv k="PRIMARY DRIVER" v={rates.top?.primary?.label ?? "–"} />
-              <Kv k="REAL YIELD 10Y" v={yb10?.real_bp === null || yb10?.real_bp === undefined ? "–" : `${sg(yb10.real_bp, 0, "bp")}`} sub="5D" />
-              <Kv k="BREAKEVEN 10Y" v={yb10?.breakeven_bp === null || yb10?.breakeven_bp === undefined ? "–" : `${sg(yb10.breakeven_bp, 0, "bp")}`} sub="5D" />
-              <Kv k="INFLATION PRESSURE" v={rates.inflation_map?.signal_ko ?? "–"} />
-            </div>
-            <Read k="EQUITY IMPACT" t={v?.rates_view} testid="mo-rates-impact" />
-          </>
-        ) : <Excluded what="금리" />}
+        {rates ? <RatesBlock rates={rates} rv={v?.rates_view} /> : <Excluded what="금리" />}
       </Sec>
 
-      {/* 6. OIL / MACRO / CROSS-ASSET */}
+      {/* 6. OIL / MACRO / CROSS-ASSET — 자산 관계 먼저, 유가는 보조(주요 driver 일 때만 LLM 이 headline 에 올린다) */}
       <Sec n={6} title="Oil / Macro / Cross-Asset" area="cross" detail="oil" onDetail={onDetail} testid="mo-cross">
-        {oil ? <div className="mo-big mono" data-testid="mo-oil-regime">OIL · {oil.regime_label}</div> : <Excluded what="유가" />}
-        {caRows.length ? (
-          <div className="mo-chips mono" data-testid="mo-cross-rows">
-            {caRows.map((r) => <span key={r.key} title={r.instrument_label}><i>{r.label}</i> <b>{r.arrow}</b> <small className="num">{r.z === null ? "결측" : `${sg(r.z)}σ`}</small></span>)}
-          </div>
-        ) : null}
-        <Read k="CROSS-ASSET READ" t={v?.cross_asset_view} testid="mo-cross-read" />
+        <CrossBlock rows={caRows} oil={oil} cv={v?.cross_asset_view} />
       </Sec>
 
       {/* 7. AI & SEMICONDUCTOR CYCLE — 두 엔진을 나란히, 아래에 연결 해석 */}
