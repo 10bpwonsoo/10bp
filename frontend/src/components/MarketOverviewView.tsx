@@ -51,7 +51,7 @@ function regimeFlow(c: Cockpit): { from: string; fromKey: string | null; to: str
     return { from: n.label_text, fromKey: null, to: watch ? n.raw_text : null, toKey: null, progress: watch ? `${Math.min(n.raw_persistence_days, n.required_days)} / ${n.required_days} DAYS` : null,
              status: watch ? "TRANSITION WATCH" : n.transition_status === "CHANGED" ? "TRANSITION CONFIRMED" : "STABLE", sub: n.transition_status_ko };
   }
-  if (st.changed && st.change_kind === "entry") return { from: keyText(st.previous_official), fromKey: st.previous_official, to: keyText(st.official), toKey: st.official, progress: "CONFIRMED", status: "TRANSITION CONFIRMED", sub: "오늘 공식 전환" };
+  if (st.changed && st.change_kind === "entry") return { from: keyText(st.previous_official), fromKey: st.previous_official, to: keyText(st.official), toKey: st.official, progress: `${Math.min(st.entry_streak || st.entry_required, st.entry_required)} / ${st.entry_required} DAYS`, status: "TRANSITION CONFIRMED", sub: "오늘 공식 전환" };
   if (st.changed && st.change_kind === "exit") return { from: keyText(st.exited_regime), fromKey: st.exited_regime, to: keyText("neutral"), toKey: "neutral", progress: "EXIT CONFIRMED", status: "REGIME RELEASED", sub: "이전 레짐 해제 · 새 레짐 미확정" };
   if (st.entry_regime) return { from: keyText(st.official), fromKey: st.official, to: keyText(st.entry_regime), toKey: st.entry_regime, progress: `${Math.min(st.entry_streak, st.entry_required)} / ${st.entry_required} DAYS`,
                                 status: "TRANSITION WATCH", sub: st.official !== "neutral" && st.exit_streak > 0 ? `전환 확인 중 · ${keyText(st.official)} 이탈 ${st.exit_streak}/${st.exit_required}` : "" };

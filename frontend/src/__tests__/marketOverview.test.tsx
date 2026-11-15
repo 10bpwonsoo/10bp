@@ -82,6 +82,15 @@ describe("MARKET OVERVIEW", () => {
     expect(order[1]!.compareDocumentPosition(order[2]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("공식 전환일 — TRANSITION CONFIRMED 2 / 2 DAYS(같은 말을 두 번 쓰지 않는다)", () => {
+    const st = { logic_version: "exit_entry_v2", official: "policy", official_label: "Policy Driven", previous_official: "neutral", candidate: "policy", candidate_label: "Policy Driven", entry_regime: null,
+      entry_streak: 2, entry_required: 2, exit_streak: 0, exit_required: 2, changed: true, change_kind: "entry", exited_regime: null } as unknown as CkRegimeState;
+    render(<MarketOverviewView cockpit={{ ...cockpit, market_now: { ...cockpit.market_now, state: st } } as Cockpit} overview={mo} rates={null} oil={null} ai={ai} semi={null} />);
+    expect(screen.getByTestId("mo-regime-transition").textContent).toMatch(/TRANSITION CONFIRMED2 \/ 2 DAYS/);
+    expect(screen.getByTestId("mo-regime-transition").textContent).not.toMatch(/CONFIRMED\s*CONFIRMED/);
+    expect(screen.getByTestId("mo-regime-flow").textContent).toMatch(/NEUTRAL \/ MIXED.*→.*POLICY/);
+  });
+
   it("후보가 없으면 OFFICIAL 만, 화살표 없음", () => {
     const st = { logic_version: "exit_entry_v2", official: "neutral", official_label: "Neutral / Mixed", candidate: "neutral", candidate_label: "Neutral / Mixed", entry_regime: null, entry_streak: 0, entry_required: 2,
       exit_streak: 0, exit_required: 2, changed: false, change_kind: null, previous_official: "neutral", exited_regime: null } as unknown as CkRegimeState;

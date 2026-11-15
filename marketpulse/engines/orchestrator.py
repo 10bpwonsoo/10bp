@@ -532,6 +532,8 @@ def build_intelligence(
         market_snapshot.as_of,
         live_subjects=live_subjects,
     )
+    # 이어 붙인 알림(ONGOING)이 새 알림보다 심각할 수 있다 — 진행 중인 것은 심각도 순으로, 해소된 것은 그 뒤에 원래 순서대로(2026-11-16).
+    alerts.sort(key=lambda a: (1, 0.0) if a.state.value == "RESOLVED" else (0, -a.severity))
     timings["alert"] = (time.perf_counter() - t) * 1000.0
 
     t = time.perf_counter()
