@@ -786,3 +786,21 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 11/13: 세션본 ai_semiconductor_view 를 새 형식으로 써서 archive correct(이전본 `superseded/2026-11-13.20261113T020110Z.json`, 바뀐 것은 그 필드와 meta 뿐).
   "AI 주가는 강하지만 반도체 확인은 절반만" · PARTIAL · PRICE > FUNDAMENTALS · CAUTIOUS POSITIVE. 11/12 이전 저장본은 다시 만들지 않았다 —
   축 단어 · 엔진 판정은 그 날짜 데이터로 보이고, 예전 문장은 AI ↔ SEMICONDUCTOR READ 로, 확인 자리는 AI 엔진의 FUNDAMENTALS 값.
+
+### 2026-11-16 — 11/16 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 기본 47/60 · 종목 94/101 · 바스켓 52/52 로 11/13 과 같다(빠진 계열 0, Yahoo 429 없음). 단위 불연속 없음(VIX 11/05 는 이미 확인된 실제 움직임).
+  미국 주식은 11/13(금) 종가, 미국채 · TIPS · HY 스프레드는 11/12 관측(11/11 휴일). RSS 는 11/13 합본과 오늘 수집분을 합쳤고 창(11/13 07:30 ~ 11/16 07:30 KST, 주말 포함) 112건 중 27건을 태깅했다. DRAMeXchange 11/13.
+- 결과: 목요일 미국채 전 구간이 2σ 안팎 급등(2년물 주간 +28bp, 약세 평탄화)하고 기대인플레이션도 함께 올랐다. 금요일 미국은 Nasdaq −1.2% · 반도체 −3.7%, 금융주 상승. 코스피 −1.0% · 코스닥 소폭 상승.
+  정량 POLICY_DRIVEN 65 · 자격 후보 Policy Driven(Rates +2.08, 미국 CONFIRMED · 한국 PARTIAL) → REGIME v2 Policy Driven(세션, TENTATIVE, 58).
+  **공식 regime 전환**: Policy Driven 진입 2/2 확정 → 공식 Neutral / Mixed → Policy Driven(exit_entry_v2, 전환 이유는 세션 생성). 탭별 판정:
+  - AI: LEADERSHIP NARROWING(센티 53, 펀더멘털 확인 WEAK → PARTIAL) · THEME VIEW "엔비디아 빼고 넓어진 반도체 반등, 참여는 아직 얕다"
+  - 금리: RISK-OFF FLIGHT TO QUALITY — Inflation Repricing Confirmed(엔진 판정). MARKET READ 는 정책 · 물가 재평가로 읽고 regime_fit 을 inconsistent 로 적었다(신용 · 변동성 · 금이 위험 회피를 확인하지 않는다).
+  - 물가: MIXED(시장 기대인플레이션 강한 상승 압력 vs 실제 물가 · 원자재 · 환율 하락 압력)
+  - 유가: Demand — UNCONFIRMED
+  - 반도체: UPSWING 31.3(계약가 증거 53 → 27, 기준월이 9월이라 STALE)
+  - MARKET OVERVIEW: "정책 주도 레짐 확정, 금리 재평가 속 주도주는 좁아졌다"(EQUITY Mixed · MACRO Headwind · RISK Elevated) — 11/13 에 바꾼 새 형식(equity / rates / cross-asset / AI·반도체 구조화)으로 처음 만든 날이다.
+- history: 7개 탭에 11/13 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-13.json` 1개 추가. COMPLETE.
+- 고친 것 두 가지(오늘 스냅샷 값과 무관, 저장본 순서 변화 없음을 확인):
+  - `engines/orchestrator.py` — 이어 붙인 알림(ONGOING)을 붙인 뒤 다시 정렬하지 않아 `tests/test_alert.py::TestOrdering` 이 실패했다. mock 시계가 주말(데이터 2일 묵음)일 때 생기는 DATA_QUALITY 알림과 겹칠 때만 드러난다.
+    진행 중 알림은 심각도 순, 해소된 알림은 그 뒤에 원래 순서대로 두도록 정렬 한 줄을 더했다. 11/10 ~ 11/16 저장본의 알림 순서는 수정 전후가 같다.
+  - `MarketOverviewView.tsx` — 공식 전환일에 "TRANSITION CONFIRMED CONFIRMED" 로 같은 말이 두 번 보였다(오늘이 첫 진입 확정일). 진행 표기를 "2 / 2 DAYS" 로 바꾸고 테스트를 더했다.

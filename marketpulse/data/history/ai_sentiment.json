@@ -4038,6 +4038,62 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-13",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 43.3,
+   "confidence": 85.0,
+   "component_scores": {
+    "narrative": 26.5,
+    "price": 66.3,
+    "breadth": 25.8,
+    "fundamentals": null,
+    "macro": 48.9
+   },
+   "key_drivers": [],
+   "data_coverage": 0.85,
+   "data_asof": "2026-11-13T23:59:59Z",
+   "missing_components": [
+    "fundamentals"
+   ],
+   "history_source": "BACKFILLED",
+   "calculated_at": "2026-11-15T22:57:39.649566Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": true,
+   "finalization": "backfill",
+   "summary": "NEUTRAL 43",
+   "payload": {
+    "components": {
+     "narrative": 26.5,
+     "price": 66.3,
+     "breadth": 25.8,
+     "fundamentals": null,
+     "macro": 48.9
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "GREED",
+     "breadth": "FEAR",
+     "fundamentals": "UNKNOWN",
+     "macro": "NEUTRAL"
+    },
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "macro"
+    ],
+    "key_tension": "",
+    "read": ""
+   },
+   "corrections": []
   }
  ]
 }

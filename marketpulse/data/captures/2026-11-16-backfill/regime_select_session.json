@@ -1,0 +1,14 @@
+{
+ "selected_regime": "POLICY_DRIVEN",
+ "regime_confidence": 58,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "미국채 전 구간이 2년물 주도로 다시 뛰어 금리 factor 가 이틀째 기준을 크게 넘었고, 미국 주식은 성장주·기술주 약세와 금융주 강세로 금리 상승 rotation 을 확인했다. 한국은 은행 강세만 뚜렷해 부분 확인에 그친다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "CONFIRMED",
+ "korea_equity_confirmation": "PARTIAL",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "공식 regime 은 Neutral / Mixed 이고 직전 Daily Snapshot 의 진입 후보는 Policy Driven 1/2 였다. 오늘도 Policy Driven 이 선택돼 진입 확인 2일째이며, 규칙대로면 공식 regime 이 Policy Driven 으로 바뀐다.",
+ "data_coverage": 89,
+ "selection_rationale": "자격 후보는 Policy Driven(Rates +2.08, 기준 1.2) 하나다. 성장 factor 가 조용하고 물가 factor 가 안정적이라 보조 조건 절반이 통과했지만, 달러와 변동성은 기준에 조금 못 미쳤다. 미국은 Nasdaq 과 Tech 가 S&P 보다 약하고 금융주가 강해 금리 상승 rotation 이 확인되나 유틸리티가 함께 올라 한 곳이 어긋난다. 한국은 은행이 강하고 인터넷 · 성장주가 약한 점은 맞지만 KOSDAQ 이 KOSPI 보다 강해 엇갈린다. 미국채는 11/12 관측이라 금요일 주식과 같은 날 반응이 아니고, 엔비디아 경영 공백 뉴스가 기술주 약세에 섞여 있어 금리만으로 설명하기 어렵다. 그래서 확신은 정량값보다 낮게 둔다.",
+ "commentary": "목요일 미국채는 2년물과 5년물이 크게 뛰며 정책 경로와 물가를 함께 다시 매겼다. 금요일 미국 주식은 나스닥과 반도체가 밀리고 금융주가 버텨 금리 상승에 맞는 rotation 이 나타났고, 한국은 은행 강세만 뚜렷했다. 정책 · 금리가 시장을 이끄는 환경이 이틀째 이어져 공식 regime 전환 요건을 채운다."
+}
