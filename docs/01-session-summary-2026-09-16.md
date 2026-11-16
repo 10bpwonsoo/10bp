@@ -804,3 +804,19 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - `engines/orchestrator.py` — 이어 붙인 알림(ONGOING)을 붙인 뒤 다시 정렬하지 않아 `tests/test_alert.py::TestOrdering` 이 실패했다. mock 시계가 주말(데이터 2일 묵음)일 때 생기는 DATA_QUALITY 알림과 겹칠 때만 드러난다.
     진행 중 알림은 심각도 순, 해소된 알림은 그 뒤에 원래 순서대로 두도록 정렬 한 줄을 더했다. 11/10 ~ 11/16 저장본의 알림 순서는 수정 전후가 같다.
   - `MarketOverviewView.tsx` — 공식 전환일에 "TRANSITION CONFIRMED CONFIRMED" 로 같은 말이 두 번 보였다(오늘이 첫 진입 확정일). 진행 표기를 "2 / 2 DAYS" 로 바꾸고 테스트를 더했다.
+
+### 2026-11-17 — 11/17 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 첫 수집이 Yahoo 429 로 기본 28/60 · 종목 82/101 · 바스켓 12/52 에 그쳤다. 90초 뒤 재수집(기본 41 · 바스켓 0), 빠진 것만 6 → 9 → 12초 간격으로 세 차례 더 받아 합쳤다
+  (`fetch_missing.py` · `merge_inputs.py`, 계열마다 마지막 봉이 가장 늦은 수집분). 대체 공급원에서 며칠 늦게 온 원유 · 환율 계열도 다시 받아 최신 봉으로 바꿨다.
+  파생 계열 CYC_DEF 는 XLY · XLU 와 한 번에 받아야 만들어져 따로 받았다. 최종 기본 47/60 · 종목 94/101 · 바스켓 52/52 로 11/16 과 같다(빠진 계열 0). 전날 수집분은 합치지 않았다. 단위 불연속 없음.
+  미국 주식은 11/16(월) 종가, 미국채 · TIPS · HY 스프레드 · 원자재 · 환율은 11/13 관측. RSS 창(11/16 07:30 ~ 11/17 07:30 KST) 96건 중 22건 태깅. DRAMeXchange 11/16.
+- 결과: 엔비디아 이사회가 젠슨 황 복귀를 검토하지 않는다고 밝히며 AI · 반도체 투매가 지수 전반으로 번졌다 — S&P 500 −1.9% · Nasdaq 100 −2.7% · 반도체 −5.4% · VIX 22.9, 코스피 −3.6%.
+  정량 RISK_OFF 68 · 자격 후보 Risk-Off(RiskAppetite −1.51, 미국 STRONG · 한국 CONFIRMED) → REGIME v2 Risk-Off(세션, TENTATIVE, 60 — 신용 스프레드 미확인 · 하루짜리 이벤트).
+  공식은 Policy Driven 유지: 근거가 무너져(BROKEN) 이탈 1/2, Liquidity Stress / Risk-Off 진입 1/2(exit_entry_v2). 전환은 없다. 탭별 판정:
+  - AI: MACRO-DRAGGED AI WEAKNESS(센티 53 → 25, 펀더멘털 확인 PARTIAL → WEAK) · THEME VIEW "엔비디아 복귀 기대 꺾이자 AI 전반 투매, 원인은 매크로"
+  - 금리: FED POLICY REPRICING — Inflation Repricing Not Confirmed(주간 2년물 +42bp, 상승분은 실질금리)
+  - 물가: MIXED(시장 기대인플레이션 약한 상승 압력 vs 실제 물가 · 원자재 · 환율 하락 압력)
+  - 유가: Demand — UNCONFIRMED
+  - 반도체: UPSWING 30.9
+  - MARKET OVERVIEW: "AI 투매가 지수 전반으로, 정책 주도에서 위험 회피로 기운다"(EQUITY Weak · MACRO Headwind · RISK High)
+- history: 7개 탭에 11/16 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-16.json` 1개 추가. COMPLETE, 테스트 통과. 코드 변경 없음.
