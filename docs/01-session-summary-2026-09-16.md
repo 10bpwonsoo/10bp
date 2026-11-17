@@ -820,3 +820,19 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - 반도체: UPSWING 30.9
   - MARKET OVERVIEW: "AI 투매가 지수 전반으로, 정책 주도에서 위험 회피로 기운다"(EQUITY Weak · MACRO Headwind · RISK High)
 - history: 7개 탭에 11/16 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-16.json` 1개 추가. COMPLETE, 테스트 통과. 코드 변경 없음.
+
+### 2026-11-18 — 11/18 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 첫 수집이 Yahoo 429 로 기본 21/60 · 종목 80/101 · 바스켓 44/52 에 그쳤다. 90초 뒤 재수집하고 빠진 것만 8 → 12초 간격으로 두 차례 더 받아 합쳤다(계열마다 마지막 봉이 가장 늦은 수집분).
+  파생 계열 CYC_DEF · COPPER_GOLD 는 기초 자산과 한 번에 받아야 만들어져 따로 받았다. 최종 기본 47/60 · 종목 94/101 · 바스켓 52/52 로 11/17 과 같다(빠진 계열 0). 전날 수집분은 합치지 않았다. 단위 불연속 없음.
+  미국 주식은 11/17(화) 종가, 미국채 · TIPS · HY 스프레드는 11/16 관측. RSS 창(11/17 07:30 ~ 11/18 07:30 KST) 114건 중 25건 태깅. DRAMeXchange 11/17.
+- 결과: 미국은 금융 · 소형주 중심으로 더 밀렸고(S&P 500 −1.0% · Russell 2000 −1.5% · VIX 25.5) 반도체는 제자리. 코스피 −2.6% 로 5000선 붕괴. 월요일 미국채는 기대인플레이션 하락과 함께 되돌려졌고 HY 스프레드 +11bp.
+  장 마감 뒤 엔비디아가 예상을 웃도는 실적 · 가이던스를 내놓아 시간외에서 반등했다(가격에는 아직 없음).
+  자격 후보 없음(Liquidity −0.93 · RiskAppetite −0.70 으로 기준 직전) → REGIME v2 Neutral / Mixed(세션, NO_ELIGIBLE, 40).
+  **공식 regime 전환**: Policy Driven 근거가 이틀째 지지되지 않아 해제(이탈 2/2) → 공식 Neutral / Mixed. Risk-Off 진입은 끊겼다(exit_entry_v2, 전환 이유는 세션 생성). 탭별 판정:
+  - AI: NARRATIVE AHEAD OF PRICE(센티 31, 펀더멘털 확인 WEAK) · THEME VIEW "엔비디아 호실적 속보에도 가격은 아직 매크로에 눌려 있다"
+  - 금리: FED POLICY REPRICING — Inflation Repricing Contradicted(하루 움직임은 기대인플레이션 주도 하락 — MARKET READ 는 mixed / partly_consistent)
+  - 물가: COOLING BIAS(기대인플레이션 · 원자재 · 환율 모두 하락 압력, 임금 · 서비스만 끈적)
+  - 유가: Macro / Liquidity Risk-Off — CONFIRMED
+  - 반도체: UPSWING 30.2(트렌드포스 D램 수요 · 가격 예상치 하향 보도)
+  - MARKET OVERVIEW: "정책 주도 해제, 신용까지 흔들린 약세에 엔비디아 호실적"(EQUITY Weak · MACRO Headwind · RISK High)
+- history: 7개 탭에 11/17 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-17.json` 1개 추가. COMPLETE, 테스트 통과. 코드 변경 없음.

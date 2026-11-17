@@ -1,0 +1,14 @@
+{
+ "selected_regime": "NEUTRAL",
+ "regime_confidence": 40,
+ "selection_status": "NO_ELIGIBLE",
+ "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 위험선호와 유동성 factor 가 기준 바로 앞까지 내려와 있지만, 금리는 되돌려지고 반도체는 버텨 하나의 환경으로 묶이지 않는다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "CONTRADICTED",
+ "korea_equity_confirmation": "CONTRADICTED",
+ "global_equity_confirmation": "CONTRADICTED",
+ "persistence_assessment": "공식 regime 은 Policy Driven 이었고 직전 Daily Snapshot 에서 이탈 확인 1/2, Liquidity Stress / Risk-Off 진입 1/2 였다. 오늘 Neutral / Mixed 가 선택돼 Risk-Off 진입은 끊기고, Policy Driven 의 근거가 이틀째 지지되지 않아 공식 regime 은 Neutral / Mixed 로 해제된다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보가 없다. 가장 가까운 것은 Liquidity Stress(Liquidity -0.93, 기준 -1.0)와 Risk-Off(RiskAppetite -0.70, 기준 -0.8)로 둘 다 기준 직전이다. 미국은 S&P 500 과 Russell 2000 이 더 밀리고 금융 · 유틸리티가 약했지만 Nasdaq 100 낙폭은 작고 반도체는 제자리였다. 한국은 KOSPI · KOSDAQ 이 함께 내리고 대표 종목 상승 비율이 매우 낮아 약세가 넓다. 하이일드 스프레드가 벌어지고 변동성이 올라 스트레스 신호는 늘었으나, 미국채 · 신용은 11/16 관측이고 장 마감 뒤 엔비디아 호실적이 나와 다음 거래일 방향이 갈릴 수 있다. 그래서 중립 판단의 확신도 낮게 둔다.",
+ "commentary": "화요일 미국 주식은 금융주와 소형주 중심으로 더 밀리고 변동성이 올랐지만 반도체는 버텼고, 한국은 코스피가 5000선 아래로 내려가며 약세가 넓게 번졌다. 전날 미국채 금리는 기대인플레이션 하락과 함께 되돌려졌고 하이일드 스프레드는 벌어졌다. 위험 회피와 유동성 스트레스 신호가 기준 직전까지 왔지만 어느 것도 넘지 못해, 지금은 Neutral / Mixed 로 본다."
+}

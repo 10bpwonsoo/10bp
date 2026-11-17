@@ -4520,6 +4520,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-17",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": -22.224174406871782,
+   "confidence": 40.0,
+   "component_scores": {
+    "RiskAppetite": -33.71958561967469,
+    "Volatility": -38.656974069488605,
+    "Growth": -21.439075995664496,
+    "Credit": -63.34534163156128,
+    "KoreaFlow": null,
+    "news": 2.781755101166426,
+    "factor:Growth": -0.436,
+    "factor:Inflation": -1.252,
+    "factor:Rates": -0.804,
+    "factor:USD": 0.136,
+    "factor:Liquidity": -0.934,
+    "factor:RiskAppetite": -0.702,
+    "factor:Credit": 1.494,
+    "factor:Volatility": 0.816,
+    "factor:China": -0.698
+   },
+   "key_drivers": [
+    "Euro Stoxx 50 -2.5σ",
+    "Financials -1.9σ",
+    "US 10Y Breakeven -1.9σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-17T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-17T23:07:33.004884Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 40% · 온도 -22",
+   "payload": {
+    "date": "2026-11-17",
+    "as_of": "2026-11-17T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 40.0,
+    "price_temperature": -38.894794078897256,
+    "news_temperature": 2.781755101166426,
+    "composite": -22.224174406871782,
+    "news_events": 25,
+    "thermo_confidence": 90.83234508199362,
+    "components": {
+     "RiskAppetite": -33.71958561967469,
+     "Volatility": -38.656974069488605,
+     "Growth": -21.439075995664496,
+     "Credit": -63.34534163156128,
+     "KoreaFlow": null,
+     "news": 2.781755101166426
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": -0.436,
+     "Inflation": -1.252,
+     "Rates": -0.804,
+     "USD": 0.136,
+     "Liquidity": -0.934,
+     "RiskAppetite": -0.702,
+     "Credit": 1.494,
+     "Volatility": 0.816,
+     "China": -0.698
+    },
+    "hypotheses": {},
+    "drivers": [
+     "Euro Stoxx 50 -2.5σ",
+     "Financials -1.9σ",
+     "US 10Y Breakeven -1.9σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

@@ -4387,6 +4387,92 @@
     "suspect": false
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-17",
+   "tab_id": "oil_regime",
+   "state": "macro_liquidity",
+   "state_label": "Macro / Liquidity Risk-Off — CONFIRMED",
+   "state_label_ko": "",
+   "state_score": -86.0,
+   "confidence": 86.0,
+   "component_scores": {
+    "driver:macro_liquidity": -86.0,
+    "driver:demand": -51.0,
+    "driver:supply": -34.8,
+    "driver:geopolitical": -0.3,
+    "brent_z": -1.207955352017092,
+    "wti_z": -1.1297940222985638,
+    "oil_z": -1.168874687157828
+   },
+   "key_drivers": [
+    "Macro / Liquidity -86 CONFIRMED",
+    "Demand -51 CONFIRMED",
+    "Supply -35 CONFIRMED"
+   ],
+   "data_coverage": 0.818,
+   "data_asof": "2026-11-17T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-17T23:07:32.868037Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_3af3b98f",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "지금 유가는 거시·유동성 (위험회피) 쪽 증거가 가장 크다(-86, STRONG) — 수요 (경기) -51 보다 35 앞선다. 상태 확인됨: driver 방향(하락)과 유가(-1.2σ)가 같다.",
+   "payload": {
+    "regime_label": "Macro / Liquidity Risk-Off — CONFIRMED",
+    "dominant": "macro_liquidity",
+    "runner_up": "demand",
+    "margin": 35.0,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -86.0,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -51.0,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -34.8,
+      "status": "CONFIRMED",
+      "coverage": 0.727
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -0.3,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "confirms",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "confirms",
+     "기대인플레이션 (BE10Y)": "confirms",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "confirms",
+     "에너지 주식 (XLE)": "neutral",
+     "항공 (JETS)": "confirms",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "confirms",
+     "금": "confirms"
+    },
+    "implication": "유가는 원유 고유 재료가 아니라 위험자산 전반의 매도(유동성 경색)에 끌려간다 — 공급 뉴스보다 신용·변동성 지표가 먼저다.",
+    "oil_direction": "down",
+    "suspect": false
+   },
+   "corrections": []
   }
  ]
 }
