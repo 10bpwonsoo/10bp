@@ -840,3 +840,18 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 ### 2026-11-18 — MARKET OVERVIEW 탭을 탭 줄 맨 앞으로
 - 요청: "Over view 탭을 맨 앞으로". `App.tsx` 에서 MARKET OVERVIEW 버튼을 실시간 탭 앞으로 옮겼다(순서만 — 처음 열리는 탭은 그대로 실시간).
   순서: MARKET OVERVIEW · 실시간 · AI 센티 · 반도체 사이클 · 금리 · 유가. 과거 날짜(저장본)에서도 같은 순서. 다른 탭 화면과 데이터는 그대로.
+
+### 2026-11-19 — 11/19 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 첫 수집이 Yahoo 429 로 기본 26/60 · 종목 52/101 에 그쳤다. 2분 뒤 재수집하고 빠진 것만 9 → 13 → 15초 간격으로 세 차례 더 받아 합쳤다(계열마다 마지막 봉이 가장 늦은 수집분).
+  파생 계열 CYC_DEF · COPPER_GOLD 는 기초 자산과 한 번에 받아야 만들어져 따로 받았다. 최종 기본 47/60 · 종목 94/101 · 바스켓 52/52 로 11/18 과 같다(빠진 계열 0). 전날 수집분은 합치지 않았다. 단위 불연속 없음.
+  미국 주식은 11/18(수) 종가, 미국채 · TIPS · HY 스프레드는 11/17 관측. RSS 창(11/18 07:30 ~ 11/19 07:30 KST) 106건 중 24건 태깅.
+- 결과: 엔비디아 호실적 다음 날 미국은 반도체 반등이 소폭에 그치고 금융 · 에너지(−3.3%)가 밀려 지수가 제자리, 소형주 · 경기민감만 반등. 코스피 +1.99% 로 5000선 회복(반도체 주도).
+  화요일 미국채는 2년 · 5년물이 3bp 더 내려 이틀째 되돌림 — 이번에는 실질금리가 함께 내렸다. HY 스프레드는 +9bp 로 계속 확대.
+  자격 후보 없음(가장 가까운 Policy Driven 도 abs(Rates) 0.56 / 1.2) → REGIME v2 Neutral / Mixed(세션, NO_ELIGIBLE, 50). 공식 regime 은 Neutral / Mixed 유지(전환 없음, 진입 · 이탈 카운트 0). 탭별 판정:
+  - AI: AI-SPECIFIC DE-RISKING(센티 30, 펀더멘털 확인 WEAK — 바스켓 5일 −8.2% 로 Nasdaq 보다 약함) · THEME VIEW "호실적에도 반등은 하루 제자리, AI 가 시장보다 더 밀렸다"
+  - 금리: FED POLICY REPRICING — Inflation Repricing Not Confirmed(MARKET READ 는 mixed / partly_consistent)
+  - 물가: MIXED(기대인플레이션 약한 상승 압력, 원자재 · 환율 중립, 임금 · 서비스 끈적)
+  - 유가: Macro / Liquidity Risk-Off — UNCONFIRMED
+  - 반도체: UPSWING 25.4(축: PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL IMPROVING · EQUITY WEAK)
+  - MARKET OVERVIEW: "위험 회피는 물러났지만 반등은 좁다, 신용이 아직 걸림돌"(EQUITY Mixed · MACRO Headwind · RISK Elevated · AI ↔ 반도체 DIVERGING)
+- history: 7개 탭에 11/18 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-18.json` 1개 추가. COMPLETE, 테스트 통과, 화면 점검 오류 0. 코드 변경 없음.

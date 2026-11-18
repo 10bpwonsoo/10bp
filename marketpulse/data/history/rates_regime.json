@@ -5461,6 +5461,111 @@
     }
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-18",
+   "tab_id": "rates_regime",
+   "state": "fed_policy",
+   "state_label": "FED POLICY REPRICING — Inflation Repricing Not Confirmed",
+   "state_label_ko": "",
+   "state_score": 40.9,
+   "confidence": 40.9,
+   "component_scores": {
+    "driver:inflation_repricing": 11.9,
+    "driver:fed_policy": 40.9,
+    "driver:growth": -32.4,
+    "driver:term_premium": 35.8,
+    "driver:risk_liquidity": -70.4,
+    "rate_move_z": 1.51,
+    "rate_change_5d_bp": 22.0,
+    "inflation:realized": -10.5,
+    "inflation:implied": 22.0,
+    "inflation:energy": -0.3,
+    "inflation:wages": 17.8,
+    "inflation:fx": -10.0
+   },
+   "key_drivers": [
+    "Risk / Liquidity -70 CONTRADICTED",
+    "Fed Policy +41 CONFIRMED",
+    "Term Premium / Supply +36 CONFIRMED"
+   ],
+   "data_coverage": 0.985,
+   "data_asof": "2026-11-18T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-18T23:22:01.237784Z",
+   "model_version": "rates_regime_v0.1.0",
+   "logic_version": "rules_bfef6686",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "금리를 움직이는 증거는 연준 정책 경로 쪽이 가장 크다(+41, MODERATE) — 기간 프리미엄·공급 +36 보다 5 앞선다. 물가 리프라이싱은 미확인(+12). 상태: driver 방향(상승)과 10년 금리(+1.5σ)가 같다.",
+   "payload": {
+    "regime_label": "FED POLICY REPRICING — Inflation Repricing Not Confirmed",
+    "dominant": "fed_policy",
+    "runner_up": "term_premium",
+    "margin": 5.1,
+    "signal_strength_label": "MODERATE",
+    "drivers": {
+     "inflation_repricing": {
+      "label": "Inflation Repricing",
+      "score": 11.9,
+      "status": "UNCONFIRMED",
+      "coverage": 0.925
+     },
+     "fed_policy": {
+      "label": "Fed Policy",
+      "score": 40.9,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "growth": {
+      "label": "Growth",
+      "score": -32.4,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     },
+     "term_premium": {
+      "label": "Term Premium / Supply",
+      "score": 35.8,
+      "status": "CONFIRMED",
+      "coverage": 1.0
+     },
+     "risk_liquidity": {
+      "label": "Risk / Liquidity",
+      "score": -70.4,
+      "status": "CONTRADICTED",
+      "coverage": 1.0
+     }
+    },
+    "confirmations": {
+     "Breakeven (기대인플레)": "NOT_CONFIRMED",
+     "Oil": "MIXED",
+     "Commodities (구리)": "MIXED",
+     "USD": "CONFIRMED",
+     "Rates — 2Y": "CONFIRMED",
+     "Rates — 10Y / 30Y": "CONFIRMED",
+     "Equities (S&P)": "CONFIRMED",
+     "Growth / Tech (Nasdaq)": "CONFIRMED",
+     "Banks (XLF)": "MIXED",
+     "HY OAS": "MIXED",
+     "VIX": "MIXED",
+     "Gold": "CONFIRMED"
+    },
+    "implication": "정책 경로(단기물)가 커브를 이끄는 국면 — 2년물과 커브 평탄화가 신호다.",
+    "inflation_status": "UNCONFIRMED",
+    "rate_direction": "up",
+    "curve": "parallel_up",
+    "inflation_components": {
+     "realized": "flat",
+     "implied": "flat",
+     "energy": "flat",
+     "wages": "flat",
+     "fx": "flat"
+    }
+   },
+   "corrections": []
   }
  ]
 }

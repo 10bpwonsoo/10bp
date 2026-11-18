@@ -4609,6 +4609,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-18",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 0.43641304707124706,
+   "confidence": 50.0,
+   "component_scores": {
+    "RiskAppetite": 6.622223367499752,
+    "Volatility": 9.081573505640664,
+    "Growth": 10.700978481726091,
+    "Credit": -51.867972242612645,
+    "KoreaFlow": null,
+    "news": 5.104775027253964,
+    "factor:Growth": 0.215,
+    "factor:Inflation": 0.201,
+    "factor:Rates": -0.564,
+    "factor:USD": -0.107,
+    "factor:Liquidity": -0.398,
+    "factor:RiskAppetite": 0.133,
+    "factor:Credit": 1.149,
+    "factor:Volatility": -0.182,
+    "factor:China": -0.154
+   },
+   "key_drivers": [
+    "Energy -2.1σ",
+    "Consumer Discretionary +1.4σ",
+    "VIX − S&P 실현변동성 +1.3σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-18T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-18T23:22:01.356796Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 50% · 온도 +0",
+   "payload": {
+    "date": "2026-11-18",
+    "as_of": "2026-11-18T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 50.0,
+    "price_temperature": -2.675828273050564,
+    "news_temperature": 5.104775027253964,
+    "composite": 0.43641304707124706,
+    "news_events": 24,
+    "thermo_confidence": 94.22193966996954,
+    "components": {
+     "RiskAppetite": 6.622223367499752,
+     "Volatility": 9.081573505640664,
+     "Growth": 10.700978481726091,
+     "Credit": -51.867972242612645,
+     "KoreaFlow": null,
+     "news": 5.104775027253964
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": 0.215,
+     "Inflation": 0.201,
+     "Rates": -0.564,
+     "USD": -0.107,
+     "Liquidity": -0.398,
+     "RiskAppetite": 0.133,
+     "Credit": 1.149,
+     "Volatility": -0.182,
+     "China": -0.154
+    },
+    "hypotheses": {},
+    "drivers": [
+     "Energy -2.1σ",
+     "Consumer Discretionary +1.4σ",
+     "VIX − S&P 실현변동성 +1.3σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }
