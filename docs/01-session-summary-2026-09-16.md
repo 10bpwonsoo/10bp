@@ -836,3 +836,7 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - 반도체: UPSWING 30.2(트렌드포스 D램 수요 · 가격 예상치 하향 보도)
   - MARKET OVERVIEW: "정책 주도 해제, 신용까지 흔들린 약세에 엔비디아 호실적"(EQUITY Weak · MACRO Headwind · RISK High)
 - history: 7개 탭에 11/17 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-17.json` 1개 추가. COMPLETE, 테스트 통과. 코드 변경 없음.
+
+### 2026-11-18 — MARKET OVERVIEW 탭을 탭 줄 맨 앞으로
+- 요청: "Over view 탭을 맨 앞으로". `App.tsx` 에서 MARKET OVERVIEW 버튼을 실시간 탭 앞으로 옮겼다(순서만 — 처음 열리는 탭은 그대로 실시간).
+  순서: MARKET OVERVIEW · 실시간 · AI 센티 · 반도체 사이클 · 금리 · 유가. 과거 날짜(저장본)에서도 같은 순서. 다른 탭 화면과 데이터는 그대로.

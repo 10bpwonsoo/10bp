@@ -27,7 +27,7 @@ import { InvestmentSection } from "./investment/InvestmentSection";
 const DATE_Q = /^\d{4}-\d{2}-\d{2}$/;
 /** 반도체 사이클 탭(2026-10-23) — 시나리오 점검 탭이 아니라 별도 화면. AI 센티 탭 바로 뒤에 놓는다. */
 const SEMI_TAB = "__semiconductor_cycle__";
-/** MARKET OVERVIEW · 시장 종합(2026-11-12) — 기존 탭 결과를 읽어 한 화면에서 종합. 실시간 탭 바로 뒤. */
+/** MARKET OVERVIEW · 시장 종합(2026-11-12) — 기존 탭 결과를 읽어 한 화면에서 종합. 탭 줄 맨 앞(2026-11-18 요청), 처음 열리는 탭은 그대로 실시간. */
 const OVERVIEW_TAB = "__market_overview__";
 
 /** 주소의 날짜 — ?date=YYYY-MM-DD (예전 링크의 #YYYY-MM-DD 도 읽는다). LIVE 는 date 없음. */
@@ -174,14 +174,14 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
         ) : null}
         {mode !== null ? (
           <div className="sc-tabs" role="group" aria-label="시나리오 점검" data-testid="scenario-tabs">
-            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
-              {liveLabel}
-            </button>
             {mode !== "MOCK" ? (
               <button type="button" className="sc-tab mono" aria-pressed={overviewOpen} onClick={() => setCheckName(OVERVIEW_TAB)} data-testid="overview-tab" title="MARKET OVERVIEW — 기존 탭 결과를 읽어 지금 시장을 한 화면에서 종합(판단 → 근거, 상세는 각 탭)">
                 MARKET OVERVIEW <span className="mo-tab-ko">시장 종합</span>
               </button>
             ) : null}
+            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
+              {liveLabel}
+            </button>
             {checks.map((c, i) => (
               <Fragment key={c.name}>
                 <button type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
