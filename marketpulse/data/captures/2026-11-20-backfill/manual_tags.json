@@ -1,0 +1,469 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/20 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/19 합본과 11/20 아침 수집분을 합쳤다(창: 11/19 07:30 ~ 11/20 07:30 KST, 108건 중 시장 관련 25건).",
+ "tags": {
+  "e13de4fd3142fc8d": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 70,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장 직후 AI 주식에 투매가 나오며 나스닥이 2.25% 하락(뉴욕증시 브리핑, 제목)."
+  },
+  "616eb1c0576b2483": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽이 상장 첫날 97.17달러로 마감(속보, 제목) — 공모가 83달러."
+  },
+  "f9948f0ff4f349a1": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽이 17% 올랐지만 시장을 되살리기에는 역부족이라는 평가(제목)."
+  },
+  "078be55a6eb83624": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽이 장중 오름폭을 줄임(제목)."
+  },
+  "1bca387249130a84": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽이 공모가를 주당 83달러로 정해 기업가치가 약 1조5000억달러로 평가됐다는 보도(제목)."
+  },
+  "66d3ee8d12d5eed8": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "무디스가 젠슨 황 CEO 퇴진 뒤 엔비디아 신용등급 방향을 '안정적'으로 낮춤(제목)."
+  },
+  "f0ed2a1201652570": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "엔비디아 주가가 17일 종가 기준 한 달 새 27.4% 하락 — CEO 리스크가 겹침, 메모리 가격과 신제품 비용이 부담으로 꼽힘(요약)."
+  },
+  "9339d3aae189f74f": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": -25
+   },
+   "theme_direction": {
+    "rates": "down"
+   },
+   "sentiment": 10,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "안전자산 수요로 미국채 금리가 내려 10년물 금리가 나흘 연속 하락(제목)."
+  },
+  "1ace41380107752d": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 20
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "월러 연준 이사가 다음 달 FOMC 에서 한 번에 50bp 인상을 주장 — 발언 직후 미국 장기금리는 오히려 하락(요약)."
+  },
+  "8a4b372038feff78": {
+   "themes": [
+    "inflation",
+    "china"
+   ],
+   "theme_sentiment": {
+    "inflation": -20,
+    "china": -10
+   },
+   "theme_direction": {
+    "inflation": "down",
+    "china": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "두 달 전 최고가였던 구리가 하루 새 5% 하락(제목)."
+  },
+  "7d493469c4d889c0": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 15,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장과 텍사스 규제 완화 소식에 AI 반도체주가 시간외거래에서 함께 상승(제목)."
+  },
+  "5c821b434cbdc3c7": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "최근 잇단 전산 장애의 배경으로 소프트웨어 패치 급증이 지목됨(제목)."
+  },
+  "74dd1231c1f07c07": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20,
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 등락 끝에 70.45포인트(1.39%) 오른 5137.89 로 마감 — 5100선 회복(요약)."
+  },
+  "e65eec93b684361b": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "반도체가 오후에 반등해 코스피가 5100선을 회복, 삼성전기 9% 상승(마감시황, 제목)."
+  },
+  "350d4ca417b21e76": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 장중 5000선 붕괴를 딛고 상승 전환해 5137 로 마감 — 반도체 반등(제목)."
+  },
+  "5dd07f1cd6c5b36a": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 실적 여파가 하루 늦게 번져 한국 네오클라우드 종목이 급락(제목)."
+  },
+  "635c9c32ad687e22": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "ai": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전기가 엔비디아 협력 확대 기대에 이틀째 강세로 8% 넘게 상승(제목)."
+  },
+  "78b8948b4bfa81cf": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": 30,
+    "consumer": 25
+   },
+   "theme_direction": {
+    "china": "up",
+    "consumer": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 70,
+   "horizon": "medium",
+   "event_type": "geopolitical",
+   "reason": "한중 정상회담에서 문화·콘텐츠 교류를 단계적으로 넓히기로 해 엔터·미디어·여행주가 급등(요약)."
+  },
+  "73ced387f3ebe035": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": 25,
+    "consumer": 25
+   },
+   "theme_direction": {
+    "china": "up",
+    "consumer": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "geopolitical",
+   "reason": "한중 FTA 서비스·투자 후속 협상이 실질 타결돼 한한령 완화 기대로 콘텐츠·항공·화장품주가 상승(요약)."
+  },
+  "1dd5f8eae15de7ba": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -25
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "외국인이 10월 한국 주식을 26조원 순유출 — 두 달째(제목)."
+  },
+  "4799c31db08f8338": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인이 닷새 동안 한국 주식에서 4.3조원을 순유출(제목)."
+  },
+  "f61be2dde10d59ad": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20,
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "up"
+   },
+   "sentiment": -15,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "3분기 결산 — 원화 강세로 영업외 손실이 커져 상장사 절반이 순손실, 삼성전자·SK하이닉스가 상장사 영업이익의 67% 를 차지(요약)."
+  },
+  "af731c271a4195d8": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "글로벌 대체투자 콘퍼런스에서 AI 투자 과열을 경계하는 목소리 — VC 자금의 83% 가 AI 로 몰림(요약)."
+  },
+  "2bb9b6e140f2b997": {
+   "themes": [
+    "energy",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "energy": 20,
+    "ai": 15
+   },
+   "theme_direction": {
+    "energy": "up",
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "AI 데이터센터 전력 수요로 인프라 투자 사이클이 커지고 한국 재생에너지 시장이 열린다는 콘퍼런스 발언(요약)."
+  },
+  "1e936d6df0c271d0": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -15
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "로스 스토어스가 3분기 호조 뒤 연말 매출 증가세 둔화를 예고(제목)."
+  }
+ }
+}
