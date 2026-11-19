@@ -4421,6 +4421,103 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-19",
+   "tab_id": "ai_sentiment",
+   "state": "FEAR",
+   "state_label": "FEAR",
+   "state_label_ko": "불안한 투자심리",
+   "state_score": 24.1,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 32.8,
+    "price": 11.4,
+    "breadth": 10.5,
+    "fundamentals": 44.0,
+    "macro": 29.9
+   },
+   "key_drivers": [
+    "Long-End Rates",
+    "−AI Basket 1M",
+    "−Volatility (VIX)",
+    "−S&P 500"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-19T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-19T23:47:20.676403Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "FEAR 24",
+   "payload": {
+    "components": {
+     "narrative": 32.8,
+     "price": 11.4,
+     "breadth": 10.5,
+     "fundamentals": 44.0,
+     "macro": 29.9
+    },
+    "component_states": {
+     "narrative": "FEAR",
+     "price": "EXTREME_FEAR",
+     "breadth": "EXTREME_FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "FEAR"
+    },
+    "key_tension": "내러티브 · 가격 · 확산도 · 매크로가 투자심리를 누르고 있고 이를 상쇄할 지지 요인이 없습니다.",
+    "read": "Long-End Rates는 여전히 지지적입니다. 그러나 내러티브 · 가격 · 확산도 · 매크로가 따라오지 않고 AI Basket 1M · Volatility (VIX)가 sentiment 를 압박하고 있습니다.",
+    "secondary": "FUNDAMENTALS > PRICE",
+    "support": [
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 66.8,
+      "display": "-0.7σ"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 0.0,
+      "display": "-17.5%"
+     },
+     {
+      "id": "vix",
+      "label": "Volatility (VIX)",
+      "label_ko": "변동성",
+      "component": "macro",
+      "score": 0.0,
+      "display": "+2.7σ (5일)"
+     },
+     {
+      "id": "spx",
+      "label": "S&P 500",
+      "label_ko": "S&P 500",
+      "component": "macro",
+      "score": 0.0,
+      "display": "-3.6σ (5일)"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }

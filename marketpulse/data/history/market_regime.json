@@ -4698,6 +4698,98 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-19",
+   "tab_id": "market_regime",
+   "state": "GROWTH_SHOCK",
+   "state_label": "Growth Shock",
+   "state_label_ko": "",
+   "state_score": -27.64810406066459,
+   "confidence": 50.0,
+   "component_scores": {
+    "RiskAppetite": -58.502233682266436,
+    "Volatility": -23.640700355695333,
+    "Growth": -50.25871542071153,
+    "Credit": -19.719063113152956,
+    "KoreaFlow": null,
+    "news": -5.472911811372395,
+    "factor:Growth": -1.106,
+    "factor:Inflation": -1.344,
+    "factor:Rates": -0.452,
+    "factor:USD": 0.453,
+    "factor:Liquidity": -0.052,
+    "factor:RiskAppetite": -1.34,
+    "factor:Credit": 0.4,
+    "factor:Volatility": 0.482,
+    "factor:China": -2.007
+   },
+   "key_drivers": [
+    "S&P 500 -2.0σ",
+    "Russell 2000 -1.8σ",
+    "Copper/Gold Ratio -1.6σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-19T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-19T23:47:20.956271Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "GROWTH_SHOCK 50% · 온도 -28",
+   "payload": {
+    "date": "2026-11-19",
+    "as_of": "2026-11-19T22:30:00Z",
+    "label": "GROWTH_SHOCK",
+    "secondary_label": "RISK_OFF",
+    "confidence": 50.0,
+    "price_temperature": -42.431565560192716,
+    "news_temperature": -5.472911811372395,
+    "composite": -27.64810406066459,
+    "news_events": 25,
+    "thermo_confidence": 91.30413462511797,
+    "components": {
+     "RiskAppetite": -58.502233682266436,
+     "Volatility": -23.640700355695333,
+     "Growth": -50.25871542071153,
+     "Credit": -19.719063113152956,
+     "KoreaFlow": null,
+     "news": -5.472911811372395
+    },
+    "band": "cool",
+    "band_label": "냉각",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": -1.106,
+     "Inflation": -1.344,
+     "Rates": -0.452,
+     "USD": 0.453,
+     "Liquidity": -0.052,
+     "RiskAppetite": -1.34,
+     "Credit": 0.4,
+     "Volatility": 0.482,
+     "China": -2.007
+    },
+    "hypotheses": {
+     "GROWTH_SHOCK": 0.9,
+     "RISK_OFF": 0.633
+    },
+    "drivers": [
+     "S&P 500 -2.0σ",
+     "Russell 2000 -1.8σ",
+     "Copper/Gold Ratio -1.6σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

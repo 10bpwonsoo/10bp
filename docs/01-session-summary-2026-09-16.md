@@ -863,3 +863,22 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 과거 날짜 링크로 들어와도 같은 탭이 처음이다 — 11/12 이전 저장본은 이 탭이 '저장되지 않음' 이라 다른 탭을 눌러야 한다(지금 값으로 메우지 않는다).
 - `check_screen.cjs`: 첫 화면(MARKET OVERVIEW)을 확인한 뒤 실시간 탭으로 옮겨 예전과 같은 화면을 찍고 MARKET NOW 를 본다.
 - 테스트: 처음 탭 · 탭 클릭 시 맨 위 이동 1개 추가, 저장본 무호출 테스트는 저장본 선택 뒤 호출 수가 늘지 않는지로 바꿨다. 프론트 181개 통과.
+
+### 2026-11-20 — 11/20 Daily Snapshot (07:30 KST, 예약 작업)
+- 입력: 첫 수집이 Yahoo 429 로 기본 41/60 · 종목 10/101 · 바스켓 0/52 에 그쳤다. 2분 뒤 재수집하고 빠진 것만 9 → 13 → 15 → 20 → 30초 간격으로 다섯 차례 더 받아 합쳤다(계열마다 마지막 봉이 가장 늦은 수집분).
+  VIX_RV_SPX 는 재수집 때 VIX 가 하루 늦은 값으로 와 11/18 까지만 만들어져, VIX · SPX 와 한 번에 다시 받아 11/19 봉으로 바꿨다(값은 공급자 응답 그대로).
+  최종 기본 47/60 · 종목 94/101 · 바스켓 51/52. **SNDK 결측** — Yahoo 가 세 번 모두 봉 3개만 돌려줘 최소 길이(20)에 못 미쳤다. 전날 수집분으로 메우지 않고 비워 뒀다(AI 바스켓 Memory 그룹은 3종목으로 계산). 단위 불연속 없음.
+  미국 주식은 11/19(목) 종가, 미국채 · TIPS · HY 스프레드는 11/18 관측. RSS 창(11/19 07:30 ~ 11/20 07:30 KST) 108건 중 25건 태깅.
+- 결과: 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번져 S&P 500 −2.0% · Nasdaq 100 −2.2% · Russell 2000 −2.2%, VIX 28.4. 구리 −5.3% · 금 −3.2% · WTI −3.2%.
+  수요일 미국채는 30년물 −5bp 로 장기물 중심 사흘째 되돌림, 기대인플레이션도 함께 하락. HY 스프레드 +4bp. 코스피는 미국 급락 전에 +1.39%(5137.89)로 마감.
+  자격 후보 Growth Shock(Growth −1.11 / 기준 −1.0, 보조 조건 4개 중 3개) · Risk-Off(RiskAppetite −1.34, 보조 조건은 달러만) → REGIME v2 **Growth Shock**(세션, TENTATIVE, 50 — 정량 57 보다 낮춤: 기준을 겨우 넘음 · 하루짜리 수급 이벤트 · 미국채/신용은 11/18 관측 · 한국은 미국 급락 전 마감).
+  공식 regime 은 Neutral / Mixed 유지 — Growth Shock 진입 확인 1/2(TRANSITION WATCH). 탭별 판정:
+  - AI: AI-SPECIFIC DE-RISKING(센티 24, 펀더멘털 확인 WEAK — 바스켓 5일 −9.8%, 미국 전 그룹이 Nasdaq 아래) · THEME VIEW "상장 흥행에도 AI 투매, 약세가 전 그룹으로 번졌다"
+  - 금리: GROWTH-LED RATES — Inflation Repricing Not Confirmed(MARKET READ 는 growth_scare / consistent)
+  - 물가: COOLING BIAS(기대인플레이션 · 원자재 하락, 임금 · 서비스만 끈적)
+  - 유가: Demand — CONFIRMED
+  - 반도체: UPSWING 32.2(축: PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL STRONG · EQUITY WEAK)
+  - MARKET OVERVIEW: "AI 투매가 지수 전체로 번졌다, 성장 우려 신호가 모였다"(EQUITY Weak · MACRO Headwind · RISK High · AI ↔ 반도체 DIVERGING)
+- 발견(고치지 않음 — 다른 탭 내용이라 사용자 확인 필요): 금리 탭의 GROWTH-LED RATES 고정 문구가 금리 상승만 가정한다("성장 기대가 금리를 올리는 국면 … 좋은 금리 상승", `rates_regime.yaml`).
+  오늘처럼 성장 증거가 음(−88)이고 금리가 내리는 날에도 같은 문장이 나온다. MARKET READ(세션)와 MARKET OVERVIEW 는 성장 우려에 따른 금리 하락으로 썼다.
+- history: 7개 탭에 11/19 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-19.json` 1개 추가. COMPLETE, 테스트 통과, 화면 점검 오류 0. 코드 변경 없음.
