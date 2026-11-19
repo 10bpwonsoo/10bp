@@ -187,6 +187,8 @@ describe("Daily archive mode", () => {
   it("G: every tab uses the same selected archive and never fetches live data", async () => {
     render(<App />);
     await pickDay("2026-10-19");
+    // 처음 열리는 탭이 MARKET OVERVIEW 라 LIVE 화면에서는 탭 결과를 받는다 — 저장본을 고른 뒤로는 한 번도 늘지 않아야 한다
+    const before = { ai: network("/api/v1/ai-regime"), rates: network("/api/v1/rates-regime"), oil: network("/api/v1/oil-regime") };
     const tabs = screen.getByTestId("scenario-tabs");
     for (const name of [/^AI 센티2?/, /^물가 충격/, /^유가 급등/, /^평시/]) {
       const btn = within(tabs).getAllByRole("button").find((b) => name.test(b.textContent ?? ""));
@@ -194,9 +196,9 @@ describe("Daily archive mode", () => {
       await act(async () => { fireEvent.click(btn); });
       expect(screen.getByTestId("archive-date")).toHaveTextContent("2026-10-19");
     }
-    expect(network("/api/v1/ai-regime")).toBe(0);
-    expect(network("/api/v1/rates-regime")).toBe(0);
-    expect(network("/api/v1/oil-regime")).toBe(0);
+    expect(network("/api/v1/ai-regime")).toBe(before.ai);
+    expect(network("/api/v1/rates-regime")).toBe(before.rates);
+    expect(network("/api/v1/oil-regime")).toBe(before.oil);
     // 10/15 는 AI 가 저장되지 않았다 — 지금 값으로 메우지 않는다
     await act(async () => { fireEvent.click(within(tabs).getAllByRole("button")[0]!); });
     await pickDay("2026-10-15");
@@ -204,8 +206,22 @@ describe("Daily archive mode", () => {
     const ai = within(screen.getByTestId("scenario-tabs")).getAllByRole("button").find((b) => /^AI 센티/.test(b.textContent ?? ""))!;
     await act(async () => { fireEvent.click(ai); });
     expect(await screen.findByTestId("not-archived")).toHaveTextContent("DATA UNAVAILABLE FOR THIS DATE");
-    expect(network("/api/v1/ai-regime")).toBe(0);
+    expect(network("/api/v1/ai-regime")).toBe(before.ai);
     expect(() => resolveArchived(archiveFor("2026-10-15"), "/api/v1/ai-regime")).toThrow(/NOT ARCHIVED/);
+  });
+
+  it("opens on MARKET OVERVIEW and a tab click scrolls to the top", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    render(<App />);
+    const overview = await screen.findByTestId("overview-tab");
+    expect(overview).toHaveAttribute("aria-pressed", "true");
+    expect(scrollTo).not.toHaveBeenCalled(); // 처음 열릴 때 · 자동 갱신에서는 스크롤을 건드리지 않는다
+    const liveTab = within(screen.getByTestId("scenario-tabs")).getAllByRole("button")[1]!;
+    await act(async () => { fireEvent.click(liveTab); });
+    expect(liveTab).toHaveAttribute("aria-pressed", "true");
+    expect(overview).toHaveAttribute("aria-pressed", "false");
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
   });
 
   it("H: LIVE로 돌아가기 restores live data, polling and the refresh button", async () => {

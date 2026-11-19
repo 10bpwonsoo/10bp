@@ -855,3 +855,11 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - 반도체: UPSWING 25.4(축: PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL IMPROVING · EQUITY WEAK)
   - MARKET OVERVIEW: "위험 회피는 물러났지만 반등은 좁다, 신용이 아직 걸림돌"(EQUITY Mixed · MACRO Headwind · RISK Elevated · AI ↔ 반도체 DIVERGING)
 - history: 7개 탭에 11/18 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-18.json` 1개 추가. COMPLETE, 테스트 통과, 화면 점검 오류 0. 코드 변경 없음.
+
+### 2026-11-19 — 처음 화면을 MARKET OVERVIEW 로, 탭을 누르면 맨 위부터
+- 요청: "처음 화면 들어갔을 때 overview 탭이 보이게, 다른 탭 누르면 가장 상단이 보이게. 내용은 고치지 마."
+- `App.tsx`: 처음 탭 값을 MARKET OVERVIEW 로 바꿨다(MOCK 에는 이 탭이 없어 판정만 탭이 그대로 처음). 탭 버튼과 '상세 보기' 이동은 `goTab` 하나로 모아 누를 때 `window.scrollTo({ top: 0 })`.
+  날짜 이동 · 자동 갱신에서는 스크롤을 건드리지 않는다. 탭 화면의 내용 · 데이터 · 저장본은 그대로.
+- 과거 날짜 링크로 들어와도 같은 탭이 처음이다 — 11/12 이전 저장본은 이 탭이 '저장되지 않음' 이라 다른 탭을 눌러야 한다(지금 값으로 메우지 않는다).
+- `check_screen.cjs`: 첫 화면(MARKET OVERVIEW)을 확인한 뒤 실시간 탭으로 옮겨 예전과 같은 화면을 찍고 MARKET NOW 를 본다.
+- 테스트: 처음 탭 · 탭 클릭 시 맨 위 이동 1개 추가, 저장본 무호출 테스트는 저장본 선택 뒤 호출 수가 늘지 않는지로 바꿨다. 프론트 181개 통과.

@@ -1,4 +1,4 @@
-// 배포본 화면 점검 — 오류 · 가로 스크롤 · MARKET NOW 선택 블록 · 금리 탭 이벤트 수집일. 스크린샷을 남긴다.
+// 배포본 화면 점검 — 오류 · 가로 스크롤 · 첫 화면(MARKET OVERVIEW) · MARKET NOW 선택 블록 · 금리 탭 이벤트 수집일. 스크린샷을 남긴다.
 // 사용: node tools/daily_snapshot/check_screen.cjs <http://127.0.0.1:PORT/index.html> <screenshot.jpg>
 const { chromium } = require('playwright');  // 환경에 설치된 playwright(어느 폴더에서나 require 로 찾는다)
 (async () => {
@@ -7,6 +7,9 @@ const b = await chromium.launch(); const errs = [];
 const p = await b.newPage({ viewport: { width: 1366, height: 900 } });
 p.on('pageerror', e => errs.push(e.message));
 await p.goto(url); await p.waitForTimeout(3000);
+// 처음 열리는 탭은 MARKET OVERVIEW(2026-11-19) — 첫 화면을 확인한 뒤 실시간 탭으로 옮겨 예전과 같은 화면을 찍고 MARKET NOW 를 본다
+console.log('first', JSON.stringify(await p.evaluate(() => ({ tab: document.querySelector('[data-testid="scenario-tabs"] button[aria-pressed="true"]')?.textContent, headline: document.querySelector('[data-testid="mo-headline"]')?.textContent }))));
+await p.locator('[data-testid="scenario-tabs"] button[title^="decision cockpit"]').click(); await p.waitForTimeout(1500);
 if (shot) await p.screenshot({ path: shot, fullPage: true, type: 'jpeg', quality: 60 });
 console.log(JSON.stringify(await p.evaluate(() => ({ now: document.querySelector('[data-testid="ck-now-label"]')?.textContent, rs: document.querySelector('[data-testid="ck-rs"]')?.innerText.slice(0, 300), noregime: document.body.innerText.includes('NO REGIME') }))));
 for (const tab of ['금리', '유가', 'AI 센티', '반도체 사이클']) {

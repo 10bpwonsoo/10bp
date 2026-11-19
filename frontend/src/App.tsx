@@ -27,7 +27,7 @@ import { InvestmentSection } from "./investment/InvestmentSection";
 const DATE_Q = /^\d{4}-\d{2}-\d{2}$/;
 /** 반도체 사이클 탭(2026-10-23) — 시나리오 점검 탭이 아니라 별도 화면. AI 센티 탭 바로 뒤에 놓는다. */
 const SEMI_TAB = "__semiconductor_cycle__";
-/** MARKET OVERVIEW · 시장 종합(2026-11-12) — 기존 탭 결과를 읽어 한 화면에서 종합. 탭 줄 맨 앞(2026-11-18 요청), 처음 열리는 탭은 그대로 실시간. */
+/** MARKET OVERVIEW · 시장 종합(2026-11-12) — 기존 탭 결과를 읽어 한 화면에서 종합. 탭 줄 맨 앞(2026-11-18 요청)이고 처음 열리는 탭(2026-11-19 요청). MOCK 에는 이 탭이 없어 판정만 탭이 처음이다. */
 const OVERVIEW_TAB = "__market_overview__";
 
 /** 주소의 날짜 — ?date=YYYY-MM-DD (예전 링크의 #YYYY-MM-DD 도 읽는다). LIVE 는 date 없음. */
@@ -58,7 +58,7 @@ function writeUrl(date: string | null, push: boolean) {
  */
 export default function App() {
   const [archive, setArchive] = useState<DashboardArchive | null>(null);
-  const [checkName, setCheckName] = useState<string | null>(null);
+  const [checkName, setCheckName] = useState<string | null>(OVERVIEW_TAB);
   const [rows, setRows] = useState<ArchiveIndexRow[] | null>(null);
   const [liveDate, setLiveDate] = useState<string | null>(null);
   const apply = useCallback((a: DashboardArchive | null) => {
@@ -94,11 +94,18 @@ export default function App() {
 }
 
 /** 대시보드 본체. archive 가 있으면 모든 API 호출이 그 저장본에서 답을 받는다(api/archive.ts) — 폴링·'지금 업데이트' 없음. */
-function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, checkName, setCheckName }: {
+function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, checkName: pickedTab, setCheckName }: {
   archive: DashboardArchive | null; rows: ArchiveIndexRow[] | null; liveDate: string | null; onLiveDate: (d: string | null) => void;
   onSelect: (date: string) => Promise<void>; onLive: () => void; checkName: string | null; setCheckName: (n: string | null) => void;
 }) {
   const [mode, setMode] = useState<DataMode | null>(null);
+  // MOCK 에는 MARKET OVERVIEW 탭이 없다 — 처음 탭 값이 그것이어도 판정만 탭으로 읽는다
+  const checkName = mode === "MOCK" && pickedTab === OVERVIEW_TAB ? null : pickedTab;
+  // 탭을 누르면 그 화면의 맨 위부터 보인다(2026-11-19 요청) — 날짜 이동 · 자동 갱신에서는 스크롤을 건드리지 않는다
+  const goTab = (n: string | null) => {
+    setCheckName(n);
+    try { window.scrollTo({ top: 0 }); } catch { /* 스크롤 없어도 된다 */ }
+  };
   const [scenario, setScenario] = useState<string | undefined>(undefined);
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
   // 모드를 알기 전에는 스냅샷을 요청하지 않는다. 시나리오를 붙일지 말지가
@@ -175,23 +182,23 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
         {mode !== null ? (
           <div className="sc-tabs" role="group" aria-label="시나리오 점검" data-testid="scenario-tabs">
             {mode !== "MOCK" ? (
-              <button type="button" className="sc-tab mono" aria-pressed={overviewOpen} onClick={() => setCheckName(OVERVIEW_TAB)} data-testid="overview-tab" title="MARKET OVERVIEW — 기존 탭 결과를 읽어 지금 시장을 한 화면에서 종합(판단 → 근거, 상세는 각 탭)">
+              <button type="button" className="sc-tab mono" aria-pressed={overviewOpen} onClick={() => goTab(OVERVIEW_TAB)} data-testid="overview-tab" title="MARKET OVERVIEW — 기존 탭 결과를 읽어 지금 시장을 한 화면에서 종합(판단 → 근거, 상세는 각 탭)">
                 MARKET OVERVIEW <span className="mo-tab-ko">시장 종합</span>
               </button>
             ) : null}
-            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => setCheckName(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
+            <button type="button" className="sc-tab mono" aria-pressed={checkName === null} onClick={() => goTab(null)} title="decision cockpit — 판정·driver·교차자산 확인·전파·촉매 한 화면 (기존 대시보드 화면은 아래 Details)">
               {liveLabel}
             </button>
             {checks.map((c, i) => (
               <Fragment key={c.name}>
-                <button type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => setCheckName(c.name)} title={c.description}>
+                <button type="button" className="sc-tab mono" aria-pressed={checkName === c.name} onClick={() => goTab(c.name)} title={c.description}>
                   {c.title.split(" — ")[0]}
                   <span className="num" style={{ color: scoreColor(c.match_score) }}>{c.match_score.toFixed(0)}%</span>
                 </button>
-                {i === semiAfter(checks) ? <SemiTabButton on={semiOpen} onClick={() => setCheckName(SEMI_TAB)} /> : null}
+                {i === semiAfter(checks) ? <SemiTabButton on={semiOpen} onClick={() => goTab(SEMI_TAB)} /> : null}
               </Fragment>
             ))}
-            {semiAfter(checks) < 0 ? <SemiTabButton on={semiOpen} onClick={() => setCheckName(SEMI_TAB)} /> : null}
+            {semiAfter(checks) < 0 ? <SemiTabButton on={semiOpen} onClick={() => goTab(SEMI_TAB)} /> : null}
           </div>
         ) : null}
         {snapshot ? (
@@ -231,8 +238,7 @@ function Dashboard({ archive, rows, liveDate, onLiveDate, onSelect, onLive, chec
                 const by = (f: (c: { focus?: string | null }) => boolean) => checks.find(f)?.name ?? null;
                 const next = t === "live" ? null : t === "semi" ? SEMI_TAB : t === "rates" ? by((c) => c.focus === "rates_regime")
                   : t === "oil" ? by((c) => c.focus === "oil_regime") : by((c) => c.focus === "ai_regime_full" || c.focus === "ai_regime");
-                setCheckName(next);
-                try { window.scrollTo({ top: 0 }); } catch { /* 스크롤 없어도 된다 */ }
+                goTab(next);
               }} />
           ) : semiOpen ? (
             archive && archive.semiconductor_cycle == null ? <SemiconductorNotArchived />
