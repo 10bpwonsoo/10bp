@@ -47,9 +47,27 @@ def _load_series(path: Path) -> dict[str, MarketSeries]:
     return {k: MarketSeries.model_validate(v) for k, v in json.loads(path.read_text(encoding="utf-8")).items()}
 
 
-def fetch_inputs(out: Path, *, as_of: datetime | None = None, news_limit: int = 500) -> dict[str, Any]:
+def _input_adapters(settings, *, min_gap_sec: float | None = None):
+    """
+    입력 수집 전용 어댑터 한 쌍 — 화면이 쓰는 캐시된 어댑터와 따로 만든다(화면 쪽 동작은 그대로).
+    둘이 PacedHttpClient 하나를 같이 써서 ① 세 묶음(기본 · 종목 · AI 바스켓)에 겹치는 심볼은 한 번만 받고
+    ② 요청 사이에 처음부터 간격을 두고 ③ 429 면 쉬었다가 이어 받는다.
+    """
+    from ..adapters.alternative.live import AltLiveAdapter
+    from ..adapters.http import PacedHttpClient
+    from ..adapters.market.live import LiveMarketAdapter
+    from ..models.common import DataMode
+
+    client = PacedHttpClient(timeout_sec=settings.http_timeout_sec, **({"min_gap_sec": min_gap_sec} if min_gap_sec is not None else {}))
+    market = LiveMarketAdapter(replay_dir=settings.replay_dir, config_dir=settings.config_dir, mode=DataMode.DELAYED, client=client)
+    alt = AltLiveAdapter(replay_dir=settings.replay_dir, config_dir=settings.config_dir, client=client, store=None)
+    alt.politeness_sec = 0.0  # 간격은 클라이언트가 둔다(재사용한 응답 앞에서 기다리지 않게)
+    return client, market, alt
+
+
+def fetch_inputs(out: Path, *, as_of: datetime | None = None, news_limit: int = 500, min_gap_sec: float | None = None) -> dict[str, Any]:
     """지금 받을 수 있는 전체 이력을 한 번 받는다. 날짜별 절단은 reconstruct 가 한다."""
-    from ..adapters.registry import build_alt_adapter, build_market_adapter, build_news_adapter
+    from ..adapters.registry import build_news_adapter
     from ..config.registry import get_instruments, get_universe
     from ..config.settings import Settings
     from ..engines.ai_regime import basket_instruments
@@ -63,7 +81,7 @@ def fetch_inputs(out: Path, *, as_of: datetime | None = None, news_limit: int = 
     report: dict[str, Any] = {"fetched_at": as_of.isoformat()}
 
     ins = get_instruments().instruments
-    ad = build_market_adapter(settings)
+    client, ad, alt = _input_adapters(settings, min_gap_sec=min_gap_sec)
     base = ad.fetch_series(ins, bars=settings.history_bars, as_of=as_of)
     report["base"] = {"got": len(base), "of": len(ins), "failed": [(k, o.reason) for k, o in getattr(ad, "outcomes", {}).items() if not o.ok]}
     _dump_series(out / "series_base.json", base)
@@ -71,7 +89,6 @@ def fetch_inputs(out: Path, *, as_of: datetime | None = None, news_limit: int = 
     u = get_universe(settings.config_dir)
     base_ins = get_instruments().by_id()
     shared = [base_ins[i] for i in shared_driver_ids(settings.config_dir)]
-    alt = build_alt_adapter(settings, store_path=None)
     sources = {a.id: a.sources for a in u.alternative}
     sources.update({s.id: [SourceSpec(provider="yahoo", symbol=s.symbol)] for s in u.stocks})
     instruments = [s.as_instrument() for s in u.stocks] + [a.as_instrument() for a in u.alternative] + shared
@@ -81,10 +98,11 @@ def fetch_inputs(out: Path, *, as_of: datetime | None = None, news_limit: int = 
 
     specs = [AltInstrument(id=m["id"], name=m.get("name", m["id"]), group="ai", asset_class="equity", unit="price",
                            sources=[SourceSpec(provider="yahoo", symbol=str(m["symbol"]))], source_type="EXCHANGE") for m in basket_instruments()]
-    ad2 = build_alt_adapter(settings, store_path=None)
+    ad2 = alt
     basket = ad2.fetch_series([a.as_instrument() for a in specs], {a.id: a.sources for a in specs}, bars=120, as_of=as_of)
     report["basket"] = {"got": len(basket), "of": len(specs), "failed": [(k, o.reason) for k, o in ad2.outcomes.items() if not o.ok]}
     _dump_series(out / "series_basket.json", basket)
+    report["http"] = dict(client.stats)  # 보낸 요청 · 재사용(중복 제거) · 429 · 포기
 
     try:
         items = build_news_adapter(settings).fetch_news(limit=news_limit, as_of=as_of)

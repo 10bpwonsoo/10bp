@@ -159,3 +159,79 @@ class HttpClient:
             circuit.opened_at = time.monotonic()
             logger.warning("%s 회로 차단 — %s", host, last)
         raise last
+
+
+@dataclass
+class PacedHttpClient(HttpClient):
+    """
+    일괄 수집(Daily Snapshot 입력) 전용 클라이언트 — 2026-11-20.
+
+    화면이 쓰는 HttpClient 는 죽은 공급자를 빨리 포기해야 한다. 일괄 수집은 반대다:
+    시간이 조금 더 걸려도 계열을 빠뜨리지 않는 쪽이 낫다. 그래서 셋을 다르게 한다.
+
+      1. 같은 요청은 한 번만 보낸다. 응답 원문을 그대로 다시 쓴다(값을 만들거나 고치지 않는다).
+         `superset_param`(Yahoo 의 period1) 만 다른 요청은, 더 이른 시작점으로 이미 받은
+         응답이 있으면 그것을 쓴다 — 더 긴 기간의 응답은 짧은 기간을 포함한다.
+      2. 같은 호스트 요청 사이에 처음부터 간격을 둔다(몰아 보내다 429 로 막히지 않게).
+      3. 429 를 받으면 그 호스트를 쉬었다가 같은 요청을 다시 보낸다. 회로를 열어 남은 계열을
+         전부 실패시키지 않는다. 쉬는 시간의 합이 `wait_budget_sec` 를 넘으면 그때부터는
+         기다리지 않고 실패로 남긴다(결측 — 0 이나 전날 값으로 채우지 않는다).
+    """
+
+    retries: int = 0  # 재시도는 아래에서 간격을 두고 한다 — 0.6초 뒤 재시도는 429 를 키울 뿐이다
+    min_gap_sec: float = 1.5
+    max_gap_sec: float = 12.0
+    cooldowns_sec: tuple[float, ...] = (45.0, 90.0, 180.0)
+    wait_budget_sec: float = 1200.0
+    superset_param: str = "period1"
+    _cache: dict[tuple, tuple[float | None, bytes]] = field(default_factory=dict, repr=False)
+    _last_at: dict[str, float] = field(default_factory=dict, repr=False)
+    _gap: dict[str, float] = field(default_factory=dict, repr=False)
+    _waited: float = field(default=0.0, repr=False)
+    stats: dict[str, int] = field(default_factory=lambda: {"requests": 0, "reused": 0, "throttled": 0, "gave_up": 0})
+    _sleep = staticmethod(time.sleep)
+
+    def _key(self, url: str, params: Mapping[str, str | int | float] | None) -> tuple[tuple, float | None]:
+        rest = tuple(sorted((k, str(v)) for k, v in (params or {}).items() if k != self.superset_param))
+        start = (params or {}).get(self.superset_param)
+        return (url, rest), (float(start) if start is not None else None)
+
+    def get(self, url, *, params=None, headers=None, data=None) -> bytes:  # type: ignore[override]
+        if data:  # POST 는 캐시하지 않는다
+            return super().get(url, params=params, headers=headers, data=data)
+        key, start = self._key(url, params)
+        hit = self._cache.get(key)
+        if hit is not None and (start is None or (hit[0] is not None and hit[0] <= start)):
+            self.stats["reused"] += 1
+            return hit[1]
+
+        host = url.split("/")[2] if "//" in url else url
+        for cooldown in (*self.cooldowns_sec, None):
+            gap = self._gap.get(host, self.min_gap_sec)
+            wait = self._last_at.get(host, -1e9) + gap - time.monotonic()
+            if wait > 0:
+                self._sleep(wait)
+            self.stats["requests"] += 1
+            try:
+                payload = super().get(url, params=params, headers=headers)
+            except FetchError as exc:
+                self._last_at[host] = time.monotonic()
+                if exc.kind != "http_429":
+                    raise
+                self.stats["throttled"] += 1
+                if cooldown is None or self._waited + cooldown > self.wait_budget_sec:
+                    self.stats["gave_up"] += 1
+                    raise
+                # 막혔다 — 간격을 늘리고 쉬었다가 같은 요청을 다시. 회로는 닫아 둔다(남은 계열을 살린다).
+                self._gap[host] = min(self.max_gap_sec, gap * 2)
+                logger.warning("%s 429 — %.0f초 쉬고 다시 (요청 간격 %.1f초)", host, cooldown, self._gap[host])
+                self._sleep(cooldown)
+                self._waited += cooldown
+                circuit = self._circuit(host)
+                circuit.failures = 0
+                circuit.opened_at = None
+                continue
+            self._last_at[host] = time.monotonic()
+            self._cache[key] = (start, payload)
+            return payload
+        raise AssertionError("unreachable")  # pragma: no cover
