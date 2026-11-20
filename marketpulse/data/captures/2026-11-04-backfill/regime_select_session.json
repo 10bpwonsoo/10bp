@@ -1,0 +1,14 @@
+{
+ "selected_regime": "NEUTRAL",
+ "regime_confidence": 58,
+ "selection_status": "NO_ELIGIBLE",
+ "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았고, 미국 주식 반등과 한국 주식 급락이 갈려 하나의 주식 환경으로 정하기 어렵다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "CONTRADICTED",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "공식 regime 은 Liquidity Stress / Risk-Off 이고 오늘 선택은 Neutral / Mixed 다. 직전 거래일 raw 도 Neutral 이라, 다음 거래일에도 Neutral / Mixed 가 이어지면 공식 regime 이 바뀌는 전환 후보 상태다.",
+ "data_coverage": 76,
+ "selection_rationale": "가장 가까운 후보는 Growth Shock(Growth −0.62, 기준 −1.0)과 Risk-On(Risk Appetite +0.43, 기준 +0.8)이지만 둘 다 자격이 없다. 미국은 S&P · Nasdaq · 반도체가 반등하고 VIX · 신용 스프레드가 내려 위험회피가 아니고, 한국은 KOSPI · KOSDAQ 이 크게 밀리고 대표 종목 대부분이 내려 위험선호도 아니다. 유가 · 기대인플레이션은 크게 내려 물가 부담은 줄었지만 이를 직접 가리키는 regime 은 없다. 신용 · 변동성 스트레스가 확인되지 않아 Liquidity Stress 를 이어갈 근거도 약하다.",
+ "commentary": "미국에서는 기술주와 반도체가 반등하고 변동성과 신용 스프레드가 내려 위험회피 신호가 약해졌다. 반면 한국은 AI 수익성 우려 속에 KOSPI 와 KOSDAQ 이 함께 크게 밀렸고 대표 종목 35개 중 17%만 올라 하락이 넓게 퍼졌다. 어느 regime 도 주요 Trigger 를 넘지 않았고 두 시장의 방향이 갈려 지금은 Neutral / Mixed 로 보는 것이 가장 자연스럽다."
+}

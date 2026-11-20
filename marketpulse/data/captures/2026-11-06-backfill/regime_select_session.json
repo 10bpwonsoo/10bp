@@ -1,0 +1,19 @@
+{
+ "selected_regime": "RISK_OFF",
+ "regime_confidence": 72,
+ "selection_status": "CONFIRMED",
+ "primary_reason": "AI 기술주 투매로 미국 · 한국 주식이 함께 크게 밀리고 변동성이 급등해 위험회피가 넓게 확인된다.",
+ "alternative_candidates": [
+  {
+   "regime": "GROWTH_SHOCK",
+   "reason": "성장 factor 와 경기민감 대 방어 · 금리 하락이 성장 충격을 가리키지만, 주식 급락의 출발점은 AI 데이터센터 규제 우려이고 성장 지표 자체의 악화는 컨텍스트에 없다"
+  }
+ ],
+ "us_equity_confirmation": "STRONG",
+ "korea_equity_confirmation": "STRONG",
+ "global_equity_confirmation": "STRONG",
+ "persistence_assessment": "공식 regime 은 Liquidity Stress / Risk-Off 이고 오늘 선택한 Risk-Off 는 같은 묶음이다. 직전 거래일의 Risk-On 은 하루로 끝나 공식 regime 이 그대로 이어진다.",
+ "data_coverage": 82,
+ "selection_rationale": "자격 후보는 Growth Shock(Growth −2.28)과 Risk-Off(Risk Appetite −2.93)다. 정량 신뢰도는 Growth Shock 이 높지만, 그 근거인 유가 급락 · 금리 하락은 선거 다음 날 관측이고 목요일 주식 급락은 AI 기술주 투매와 데이터센터 규제 우려에서 시작됐다. 미국 S&P · Nasdaq · Russell 과 한국 KOSPI · KOSDAQ 이 모두 크게 밀리고 VIX 가 급등해 주식 확인은 Risk-Off 쪽이 세 시장 모두 STRONG 이다. 다만 하이일드 스프레드 · 달러는 수요일 관측이라 support 가 약해 확신은 조금 낮춘다.",
+ "commentary": "목요일 AI 기술주 투매로 나스닥이 크게 밀리고 S&P 와 소형주도 함께 급락했으며, 한국도 코스피 · 코스닥이 프로그램 매매 일시 정지가 걸릴 만큼 크게 내려 위험회피가 두 시장에 넓게 퍼졌다. 유가 급락과 금리 하락은 성장 충격 쪽 신호도 주지만, 이번 하락의 출발점은 AI 데이터센터 규제 우려라 Risk-Off 가 더 자연스럽다. 신용 · 달러 반응은 아직 수요일 관측이라 다음 거래일에 위험회피가 신용으로 번지는지가 확인 지점이다."
+}

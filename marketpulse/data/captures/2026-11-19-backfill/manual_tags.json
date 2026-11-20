@@ -1,0 +1,467 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/19 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/18 합본과 11/19 아침 수집분을 합쳤다(창: 11/18 07:30 ~ 11/19 07:30 KST, 106건 중 시장 관련 24건).",
+ "tags": {
+  "57f5d9d303ad6b24": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -10,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "젠슨 황이 엔비디아 복귀를 타진, WSJ 는 SEC 가 엔비디아를 조사 중이라고 보도(제목)."
+  },
+  "1f6746e9c076e1a9": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 30,
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 65,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "엔비디아 실적이 예상치를 웃돎 — 회사는 사임 관련 질문은 받지 않기로(제목)."
+  },
+  "f55f1db3b9e113f5": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30,
+    "ai": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "일본 10월 수출 20.5% 증가로 예상 상회 — 반도체 출하가 전년 대비 약 50% 급증(CNBC)."
+  },
+  "8682a0a80d6bb753": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 효과가 장중 약해져 코스피가 한때 하락 전환, 5000선 아래로(제목)."
+  },
+  "4ecb416b62582ac6": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 25,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "증권가 — 엔비디아 실적이 AI 우려가 과했음을 보여 줬다는 평가(제목)."
+  },
+  "676f6597ec37ef4d": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "KDI 가 내년 한국 성장률 예상치를 2.2% 에서 3.9% 로 상향(제목)."
+  },
+  "9427a1ac8590daed": {
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 25,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "여야가 상장사 수시배당제 도입에 합의 — 분기배당 제한 완화(단독, 제목)."
+  },
+  "f3d3c68062b48042": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15,
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "up"
+   },
+   "sentiment": -10,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "삼성전자·SK하이닉스를 빼면 3분기 코스피 영업이익이 뒷걸음(제목)."
+  },
+  "375ca2f077dcb94c": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "마이크로소프트·은행·NSA 전산 장애가 이어지며 미국 소프트웨어주 급락(제목)."
+  },
+  "d66fd0c0544f24bd": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 25,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 1.99% 상승 마감 — 5000선 회복(속보, 제목)."
+  },
+  "f517e79679da4bb6": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 5000선 탈환 — 반도체·로봇주 강세, 바이오 대형주 약세(제목)."
+  },
+  "4c6894cc3a1ae67b": {
+   "themes": [
+    "inflation",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "inflation": 20,
+    "energy": 15
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "energy": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "영국 물가상승률이 3.6% 로 1년 만에 최고 — 경유 가격 급등 영향(CNBC)."
+  },
+  "1298cb4464a49c0b": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "국제 금값이 1년 만에 최저(제목)."
+  },
+  "3fdfbe15f55e99e7": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 25,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "젠슨 황 없는 엔비디아가 실적으로 AI 투자 불안을 가라앉힘(제목)."
+  },
+  "c3a35546b545aac5": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "증권가 — 코스피 추가 하락 구간 경고, AI 투자심리와 외국인 수급이 반등의 열쇠(요약)."
+  },
+  "65a694f0bc4c2692": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "ai": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 수요 재확인에 삼성전자·SK하이닉스 상승(제목)."
+  },
+  "f26d1ebfac33ff9f": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "ai": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "삼성전기, 엔비디아와 협력 강화 소식에 장 초반 강세(요약)."
+  },
+  "0d9ad7d5fcc05de0": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "AI 투자 둔화로 내년 미국 기업이익 증가세가 절반으로 줄 수 있다는 월가 분석(제목)."
+  },
+  "64ffba0f24f3fa97": {
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "semiconductor": -20,
+    "china": -15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "미국 새 규칙 — 동남아 데이터센터가 첨단 칩을 사려면 미국 승인이 필요, 중국 수요에 기댄 증설에 위험(CNBC)."
+  },
+  "c79af5b790b93d67": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "마이크로소프트의 AI 수익화 확대 평가, 오라클에도 강세론(제목)."
+  },
+  "3ea2bff0561a2a12": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 50,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 엔비디아 호실적에 하루 만에 5000선 회복 — 개인·외국인 팔자를 기관이 받아냄(요약)."
+  },
+  "cf3bd9bbee228b01": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 25
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 55,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 공모가 83달러로 확정 — 940억달러 규모로 역대 최대 IPO(제목)."
+  },
+  "2eb468c7836bf892": {
+   "themes": [
+    "ai",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": -10,
+    "china": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "china": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "미 의원들이 마이크로소프트에 바이트댄스와의 AI 거래 협의 보도에 대한 설명을 요구(제목)."
+  },
+  "007513da24d321e2": {
+   "themes": [
+    "semiconductor",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "energy": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "energy": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "4분기 업종별 실적 차별화 — 반도체·정유는 양호, 자동차·배터리는 부진 예상(요약)."
+  }
+ }
+}

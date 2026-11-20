@@ -1,0 +1,55 @@
+{
+ "date": "2026-11-16",
+ "snapshot_date": "2026-11-17",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "liquidity_stress",
+  "candidate_state": "RISK_OFF",
+  "raw_signal": "RISK_OFF",
+  "factors": {
+   "Growth": -0.739,
+   "Inflation": -0.247,
+   "Rates": 0.513,
+   "USD": 0.233,
+   "Liquidity": -0.357,
+   "RiskAppetite": -1.505,
+   "Credit": 0.331,
+   "Volatility": 1.077,
+   "China": -0.081
+  },
+  "equity_broad": {
+   "us": -0.776,
+   "kr": -0.12
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-17",
+  "date": "2026-11-16",
+  "official": "policy",
+  "previous_official": "policy",
+  "candidate": "liquidity_stress",
+  "candidate_state": "RISK_OFF",
+  "raw_signal": "RISK_OFF",
+  "support": "BROKEN",
+  "support_reasons": [
+   "핵심 조건: |Rates| ≥ +1.2 미충족(지금 +0.51)",
+   "주식 확인: 그날 주식 판독이 없어 핵심 조건으로만 본다",
+   "오늘 후보는 Liquidity Stress / Risk-Off"
+  ],
+  "equity": null,
+  "exit_streak": 1,
+  "exit_required": 2,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "liquidity_stress",
+  "entry_streak": 1,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": false,
+  "change_kind": null,
+  "counted": true
+ },
+ "transition_comment": null,
+ "written_at": "2026-11-16T23:19:53.283060+00:00"
+}

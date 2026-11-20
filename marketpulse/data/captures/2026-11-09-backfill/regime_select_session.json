@@ -1,0 +1,19 @@
+{
+ "selected_regime": "LIQUIDITY_STRESS",
+ "regime_confidence": 55,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "하이일드 스프레드 확대와 달러 · 원화 약세 속에 한국 주식이 넓게 급락해 유동성 경색 쪽 신호가 남아 있지만 미국 주식은 반등했다.",
+ "alternative_candidates": [
+  {
+   "regime": "POLICY_DRIVEN",
+   "reason": "금리 factor 가 Trigger 를 넘었지만 그 금리 하락은 기술주 급락에 따른 안전자산 선호이고, 정책 이벤트와 맞는 업종 rotation 이 약하다"
+  }
+ ],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "공식 regime 은 Liquidity Stress / Risk-Off 이고 오늘 선택도 같은 묶음이라 공식 regime 이 이어진다.",
+ "data_coverage": 89,
+ "selection_rationale": "자격 후보는 Policy Driven(Rates −1.67)과 Liquidity Stress(Liquidity −1.07)다. Policy Driven 은 정량 신뢰도가 더 높지만 금리 하락의 성격이 목요일 기술주 급락에 대한 안전자산 선호이고 미국 · 한국 주식 확인이 모두 부분적이다. Liquidity Stress 는 하이일드 스프레드 확대와 달러 강세가 support 를 주고, 한국은 KOSPI · KOSDAQ 급락과 대표 종목 대부분 하락으로 확인되지만 미국은 소형주와 반도체가 반등해 반박한다. 신용 계열은 목요일 관측이라 금요일 진정이 반영되지 않아 확신은 낮게 둔다.",
+ "commentary": "금요일 미국 주식은 반도체 중심으로 반등하며 변동성이 내렸지만, 한국은 목요일 미국 급락을 뒤늦게 반영하며 코스피가 서킷브레이커가 걸릴 만큼 급락하고 대표 종목 대부분이 내렸다. 하이일드 스프레드가 넓어지고 달러가 강해져 유동성 경색 쪽 신호가 남아 있어 Liquidity Stress 를 이어 가는 것이 가장 자연스럽다. 다만 미국의 반등이 이어지면 이 판단은 빠르게 약해질 수 있어 확신은 낮다."
+}

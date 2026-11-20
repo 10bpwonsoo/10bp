@@ -1,0 +1,4 @@
+{"chart":{"result":[{"meta":{"symbol":"^GSPC","currency":"USD"},
+"timestamp":[1767225600,1767312000,1767398400,1767484800,1767571200],
+"indicators":{"quote":[{"close":[5820.11,5844.02,5801.55,null,5870.30]}],
+"adjclose":[{"adjclose":[5820.11,5844.02,5801.55,null,5870.30]}]}}],"error":null}}

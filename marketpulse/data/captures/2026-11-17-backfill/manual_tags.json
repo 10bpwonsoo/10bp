@@ -1,0 +1,424 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/17 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/16 합본과 11/17 아침 수집분을 합쳤다(창: 11/16 07:30 ~ 11/17 07:30 KST, 96건 중 시장 관련 22건).",
+ "tags": {
+  "7e337b1a800c279b": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "korea_governance": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -35,
+   "impact": 65,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "반도체 투매에 코스피 3.59% 급락, 은행·보험주는 상승(제목)."
+  },
+  "c93fa5528fe88723": {
+   "themes": [
+    "rates",
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "rates": 20,
+    "ai": -25,
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "rates": "up",
+    "ai": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "코스피·코스닥이 미국 금리와 AI 우려에 급락(제목)."
+  },
+  "ee782fc35908ca67": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "korea_governance": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 상승 출발 뒤 외국인·기관 팔자에 3.59% 내린 5100선에서 마감(요약)."
+  },
+  "c2468c2affde3cfa": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -25
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인이 1.7조원어치를 팔아 코스피 하락(제목)."
+  },
+  "50681c721e9aaadc": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 IPO 를 앞두고 아시아 증시와 비트코인이 전방위 약세(제목)."
+  },
+  "5b777c6131036ee4": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25,
+    "ai": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 퇴진 뒤 반도체가 흔들림 — 한국 증시 영향 점검(제목)."
+  },
+  "1e7ebab5f32146e3": {
+   "themes": [
+    "energy",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "energy": 15,
+    "inflation": 10
+   },
+   "theme_direction": {
+    "energy": "up",
+    "inflation": "up"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "일본 3분기 경제가 예상과 달리 위축 — 에너지 보조금 종료 뒤 높은 에너지 비용 부담(CNBC)."
+  },
+  "0fb0840b9e4362c2": {
+   "themes": [
+    "ai",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "shareholder_return": 15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "shareholder_return": "up"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "기술주 조정 속 배당주 선방 — 미국 배당 ETF 순자산 증가(제목)."
+  },
+  "78fd746695ed8f49": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "ai": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "KB증권 — AI 반도체 수요처가 넓어지면 삼성전자가 수혜라는 보고서(요약)."
+  },
+  "e411c2dc3e5cb83e": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10,
+    "shareholder_return": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "LS증권 — SK하이닉스 주주환원 확대와 낮아진 밸류에이션 언급(요약)."
+  },
+  "c8c462782fa73216": {
+   "themes": [
+    "ai",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "rates": 15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "rates": "up"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "Nasdaq 100 선물 1.3% 하락 — 케빈 워시 연준 의장 연설 대기(제목)."
+  },
+  "77439b32884324d9": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 70,
+   "novelty": 75,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "엔비디아 이사회가 젠슨 황 복귀를 검토하지 않는다고 밝힘 — Nasdaq 급락(제목)."
+  },
+  "1cce652dd32a7e30": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 65,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 주식 투매가 이어져 뉴욕 3대 지수 일제 하락, Nasdaq 2.49% 하락(제목)."
+  },
+  "9353b5cdd35c1e88": {
+   "themes": [
+    "ai",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "ai": 15,
+    "energy": 10
+   },
+   "theme_direction": {
+    "ai": "up",
+    "energy": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "LS 3분기 영업이익 90% 증가 — 전선·일렉트릭이 AI 전력 수요로 최대 실적(요약)."
+  },
+  "d7fd3765ff4521f2": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "long",
+   "event_type": "flow",
+   "reason": "블랙스톤, AI 인프라 투자 확대와 한국 데이터센터 시장 진출 의사(요약)."
+  },
+  "9d2b2972d0b5ebe1": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "블랙스톤 사장 — AI 회의론이 한국 증시 회복을 막고 있다고 진단(요약)."
+  },
+  "7b6027d71832c4ca": {
+   "themes": [
+    "korea_governance",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10,
+    "shareholder_return": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "shareholder_return": "up"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "저PBR 규제와 증시 퇴출 부담에 중소형 상장사 우려(요약)."
+  },
+  "717e1604ff70b64e": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "저PBR 기업 상속·증여세 강화 방침을 둘러싼 논란(요약)."
+  },
+  "9b958d6669bcb2cb": {
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 15,
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "영국 행동주의 펀드 팰리서가 LG화학에 기업가치 개선 목표와 독립이사 선임을 요구(요약)."
+  },
+  "396136bfe851b9c3": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장을 사흘 앞두고 지분을 가진 SK텔레콤 주가 반등(요약)."
+  },
+  "6f69626f14d283dd": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "CEO 리스크에도 국내 개인의 엔비디아 순유입이 최근 5거래일에 집중(요약)."
+  },
+  "589c14124ef16824": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "급락장에서 수익률 상위 투자자들이 삼성전자·SK하이닉스 비중을 줄이고 소부장으로 이동(요약)."
+  }
+ }
+}

@@ -1,0 +1,146 @@
+{
+ "us": [
+  {
+   "key": "spx",
+   "label": "S&P 500",
+   "market": "us",
+   "value": 0.577,
+   "expected": 1,
+   "score": 0.385,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "ndx",
+   "label": "Nasdaq 100",
+   "market": "us",
+   "value": 0.622,
+   "expected": 1,
+   "score": 0.415,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "rut",
+   "label": "Russell 2000",
+   "market": "us",
+   "value": -0.363,
+   "expected": 1,
+   "score": -0.242,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "small_rel",
+   "label": "Small Cap 상대강도",
+   "market": "us",
+   "value": -0.941,
+   "expected": 1,
+   "score": -0.627,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "cyc_def",
+   "label": "Cyclicals / Defensives",
+   "market": "us",
+   "value": -0.096,
+   "expected": 1,
+   "score": -0.064,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "semis",
+   "label": "Semiconductors",
+   "market": "us",
+   "value": 0.761,
+   "expected": 1,
+   "score": 0.507,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "breadth_us",
+   "label": "US Breadth",
+   "market": "us",
+   "value": null,
+   "expected": 1,
+   "score": null,
+   "state": "EXCLUDED",
+   "note": "SPX_ADV_RATIO 데이터 없음"
+  }
+ ],
+ "kr": [
+  {
+   "key": "kospi",
+   "label": "KOSPI",
+   "market": "kr",
+   "value": -0.024,
+   "expected": 1,
+   "score": -0.016,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "kosdaq",
+   "label": "KOSDAQ",
+   "market": "kr",
+   "value": 0.011,
+   "expected": 1,
+   "score": 0.007,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "kosdaq_rel",
+   "label": "KOSDAQ / KOSPI 상대",
+   "market": "kr",
+   "value": 0.035,
+   "expected": 1,
+   "score": 0.023,
+   "state": "AVAILABLE",
+   "note": ""
+  },
+  {
+   "key": "breadth_kr",
+   "label": "한국 대표 종목 상승 비율",
+   "market": "kr",
+   "value": 0.306,
+   "expected": 1,
+   "score": -0.778,
+   "state": "PARTIAL",
+   "note": "대표 종목 36개 중 상승 비율(시장 전체 breadth 아님)"
+  },
+  {
+   "key": "broad_kr",
+   "label": "지수 대비 확산(대형주 쏠림 아님)",
+   "market": "kr",
+   "value": -0.088,
+   "expected": 1,
+   "score": -0.059,
+   "state": "PARTIAL",
+   "note": "대표 종목 중앙값 − KOSPI(− 면 일부 대형주 쏠림)"
+  },
+  {
+   "key": "cyc_kr",
+   "label": "한국 경기민감 업종",
+   "market": "kr",
+   "value": 0.274,
+   "expected": 1,
+   "score": 0.183,
+   "state": "PARTIAL",
+   "note": "대표 종목 11개 평균(업종 지수 아님)"
+  },
+  {
+   "key": "breadth_kospi",
+   "label": "KOSPI 상승종목 비율",
+   "market": "kr",
+   "value": null,
+   "expected": 1,
+   "score": null,
+   "state": "EXCLUDED",
+   "note": "KOSPI_ADV_RATIO 데이터 없음"
+  }
+ ]
+}

@@ -1,0 +1,121 @@
+"""
+대시보드가 화면 전체를 그리는 데 쓰는 단일 엔드포인트.
+
+패널마다 호출을 나누면 패널 간 시점이 어긋나 "Market State 는 10:00 기준인데
+Theme 은 10:01 기준" 인 상태가 생긴다. 시장 분석 도구에서 이것은 치명적이다
+(설계서 STEP 4.8).
+"""
+
+from __future__ import annotations
+
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Depends, Query
+
+from ...config.settings import Settings
+from ...models.snapshot import IntelligenceSnapshot, MovingItem
+from ...models.state import MarketState
+from ...models.theme import ThemeState
+from ...models.state_history import MarketStateHistory
+from ...models.daily_history import DailyHistory
+from ...models.scenario_check import ScenarioCheck
+from ...models.oil_regime import OilRegime
+from ...models.rates_regime import RatesRegime
+from ...models.ai_regime import AiRegime
+from ...models.cockpit import Cockpit
+from ...models.analyst_view import AnalystViews
+from ..deps import get_ai_regime_service, get_analyst_view_service, get_cockpit_service, get_oil_regime_service, get_rates_regime_service, get_history_service, get_scenario_check_service, get_state_history_service, load_snapshot, resolve_settings
+
+router = APIRouter(prefix="/api/v1", tags=["snapshot"])
+
+SettingsDep = Annotated[Settings, Depends(resolve_settings)]
+
+
+@router.get("/snapshot", response_model=IntelligenceSnapshot)
+def get_snapshot(
+    settings: SettingsDep,
+    refresh: Annotated[
+        bool,
+        Query(description="참이면 TTL 캐시를 건너뛰고 지금 새로 수집·계산한다. 화면의 '지금 업데이트' 버튼."),
+    ] = False,
+) -> IntelligenceSnapshot:
+    """현재 시장 인텔리전스 전체."""
+    return load_snapshot(settings, force=refresh)
+
+
+@router.get("/market-state", response_model=MarketState)
+def get_market_state(settings: SettingsDep) -> MarketState:
+    """시장 상태만. 전체 스냅샷과 같은 계산 결과의 일부다."""
+    return load_snapshot(settings).market_state
+
+
+@router.get("/market-state/history", response_model=MarketStateHistory)
+def get_market_state_history(
+    settings: SettingsDep,
+    days: Annotated[int | None, Query(ge=5, le=120, description="거래일 수. 기본은 설정(22 ≈ 한 달)")] = None,
+    mode: Annotated[Literal["stored", "recomputed"], Query(description="stored = 저장된 daily snapshot 의 sequence(기본, 과거 고정) · recomputed = 현재 모델로 과거를 다시 계산한 별도 뷰")] = "stored",
+) -> MarketStateHistory:
+    """최근 한 달의 Market State 흐름 — 각 거래일 최종 snapshot 기준, 저장 후 고정. 빠진 과거 날짜는 그 날짜까지의 데이터로 1회 복원(BACKFILLED)한다."""
+    return get_state_history_service().get(settings, days=days, mode=mode)
+
+
+@router.get("/history", response_model=list[DailyHistory])
+def get_histories(settings: SettingsDep) -> list[DailyHistory]:
+    """모든 탭의 daily snapshot history."""
+    svc = get_history_service()
+    return [svc.get(settings, tab) for tab in svc.PRODUCERS]
+
+
+@router.get("/history/{tab_id}", response_model=DailyHistory)
+def get_history(settings: SettingsDep, tab_id: str) -> DailyHistory:
+    """한 탭의 daily snapshot history — market_regime · ai_sentiment · ai_regime · rates_regime · oil_regime · memory_cycle. 과거 날짜는 저장 snapshot 그대로(LOCKED)."""
+    return get_history_service().get(settings, tab_id)
+
+
+@router.get("/scenario-check", response_model=list[ScenarioCheck])
+def get_scenario_check(settings: SettingsDep) -> list[ScenarioCheck]:
+    """모의 시나리오의 충격 서명을 지금 데이터에 대어 본 결과. 모의 탭을 실데이터로 바꾼 것 — 예측이 아니다."""
+    return get_scenario_check_service().get(settings)
+
+
+@router.get("/oil-regime", response_model=OilRegime)
+def get_oil_regime(settings: SettingsDep) -> OilRegime:
+    """유가 시장 원인 판별 — 거시·유동성/수요/공급/지정학 driver 의 증거 점수와 확인 상태. 판정 룰이 아니라 증거 집계다."""
+    return get_oil_regime_service().get(settings)
+
+
+@router.get("/rates-regime", response_model=RatesRegime)
+def get_rates_regime(settings: SettingsDep) -> RatesRegime:
+    """금리·물가 원인 판별 — 물가 리프라이싱/연준/성장/기간 프리미엄/위험·유동성 driver 의 증거 점수, 커브·명목 분해·크로스에셋 확인. 판정 룰이 아니라 증거 집계다."""
+    return get_rates_regime_service().get(settings)
+
+
+@router.get("/ai-regime", response_model=AiRegime)
+def get_ai_regime(settings: SettingsDep) -> AiRegime:
+    """AI Trade Intelligence — AI 바스켓의 Nasdaq/S&P 대비 상대 z, driver 증거 점수, 그룹 리더십, breadth, 내러티브×가격, 매크로 확인, AI 고유 스트레스, 전환 조건."""
+    return get_ai_regime_service().get(settings)
+
+
+@router.get("/cockpit", response_model=Cockpit)
+def get_cockpit(settings: SettingsDep) -> Cockpit:
+    """실시간 메인 탭 — REGIME → DRIVERS → CONFIRMATION → LEADERSHIP → TRANSMISSION → CATALYSTS → NEXT. 기존 층의 값을 우선순위대로 고른 것."""
+    return get_cockpit_service().get(settings)
+
+@router.get("/analyst-views", response_model=AnalystViews)
+def get_analyst_views(settings: SettingsDep, ids: str | None = Query(default=None, description="쉼표 구분 종목 id — 없으면 cockpit radar 종목")) -> AnalystViews:
+    """STOCK RADAR 의 외부 ANALYST VIEW. 저장된 것은 바로, 새 검색은 백그라운드 — 화면은 기다리지 않는다."""
+    wanted = [x.strip() for x in ids.split(",") if x.strip()] if ids else None
+    return get_analyst_view_service().get(settings, wanted)
+
+
+
+@router.get("/themes", response_model=list[ThemeState])
+def get_themes(settings: SettingsDep) -> list[ThemeState]:
+    """테마 점수. theme_score 내림차순이다."""
+    return load_snapshot(settings).themes
+
+
+@router.get("/whats-moving", response_model=list[MovingItem])
+def get_whats_moving(settings: SettingsDep) -> list[MovingItem]:
+    """|z| 가 큰 순서의 변수 목록."""
+    return load_snapshot(settings).whats_moving

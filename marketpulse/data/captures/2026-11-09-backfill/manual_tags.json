@@ -1,0 +1,506 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/09 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. 주말 포함 창(11/06 07:30~11/09 07:30 KST), RSS 는 11/06 · 11/09 수집분을 합쳤다.",
+ "tags": {
+  "6155e56e760804ec": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 35
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 20,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "10월 비농업 고용 +16.5만 명(예상 5.9만 명) · 실업률 4.1% 로 하락(제목·요약)."
+  },
+  "83cdc51af98d0f61": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": -10
+   },
+   "theme_direction": {
+    "rates": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "강한 고용 수치 아래 평균 실업 기간 27주 초과 — 팬데믹 외 최고(요약)."
+  },
+  "8c3bd9f14a7fbf3e": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 15
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "중간선거 직후 증시 폭락에 트럼프, 민주당 지지 유권자 탓(본문)."
+  },
+  "1107b4484ff3f0af": {
+   "themes": [
+    "korea_governance",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10,
+    "inflation": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "inflation": "up"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "코스피 5000선 방어 여부 — 미 물가 · MSCI 변경 · 옵션 만기 변수(제목)."
+  },
+  "7a520121372b9fa5": {
+   "themes": [
+    "korea_governance",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15,
+    "usd": 10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "usd": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "서학개미 일주일 새 미국 주식 3조 원 매수(제목)."
+  },
+  "8b17119a85d2cf68": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "올해 외국인 순매도 최다는 영국계 97조 원(본문)."
+  },
+  "7759e0154dc84374": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -40,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -45,
+   "impact": 50,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'블루쓰나미' 쇼크로 세계 증시 하루 4800조 원 증발(제목)."
+  },
+  "6e40366c8f768758": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10,
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "국내 증시 급락에 서학개미 미국 주식 5일간 2.9조 원 매수 · 반도체 3배 레버리지 쏠림(본문)."
+  },
+  "692f299f3519e7a1": {
+   "themes": [
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "china": 20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "up"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "반도체 투자 둔화기에 메모리가 먼저 꺾인다 · 중국 반도체 굴기 여파(인터뷰 제목·본문)."
+  },
+  "7eb57b540ca125e6": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "중간선거 뒤 AI주 급락에 월가 헤지펀드 포지션 정리 · 감원(본문)."
+  },
+  "1af71f82a334f2e6": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미 반도체지수 7개월 최저 · 반도체 3배 레버리지 ETF 5일 40% 급락(본문)."
+  },
+  "6983305f61f8dae8": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "블루 웨이브 쇼크에 흔들린 코스피 · 반등 조건 점검(주간 전망 제목)."
+  },
+  "6c33f9ee7f3816a9": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "고점 대비 급락한 종목 사례 — SK하이닉스보다 큰 낙폭(제목)."
+  },
+  "955a1e06a8914e13": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "코스피 5000선 아래는 언더슈팅이라는 시각(제목)."
+  },
+  "cf744630cdfc9b47": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "증권사 반대매매 담보비율 140% 의무 3개월 면제 — 9일부터(제목)."
+  },
+  "6cba24ecb1af3b97": {
+   "themes": [
+    "usd",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "usd": 20,
+    "rates": 5
+   },
+   "theme_direction": {
+    "usd": "up",
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "'블루 쓰나미' 에 원/달러 환율 다시 오를 수 있다는 시각(제목)."
+  },
+  "84d40025582a822f": {
+   "themes": [
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "korea_governance": 5
+   },
+   "theme_direction": {
+    "ai": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "AI 전면 규제는 비현실적 · 코스피 5000에서 바닥 테스트(제목)."
+  },
+  "59c3b862509db379": {
+   "themes": [
+    "ai",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "energy": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "energy": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "'반(反)데이터센터' 흐름이 AI 판도를 흔든다(제목)."
+  },
+  "4d10c4c4861ba4d7": {
+   "themes": [
+    "korea_governance",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -30,
+    "usd": 15
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "usd": "up"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인 8조 원 순매도 · 코스피 이탈 경고(제목)."
+  },
+  "699bb19e6dae6387": {
+   "themes": [
+    "ai",
+    "semiconductor",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25,
+    "inflation": 10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down",
+    "inflation": "up"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "민주당 상·하원 확보로 AI 산업 규제 우려 확산 · 5일 나스닥 5% 급락, 10일 밤 미 CPI 주목(본문)."
+  },
+  "b76ea634fda2ed69": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -30
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "11월 6일 아침 코스피 서킷브레이커 · 코스닥 프로그램 매매 정지 — 파킹 ETF 자금 유입(본문)."
+  },
+  "0962a1dbc8ce0370": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "ai": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "6일 미국 AI·반도체주 급락세 진정 · 필라델피아 반도체지수 반등(본문)."
+  },
+  "45fe7c603934c0a6": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "6일 미국 반도체 저가 매수 — AMD 11% · 인텔 7% 상승, 헤지펀드발 과매도 일부 해소(본문)."
+  },
+  "9ad2ef1739d87377": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "주식·신용시장의 AI 단일 테마 집중이 전례 없이 높다 — 옥석 가리기 시작(본문)."
+  },
+  "39ce4bd96cdc581c": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "엔비디아 CEO 사생활 문제 인정 · 사내 조사 착수(제목)."
+  },
+  "92afb08d924b8f90": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "미래에셋증권 해킹 · 임직원 3만5천 명 정보 유출(본문)."
+  },
+  "55ec3808a9d476d1": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "호반 · 조원태 지분 경쟁에 한진칼 55% · 우선주 194% 급등(본문)."
+  }
+ }
+}

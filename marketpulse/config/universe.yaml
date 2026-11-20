@@ -1,0 +1,156 @@
+# Market Pulse AI — Investment Intelligence 유니버스 (2026-09-16 신설)
+#
+# 기존 instruments.yaml(크로스에셋 47+3종)은 손대지 않는다. 여기는 그 아래
+# 계층 — 개별 종목과 산업·기업 단위 대체데이터 — 이다.
+#
+# 데이터 원칙
+#   · 실제로 받을 수 있는 것만 적는다. 확인된 공급자: Yahoo 차트 API(종목·선물·
+#     ETF·지수, 거래량 포함), 로컬 CSV(data/replay/alternative/<id>.csv).
+#   · 받을 수 없는 것(DRAM 현물, BDI, 수급, 컨센서스)도 **자리를 남긴다** —
+#     sources 가 csv 뿐이면 파일을 넣기 전까지 '데이터 없음' 으로 표시된다.
+#     억지로 채우지 않는다.
+#   · proxy_for 가 있으면 그것은 대리 지표다. ETF 가 지수를 대신하고, 난방유
+#     선물이 디젤을 대신한다. 화면에 '대리' 가 붙는다.
+#   · source_type: EXCHANGE(거래소 가격) / MARKET_DATA(시장 데이터) /
+#     ALTERNATIVE / RESEARCH / OFFICIAL / NEWS / UNKNOWN
+#
+# mock_base / mock_vol 은 MOCK 모드의 합성 시계열 기준값이다.
+
+stocks:
+  # ── 반도체 ──
+  - {id: SAMSUNG,      name: 삼성전자,        symbol: 005930.KS, sector: semiconductor, industry: memory,        peers: [MU, TSM, ASML],       drivers: [SOX, DRAM_SPOT, NAND_SPOT, USDKRW, US10Y], themes: [semiconductor, ai], aliases: [삼전, Samsung Electronics, Samsung], mock_base: 253000, mock_vol: 0.020}
+  - {id: SKHYNIX,      name: SK하이닉스,      symbol: 000660.KS, sector: semiconductor, industry: memory,        peers: [MU, NVDA, TSM],       drivers: [SOX, DRAM_SPOT, NAND_SPOT, USDKRW],        themes: [semiconductor, ai], aliases: [하이닉스, SK Hynix, Hynix, 삼전닉스, 하닉], mock_base: 1759000, mock_vol: 0.028}
+  - {id: HANMI_SEMI,   name: 한미반도체,      symbol: 042700.KS, sector: semiconductor, industry: equipment,     peers: [AMAT, LRCX, TEL],     drivers: [SOX, SKHYNIX],                             themes: [semiconductor, ai], aliases: [Hanmi Semiconductor], mock_base: 225500, mock_vol: 0.035}
+  - {id: SAMSUNG_EM,   name: 삼성전기,        symbol: 009150.KS, sector: semiconductor, industry: components,    peers: [TSM],                 drivers: [SOX, USDKRW],                              themes: [ai, semiconductor], aliases: [Samsung Electro-Mechanics], mock_base: 190000, mock_vol: 0.025}
+  # ── 2차전지 · 화학 ──
+  - {id: LG_ENSOL,     name: LG에너지솔루션,  symbol: 373220.KS, sector: battery,       industry: battery,       peers: [],                    drivers: [LITHIUM_ETF, NICKEL_PROXY, USDKRW],        themes: [china, consumer], aliases: [LG엔솔, LG Energy Solution],   mock_base: 380000, mock_vol: 0.026}
+  - {id: SAMSUNG_SDI,  name: 삼성SDI,         symbol: 006400.KS, sector: battery,       industry: battery,       peers: [],                    drivers: [LITHIUM_ETF, USDKRW],                      themes: [china], aliases: [Samsung SDI],             mock_base: 250000, mock_vol: 0.027}
+  - {id: LGCHEM,       name: LG화학,          symbol: 051910.KS, sector: chemicals,     industry: petrochemical, peers: [],                    drivers: [BRENT, NAPHTHA_PROXY, LITHIUM_ETF],        themes: [oil, china], aliases: [LG Chem],        mock_base: 270000, mock_vol: 0.024}
+  - {id: LOTTE_CHEM,   name: 롯데케미칼,      symbol: 011170.KS, sector: chemicals,     industry: petrochemical, peers: [],                    drivers: [BRENT, NAPHTHA_PROXY, CSI300],             themes: [oil, china], aliases: [롯데켐, Lotte Chemical],        mock_base: 70000,  mock_vol: 0.026}
+  - {id: KUMHO_PETRO,  name: 금호석유,        symbol: 011780.KS, sector: chemicals,     industry: synthetic_rubber, peers: [],                 drivers: [BRENT, NAPHTHA_PROXY],                     themes: [oil], aliases: [금호석화, Kumho Petrochemical],               mock_base: 130000, mock_vol: 0.022}
+  # ── 철강 · 비철 ──
+  - {id: POSCO,        name: POSCO홀딩스,     symbol: 005490.KS, sector: steel,         industry: steel,         peers: [],                    drivers: [IRON_ORE, STEEL_ETF, CSI300, LITHIUM_ETF], themes: [china], aliases: [포스코, POSCO Holdings, POSCO],             mock_base: 325500, mock_vol: 0.022}
+  - {id: HYUNDAI_STEEL, name: 현대제철,       symbol: 004020.KS, sector: steel,         industry: steel,         peers: [],                    drivers: [IRON_ORE, STEEL_ETF, CSI300],              themes: [china], aliases: [Hyundai Steel],             mock_base: 30000,  mock_vol: 0.024}
+  - {id: KOREA_ZINC,   name: 고려아연,        symbol: 010130.KS, sector: metals,        industry: nonferrous,    peers: [],                    drivers: [ZINC_PROXY, SILVER, GOLD, COPPER],         themes: [korea_governance], aliases: [Korea Zinc],  mock_base: 900000, mock_vol: 0.025}
+  # ── 자동차 ──
+  - {id: HYUNDAI_MOTOR, name: 현대차,         symbol: 005380.KS, sector: auto,          industry: auto,          peers: [],                    drivers: [USDKRW, ALUMINUM, STEEL_ETF, US10Y],       themes: [consumer, usd], aliases: [현대자동차, Hyundai Motor],     mock_base: 250000, mock_vol: 0.018}
+  - {id: KIA,          name: 기아,            symbol: 000270.KS, sector: auto,          industry: auto,          peers: [],                    drivers: [USDKRW, ALUMINUM, US10Y],                  themes: [consumer, usd], aliases: [기아차, Kia],     mock_base: 110000, mock_vol: 0.018}
+  - {id: HYUNDAI_MOBIS, name: 현대모비스,     symbol: 012330.KS, sector: auto,          industry: auto_parts,    peers: [],                    drivers: [USDKRW, HYUNDAI_MOTOR],                    themes: [consumer, korea_governance], aliases: [Hyundai Mobis], mock_base: 280000, mock_vol: 0.017}
+  # ── 운송 · 조선 ──
+  - {id: KOREAN_AIR,   name: 대한항공,        symbol: 003490.KS, sector: transport,     industry: airline,       peers: [JETS],                drivers: [BRENT, JET_FUEL_PROXY, USDKRW],            themes: [oil, consumer], aliases: [Korean Air],     mock_base: 28850,  mock_vol: 0.020}
+  - {id: HMM,          name: HMM,             symbol: 011200.KS, sector: transport,     industry: container_shipping, peers: [],               drivers: [SCFI, DRY_BULK_ETF, BRENT],                themes: [china, geopolitical_risk], aliases: [HMM], mock_base: 20250, mock_vol: 0.028}
+  - {id: PAN_OCEAN,    name: 팬오션,          symbol: 028670.KS, sector: transport,     industry: dry_bulk,      peers: [],                    drivers: [DRY_BULK_ETF, IRON_ORE, CSI300],           themes: [china], aliases: [Pan Ocean],             mock_base: 4500,   mock_vol: 0.025}
+  - {id: HD_HHI,       name: HD현대중공업,    symbol: 329180.KS, sector: shipbuilding,  industry: shipbuilding,  peers: [],                    drivers: [DRY_BULK_ETF, NATGAS, STEEL_ETF, USDKRW],  themes: [defense, energy], aliases: [현대중공업, HD Hyundai Heavy],   mock_base: 350000, mock_vol: 0.026}
+  - {id: HANWHA_OCEAN, name: 한화오션,        symbol: 042660.KS, sector: shipbuilding,  industry: shipbuilding,  peers: [],                    drivers: [NATGAS, STEEL_ETF, USDKRW],                themes: [defense, energy], aliases: [Hanwha Ocean],   mock_base: 60000,  mock_vol: 0.030}
+  # ── 방산 ──
+  - {id: HANWHA_AERO,  name: 한화에어로스페이스, symbol: 012450.KS, sector: defense,    industry: defense,       peers: [ITA],                 drivers: [ITA, USDKRW],                              themes: [defense, geopolitical_risk], aliases: [한화에어로, Hanwha Aerospace], mock_base: 1054000, mock_vol: 0.030}
+  - {id: LIG_NEX1,     name: LIG넥스원,       symbol: 079550.KS, sector: defense,       industry: defense,       peers: [ITA],                 drivers: [ITA],                                      themes: [defense, geopolitical_risk], aliases: [LIG Nex1], mock_base: 400000, mock_vol: 0.028}
+  # ── 전력기기 · 에너지 ──
+  - {id: LS_ELECTRIC,  name: LS ELECTRIC,     symbol: 010120.KS, sector: electrical,    industry: power_equipment, peers: [],                  drivers: [COPPER, US10Y, USDKRW],                    themes: [ai, energy], aliases: [LS일렉트릭, LS Electric],        mock_base: 198400, mock_vol: 0.030}
+  - {id: HD_ELECTRIC,  name: HD현대일렉트릭,  symbol: 267260.KS, sector: electrical,    industry: power_equipment, peers: [],                  drivers: [COPPER, US10Y, USDKRW],                    themes: [ai, energy], aliases: [현대일렉트릭, HD Hyundai Electric],        mock_base: 706000, mock_vol: 0.032}
+  - {id: HYOSUNG_HEAVY, name: 효성중공업,     symbol: 298040.KS, sector: electrical,    industry: power_equipment, peers: [],                  drivers: [COPPER, USDKRW],                           themes: [ai, energy], aliases: [Hyosung Heavy],        mock_base: 1200000, mock_vol: 0.032}
+  - {id: DOOSAN_ENER,  name: 두산에너빌리티,  symbol: 034020.KS, sector: energy,        industry: nuclear_power, peers: [URANIUM_ETF],         drivers: [URANIUM_ETF, US10Y],                       themes: [energy, ai], aliases: [두산에너, Doosan Enerbility],        mock_base: 83700,  mock_vol: 0.030}
+  - {id: SOIL,         name: S-Oil,           symbol: 010950.KS, sector: energy,        industry: refining,      peers: [XLE],                 drivers: [BRENT, DIESEL_PROXY, GASOLINE],            themes: [oil, energy], aliases: [에쓰오일, S-Oil],       mock_base: 80000,  mock_vol: 0.020}
+  - {id: SK_INNOVATION, name: SK이노베이션,   symbol: 096770.KS, sector: energy,        industry: refining,      peers: [XLE],                 drivers: [BRENT, DIESEL_PROXY, LITHIUM_ETF],         themes: [oil, energy], aliases: [SK이노, SK Innovation],       mock_base: 130000, mock_vol: 0.024}
+  - {id: KEPCO,        name: 한국전력,        symbol: 015760.KS, sector: utilities,     industry: utility,       peers: [XLU],                 drivers: [NATGAS, COAL_PROXY, KR10Y, USDKRW],        themes: [energy, rates], aliases: [한전, KEPCO],     mock_base: 25000,  mock_vol: 0.018}
+  # ── 인터넷 · 금융 · 바이오 · 소비 ──
+  - {id: NAVER,        name: NAVER,           symbol: 035420.KS, sector: internet,      industry: internet,      peers: [],                    drivers: [NDX, US10Y, KR10Y],                        themes: [ai], aliases: [네이버, Naver],                mock_base: 230000, mock_vol: 0.020}
+  - {id: KAKAO,        name: 카카오,          symbol: 035720.KS, sector: internet,      industry: internet,      peers: [],                    drivers: [NDX, KR10Y],                               themes: [ai], aliases: [Kakao],                mock_base: 50000,  mock_vol: 0.022}
+  - {id: KB,           name: KB금융,          symbol: 105560.KS, sector: financials,    industry: bank,          peers: [XLF],                 drivers: [KR10Y, US10Y, USDKRW],                     themes: [rates, korea_governance, shareholder_return], aliases: [KB Financial], mock_base: 110000, mock_vol: 0.017}
+  - {id: SHINHAN,      name: 신한지주,        symbol: 055550.KS, sector: financials,    industry: bank,          peers: [XLF],                 drivers: [KR10Y, US10Y],                             themes: [rates, korea_governance, shareholder_return], aliases: [Shinhan], mock_base: 70000, mock_vol: 0.017}
+  - {id: CELLTRION,    name: 셀트리온,        symbol: 068270.KS, sector: healthcare,    industry: biosimilar,    peers: [],                    drivers: [USDKRW, US10Y],                            themes: [usd], aliases: [Celltrion],               mock_base: 190000, mock_vol: 0.022}
+  - {id: SAMSUNG_BIO,  name: 삼성바이오로직스, symbol: 207940.KS, sector: healthcare,   industry: cdmo,          peers: [],                    drivers: [USDKRW, US10Y],                            themes: [usd], aliases: [삼바, Samsung Biologics],               mock_base: 1000000, mock_vol: 0.020}
+  - {id: CJ_CJ,        name: CJ제일제당,      symbol: 097950.KS, sector: consumer,      industry: food,          peers: [],                    drivers: [CORN, WHEAT, SOYBEAN, USDKRW],             themes: [consumer, inflation], aliases: [CJ CheilJedang], mock_base: 280000, mock_vol: 0.017}
+
+# 벤치마크 — 상대 수익률과 업종 수익률의 기준
+benchmarks:
+  market: KOSPI          # instruments.yaml 의 KOSPI 를 그대로 쓴다
+
+# ── 대체데이터 · 산업 지표 · 글로벌 peer ──────────────────────────
+# instruments.yaml 에 이미 있는 id(WTI·BRENT·GOLD·COPPER·NATGAS·US10Y·KR10Y·
+# USDKRW·USDCNH·KOSPI·NDX·SPX·SOXX·VIX·MOVE·HSCEI·ITA·JETS·XLE·XLF·XLU)는
+# 여기 다시 적지 않고 그 설정을 그대로 쓴다.
+alternative:
+  # 에너지
+  - {id: GASOLINE,     name: 휘발유 (RBOB),     group: energy, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "RB=F"}], source_type: EXCHANGE, futures: true,
+     why: "정제마진의 제품 쪽. 원유보다 빨리 오르면 정유 마진 개선.", affected: [SOIL, SK_INNOVATION], mock_base: 3.2, mock_vol: 0.02}
+  - {id: DIESEL_PROXY, name: 디젤 (난방유 대리),  group: energy, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "HO=F"}], source_type: EXCHANGE, futures: true, proxy_for: "디젤·등유 (NYMEX 난방유 선물)",
+     why: "디젤 크랙은 정유사 마진의 핵심. 항공유(등유)와 같은 중간유분이라 항공사 비용의 대리도 된다.", affected: [SOIL, SK_INNOVATION, KOREAN_AIR], mock_base: 4.9, mock_vol: 0.022}
+  - {id: JET_FUEL_PROXY, name: 항공유 (난방유 대리), group: energy, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "HO=F"}], source_type: EXCHANGE, futures: true, proxy_for: "항공유 (중간유분 대리)",
+     why: "항공사 영업비용의 25~30%. 오르면 항공사 마진 압박.", affected: [KOREAN_AIR], mock_base: 4.9, mock_vol: 0.022}
+  - {id: COAL_PROXY,   name: 석탄 (URA 제외 대리 없음), group: energy, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: COAL_PROXY}], source_type: UNKNOWN,
+     why: "발전 연료비. 한전 원가와 직결. 무료 API 가 없어 CSV 로만 받는다.", affected: [KEPCO], mock_base: 130, mock_vol: 0.02}
+  - {id: URANIUM_ETF,  name: 우라늄 (URA ETF 대리), group: energy, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: URA}], source_type: MARKET_DATA, proxy_for: "우라늄·원전 밸류체인 (Global X Uranium ETF)",
+     why: "원전 사이클 기대의 시장 가격. 두산에너빌리티 원전 기자재 수주 기대와 같은 방향.", affected: [DOOSAN_ENER], mock_base: 41, mock_vol: 0.022}
+  # 금속
+  - {id: ALUMINUM,     name: 알루미늄,          group: metals, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "ALI=F"}], source_type: EXCHANGE, futures: true,
+     why: "자동차·전선 원재료. 오르면 완성차 원가 부담.", affected: [HYUNDAI_MOTOR, KIA], mock_base: 3370, mock_vol: 0.014}
+  - {id: SILVER,       name: 은,                group: metals, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "SI=F"}], source_type: EXCHANGE, futures: true,
+     why: "고려아연 부산물 매출. 태양광 수요의 대리.", affected: [KOREA_ZINC], mock_base: 65, mock_vol: 0.02}
+  - {id: PLATINUM,     name: 백금,              group: metals, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "PL=F"}], source_type: EXCHANGE, futures: true,
+     why: "촉매·수소 관련. 산업금속 심리.", affected: [], mock_base: 1800, mock_vol: 0.016}
+  - {id: IRON_ORE,     name: 철광석 (62% Fe),   group: metals, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "TIO=F"}], source_type: EXCHANGE, futures: true,
+     why: "철강사 원가의 절반. 오르면 스프레드 압박, 내리면 마진 회복. 중국 건설·제조 수요의 온도계.", affected: [POSCO, HYUNDAI_STEEL, PAN_OCEAN], mock_base: 97, mock_vol: 0.02}
+  - {id: STEEL_ETF,    name: 철강 (SLX ETF 대리), group: metals, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: SLX}], source_type: MARKET_DATA, proxy_for: "글로벌 철강 업황 (VanEck Steel ETF)",
+     why: "철강 제품가·업황의 시장 가격. 원재료(철광석)와 같이 봐야 스프레드가 보인다.", affected: [POSCO, HYUNDAI_STEEL], mock_base: 106, mock_vol: 0.018}
+  - {id: LITHIUM_ETF,  name: 리튬 (LIT ETF 대리), group: metals, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: LIT}], source_type: MARKET_DATA, proxy_for: "리튬·배터리 밸류체인 (Global X Lithium ETF)",
+     why: "리튬 가격·배터리 수요 기대. 양극재·셀 업체 실적 방향.", affected: [LG_ENSOL, SAMSUNG_SDI, POSCO, LGCHEM], mock_base: 70, mock_vol: 0.02}
+  - {id: METALS_ETF,   name: 금속·광산 (PICK ETF 대리), group: metals, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: PICK}], source_type: MARKET_DATA, proxy_for: "글로벌 금속·광산 (iShares MSCI Global Metals & Mining)",
+     why: "산업금속 전반의 시장 심리.", affected: [KOREA_ZINC, POSCO], mock_base: 61, mock_vol: 0.016}
+  - {id: NICKEL_PROXY, name: 니켈,              group: metals, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: NICKEL_PROXY}], source_type: UNKNOWN,
+     why: "삼원계 양극재 원가. 무료 API 가 없어 CSV 로만 받는다.", affected: [LG_ENSOL], mock_base: 16000, mock_vol: 0.02}
+  - {id: ZINC_PROXY,   name: 아연,              group: metals, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: ZINC_PROXY}], source_type: UNKNOWN,
+     why: "고려아연 주력 제품. 무료 API 가 없어 CSV 로만 받는다.", affected: [KOREA_ZINC], mock_base: 2800, mock_vol: 0.018}
+  # 화학
+  - {id: NAPHTHA_PROXY, name: 나프타,           group: chemicals, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: NAPHTHA_PROXY}], source_type: UNKNOWN,
+     why: "석유화학 원가. 에틸렌 스프레드의 분모. 무료 API 가 없어 CSV 로만 받는다.", affected: [LGCHEM, LOTTE_CHEM, KUMHO_PETRO], mock_base: 680, mock_vol: 0.018}
+  # 농산물
+  - {id: CORN,         name: 옥수수,            group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "ZC=F"}], source_type: EXCHANGE, futures: true,
+     why: "사료·전분 원가. 식품사 원가 부담.", affected: [CJ_CJ], mock_base: 537, mock_vol: 0.015}
+  - {id: WHEAT,        name: 밀,                group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "ZW=F"}], source_type: EXCHANGE, futures: true,
+     why: "제분·제과 원가.", affected: [CJ_CJ], mock_base: 733, mock_vol: 0.018}
+  - {id: SOYBEAN,      name: 대두,              group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "ZS=F"}], source_type: EXCHANGE, futures: true,
+     why: "대두유·사료 원가.", affected: [CJ_CJ], mock_base: 1326, mock_vol: 0.014}
+  - {id: SUGAR,        name: 설탕,              group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "SB=F"}], source_type: EXCHANGE, futures: true,
+     why: "음식료 원가.", affected: [CJ_CJ], mock_base: 18, mock_vol: 0.02}
+  - {id: COFFEE,       name: 커피,              group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "KC=F"}], source_type: EXCHANGE, futures: true,
+     why: "식음료 원가.", affected: [], mock_base: 300, mock_vol: 0.022}
+  - {id: COTTON,       name: 면화,              group: agriculture, asset_class: commodity, unit: price, sources: [{provider: yahoo, symbol: "CT=F"}], source_type: EXCHANGE, futures: true,
+     why: "섬유 원가.", affected: [], mock_base: 81, mock_vol: 0.016}
+  # 해운 · 물류
+  - {id: DRY_BULK_ETF, name: 건화물 운임 (BDRY ETF 대리), group: shipping, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: BDRY}], source_type: MARKET_DATA, proxy_for: "발틱 건화물 운임 (Breakwave Dry Bulk Shipping ETF, 선물 기반)",
+     why: "BDI 자체는 무료 API 가 없다. 이 ETF 는 건화물 운임 선물을 들고 있어 방향의 대리가 된다. 벌크선사 매출과 직결.", affected: [PAN_OCEAN, HMM], mock_base: 15.3, mock_vol: 0.03}
+  - {id: SCFI,         name: 상하이 컨테이너 운임 (SCFI), group: shipping, asset_class: commodity, unit: index, sources: [{provider: csv, symbol: SCFI}], source_type: UNKNOWN,
+     why: "컨테이너선사 매출. 무료 API 가 없어 CSV 로만 받는다.", affected: [HMM], mock_base: 1800, mock_vol: 0.03}
+  # 반도체 산업 지표
+  - {id: DRAM_SPOT,    name: DRAM 현물 (DDR4 8Gb), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DRAM_SPOT}], source_type: RESEARCH, min_points: 1,
+     why: "메모리 ASP 의 선행 지표. 현물이 고정가보다 먼저 움직인다. 삼성전자·하이닉스 이익의 방향.", affected: [SAMSUNG, SKHYNIX], mock_base: 2.1, mock_vol: 0.02}
+  - {id: DDR5_SPOT,    name: DDR5 현물 (16Gb),  group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: DDR5_SPOT}], source_type: RESEARCH, min_points: 1,
+     why: "서버·AI 향 신제품 메모리 가격.", affected: [SAMSUNG, SKHYNIX], mock_base: 5.5, mock_vol: 0.02}
+  - {id: NAND_SPOT,    name: NAND 현물 (512Gb TLC), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: NAND_SPOT}], source_type: RESEARCH, min_points: 1,
+     why: "낸드 ASP 방향. 삼성전자·하이닉스(솔리다임) 낸드 부문 이익.", affected: [SAMSUNG, SKHYNIX], mock_base: 3.2, mock_vol: 0.02}
+  - {id: DXI,          name: DXI 메모리 지수,   group: semiconductor, asset_class: commodity, unit: index, sources: [{provider: csv, symbol: DXI}], source_type: RESEARCH, min_points: 1,
+     why: "DRAMeXchange 메모리 종합 지수.", affected: [SAMSUNG, SKHYNIX], mock_base: 60000, mock_vol: 0.02}
+  - {id: HBM3E_CONTRACT, name: HBM3E 계약가 추정 ($/GB), group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: HBM3E_CONTRACT}], source_type: RESEARCH, min_points: 1, frequency: quarterly,
+     why: "HBM 은 현물 시장이 없다 — 연간·분기 계약가의 공개 추정치(Silicon Analysts ← TrendForce·언론)를 앵커로만 적는다. 하이닉스·삼성 HBM 매출의 방향.", affected: [SKHYNIX, SAMSUNG], mock_base: 15.0, mock_vol: 0.01}
+  - {id: HBM4_CONTRACT,  name: HBM4 계약가 추정 ($/GB),  group: semiconductor, asset_class: commodity, unit: price, sources: [{provider: csv, symbol: HBM4_CONTRACT}], source_type: RESEARCH, min_points: 1, frequency: quarterly,
+     why: "2027 주력이 될 HBM4 의 계약 협상가(공개 보도 기반 추정). 확정가가 아니다.", affected: [SKHYNIX, SAMSUNG], mock_base: 15.5, mock_vol: 0.01}
+  - {id: SOX,          name: 필라델피아 반도체 (SOX), group: semiconductor, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "^SOX"}], source_type: EXCHANGE,
+     why: "글로벌 반도체 주가의 기준. 국내 반도체와 하루 시차로 연동.", affected: [SAMSUNG, SKHYNIX, HANMI_SEMI], mock_base: 11175, mock_vol: 0.022}
+  - {id: SMH,          name: 반도체 ETF (SMH),  group: semiconductor, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: SMH}], source_type: MARKET_DATA,
+     why: "반도체 ETF 자금 흐름의 대리.", affected: [SAMSUNG, SKHYNIX], mock_base: 542, mock_vol: 0.022}
+  # 글로벌 peer
+  - {id: NVDA,  name: Nvidia,         group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: NVDA}], source_type: EXCHANGE, why: "AI 가속기 수요의 대표. HBM 수요와 직결.", affected: [SKHYNIX, SAMSUNG, HANMI_SEMI], mock_base: 212, mock_vol: 0.03}
+  - {id: MU,    name: Micron,         group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: MU}],   source_type: EXCHANGE, why: "메모리 직접 peer. 실적·가이던스가 국내 메모리 주가에 선행.", affected: [SAMSUNG, SKHYNIX], mock_base: 928, mock_vol: 0.035}
+  - {id: TSM,   name: TSMC,           group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: TSM}],  source_type: EXCHANGE, why: "파운드리·첨단 패키징 수요.", affected: [SAMSUNG, SAMSUNG_EM], mock_base: 414, mock_vol: 0.022}
+  - {id: AMD,   name: AMD,            group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: AMD}],  source_type: EXCHANGE, why: "AI 가속기 2위. HBM 수요.", affected: [SKHYNIX, SAMSUNG], mock_base: 504, mock_vol: 0.032}
+  - {id: AVGO,  name: Broadcom,       group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: AVGO}], source_type: EXCHANGE, why: "커스텀 AI 칩·네트워킹.", affected: [SKHYNIX], mock_base: 339, mock_vol: 0.028}
+  - {id: ASML,  name: ASML,           group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: ASML}], source_type: EXCHANGE, why: "노광 장비. 반도체 CAPEX 사이클.", affected: [SAMSUNG, HANMI_SEMI], mock_base: 1591, mock_vol: 0.024}
+  - {id: AMAT,  name: Applied Materials, group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: AMAT}], source_type: EXCHANGE, why: "전공정 장비. CAPEX 사이클.", affected: [HANMI_SEMI], mock_base: 421, mock_vol: 0.026}
+  - {id: LRCX,  name: Lam Research,   group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: LRCX}], source_type: EXCHANGE, why: "식각 장비. 메모리 CAPEX 에 민감.", affected: [HANMI_SEMI], mock_base: 271, mock_vol: 0.026}
+  - {id: TEL,   name: Tokyo Electron, group: peer, asset_class: equity, unit: price, sources: [{provider: yahoo, symbol: "8035.T"}], source_type: EXCHANGE, why: "장비 peer.", affected: [HANMI_SEMI], mock_base: 51690, mock_vol: 0.025}
+  # 중국
+  - {id: CSI300, name: CSI 300,       group: china, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "000300.SS"}, {provider: yahoo, symbol: ASHR}], source_type: EXCHANGE, why: "중국 본토 대형주. 중국 수요 심리. 본토 지수가 막히면 ASHR(CSI 300 ETF, 미국 상장) 로 대신한다 — 화면의 source 가 어느 쪽인지 말한다.", affected: [POSCO, LGCHEM, LOTTE_CHEM, PAN_OCEAN], mock_base: 4478, mock_vol: 0.014}
+  - {id: HSI,    name: 항셍,           group: china, asset_class: equity, unit: index, sources: [{provider: yahoo, symbol: "^HSI"}], source_type: EXCHANGE, why: "홍콩 상장 중국 기업. 외국인 시각의 중국.", affected: [POSCO, HMM], mock_base: 24696, mock_vol: 0.016}
+  - {id: CHINA_PMI, name: 중국 제조업 PMI, group: china, asset_class: commodity, unit: index, series_kind: level, sources: [{provider: csv, symbol: CHINA_PMI}], source_type: OFFICIAL,
+     why: "중국 제조업 경기. 50 기준. 무료 API 가 없어 CSV 로만 받는다.", affected: [POSCO, LGCHEM, PAN_OCEAN], mock_base: 50.2, mock_vol: 0.4}

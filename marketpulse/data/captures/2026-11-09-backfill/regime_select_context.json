@@ -1,0 +1,747 @@
+{
+ "as_of": "2026-11-08T22:30:00+00:00",
+ "purpose": "현재 미국과 한국을 포함한 주식시장이 어떤 환경에 놓여 있는가",
+ "factors": {
+  "Growth": 0.53,
+  "Inflation": -0.24,
+  "Rates": -1.67,
+  "USD": 2.3,
+  "Liquidity": -1.07,
+  "RiskAppetite": 0.28,
+  "Credit": 2.4,
+  "Volatility": -1.24,
+  "China": -1.19
+ },
+ "candidates": [
+  {
+   "label": "POLICY_DRIVEN",
+   "display": "POLICY DRIVEN",
+   "trigger_expr": "abs(Rates) >= 1.2",
+   "trigger_value": 1.667,
+   "trigger_threshold": 1.2,
+   "trigger_margin": 0.467,
+   "support": [
+    {
+     "id": "pd_usd",
+     "expr": "abs(USD) >= 0.5",
+     "passed": true,
+     "observed": 2.302350517725965
+    },
+    {
+     "id": "pd_quiet",
+     "expr": "abs(Growth) <= 0.5",
+     "passed": false,
+     "observed": 0.5346749712884712
+    },
+    {
+     "id": "pd_vol",
+     "expr": "Volatility >= 0.3",
+     "passed": false,
+     "observed": -1.2390394408914323
+    },
+    {
+     "id": "pd_infl",
+     "expr": "Inflation <= 0.5",
+     "passed": true,
+     "observed": -0.2441904648196509
+    }
+   ],
+   "support_ratio": 0.5,
+   "cross_asset": null,
+   "equity": {
+    "us": {
+     "status": "PARTIAL",
+     "score": 0.139,
+     "available": 4,
+     "total": 4,
+     "coverage": 1.0,
+     "signals": [
+      {
+       "key": "growth_rel",
+       "label": "Growth(Nasdaq) / S&P 상대(duration)",
+       "market": "us",
+       "value": 0.55,
+       "expected": 1,
+       "score": 0.367,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "banks",
+       "label": "Financials(Banks) 상대강도",
+       "market": "us",
+       "value": 0.083,
+       "expected": -1,
+       "score": -0.056,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "util_rel",
+       "label": "Utilities(금리 민감) 상대강도",
+       "market": "us",
+       "value": -0.078,
+       "expected": 1,
+       "score": -0.052,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "tech_rel",
+       "label": "Tech 상대강도",
+       "market": "us",
+       "value": 0.315,
+       "expected": 1,
+       "score": 0.21,
+       "state": "AVAILABLE",
+       "note": ""
+      }
+     ]
+    },
+    "kr": {
+     "status": "PARTIAL",
+     "score": 0.215,
+     "available": 4,
+     "total": 4,
+     "coverage": 1.0,
+     "signals": [
+      {
+       "key": "kosdaq_rel",
+       "label": "KOSDAQ / KOSPI 상대",
+       "market": "kr",
+       "value": 0.153,
+       "expected": 1,
+       "score": 0.102,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "banks_kr",
+       "label": "한국 은행 상대강도",
+       "market": "kr",
+       "value": 0.701,
+       "expected": -1,
+       "score": -0.468,
+       "state": "PARTIAL",
+       "note": "대표 종목 2개 평균(업종 지수 아님)"
+      },
+      {
+       "key": "battery_kr",
+       "label": "2차전지 상대강도",
+       "market": "kr",
+       "value": 0.792,
+       "expected": 1,
+       "score": 0.528,
+       "state": "PARTIAL",
+       "note": "대표 종목 2개 평균(업종 지수 아님)"
+      },
+      {
+       "key": "growth_kr",
+       "label": "인터넷 · 성장주 상대강도",
+       "market": "kr",
+       "value": 2.849,
+       "expected": 1,
+       "score": 1.0,
+       "state": "PARTIAL",
+       "note": "대표 종목 2개 평균(업종 지수 아님)"
+      }
+     ]
+    },
+    "global": {
+     "status": "PARTIAL",
+     "score": 0.177,
+     "available": 8,
+     "total": 8,
+     "coverage": 1.0,
+     "signals": []
+    }
+   },
+   "quant_confidence": 52.3,
+   "interpretation": "정책 · 금리 재평가가 미국과 한국 주식의 rotation 을 이끄는 환경"
+  },
+  {
+   "label": "LIQUIDITY_STRESS",
+   "display": "LIQUIDITY STRESS",
+   "trigger_expr": "Liquidity <= -1.0",
+   "trigger_value": -1.071,
+   "trigger_threshold": -1.0,
+   "trigger_margin": 0.071,
+   "support": [
+    {
+     "id": "ls_credit",
+     "expr": "Credit >= 0.8",
+     "passed": true,
+     "observed": 2.404492807369982
+    },
+    {
+     "id": "ls_vol",
+     "expr": "Volatility >= 0.8",
+     "passed": false,
+     "observed": -1.2390394408914323
+    },
+    {
+     "id": "ls_risk",
+     "expr": "RiskAppetite <= -0.5",
+     "passed": false,
+     "observed": 0.27766331076179324
+    }
+   ],
+   "support_ratio": 0.35,
+   "cross_asset": 0.0,
+   "equity": {
+    "us": {
+     "status": "PARTIAL",
+     "score": -0.166,
+     "available": 4,
+     "total": 5,
+     "coverage": 0.783,
+     "signals": [
+      {
+       "key": "spx",
+       "label": "S&P 500",
+       "market": "us",
+       "value": -0.291,
+       "expected": -1,
+       "score": 0.194,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "rut",
+       "label": "Russell 2000",
+       "market": "us",
+       "value": 0.451,
+       "expected": -1,
+       "score": -0.301,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "banks",
+       "label": "Financials(Banks) 상대강도",
+       "market": "us",
+       "value": 0.083,
+       "expected": -1,
+       "score": -0.056,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "small_rel",
+       "label": "Small Cap 상대강도",
+       "market": "us",
+       "value": 0.742,
+       "expected": -1,
+       "score": -0.495,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "breadth_us",
+       "label": "US Breadth",
+       "market": "us",
+       "value": null,
+       "expected": -1,
+       "score": null,
+       "state": "EXCLUDED",
+       "note": "SPX_ADV_RATIO 데이터 없음"
+      }
+     ]
+    },
+    "kr": {
+     "status": "CONFIRMED",
+     "score": 0.466,
+     "available": 5,
+     "total": 5,
+     "coverage": 1.0,
+     "signals": [
+      {
+       "key": "kosdaq",
+       "label": "KOSDAQ",
+       "market": "kr",
+       "value": -1.859,
+       "expected": -1,
+       "score": 1.0,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "kosdaq_rel",
+       "label": "KOSDAQ / KOSPI 상대",
+       "market": "kr",
+       "value": 0.153,
+       "expected": -1,
+       "score": -0.102,
+       "state": "AVAILABLE",
+       "note": ""
+      },
+      {
+       "key": "banks_kr",
+       "label": "한국 은행 상대강도",
+       "market": "kr",
+       "value": 0.701,
+       "expected": -1,
+       "score": -0.468,
+       "state": "PARTIAL",
+       "note": "대표 종목 2개 평균(업종 지수 아님)"
+      },
+      {
+       "key": "breadth_kr",
+       "label": "한국 대표 종목 상승 비율",
+       "market": "kr",
+       "value": 0.056,
+       "expected": -1,
+       "score": 1.0,
+       "state": "PARTIAL",
+       "note": "대표 종목 36개 중 상승 비율(시장 전체 breadth 아님)"
+      },
+      {
+       "key": "kospi",
+       "label": "KOSPI",
+       "market": "kr",
+       "value": -2.012,
+       "expected": -1,
+       "score": 1.0,
+       "state": "AVAILABLE",
+       "note": ""
+      }
+     ]
+    },
+    "global": {
+     "status": "PARTIAL",
+     "score": 0.15,
+     "available": 9,
+     "total": 10,
+     "coverage": 0.891,
+     "signals": []
+    }
+   },
+   "quant_confidence": 35.3,
+   "interpretation": "신용 · 변동성 스트레스가 미국과 한국 주식시장으로 번지는 환경"
+  }
+ ],
+ "near_triggers": [
+  {
+   "label": "RISK_ON",
+   "trigger": "RiskAppetite >= 0.8",
+   "value": 0.278,
+   "threshold": 0.8,
+   "proximity": 0.347
+  },
+  {
+   "label": "GEOPOLITICAL_RISK",
+   "trigger": "z(BRENT) >= 1.0",
+   "value": -0.046,
+   "threshold": 1.0,
+   "proximity": 0.0
+  },
+  {
+   "label": "GROWTH_SHOCK",
+   "trigger": "Growth <= -1.0",
+   "value": 0.535,
+   "threshold": -1.0,
+   "proximity": 0.0
+  },
+  {
+   "label": "INFLATION_SHOCK",
+   "trigger": "Inflation >= 1.0",
+   "value": -0.244,
+   "threshold": 1.0,
+   "proximity": 0.0
+  },
+  {
+   "label": "RISK_OFF",
+   "trigger": "RiskAppetite <= -0.8",
+   "value": 0.278,
+   "threshold": -0.8,
+   "proximity": 0.0
+  }
+ ],
+ "neutral_reference_equity": {
+  "us": {
+   "status": "PARTIAL",
+   "score": 0.211,
+   "available": 6,
+   "total": 7,
+   "coverage": 0.839,
+   "signals": [
+    {
+     "key": "spx",
+     "label": "S&P 500",
+     "market": "us",
+     "value": -0.291,
+     "expected": 1,
+     "score": -0.194,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "ndx",
+     "label": "Nasdaq 100",
+     "market": "us",
+     "value": 0.259,
+     "expected": 1,
+     "score": 0.172,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "rut",
+     "label": "Russell 2000",
+     "market": "us",
+     "value": 0.451,
+     "expected": 1,
+     "score": 0.301,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "small_rel",
+     "label": "Small Cap 상대강도",
+     "market": "us",
+     "value": 0.742,
+     "expected": 1,
+     "score": 0.495,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "cyc_def",
+     "label": "Cyclicals / Defensives",
+     "market": "us",
+     "value": 0.535,
+     "expected": 1,
+     "score": 0.357,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "semis",
+     "label": "Semiconductors",
+     "market": "us",
+     "value": 0.342,
+     "expected": 1,
+     "score": 0.228,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "breadth_us",
+     "label": "US Breadth",
+     "market": "us",
+     "value": null,
+     "expected": 1,
+     "score": null,
+     "state": "EXCLUDED",
+     "note": "SPX_ADV_RATIO 데이터 없음"
+    }
+   ]
+  },
+  "kr": {
+   "status": "CONTRADICTED",
+   "score": -0.46,
+   "available": 6,
+   "total": 7,
+   "coverage": 0.833,
+   "signals": [
+    {
+     "key": "kospi",
+     "label": "KOSPI",
+     "market": "kr",
+     "value": -2.012,
+     "expected": 1,
+     "score": -1.0,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "kosdaq",
+     "label": "KOSDAQ",
+     "market": "kr",
+     "value": -1.859,
+     "expected": 1,
+     "score": -1.0,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "kosdaq_rel",
+     "label": "KOSDAQ / KOSPI 상대",
+     "market": "kr",
+     "value": 0.153,
+     "expected": 1,
+     "score": 0.102,
+     "state": "AVAILABLE",
+     "note": ""
+    },
+    {
+     "key": "breadth_kr",
+     "label": "한국 대표 종목 상승 비율",
+     "market": "kr",
+     "value": 0.056,
+     "expected": 1,
+     "score": -1.0,
+     "state": "PARTIAL",
+     "note": "대표 종목 36개 중 상승 비율(시장 전체 breadth 아님)"
+    },
+    {
+     "key": "broad_kr",
+     "label": "지수 대비 확산(대형주 쏠림 아님)",
+     "market": "kr",
+     "value": 0.933,
+     "expected": 1,
+     "score": 0.622,
+     "state": "PARTIAL",
+     "note": "대표 종목 중앙값 − KOSPI(− 면 일부 대형주 쏠림)"
+    },
+    {
+     "key": "cyc_kr",
+     "label": "한국 경기민감 업종",
+     "market": "kr",
+     "value": 0.358,
+     "expected": 1,
+     "score": 0.239,
+     "state": "PARTIAL",
+     "note": "대표 종목 11개 평균(업종 지수 아님)"
+    },
+    {
+     "key": "breadth_kospi",
+     "label": "KOSPI 상승종목 비율",
+     "market": "kr",
+     "value": null,
+     "expected": 1,
+     "score": null,
+     "state": "EXCLUDED",
+     "note": "KOSPI_ADV_RATIO 데이터 없음"
+    }
+   ]
+  },
+  "global": {
+   "status": "PARTIAL",
+   "score": -0.125,
+   "available": 12,
+   "total": 14,
+   "coverage": 0.836,
+   "signals": []
+  }
+ },
+ "market_moves_z1d": {
+  "SPX": 0.46,
+  "NDX": 1.08,
+  "RUT": 1.03,
+  "SOXX": 1.26,
+  "KOSPI": -2.09,
+  "KOSDAQ": -1.87,
+  "VIX": -1.09,
+  "MOVE": -1.15,
+  "US_HY_OAS": 2.4,
+  "US10Y": -1.21,
+  "US2Y": -2.28,
+  "BE10Y": -0.93,
+  "BRENT": -0.05,
+  "GOLD": -0.59,
+  "DXY": 2.44,
+  "USDKRW": 2.1,
+  "XLF": -0.57,
+  "XLU": -0.39,
+  "XLE": -0.03,
+  "ITA": 1.22,
+  "JETS": 0.76
+ },
+ "kr_breadth_proxy": {
+  "key": "breadth_kr",
+  "label": "한국 대표 종목 상승 비율",
+  "market": "kr",
+  "value": 0.056,
+  "expected": 1,
+  "score": -1.0,
+  "state": "PARTIAL",
+  "note": "대표 종목 36개 중 상승 비율(시장 전체 breadth 아님)"
+ },
+ "history": [
+  {
+   "date": "2026-10-23",
+   "raw_state": "LIQUIDITY_STRESS",
+   "confidence": 37.45454545454545
+  },
+  {
+   "date": "2026-10-26",
+   "raw_state": "RISK_ON",
+   "confidence": 82.02293202293203
+  },
+  {
+   "date": "2026-10-27",
+   "raw_state": "RISK_ON",
+   "confidence": 95.08599508599508
+  },
+  {
+   "date": "2026-10-28",
+   "raw_state": "NEUTRAL",
+   "confidence": 34.00673400673401
+  },
+  {
+   "date": "2026-10-29",
+   "raw_state": "NEUTRAL",
+   "confidence": 34.00673400673401
+  },
+  {
+   "date": "2026-10-30",
+   "raw_state": "LIQUIDITY_STRESS",
+   "confidence": 52.56347256347256
+  },
+  {
+   "date": "2026-11-02",
+   "raw_state": "RISK_OFF",
+   "confidence": 53.43073593073594
+  },
+  {
+   "date": "2026-11-03",
+   "raw_state": "NEUTRAL",
+   "confidence": 34.00673400673401
+  },
+  {
+   "date": "2026-11-04",
+   "raw_state": "RISK_ON",
+   "confidence": 78.0
+  },
+  {
+   "date": "2026-11-05",
+   "raw_state": "RISK_OFF",
+   "confidence": 72.0
+  }
+ ],
+ "official_regime": "Liquidity Stress / Risk-Off",
+ "persistence_hint": "공식 Liquidity Stress / Risk-Off · 직전 raw RISK_OFF · 공식 전환은 같은 raw 가 서로 다른 거래일 2일 연속(또는 확신 80 이상)일 때",
+ "events": [
+  {
+   "date": "2026-11-06",
+   "name": "Nonfarm Payrolls"
+  }
+ ],
+ "news": [
+  {
+   "title": "U.S. economy added 165,000 jobs in October, way more than expected; unemployment rate slips to 4.1%",
+   "type": "macro",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": 20,
+   "impact": 60,
+   "at": "2026-11-06T16:06:59+00:00"
+  },
+  {
+   "title": "“개미들은 이번 월요일만 기다립니다”…일단 美 반도체는 회복 성공",
+   "type": "flow",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 25,
+   "impact": 50,
+   "at": "2026-11-08T20:06:04+00:00"
+  },
+  {
+   "title": "美 필리지수 반등 성공 … K증시도 진정될까",
+   "type": "flow",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": 25,
+   "impact": 50,
+   "at": "2026-11-08T17:26:28+00:00"
+  },
+  {
+   "title": "하루 만에 4800조 날아갔다…세계 증시 덮친 '블루쓰나미' 쇼크",
+   "type": "flow",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -45,
+   "impact": 50,
+   "at": "2026-11-07T07:50:26+00:00"
+  },
+  {
+   "title": "폭락장 속 나홀로 플러스…파킹 ETF에 한달새 2조2천억 몰렸다 [이번주 찜할 ETF]",
+   "type": "flow",
+   "themes": [
+    "korea_governance"
+   ],
+   "sentiment": -30,
+   "impact": 45,
+   "at": "2026-11-08T17:20:00+00:00"
+  },
+  {
+   "title": "[동여의도 위클리] 블루 쓰나미에 흔들린 AI株…10일 밤 美CPI 발표에 촉각",
+   "type": "policy",
+   "themes": [
+    "ai",
+    "semiconductor",
+    "inflation"
+   ],
+   "sentiment": -20,
+   "impact": 45,
+   "at": "2026-11-08T16:47:22+00:00"
+  },
+  {
+   "title": "'코스피 대탈출' 경고음…8조 던진 외국인 심상치 않다",
+   "type": "flow",
+   "themes": [
+    "korea_governance",
+    "usd"
+   ],
+   "sentiment": -30,
+   "impact": 45,
+   "at": "2026-11-08T10:23:56+00:00"
+  },
+  {
+   "title": "이 정도면 도박보다 심하네…하루만에 40% 급락한 속슬, 서학개미 어쩌나",
+   "type": "flow",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": -35,
+   "impact": 45,
+   "at": "2026-11-07T21:32:04+00:00"
+  },
+  {
+   "title": "월가 헤지펀드도 美증시 급락에 직격탄···투자 철수·감원 나섰다",
+   "type": "flow",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -30,
+   "impact": 45,
+   "at": "2026-11-07T15:36:30+00:00"
+  },
+  {
+   "title": "Nvidia CEO Huang admits to affair, apologizes to employees as probe launched",
+   "type": "other",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -15,
+   "impact": 40,
+   "at": "2026-11-08T21:08:53+00:00"
+  }
+ ],
+ "coverage": {
+  "factor": 0.783,
+  "us": 1.0,
+  "kr": 1.0,
+  "global": 1.0
+ },
+ "data_coverage": 89,
+ "excluded": [
+  "KOSPI 상승종목 비율",
+  "US Breadth"
+ ],
+ "quant_label": "POLICY_DRIVEN",
+ "primary_signal": "abs(Rates) +1.67",
+ "rules": {
+  "eligibility": "state_rules.yaml require — LLM 은 candidates 의 label 또는 NEUTRAL 만 고른다",
+  "missing": "EXCLUDED 신호는 증거가 아니다(부정 · 중립 · 미확인 아님) — coverage 로만"
+ }
+}

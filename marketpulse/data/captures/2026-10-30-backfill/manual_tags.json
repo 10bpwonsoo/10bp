@@ -1,0 +1,76 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/30 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. RSS 는 11/02 수집분 — 피드에 남은 창 기사가 4건뿐이라, 웹 검색으로 찾은 10/29(KST) 한국 기사 2건을 extra_news 로 더했다(원문 사이트는 이 세션에서 열리지 않음 — 발행 시각은 기사 URL 에 들어 있는 시각, 수치는 시장 계열과 대조).",
+ "tags": {
+  "3c494a252ab73ecf": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "ECB 기준금리 2.5% 동결 — 매파적 동결로 해석, 12월 인상 확률 67% 반영(요약)."
+  },
+  "53c80c67bbff0807": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 5
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 55,
+   "horizon": "long",
+   "event_type": "policy",
+   "reason": "라가르드 ECB 총재 내년 2월 7일 조기 퇴임 발표(요약)."
+  },
+  "522ef51919185643": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "Warsh 의장, 고금리 쪽으로 기울었지만 데이터에 따라 선택지를 열어 둠(분석 요약)."
+  },
+  "d9787fac3c3fb539": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 30,
+    "rates": 20
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 3분기 GDP 3.4%로 예상 상회, 9월 PCE 물가 가속(전망 연 3.7%)(요약)."
+  }
+ }
+}

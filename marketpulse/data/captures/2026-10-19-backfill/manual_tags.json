@@ -1,0 +1,62 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "0cc13ee63d81ef59": {
+   "themes": [
+    "rates",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "rates": 15,
+    "inflation": 5
+   },
+   "theme_direction": {
+    "rates": "up",
+    "inflation": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "분석: 시장은 10월 동결을 예상하지만 Warsh 의장의 비전통적 소통과 물가 우려로 결정이 불확실(RSS 요약)."
+  },
+  "0bd7e9e2aa79b2be": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "분석: 2조달러 적자와 5% 국채금리가 가계·연방정부 차입 비용을 끌어올린다(RSS 요약)."
+  },
+  "1f5d2e7ddb98a617": {
+   "themes": [
+    "rates",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "rates": 10,
+    "usd": 0
+   },
+   "theme_direction": {
+    "rates": "up",
+    "usd": "neutral"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "미 재무부: 2026 회계연도 재정적자 약 2조달러, 1년 새 12% 증가(RSS 제목·요약)."
+  }
+ }
+}

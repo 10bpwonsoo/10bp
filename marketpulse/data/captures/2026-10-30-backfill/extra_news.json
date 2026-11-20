@@ -1,0 +1,54 @@
+[
+ {
+  "url": "https://www.ytn.co.kr/_ln/0102_202610291635162466",
+  "title": "삼성전자 3분기 영업이익 107조…매출 195조 원",
+  "publisher": "YTN",
+  "language": "ko",
+  "published_at": "2026-10-29T07:35:00+00:00",
+  "timestamp_quality": "URL_TIME",
+  "themes": [
+   "semiconductor",
+   "shareholder_return"
+  ],
+  "theme_sentiment": {
+   "semiconductor": 35,
+   "shareholder_return": -10
+  },
+  "theme_direction": {
+   "semiconductor": "up",
+   "shareholder_return": "down"
+  },
+  "sentiment": 15,
+  "impact": 65,
+  "novelty": 45,
+  "horizon": "medium",
+  "event_type": "earnings",
+  "reason": "삼성전자 10/29 3분기 확정 실적: 매출 195.3조 원 · 영업이익 107.4조 원(반도체 106.5조 원), 10/08 잠정치와 같음. 추가 주주환원 세부는 2027년 1월 이사회에서 확정(검색 결과 요약 — 원문 미열람). 발행 시각은 URL 의 16:35 KST."
+ },
+ {
+  "url": "https://core.asiae.co.kr/article/2026102915525485714",
+  "title": "코스피, 삼성전자 실적 발표 후 급락",
+  "publisher": "아시아경제",
+  "language": "ko",
+  "published_at": "2026-10-29T06:52:00+00:00",
+  "timestamp_quality": "URL_TIME",
+  "themes": [
+   "semiconductor",
+   "korea_governance"
+  ],
+  "theme_sentiment": {
+   "semiconductor": -25,
+   "korea_governance": -10
+  },
+  "theme_direction": {
+   "semiconductor": "down",
+   "korea_governance": "down"
+  },
+  "sentiment": -25,
+  "impact": 55,
+  "novelty": 40,
+  "horizon": "short",
+  "event_type": "flow",
+  "reason": "코스피 장중 6100 에서 삼성전자 실적·주주환원 발표 뒤 하락 전환, 1.24% 내린 5937.66 마감 — 삼성전자 4% 넘게 하락, SK하이닉스는 강세, 외국인·기관 순매도(검색 결과 요약). 시장 계열과 일치: KOSPI −1.24% · 삼성전자 −4.13% · SK하이닉스 +2.62%. 발행 시각은 URL 의 15:52 KST."
+ }
+]

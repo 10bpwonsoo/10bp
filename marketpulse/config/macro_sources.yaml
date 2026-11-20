@@ -1,0 +1,102 @@
+# 신뢰도 기반 macro fallback data layer(2026-10-13).
+# 공식 원자료가 연결되지 않은 칸을 '억지로 추정' 하지 않고, 급(tier)이 낮아질수록 신뢰도를 낮추며, 대체 추정은 늘 PROXY 로 드러낸다.
+# 찾지 못하면 UNAVAILABLE — 숫자를 만들지 않는다. 키는 환경변수(FRED_API_KEY)로만 받는다.
+
+#: 출처 급 — rank 가 낮을수록 먼저 쓴다. confidence 는 그 급의 기본 신뢰도
+tiers:
+  PRIMARY:     {rank: 1, confidence: 0.95, label: "PRIMARY",            ko: "공식 원자료"}
+  MIRROR:      {rank: 2, confidence: 0.85, label: "MIRROR",             ko: "공식 원자료 미러"}
+  SECONDARY:   {rank: 3, confidence: 0.70, label: "SECONDARY VERIFIED", ko: "신뢰 매체가 보도한 공식 발표값"}
+  PROXY:       {rank: 4, confidence: 0.45, label: "PROXY",              ko: "대체 지표로 추정"}
+  NEWS:        {rank: 5, confidence: 0.20, label: "NEWS",               ko: "방향 보조 신호"}
+  UNAVAILABLE: {rank: 9, confidence: 0.00, label: "DATA UNAVAILABLE",   ko: "찾지 못함"}
+
+stale_confidence_factor: 0.5        # STALE 이면 신뢰도를 이만큼 곱한다 — 그리고 신호 계산에서는 뺀다
+#: 예상 갱신 주기 — 마지막 발표일에서 interval_days × stale_multiple 이 지나면 STALE
+frequency:
+  monthly:   {interval_days: 31,  stale_multiple: 1.5}
+  quarterly: {interval_days: 92,  stale_multiple: 1.5}
+  meeting:   {interval_days: 49,  stale_multiple: 1.5}
+
+proxy_note: "실제 원데이터 미연결 · 대체 지표로 추정"
+
+#: 가속도 점수 — (3개월 연율 − 12개월 상승률) 을 과거 history_months 의 같은 값 표준편차로 나눈 z, z_ref 에서 ±100
+score:
+  history_months: 60
+  min_history: 24
+  z_ref: 2.0
+
+#: 경로 — FRED API(PRIMARY, 키 필요) → FRED 그래프 CSV(MIRROR, 키 불필요) → 출처가 붙은 수기 파일(SECONDARY)
+paths:
+  fred_api: "https://api.stlouisfed.org/fred"
+  fred_mirror_csv: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+  observation_years: 8
+
+#: series — agency 는 원 발표기관. secondary 는 data/policy_events 수기 파일의 (release key, measure key) — 보도로 확인된 공식 발표값
+series:
+  CPI:          {label: "CPI",           agency: BLS, fred: CPIAUCSL,        frequency: monthly,   measure: YoY, secondary: {release: us_cpi, yoy: headline_yoy, mom: headline_mom}}
+  CORE_CPI:     {label: "Core CPI",      agency: BLS, fred: CPILFESL,        frequency: monthly,   measure: YoY, secondary: {release: us_cpi, yoy: core_yoy, mom: core_mom}}
+  PCE:          {label: "PCE",           agency: BEA, fred: PCEPI,           frequency: monthly,   measure: YoY, secondary: {release: us_pce, yoy: headline_yoy, mom: headline_mom}}
+  CORE_PCE:     {label: "Core PCE",      agency: BEA, fred: PCEPILFE,        frequency: monthly,   measure: YoY, secondary: {release: us_pce, yoy: core_yoy, mom: core_mom}}
+  AHE:          {label: "AHE",           agency: BLS, fred: CES0500000003,   frequency: monthly,   measure: MoM, title: "Average Hourly Earnings"}
+  ECI:          {label: "ECI",           agency: BLS, fred: ECIWAG,          frequency: quarterly, measure: QoQ, title: "Employment Cost Index — wages & salaries"}
+  SERVICES_CPI: {label: "Services CPI",  agency: BLS, fred: CUSR0000SASLE,   frequency: monthly,   measure: MoM, title: "CPI services less energy"}
+  CORE_SERVICES_PCE: {label: "Core Services PCE", agency: BEA, fred: IA001260M, frequency: monthly, measure: MoM, title: "PCE services ex energy & housing"}
+  PPI_FD:       {label: "PPI Final Demand", agency: BLS, fred: PPIFIS,       frequency: monthly,   measure: YoY}
+  IMPORT_PRICES: {label: "Import Prices", agency: BLS, fred: IR,             frequency: monthly,   measure: YoY}
+
+#: INFLATION PRESSURE MAP 의 macro 구성요소
+components:
+  realized:
+    label: "Realized Inflation"
+    series: [CPI, CORE_CPI, PCE, CORE_PCE]          # 실제 원데이터 — 하나라도 있으면 원자료 구성요소
+    agencies: "BLS / BEA"
+    #: CPI·PCE 를 하나도 못 받았을 때만 — 이름부터 바꾼다
+    proxy:
+      label: "REALIZED INFLATION PROXY"
+      series: [PPI_FD, IMPORT_PRICES]
+      fallback_reason: "실제 CPI/PCE 데이터 미연결 · 대체 지표 기반 추정"
+    unavailable_reason: "CPI / PCE 실제 물가 데이터와 대체 지표 모두 연결되지 않음"
+  wages:
+    label: "Wage / Services"
+    #: 하나의 원 series 가 아니라 합성 지표 — 구성 series 가 공식 원자료여도 점수는 PROXY 다
+    composite_only: true
+    series: [AHE, ECI, SERVICES_CPI, CORE_SERVICES_PCE]
+    fallback_reason: "실제 Wage / Services 단일 원데이터 미연결"
+    unavailable_reason: "임금·서비스 물가 데이터와 대체 지표 모두 연결되지 않음"
+    #: 점수 → 상태(임금·서비스는 '끈적함' 으로 읽는다)
+    states:
+      - {min: 50,   state: "ACCELERATING", ko: "가속", tone: up}
+      - {min: 15,   state: "STICKY",       ko: "끈적한 상승 압력", tone: up}
+      - {min: -15,  state: "STABLE",       ko: "안정", tone: flat}
+      - {min: -50,  state: "EASING",       ko: "둔화", tone: down}
+      - {min: -101, state: "COOLING",      ko: "빠른 둔화", tone: down}
+    #: 실제 물가 점수와 비교한 한 줄(숫자 없음)
+    comment:
+      stickier: "임금·서비스 인플레이션 둔화 속도가 전체 물가보다 느림"
+      faster: "임금·서비스 쪽이 전체 물가보다 먼저 식는 중"
+      similar: "임금·서비스와 전체 물가가 비슷한 속도로 움직임"
+      alone: "전체 물가 원데이터가 없어 상대 속도는 비교하지 않음"
+    compare_margin: 15
+
+#: INFLATION NEWS PULSE — 테마 뉴스 톤의 가중 평균. 공식 통계 점수에는 넣지 않는다
+news:
+  label: "Inflation News Pulse"
+  drivers:
+    - {theme: inflation,         label: "Inflation commentary", weight: 1.0, sign: 1}
+    - {theme: oil,               label: "Energy",               weight: 0.6, sign: 1}
+    - {theme: energy,            label: "Power / Energy",       weight: 0.3, sign: 1}
+    - {theme: geopolitical_risk, label: "Supply / Freight",     weight: 0.3, sign: 1}
+  arrow_abs: 10
+  lookback_hours: 48
+  states:
+    - {min: 40,   state: "STRONG UPWARD",  ko: "강한 상방 서사", tone: up}
+    - {min: 10,   state: "MILD UPWARD",    ko: "약한 상방 서사", tone: up}
+    - {min: -10,  state: "NEUTRAL",        ko: "중립",          tone: flat}
+    - {min: -40,  state: "MILD DOWNWARD",  ko: "약한 하방 서사", tone: down}
+    - {min: -101, state: "STRONG DOWNWARD", ko: "강한 하방 서사", tone: down}
+  comment:
+    up: "최근 뉴스 흐름은 물가 상방 쪽이지만 공식 CPI/PCE 에서 재가속 확인이 필요"
+    down: "최근 뉴스 흐름은 물가 하방 쪽이지만 공식 데이터 확인이 필요"
+    flat: "물가 관련 뉴스 흐름에 뚜렷한 방향이 없음"
+    none: "물가 관련 뉴스가 모자라 방향을 읽지 않음"

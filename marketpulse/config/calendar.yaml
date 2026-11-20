@@ -1,0 +1,58 @@
+# Market Pulse AI — 이벤트 달력 (GOAL Kickstart 의 '중앙은행 주간' 프레이밍 차용)
+#
+# 왜 필요한가: 시장 상태 판정의 confidence 에는 "어제도 같은 판정이었다"
+# (persistence) 가 들어간다. 그러나 FOMC 하루 전의 지속성은 확신의 근거가
+# 못 된다 — 회의 결과 하나로 판정이 통째로 바뀔 수 있다. 같은 이유로
+# 이벤트 직전의 가격 급변 알림은 임계를 올려야 잡음이 줄어든다.
+#
+# 이벤트 창(window) 안에 있으면
+#   · confidence 의 persistence 가중 × persistence_scale  (scoring.yaml calendar 절)
+#   · 가격·변동성·테마 급변 알림 임계 × alert_threshold_scale
+# 판정 자체는 바꾸지 않는다. 확신의 크기와 알림의 민감도만 조정한다.
+#
+# verified 필드
+# -------------
+# true  : 1차 출처(각 중앙은행 공표 일정 또는 이번 주 리서치 문서)로 확인한 날짜
+# false : 공표된 연간 일정을 옮겨 적은 것으로, 변경 여부를 재확인하지 않았다.
+#         화면에 '(미확인)' 으로 표시된다. 불확실한 것을 확정처럼 다루지 않는다.
+#
+# 날짜는 현지 발표일(YYYY-MM-DD). 시각 비교는 UTC 자정 기준으로 한다 —
+# 하루 단위 창이라 시간대 오차는 창 폭에 흡수된다.
+
+events:
+  # ── 2026 FOMC (federalreserve.gov 2026 회의 일정; 발표일은 이틀째) ──
+  - {id: fomc-2026-01, date: 2026-01-28, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  - {id: fomc-2026-03, date: 2026-03-18, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  - {id: fomc-2026-04, date: 2026-04-29, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  - {id: fomc-2026-06, date: 2026-06-17, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  - {id: fomc-2026-07, date: 2026-07-29, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  # GS GOAL Kickstart 2026-09-14: "FOMC on Wednesday" → 9/16
+  - {id: fomc-2026-09, date: 2026-09-16, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: true,
+     note: "시장은 25bp 인상을 약 90% 반영 (GS GOAL Kickstart 2026-09-14)"}
+  - {id: fomc-2026-10, date: 2026-10-28, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+  - {id: fomc-2026-12, date: 2026-12-09, label: FOMC, kind: central_bank, region: US, weight: 1.0, verified: false}
+
+  # ── 2026 ECB 통화정책회의 (ecb.europa.eu 연간 일정) ──
+  - {id: ecb-2026-09, date: 2026-09-10, label: ECB, kind: central_bank, region: EU, weight: 0.7, verified: true,
+     note: "25bp 인상, 성장·물가 전망 상향 (GS GOAL Kickstart 2026-09-14)"}
+  - {id: ecb-2026-10, date: 2026-10-29, label: ECB, kind: central_bank, region: EU, weight: 0.7, verified: false}
+  - {id: ecb-2026-12, date: 2026-12-17, label: ECB, kind: central_bank, region: EU, weight: 0.7, verified: false}
+
+  # ── 2026 BoE MPC (bankofengland.co.uk 연간 일정) ──
+  # GS GOAL Kickstart 2026-09-14: "BoE on Thursday" → 9/17
+  - {id: boe-2026-09, date: 2026-09-17, label: BoE, kind: central_bank, region: UK, weight: 0.5, verified: true}
+  - {id: boe-2026-11, date: 2026-11-05, label: BoE, kind: central_bank, region: UK, weight: 0.5, verified: false}
+  - {id: boe-2026-12, date: 2026-12-17, label: BoE, kind: central_bank, region: UK, weight: 0.5, verified: false}
+
+  # ── 2026 BoJ 금융정책결정회의 (boj.or.jp 연간 일정; 발표일은 이틀째) ──
+  # GS GOAL Kickstart 2026-09-14: "BOJ on Friday" → 9/18
+  - {id: boj-2026-09, date: 2026-09-18, label: BoJ, kind: central_bank, region: JP, weight: 0.7, verified: true,
+     note: "GS 이코노미스트는 25bp 인상 예상 (GOAL Kickstart 2026-09-14)"}
+  - {id: boj-2026-10, date: 2026-10-30, label: BoJ, kind: central_bank, region: JP, weight: 0.7, verified: false}
+  - {id: boj-2026-12, date: 2026-12-18, label: BoJ, kind: central_bank, region: JP, weight: 0.7, verified: false}
+
+  # ── 2026 한국은행 금통위 기준금리 결정 (bok.or.kr 연간 일정) ──
+  # 한국 운용사에게 가장 직접적인 이벤트다. 날짜는 공표 일정을 옮겨 적은
+  # 것이라 verified=false — 확인되면 true 로 바꾸면 된다.
+  - {id: bok-2026-10, date: 2026-10-22, label: 한국은행 금통위, kind: central_bank, region: KR, weight: 0.9, verified: false}
+  - {id: bok-2026-11, date: 2026-11-26, label: 한국은행 금통위, kind: central_bank, region: KR, weight: 0.9, verified: false}

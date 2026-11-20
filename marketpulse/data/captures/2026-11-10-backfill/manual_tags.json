@@ -1,0 +1,506 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/10 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/09 · 11/10 수집분을 합쳤다.",
+ "tags": {
+  "5b187f86d396315c": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "미국 AI 투자 위축 우려 속 IB 들은 선발 업체에 기회라는 시각(제목)."
+  },
+  "8c844c67b56456ad": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "이틀 연속 폭락한 삼성전자·SK하이닉스 프리마켓 소폭 상승 출발(제목)."
+  },
+  "a4f520983310bcd0": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -5,
+    "semiconductor": -5
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "트럼프, 엔비디아 젠슨 황을 '명예로운' 인물이라 언급 · 의혹은 논의 안 함(제목)."
+  },
+  "3b7ab0413fd31856": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -5
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 장 초반 5000선 방어 · 삼성전자·SK하이닉스 보합권(제목)."
+  },
+  "7c067466e441a65e": {
+   "themes": [
+    "ai",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "ai": -10,
+    "inflation": 10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "inflation": "up"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 지출 우려 속 미국 선물 혼조 · 물가 지표 대기(제목)."
+  },
+  "2617af4fdfca9367": {
+   "themes": [
+    "china",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "china": 10,
+    "inflation": 30
+   },
+   "theme_direction": {
+    "china": "up",
+    "inflation": "up"
+   },
+   "sentiment": -5,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "중국 10월 PPI 5.7%(예상 5.3%) · 4년여 만에 최고, 소비자물가는 둔화(요약)."
+  },
+  "bce16ac1c5434d51": {
+   "themes": [
+    "korea_governance",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 25,
+    "shareholder_return": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "'주가누르기 방지법' 대상 기업 115곳 → 500곳 확대 · 정부안 강화(제목)."
+  },
+  "4f7ea89afb5e56b1": {
+   "themes": [
+    "ai",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "energy": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "energy": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "구미 초대형 AI 데이터센터 좌초(제목)."
+  },
+  "65b7f125caed9e97": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "한국을 찾은 해외 큰손 계약 불발 · AI 프로젝트 비상(제목)."
+  },
+  "95b892e86f31841f": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 반도체 반등에도 코스피 장중 다시 5000 아래 · 외국인 매도 지속(본문)."
+  },
+  "05d10e475f1621d7": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "long",
+   "event_type": "supply",
+   "reason": "TSMC 가 차세대 3D D램 직접 제조 정황 · 엔비디아 요청(본문) — 메모리 경쟁 구도."
+  },
+  "308aab313c669399": {
+   "themes": [
+    "rates",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "rates": -20,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "rates": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": 0,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "씨티: 반도체 호황이 꺾이면 한국은행 인상 사이클이 11월 한 번 더 인상 뒤 일찍 끝날 수 있다(본문)."
+  },
+  "c3ffe5ccc80b734d": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 사생활 의혹으로 엔비디아 압력 · CEO 해임 가능성까지 거론(본문)."
+  },
+  "38d1a041cfb0b094": {
+   "themes": [
+    "china"
+   ],
+   "theme_sentiment": {
+    "china": 35
+   },
+   "theme_direction": {
+    "china": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "AI 충격으로 한·일 증시 급락 속 중국 기술주는 증시 부양책에 8% 반등(본문)."
+  },
+  "80d8595e310f1181": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황 의혹에 엔비디아 6% 하락(11/06) · 단기 해결 어렵다는 월가 시각(제목)."
+  },
+  "bc52d6358f93d740": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 45,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 장중 상승 전환에도 0.81% 내린 5018.85 마감 · 5000선 유지(본문)."
+  },
+  "5b67399652decf2a": {
+   "themes": [
+    "energy",
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "energy": 40,
+    "inflation": 30
+   },
+   "theme_direction": {
+    "energy": "up",
+    "inflation": "up"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "중동 LNG 시설 피격 · 겨울 수요로 LNG 1년 새 3배, 산업용 가스요금 66% 인상(본문)."
+  },
+  "3c37afd1584d349f": {
+   "themes": [
+    "china"
+   ],
+   "theme_sentiment": {
+    "china": 30
+   },
+   "theme_direction": {
+    "china": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "한·일 약세 속 중국 기술주 강세 · 자사주 매입 지원과 유동성 공급(본문)."
+  },
+  "8f718177829a5e8d": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "올해 하루 평균 신용융자 59조 원 · 역대 최대(본문)."
+  },
+  "87bb6fa91297656a": {
+   "themes": [
+    "oil",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "oil": -50,
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "oil": "down",
+    "semiconductor": "up"
+   },
+   "sentiment": 30,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "유가 7% 급락에 월가 환호 · 반도체주가 반등 주도(제목)."
+  },
+  "695f8372f0828cc6": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 25,
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 위기에도 뉴욕증시 급반등 · 나스닥 2.7% 상승(속보 제목)."
+  },
+  "1b55ab3b206e25dc": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 50
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 4.3% 급락에도 필라델피아 반도체지수 6.9% 급등(속보 제목)."
+  },
+  "74b627f3ae9b4755": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 10,
+    "rates": 5
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": 0,
+   "impact": 45,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "10월 CPI(화요일) 예상: 헤드라인 +0.3%, 근원 +0.2%(요약)."
+  },
+  "6c239d8fb887b041": {
+   "themes": [
+    "ai",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "geopolitical_risk": 15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "외국 정보기관 우려 뒤 트럼프와 젠슨 황 관계 조사(제목)."
+  },
+  "c3ab1b1d9901aa00": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "트럼프: 젠슨 황이 의혹 여성이 스파이인 줄 몰랐다고 말했다(제목)."
+  },
+  "97c42921eb654254": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 10
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "10월 고용이 예상보다 강했던 세 가지 이유 분석(요약)."
+  },
+  "687a5758c312904f": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -10
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "EU 초안: 불공정 디지털 거래에 글로벌 매출 6% 과징금(제목)."
+  }
+ }
+}

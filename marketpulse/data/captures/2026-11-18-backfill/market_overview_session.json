@@ -1,0 +1,214 @@
+{
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/18 07:30 KST Daily Snapshot 저장 데이터만) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. EXCLUDED 데이터는 근거로 쓰지 않았다.",
+ "headline": "정책 주도 해제, 신용까지 흔들린 약세에 엔비디아 호실적",
+ "market_view": "화요일 미국 주식은 금융주와 소형주 중심으로 더 밀렸고 한국은 코스피가 2.59% 내려 5000선이 무너지며 약세가 넓게 번졌습니다. 월요일 미국채 금리는 기대인플레이션 하락과 함께 되돌려졌지만 하이일드 스프레드가 벌어지고 변동성과 달러가 함께 올라, 부담의 중심이 금리에서 신용·유동성 쪽으로 옮겨 가고 있습니다. 금리 factor 가 이틀째 기준을 밑돌아 공식 레짐은 Policy Driven 에서 해제됐고, 위험 회피 신호는 기준 직전에서 멈춰 지금은 Neutral / Mixed 입니다. 장 마감 뒤 엔비디아가 예상을 웃도는 실적과 가이던스를 내놓아 반도체가 시간외에서 반등했는데, 이 호재가 신용·변동성 스트레스를 되돌릴 만큼 정규장으로 이어지는지가 다음 판단의 핵심입니다.",
+ "labels": {
+  "regime": "Neutral / Mixed",
+  "equity": "Weak",
+  "macro": "Headwind",
+  "risk": "High"
+ },
+ "state_summary": "정책 주도 해제, 위험 회피 신호는 기준 직전",
+ "regime_read": "금리 factor 가 이틀째 기준을 밑돌아 공식 레짐을 Policy Driven 에서 해제했고, 새 후보가 없어 Neutral / Mixed 입니다. 유동성·위험선호 신호가 기준 직전이라 미국·한국 주식 약세가 이어지면 위험 회피 쪽으로 기울 수 있습니다.",
+ "key_drivers": [
+  {
+   "name": "신용 스프레드 · 변동성",
+   "direction": "NEGATIVE",
+   "strength": "STRONG",
+   "read": "하이일드 스프레드가 벌어지고 주식·채권 변동성이 함께 올라 금융여건 악화가 주식 약세에 겹쳤다"
+  },
+  {
+   "name": "한국 외국인 이탈",
+   "direction": "NEGATIVE",
+   "strength": "STRONG",
+   "read": "외국인 이탈이 이어져 코스피가 5000선 아래로 내려가고 대표 종목 대부분이 하락했다"
+  },
+  {
+   "name": "실질금리 · 달러",
+   "direction": "NEGATIVE",
+   "strength": "MODERATE",
+   "read": "금리는 하루 되돌려졌지만 주간 실질금리 상승과 달러 강세 부담은 그대로다"
+  },
+  {
+   "name": "엔비디아 실적",
+   "direction": "POSITIVE",
+   "strength": "MODERATE",
+   "read": "장 마감 뒤 실적과 가이던스가 예상을 웃돌아 AI 반도체가 시간외에서 반등했다"
+  },
+  {
+   "name": "물가 기대 하락",
+   "direction": "MIXED",
+   "strength": "MODERATE",
+   "read": "기대인플레이션과 유가가 함께 내려 물가 부담은 줄었지만 성장 우려 성격이 섞여 있다"
+  }
+ ],
+ "equity_view": {
+  "global_read": "미국은 금융·소형주가 약세를 이끌고 반도체만 제자리를 지켰으며, 한국은 대표 종목의 상승 참여율이 6%에 그칠 만큼 전 업종이 함께 밀렸습니다. 두 시장 모두 주도 업종 없이 지수가 내려가는 베타 약세라, 주식시장 전체는 신용·변동성 스트레스에 눌린 방어 국면으로 읽힙니다.",
+  "us": {
+   "headline": "금융·소형주가 이끈 약세, 반도체는 제자리",
+   "why": "S&P 500 과 소형주가 함께 밀려 위험선호를 확인하는 신호가 없습니다.",
+   "leadership": [
+    "Energy",
+    "Semiconductor"
+   ]
+  },
+  "korea": {
+   "headline": "전 업종 동반 하락, 5000선 붕괴",
+   "why": "코스피·코스닥이 함께 내리고 대표 종목 상승 참여율이 6%에 그칩니다.",
+   "leadership": []
+  },
+  "divergence_label": "US > KOREA",
+  "divergence": "미국은 반도체가 버티고 약세가 금융·소형주에 몰렸지만, 한국은 거의 모든 대표 종목이 내려 약세의 폭과 범위가 더 큽니다."
+ },
+ "rates_view": {
+  "headline": "금리는 되돌려졌지만 이유가 성장 우려, 주식엔 엇갈림",
+  "summary": "기대인플레이션과 유가가 함께 내려 금리가 낮아졌고 실질금리는 높은 채로 남아, 할인율 부담은 풀리지 않았습니다.",
+  "equity_impact": "MIXED",
+  "equity_impact_read": "금리 하락이 긴축 완화가 아니라 위험 회피 성격이라 성장주에 뚜렷한 호재가 되지 못하고, 금융주에는 오히려 부담입니다."
+ },
+ "cross_asset_view": {
+  "headline": "신용 스프레드까지 벌어졌다, 약세의 성격이 바뀐다",
+  "summary": "금리 부담에 신용 확대와 변동성 급등이 더해지고 유가·금까지 함께 내려 디레버리징 색이 짙어졌습니다.",
+  "support": [],
+  "risk": [
+   "Credit",
+   "Volatility",
+   "USD"
+  ],
+  "read": "지난주까지 버팀목이던 신용과 변동성이 스트레스 쪽으로 돌아서, 할인율 조정이 위험 회피로 번지는 초기 신호로 읽힙니다."
+ },
+ "ai_semiconductor_view": {
+  "headline": "엔비디아 호실적, 가격과 업황 확인은 아직",
+  "summary": "뉴스는 호실적으로 돌았지만 정규장까지 AI 가격은 약하고 모든 그룹이 Nasdaq 을 밑돌며, 반도체는 HBM·수출만 견조하고 주가는 약합니다.",
+  "ai": {
+   "headline": "뉴스가 가격을 앞선 약세 국면",
+   "why": "뉴스 톤은 좋아졌지만 가격과 참여 종목이 확인하지 못했습니다.",
+   "leadership": []
+  },
+  "semiconductor": {
+   "headline": "HBM·수출은 견조, 현물과 주가는 약세"
+  },
+  "confirmation": {
+   "status": "DIVERGING",
+   "relation": "FUNDAMENTALS > PRICE",
+   "read": "HBM·수출 증거와 엔비디아 실적은 좋지만 AI·메모리 주가는 약하고, D램 현물 약세와 수요 예상치 하향이 주가 쪽을 거듭니다."
+  },
+  "equity_implication": {
+   "stance": "CAUTIOUS",
+   "read": "호실적이 정규장 가격과 참여 확산으로 확인되기 전에는, 신용·변동성 부담 속 AI·반도체 반등의 신뢰도를 낮게 봅니다."
+  }
+ },
+ "leadership_view": "1주 상대강도 리더는 원유·에너지·유틸리티와 반도체로 엇갈리고, 하루 기준으로는 금융과 유틸리티가 크게 밀려 방어주도 버팀목이 되지 못했다",
+ "style_view": [
+  {
+   "style": "Growth",
+   "view": "MIXED",
+   "read": "Nasdaq 낙폭은 작고 반도체는 버텼지만 실질금리 부담이 남아 있다"
+  },
+  {
+   "style": "High Beta",
+   "view": "NEGATIVE",
+   "read": "소형주가 지수보다 더 밀리는 흐름이 이어졌다"
+  },
+  {
+   "style": "Value",
+   "view": "NEGATIVE",
+   "read": "금융주가 하루에 크게 밀렸다"
+  },
+  {
+   "style": "Defensive",
+   "view": "NEGATIVE",
+   "read": "유틸리티가 크게 내려 방어주도 약했다"
+  }
+ ],
+ "sector_view": {
+  "positive": [
+   "Energy"
+  ],
+  "watch": [
+   "Semiconductor",
+   "Power / Data Center"
+  ],
+  "negative": [
+   "Financials",
+   "Memory"
+  ],
+  "read": "에너지가 1주 상대강도 선두를 지키고, 금융은 하루에 크게 밀렸으며 AI 안에서는 메모리와 소프트웨어가 가장 약하다"
+ },
+ "top_risks": [
+  {
+   "risk": "신용 · 유동성 스트레스",
+   "level": "HIGH",
+   "read": "하이일드 스프레드 확대가 이어지면 주식 조정이 유동성 경색 우려로 커진다"
+  },
+  {
+   "risk": "한국 증시 급락",
+   "level": "HIGH",
+   "read": "외국인 이탈로 코스피가 5000선 아래로 내려갔고 대표 종목 대부분이 하락했다"
+  },
+  {
+   "risk": "연준 긴축 재평가",
+   "level": "ELEVATED",
+   "read": "연은 총재가 추가 인상이 여러 차례 필요할 수 있다고 말해 정책 경로 부담이 남아 있다"
+  },
+  {
+   "risk": "AI 신용 · 규제",
+   "level": "ELEVATED",
+   "read": "AI 데이터센터 대출 부실 처분 보도가 나와 호실적의 효과를 깎을 수 있다"
+  },
+  {
+   "risk": "메모리 수요",
+   "level": "MODERATE",
+   "read": "D램 현물 약세 속에 수요·가격 예상치가 낮아졌다"
+  }
+ ],
+ "catalysts": [
+  {
+   "date": "2026-11-25",
+   "event": "US PCE (10월) · GDP 3분기 잠정치",
+   "why": "연준이 보는 물가가 12월 회의 전 정책 경로를 정한다",
+   "sensitivity": "HIGH"
+  },
+  {
+   "date": "2026-11-26",
+   "event": "BOK 금통위",
+   "why": "증시 급락과 외국인 이탈 속 한국 금리 방향",
+   "sensitivity": "MEDIUM"
+  },
+  {
+   "date": "2026-12-09",
+   "event": "FOMC",
+   "why": "점도표로 추가 긴축 여부가 드러난다",
+   "sensitivity": "HIGH"
+  }
+ ],
+ "what_matters_next": [
+  {
+   "title": "엔비디아 호실적의 정규장 반영",
+   "condition": "시간외 반등이 정규장에서 AI·반도체 전반의 상승과 참여 확산으로 이어지는지",
+   "implication": "이어지면 약세가 매크로 요인에 한정됐다는 근거가 된다"
+  },
+  {
+   "title": "신용 스프레드 방향",
+   "condition": "하이일드 스프레드가 더 벌어지는지 다시 좁혀지는지",
+   "implication": "더 벌어지면 유동성 스트레스 쪽으로 레짐이 기운다"
+  },
+  {
+   "title": "위험 회피 신호의 기준 통과",
+   "condition": "미국·한국 주식이 함께 더 밀리고 변동성이 높게 유지되는지",
+   "implication": "기준을 넘으면 위험 회피 진입 확인이 다시 시작된다"
+  },
+  {
+   "title": "한국 외국인 흐름",
+   "condition": "외국인 이탈이 멈추고 코스피가 5000선을 되찾는지",
+   "implication": "되찾으면 한국 약세가 미국보다 과했다는 신호다"
+  }
+ ],
+ "portfolio_implication": {
+  "equity_stance": "Underweight bias, 신용·변동성 안정과 호실적의 가격 확인을 기다림",
+  "style": "Growth 는 Neutral, High Beta · Value 는 Underweight bias",
+  "sector": "에너지 Watch, 반도체 Watch, 금융·메모리 Underweight bias",
+  "risk_control": "한국 주식 비중과 신용 민감 자산 노출 관리",
+  "hedge_watch": "하이일드 스프레드 · VIX · 달러"
+ }
+}

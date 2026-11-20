@@ -1,0 +1,64 @@
+{
+ "date": "2026-11-10",
+ "snapshot_date": "2026-11-11",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "factors": {
+   "Growth": -0.218,
+   "Inflation": -0.98,
+   "Rates": 0.519,
+   "USD": -0.991,
+   "Liquidity": 0.371,
+   "RiskAppetite": 0.138,
+   "Credit": -1.411,
+   "Volatility": -0.581,
+   "China": 0.834
+  },
+  "equity_broad": {
+   "us": -0.055,
+   "kr": 0.258
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-11",
+  "date": "2026-11-10",
+  "official": "neutral",
+  "previous_official": "liquidity_stress",
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "support": "BROKEN",
+  "support_reasons": [
+   "핵심 조건: Liquidity ≤ -1.0 미충족(지금 +0.37) · RiskAppetite ≤ -0.8 미충족(지금 +0.14)",
+   "주식 확인(Liquidity Stress / Risk-Off 기준): US PARTIAL · KOREA CONTRADICTED · GLOBAL PARTIAL",
+   "오늘 후보는 Neutral / Mixed"
+  ],
+  "equity": {
+   "us": "PARTIAL",
+   "kr": "CONTRADICTED",
+   "global": "PARTIAL"
+  },
+  "exit_streak": 2,
+  "exit_required": 2,
+  "exit_confirmed": true,
+  "exited_regime": "liquidity_stress",
+  "entry_regime": null,
+  "entry_streak": 0,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": true,
+  "change_kind": "exit",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "월요일 위험선호가 크게 되살아난 데 이어 화요일 10월 소비자물가가 예상보다 높게 나와 미국 주식은 소폭 밀렸지만, 하이일드 스프레드는 더 좁혀지고 VIX 도 내려 신용 · 변동성 스트레스는 다시 커지지 않았습니다. 한국도 코스피 · 코스닥이 4%대 급등하며 반등해 유동성 경색 판단의 근거가 이틀 연속 지지되지 않았고, 그래서 Liquidity Stress 를 공식 레짐에서 해제했습니다. 물가 부담으로 새 방향은 아직 정해지지 않아 공식 레짐은 Neutral / Mixed 입니다.",
+  "source": "session",
+  "generated_at": "2026-11-12T01:53:07.481233+00:00",
+  "reason": "API 호출 실패(LLM 비활성 — 키 없음 또는 설정 off) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-12T01:53:07.481280+00:00"
+}

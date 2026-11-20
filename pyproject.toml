@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marketpulse"
+version = "0.1.0"
+description = "Market Pulse AI - 뉴스 내러티브와 마켓데이터를 결합한 시장 인텔리전스 시스템"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+include = ["marketpulse*"]
+
+[tool.setuptools.package-data]
+marketpulse = ["config/*.yaml", "data/mock/*.json", "storage/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q --strict-markers"
+# 주의: upbit_trading/test_sql_load.py 는 pytest 테스트가 아니라 최상위 스크립트다.
+# import 되는 순간 SQL Server 에 접속해 CREATE DATABASE 를 실행하고 라이브 Upbit API 를
+# 호출한다. testpaths 를 tests/ 로 한정하고 아래에서 한 번 더 명시적으로 제외한다.
+norecursedirs = ["upbit_trading", ".venv", "frontend", "node_modules", ".git"]

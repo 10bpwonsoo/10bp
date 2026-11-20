@@ -1,0 +1,395 @@
+{
+ "snapshot_date": "2026-11-18",
+ "market_date": "2026-11-17",
+ "cutoff": "2026-11-18T07:30:00+09:00",
+ "transition": {
+  "kind": "exit",
+  "from": "Policy Driven",
+  "to": "Neutral / Mixed",
+  "exit_streak": 2,
+  "exit_required": 2,
+  "entry_streak": 0,
+  "entry_required": 2,
+  "support_today": "WEAKENING",
+  "support_reasons": [
+   "핵심 조건: |Rates| ≥ +1.2 미충족(지금 +0.80)",
+   "주식 확인: 그날 주식 판독이 없어 핵심 조건으로만 본다",
+   "오늘 후보는 Neutral / Mixed"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-11",
+   "candidate": "Risk-On",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-12",
+   "candidate": "Policy Driven",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-13",
+   "candidate": "Policy Driven",
+   "official": "Policy Driven",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-16",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Policy Driven",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-17",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "WEAKENING"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": -1.5,
+   "today": -0.7
+  },
+  "Liquidity": {
+   "prev": -0.36,
+   "today": -0.93
+  },
+  "Rates": {
+   "prev": 0.51,
+   "today": -0.8
+  },
+  "Inflation": {
+   "prev": -0.25,
+   "today": -1.25
+  },
+  "Credit": {
+   "prev": 0.33,
+   "today": 1.49
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "up",
+   "strength": 0.93,
+   "why": "인플레이션 기대보다 real yield / term-premium 성격의 금리 상승에 가깝다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": 1.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": 1.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": 2.3,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -1.9,
+     "display": "-4.0bp"
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "up",
+   "strength": 0.82,
+   "why": "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 1.5,
+     "display": "+11.0bp"
+    },
+    {
+     "label": "VIX",
+     "z": 1.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": -1.6,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "up",
+   "strength": 0.84,
+   "why": "주식·채권 변동성이 같이 오른다 — 포지션 축소 압력이 자산군을 넘어 번진다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": 1.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": 1.6,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": 1.6,
+     "display": "+2.73"
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.63,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -1.6,
+     "display": "(5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -0.8,
+     "display": "(5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": -2.2,
+     "display": "-1.50% (5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": -0.7,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "GOLD / REAL RATES",
+   "direction": "up",
+   "strength": 1.0,
+   "why": "실질금리 상승이 금을 누른다 — 안전자산이 아니라 디레버리징 매도.",
+   "evidence": [
+    {
+     "label": "금",
+     "z": -2.0,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": 2.3,
+     "display": "(5일)"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "Euro Stoxx 50",
+   "z": -2.5,
+   "change": "-2.15%"
+  },
+  {
+   "label": "Financials",
+   "z": -1.9,
+   "change": "-1.91%"
+  },
+  {
+   "label": "US 10Y Breakeven",
+   "z": -1.9,
+   "change": "-4.0bp"
+  },
+  {
+   "label": "Utilities",
+   "z": -1.8,
+   "change": "-1.59%"
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -1.6,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": 1.9,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.5,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": 1.9,
+   "arrow": "↑"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 2.5,
+   "arrow": "↑↑"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -1.2,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -2.0,
+   "arrow": "↓↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "CONTRADICTED",
+   "score": -0.44
+  },
+  "kr": {
+   "status": "CONTRADICTED",
+   "score": -0.37
+  }
+ },
+ "selection_today": {
+  "selected": "NEUTRAL",
+  "commentary": "화요일 미국 주식은 금융주와 소형주 중심으로 더 밀리고 변동성이 올랐지만 반도체는 버텼고, 한국은 코스피가 5000선 아래로 내려가며 약세가 넓게 번졌다. 전날 미국채 금리는 기대인플레이션 하락과 함께 되돌려졌고 하이일드 스프레드는 벌어졌다. 위험 회피와 유동성 스트레스 신호가 기준 직전까지 왔지만 어느 것도 넘지 못해, 지금은 Neutral / Mixed 로 본다.",
+  "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 위험선호와 유동성 factor 가 기준 바로 앞까지 내려와 있지만, 금리는 되돌려지고 반도체는 버텨 하나의 환경으로 묶이지 않는다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "[속보] 엔비디아, 4분기 매출 전망 예상 상회…시간외 4% 급등",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": 35,
+   "summary": "엔비디아 4분기 매출 가이던스가 예상을 웃돌아 시간외 4% 급등(속보, 제목)."
+  },
+  {
+   "title": "[속보] 엔비디아, 3분기 컨센 상회...시간외에서 3% 상승",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": 30,
+   "summary": "엔비디아 3분기 실적이 컨센서스를 웃돌아 시간외 3% 상승(속보, 제목)."
+  },
+  {
+   "title": "St. Louis Fed's Musalem says four more rate hikes may be needed in coming months",
+   "themes": [
+    "rates",
+    "inflation"
+   ],
+   "sentiment": -30,
+   "summary": "세인트루이스 연은 무살렘 총재 — 앞으로 몇 달 안에 금리 인상이 네 차례 더 필요할 수 있다고 발언(CNBC)."
+  },
+  {
+   "title": "[마감시황] 코스피 2.59% 하락해 5000선 붕괴…반도체 이어 금융·조선주도 약세",
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "sentiment": -35,
+   "summary": "코스피 2.59% 하락해 5000선 붕괴 — 반도체에 이어 금융·조선주도 약세(제목)."
+  },
+  {
+   "title": "[속보] '엔비디아 땡큐'…AI 반도체주, 시간외 거래서 상승폭 키워",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": 30,
+   "summary": "엔비디아 실적 뒤 AI 반도체주가 시간외 거래에서 상승폭 확대(속보, 제목)."
+  },
+  {
+   "title": "[속보] ‘5000피’ 붕괴…코스피, 9개월여 만에 최저 수준",
+   "themes": [
+    "korea_governance"
+   ],
+   "sentiment": -30,
+   "summary": "코스피가 4거래일 연속 내려 5000선을 내주고 마감 — 외국인이 홀로 팔자(요약)."
+  },
+  {
+   "title": "트렌드포스, D램 수요·가격 전망치 하향…증권가 \"업황 하강은 아냐\"",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": -20,
+   "summary": "트렌드포스가 D램 수요·가격 예상치를 낮춤 — 증권가는 업황 하강은 아니라는 해석(제목)."
+  },
+  {
+   "title": "\"실적은 좋은데\"…美 SEC, 엔비디아 투자자 공시 오도 여부 조사",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -20,
+   "summary": "미 SEC 가 엔비디아의 투자자 공시 오도 여부를 조사(제목)."
+  }
+ ]
+}
