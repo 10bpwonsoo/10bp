@@ -1,13 +1,13 @@
-# Daily Market Pulse Archive — 평일 아침 그날 대시보드 화면 전체를 marketpulse/data/archive/YYYY/MM/YYYY-MM-DD.json 으로 저장한다.
-# 저장 시각은 config/archive.yaml 의 archive_time(07:30 Asia/Seoul). cron 은 UTC — 07:30 KST = 전날 22:30 UTC 라 UTC 일~목 = KST 월~금.
-# 주말은 두 곳에서 막는다: cron(일~목 UTC) + 앱 로직(capture --if-due 가 KST 요일을 다시 확인, 토·일이면 SKIPPED).
+# Daily Market Pulse Archive — 저장 요일 아침 그날 대시보드 화면 전체를 marketpulse/data/archive/YYYY/MM/YYYY-MM-DD.json 으로 저장한다.
+# 저장 시각은 config/archive.yaml 의 archive_time(07:30 Asia/Seoul). cron 은 UTC — 07:30 KST = 전날 22:30 UTC 라 UTC 월~금 = KST 화~토(2026-11-21~).
+# 저장 요일은 두 곳에서 막는다: cron(월~금 UTC) + 앱 로직(capture --if-due 가 KST 요일을 snapshot_weekdays 로 다시 확인, 아니면 SKIPPED).
 # 같은 날짜 저장본이 이미 있으면 아무것도 하지 않는다(no-op · 덮어쓰지 않음). 시각을 바꾸면 이 cron 도 같이 바꾼다.
 # GitHub 의 schedule 은 기본 브랜치에서만 돈다.
 name: daily-market-pulse-archive
 
 on:
   schedule:
-    - cron: "30 22 * * 0-4"
+    - cron: "30 22 * * 1-5"
   workflow_dispatch:
 
 permissions:

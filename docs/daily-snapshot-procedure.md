@@ -1,6 +1,8 @@
-# Daily Snapshot 매일 절차 (평일 07:30 KST 기준)
+# Daily Snapshot 매일 절차 (화~토 07:30 KST 기준)
 
-한국 평일 아침마다 그날 07:30 KST cutoff 의 대시보드 전체를 만들어 저장(archive · history 행)하고 정적 배포본을 갱신한다.
+한국 **화~토** 아침마다(2026-11-21~, 그 전은 월~금) 그날 07:30 KST cutoff 의 대시보드 전체를 만들어 저장(archive · history 행)하고 정적 배포본을 갱신한다.
+화~토인 이유: 한국 화~토 07:30 이 미국 월~금 종가 직후다. 월요일 아침에는 새 미국 종가가 없다. 저장 요일은 `config/archive.yaml` 의 `snapshot_weekdays` 가 정한다
+(화면 달력 `ArchiveControl.tsx` 의 `SCHEDULE` · `.github/workflows/daily-archive.yml` 의 cron 과 같은 규칙). 토요일 스냅샷의 history 행 날짜는 금요일(미국 시장 날짜)이다.
 도구는 `tools/daily_snapshot/`, 저장소 루트에서 실행한다. 이 문서의 규칙은 지금까지(10/12~11/10) 손으로 한 절차를 그대로 옮긴 것이다.
 
 ## 지킬 것
@@ -15,7 +17,7 @@
 ## 순서 (D = 오늘 KST 날짜, P = 작업 폴더 — 세션 scratchpad 의 pit/)
 
 1. 브랜치 `claude/market-pulse-ai-design-r7pmsm` 최신으로. `.venv` 없으면 `python3 -m venv .venv && .venv/bin/pip install -q -e .`, `frontend/node_modules` 없으면 `cd frontend && npm ci`.
-   `python -m marketpulse.archive plan` 으로 D 가 MISSING 인지 확인(주말 · 이미 저장된 날이면 하지 않는다).
+   `python -m marketpulse.archive plan` 으로 D 가 MISSING 인지 확인(일 · 월 · 이미 저장된 날이면 하지 않는다).
 2. 메모리 가격: `python -m marketpulse.scripts.collect_memory_prices --only semi` · `python -m marketpulse.scripts.collect_memory_history daily-express --latest` → 바뀐 CSV 를 커밋.
 3. 입력 수집: `python -m marketpulse.archive fetch-inputs P/inputs_D`. 2026-11-20 부터 수집 전용 클라이언트(`PacedHttpClient`)를 쓴다 —
    세 묶음(기본 · 종목 · AI 바스켓)에 겹치는 심볼은 한 번만 받고, 요청 사이에 처음부터 간격을 두고, 429 면 쉬었다가 같은 요청을 이어 받는다(쉬는 시간 합 20분까지).
@@ -24,7 +26,7 @@
    끝내 못 받은 계열은 결측으로 둔다.
    **전날 수집분은 합치지 않는다** — 수집 시점의 장중 봉이 섞인다.
 4. `tools/daily_snapshot/scan_units.py P/inputs_D` — 단위 불연속(분할 조정 혼재 등)이 있으면 그 계열을 빼고 이유를 캡처 폴더 `input_merge_report.json` 에 남긴다. VIX 처럼 실제로 큰 움직임은 기사로 확인하고 둔다.
-5. 뉴스: 전날 합친 RSS 와 오늘 수집분을 id 로 합쳐 `P/inputs_D/news_rss.json` 에 둔다. 창(전 영업일 07:30 ~ D 07:30 KST, 주말 포함)의 기사를 읽고
+5. 뉴스: 전날 합친 RSS 와 오늘 수집분을 id 로 합쳐 `P/inputs_D/news_rss.json` 에 둔다. 창(직전 스냅샷 07:30 ~ D 07:30 KST — 화요일은 토요일 07:30 부터라 일 · 월 기사 포함)의 기사를 읽고
    시장 관련 기사만 `marketpulse/data/captures/D-backfill/manual_tags.json` 에 수기 태깅(themes 는 config/themes.yaml 의 id, theme_direction 은 up/down 만 — 0 은 테마에서 뺀다). 커밋.
 6. `python tools/daily_snapshot/build_day.py D P/inputs_D context` → 캡처 폴더의 `rates_read_context.json` · `semiconductor_read_context.json` · `regime_select_context.json`(물가 해석은 rates 컨텍스트의 inflation_map).
    각 컨텍스트만 읽고 세션본을 쓴 뒤 검증한다:

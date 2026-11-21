@@ -30,13 +30,24 @@ function parseYmd(s: string): Date | null {
   return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d ? dt : null;
 }
 
-/** Daily Snapshot 은 월~금만 — 토·일은 고를 수 없다. */
-export function isWeekend(s: string): boolean {
+/**
+ * 저장 요일(getUTCDay: 0=일 … 6=토). from 이 그 날짜 이하인 가장 늦은 줄을 쓴다 — backend config/archive.yaml 의 snapshot_weekdays 와 같은 규칙이다.
+ * 2026-11-21 부터 화~토(한국 화~토 아침 = 미국 월~금 종가 직후), 그 전은 월~금.
+ */
+export const SCHEDULE: { from: string; days: number[] }[] = [
+  { from: "0000-00-00", days: [1, 2, 3, 4, 5] },
+  { from: "2026-11-21", days: [2, 3, 4, 5, 6] },
+];
+
+/** Daily Snapshot 을 만들지 않는 요일인가 — 2026-11-21 부터 일·월, 그 전은 토·일. */
+export function isOffDay(s: string): boolean {
   const d = parseYmd(s);
-  return d ? d.getUTCDay() === 0 || d.getUTCDay() === 6 : false;
+  if (!d) return false;
+  const rule = [...SCHEDULE].reverse().find((r) => r.from <= s) ?? SCHEDULE[0]!;
+  return !rule.days.includes(d.getUTCDay());
 }
 
-/** ◀ ▶ 는 달력의 전날·다음날이 아니라 '이전·다음 저장 snapshot' 으로 움직인다(토·일은 저장이 없으니 저절로 건너뛴다). */
+/** ◀ ▶ 는 달력의 전날·다음날이 아니라 '이전·다음 저장 snapshot' 으로 움직인다(저장이 없는 요일은 저절로 건너뛴다). */
 export function prevSaved(dates: string[], cur: string | null): string | undefined {
   const asc = [...dates].sort();
   if (!cur) return asc[asc.length - 1];
@@ -51,9 +62,9 @@ export function nextSaved(dates: string[], cur: string | null): string | undefin
 export type DateCheck =
   | { kind: "ok"; date: string }
   | { kind: "invalid"; text: string }
-  | { kind: "weekend" | "missing"; date: string; dayKo: string; prev?: string; next?: string };
+  | { kind: "offday" | "missing"; date: string; dayKo: string; prev?: string; next?: string };
 
-/** 날짜 검색 — 형식 · 주말 · 저장 여부. 없는 날짜는 지금 값으로 대신하지 않고 앞뒤 저장일을 알려 준다. */
+/** 날짜 검색 — 형식 · 저장 요일 · 저장 여부. 없는 날짜는 지금 값으로 대신하지 않고 앞뒤 저장일을 알려 준다. */
 export function checkDate(text: string, dates: string[]): DateCheck {
   const s = text.trim();
   const d = parseYmd(s);
@@ -61,7 +72,7 @@ export function checkDate(text: string, dates: string[]): DateCheck {
   const dayKo = DAY_KO[d.getUTCDay()]!;
   const near = { prev: prevSaved(dates, s), next: nextSaved(dates, s) };
   if (dates.includes(s)) return { kind: "ok", date: s };
-  if (isWeekend(s)) return { kind: "weekend", date: s, dayKo, ...near };
+  if (isOffDay(s)) return { kind: "offday", date: s, dayKo, ...near };
   return { kind: "missing", date: s, dayKo, ...near };
 }
 
@@ -76,7 +87,7 @@ interface Props {
 
 /**
  * 상단 바 날짜 탐색 — 데스크톱 [◀] [2026-10-21 ▾] [▶] [LIVE], 좁은 화면 [2026-10-21 ▾] [LIVE].
- * 펼치면 날짜 검색(YYYY-MM-DD) · 달력(저장된 평일만 선택, 토·일 비활성) · 저장 목록.
+ * 펼치면 날짜 검색(YYYY-MM-DD) · 달력(저장된 날짜만 선택, 저장 요일이 아닌 날은 비활성) · 저장 목록.
  */
 export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Props) {
   const [open, setOpen] = useState(false);
@@ -145,7 +156,7 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
           <div className="arc-scrim" onClick={() => setOpen(false)} aria-hidden="true" />
           <div className={`arc-pop${side === "left" ? " arc-pop-l" : ""}`} role="dialog" aria-label="날짜별 저장 화면" data-testid="archive-pop" data-side={side}>
             <div className="arc-pop-h">
-              <span className="ai-k mono">Daily Snapshot · 월~금 07:30 KST</span>
+              <span className="ai-k mono">Daily Snapshot · 화~토 07:30 KST</span>
               <span className="arc-pop-note">그날 저장된 데이터 그대로 · 다시 계산하지 않음</span>
             </div>
             <form className="arc-search" role="search" onSubmit={(e) => { e.preventDefault(); void go(query); }}>
@@ -159,7 +170,7 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
             </button>
             <div className="arc-list" role="list">
               {rows === null ? <div className="arc-empty">저장 목록을 불러오는 중…</div>
-                : rows.length === 0 ? <div className="arc-empty">저장된 화면이 아직 없습니다. 평일 07:30 KST 에 저장됩니다.</div>
+                : rows.length === 0 ? <div className="arc-empty">저장된 화면이 아직 없습니다. 화~토 07:30 KST 에 저장됩니다.</div>
                 : rows.map((r) => (
                   <button key={r.date} type="button" role="listitem" className={`arc-row${r.date === cur ? " cur" : ""}`} onClick={() => go(r.date)} disabled={busy !== null} data-testid="archive-row" data-date={r.date}>
                     <span className="mono arc-row-d">{r.date}</span>
@@ -177,13 +188,13 @@ export function ArchiveControl({ archive, rows, liveDate, onSelect, onLive }: Pr
 
 function DateMessage({ msg, onPick }: { msg: DateCheck | { kind: "error"; text: string }; onPick: (d: string) => void }) {
   if (msg.kind === "ok") return null;
-  const near = msg.kind === "weekend" || msg.kind === "missing" ? [msg.prev && ["이전", msg.prev], msg.next && ["다음", msg.next]].filter(Boolean) as [string, string][] : [];
+  const near = msg.kind === "offday" || msg.kind === "missing" ? [msg.prev && ["이전", msg.prev], msg.next && ["다음", msg.next]].filter(Boolean) as [string, string][] : [];
   return (
     <div className="arc-missing" role="status" data-testid="archive-missing">
       <b>
         {msg.kind === "invalid" ? `"${msg.text}" — YYYY-MM-DD 형식으로 입력하세요.`
           : msg.kind === "error" ? msg.text
-          : msg.kind === "weekend" ? `${msg.date}은 ${msg.dayKo}로 Daily Snapshot 생성 대상이 아닙니다.`
+          : msg.kind === "offday" ? `${msg.date}은 ${msg.dayKo}로 Daily Snapshot 생성 대상이 아닙니다.`
           : `${msg.date} 저장 화면이 없습니다.`}
       </b>
       {near.length ? (
@@ -195,7 +206,7 @@ function DateMessage({ msg, onPick }: { msg: DateCheck | { kind: "error"; text: 
   );
 }
 
-/** 달력 — 저장된 평일만 고를 수 있다. 토·일은 비활성, 저장이 없는 평일은 비활성 + 빈 표시. */
+/** 달력 — 저장된 날짜만 고를 수 있다. 저장 요일이 아닌 날(11/21 부터 일·월, 그 전은 토·일)은 흐리게, 저장이 없는 날은 비활성 + 빈 표시. */
 function Calendar({ month, setMonth, dates, status, selected, live, busy, onPick }: {
   month: string; setMonth: (m: string) => void; dates: string[]; status: Record<string, string>; selected: string | null; live: string | null; busy: string | null; onPick: (d: string) => void;
 }) {
@@ -214,21 +225,21 @@ function Calendar({ month, setMonth, dates, status, selected, live, busy, onPick
         <button type="button" className="arc-nav-b mono" onClick={() => shift(1)} aria-label="다음 달">›</button>
       </div>
       <div className="arc-cal-g" role="grid">
-        {["월", "화", "수", "목", "금", "토", "일"].map((d, i) => <span key={d} className={`arc-cal-w${i >= 5 ? " we" : ""}`}>{d}</span>)}
+        {["월", "화", "수", "목", "금", "토", "일"].map((d, i) => <span key={d} className={`arc-cal-w${i === 6 ? " we" : ""}`}>{d}</span>)}
         {cells.map((c, i) => {
           if (!c) return <span key={`b${i}`} />;
-          const we = isWeekend(c);
+          const we = isOffDay(c);
           const has = set.has(c);
           const cls = ["arc-cal-d", we ? "we" : "", has ? "has" : "", c === selected ? "sel" : "", c === live ? "live" : "", status[c] === "PARTIAL" ? "partial" : ""].filter(Boolean).join(" ");
           return (
-            <button key={c} type="button" className={cls} disabled={we || !has || busy !== null} onClick={() => onPick(c)} data-testid="archive-day" data-date={c}
-              title={we ? "토·일 — Daily Snapshot 생성 대상 아님" : has ? `${c} 저장 화면${status[c] === "PARTIAL" ? " · PARTIAL" : ""}` : `${c} 저장 화면 없음`}>
+            <button key={c} type="button" className={cls} disabled={!has || busy !== null} onClick={() => onPick(c)} data-testid="archive-day" data-date={c}
+              title={has ? `${c} 저장 화면${status[c] === "PARTIAL" ? " · PARTIAL" : ""}` : we ? "Daily Snapshot 생성 대상 아님 (11/21 부터 일·월, 그 전은 토·일)" : `${c} 저장 화면 없음`}>
               {Number(c.slice(8))}
             </button>
           );
         })}
       </div>
-      <div className="arc-cal-k mono"><span className="arc-cal-dot has" />저장 <span className="arc-cal-dot partial" />PARTIAL <span className="arc-cal-dot none" />없음 · 토·일 제외</div>
+      <div className="arc-cal-k mono"><span className="arc-cal-dot has" />저장 <span className="arc-cal-dot partial" />PARTIAL <span className="arc-cal-dot none" />없음 · 화~토 저장(11/21 전은 월~금)</div>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import { resolveArchived, setActiveArchive, type DashboardArchive } from "../api/archive";
-import { checkDate, isWeekend, nextSaved, prevSaved } from "../components/ArchiveControl";
+import { checkDate, isOffDay, nextSaved, prevSaved } from "../components/ArchiveControl";
 import snapshotFx from "../__fixtures__/snapshot.json";
 import cockpit from "../__fixtures__/cockpit.json";
 import stateHistory from "../__fixtures__/state_history.json";
@@ -98,12 +98,12 @@ afterEach(() => {
 
 describe("date helpers", () => {
   it("E/F: weekends are not snapshot days and prev/next skip them", () => {
-    expect(isWeekend("2026-10-17")).toBe(true);
-    expect(isWeekend("2026-10-18")).toBe(true);
-    expect(isWeekend("2026-10-16")).toBe(false);
+    expect(isOffDay("2026-10-17")).toBe(true);
+    expect(isOffDay("2026-10-18")).toBe(true);
+    expect(isOffDay("2026-10-16")).toBe(false);
     expect(nextSaved(SAVED, "2026-10-16")).toBe("2026-10-19");
     expect(prevSaved(SAVED, "2026-10-19")).toBe("2026-10-16");
-    expect(checkDate("2026-10-17", SAVED)).toMatchObject({ kind: "weekend", dayKo: "토요일", prev: "2026-10-16", next: "2026-10-19" });
+    expect(checkDate("2026-10-17", SAVED)).toMatchObject({ kind: "offday", dayKo: "토요일", prev: "2026-10-16", next: "2026-10-19" });
     expect(checkDate("2026-10-14", SAVED)).toMatchObject({ kind: "missing", prev: undefined, next: "2026-10-15" });
     expect(checkDate("2026/10/15", SAVED)).toMatchObject({ kind: "invalid" });
     expect(checkDate("2026-10-16", SAVED)).toEqual({ kind: "ok", date: "2026-10-16" });
@@ -111,6 +111,23 @@ describe("date helpers", () => {
 });
 
 describe("Daily archive mode", () => {
+  it("from 2026-11-21 snapshot days are Tue–Sat: Saturday is a snapshot day, Sunday and Monday are not", () => {
+    // 바뀌기 전(월~금): 월요일은 저장일, 토요일은 아니다
+    expect(isOffDay("2026-11-16")).toBe(false);
+    expect(isOffDay("2026-11-14")).toBe(true);
+    // 바뀐 뒤(화~토) — backend archive.yaml snapshot_weekdays 와 같은 규칙
+    expect(["2026-11-21", "2026-11-22", "2026-11-23", "2026-11-24", "2026-11-27", "2026-11-28", "2026-11-29", "2026-11-30"].map(isOffDay))
+      .toEqual([false, true, true, false, false, false, true, true]);
+    const saved = ["2026-11-20", "2026-11-21", "2026-11-24"];
+    expect(checkDate("2026-11-21", saved)).toEqual({ kind: "ok", date: "2026-11-21" });
+    expect(checkDate("2026-11-23", saved)).toMatchObject({ kind: "offday", dayKo: "월요일", prev: "2026-11-21", next: "2026-11-24" });
+    expect(checkDate("2026-11-28", saved)).toMatchObject({ kind: "missing", dayKo: "토요일" });
+    // ◀ ▶ 는 저장된 날짜로만 움직인다 — 금 → 토 → 화
+    expect(nextSaved(saved, "2026-11-20")).toBe("2026-11-21");
+    expect(nextSaved(saved, "2026-11-21")).toBe("2026-11-24");
+    expect(prevSaved(saved, "2026-11-24")).toBe("2026-11-21");
+  });
+
   it("A: LIVE keeps the 5s polling and shows LIVE · latest date", async () => {
     render(<App />);
     await waitFor(() => expect(network("/api/v1/snapshot")).toBeGreaterThanOrEqual(1));

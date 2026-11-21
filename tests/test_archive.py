@@ -163,6 +163,24 @@ def test_saturday_and_sunday_are_never_created(svc, tmp_path):
     assert is_snapshot_day(date(2026, 10, 16)) and not is_snapshot_day(date(2026, 10, 17)) and not is_snapshot_day(date(2026, 10, 18))
 
 
+def test_from_2026_11_21_snapshot_days_are_tuesday_to_saturday(svc, tmp_path):
+    """2026-11-21~: 화~토(한국 화~토 아침 = 미국 월~금 종가 직후). 그 전 날짜의 판정은 월~금 그대로다."""
+    from marketpulse.archive.service import skip_reason, snapshot_weekdays
+    cfg = svc.cfg
+    assert snapshot_weekdays(date(2026, 11, 20), cfg) == frozenset(range(5)) and snapshot_weekdays(date(2026, 11, 21), cfg) == frozenset({1, 2, 3, 4, 5})
+    # 바뀌기 전: 월요일은 저장일, 토요일은 아니다
+    assert is_snapshot_day(date(2026, 11, 16), cfg) and skip_reason(date(2026, 11, 14), cfg) == "WEEKEND"
+    # 바뀐 뒤: 토요일은 저장일, 일요일 · 월요일은 아니다
+    assert [is_snapshot_day(date(2026, 11, d), cfg) for d in (21, 22, 23, 24, 25, 26, 27, 28, 29, 30)] == [True, False, False, True, True, True, True, True, False, False]
+    assert skip_reason(date(2026, 11, 22), cfg) == "WEEKEND" and skip_reason(date(2026, 11, 23), cfg) == "OFFDAY"
+    assert svc.capture(now=kst(2026, 11, 21)).status == "WRITTEN"
+    assert svc.capture(now=kst(2026, 11, 23)).status == "SKIPPED_OFFDAY" and not svc.store.exists(date(2026, 11, 23))
+    assert svc.due(kst(2026, 11, 24, 8, 0)) and not svc.due(kst(2026, 11, 23, 8, 0)) and not svc.due(kst(2026, 11, 22, 8, 0))
+    rows = {r["date"].isoformat(): r["action"] for r in plan(svc, date(2026, 11, 28), start=date(2026, 11, 20))}
+    assert [d for d, a in rows.items() if a == "MISSING"] == ["2026-11-20", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27", "2026-11-28"]
+    assert rows["2026-11-21"] == "EXISTING" and rows["2026-11-22"] == "SKIPPED_WEEKEND" and rows["2026-11-23"] == "SKIPPED_OFFDAY"
+
+
 def test_plan_lists_only_missing_weekdays_and_keeps_existing(svc, tmp_path):
     for day in (12, 13, 15):
         svc.capture(now=kst(2026, 10, day))

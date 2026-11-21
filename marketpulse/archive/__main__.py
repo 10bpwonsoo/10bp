@@ -4,7 +4,7 @@
     python -m marketpulse.archive list                                  저장된 날짜 · 상태
     python -m marketpulse.archive show 2026-10-15                       한 날짜 요약
     python -m marketpulse.archive correct 2026-10-15 --file F --reason "..." --by NAME   명시적 correction (이전 파일은 superseded/)
-    python -m marketpulse.archive plan [--until 2026-10-21]             기존 저장본 · 빠진 평일 · 건너뛸 주말 표
+    python -m marketpulse.archive plan [--until 2026-10-21]             기존 저장본 · 빠진 저장일 · 건너뛸 날 표
     python -m marketpulse.archive fetch-inputs DIR                      backfill 입력(시장·종목·AI 바스켓 계열, RSS)을 지금 한 번 받는다
     python -m marketpulse.archive backfill --inputs DIR [--until D] [--date D] [--context-only]
                                                                         빠진 평일만 오래된 날짜부터 그 날짜 07:30 KST 기준으로 재구성·저장.
@@ -84,8 +84,8 @@ def main(argv: list[str] | None = None) -> int:
             problems.append("schema_version 없음")
         if doc.get("snapshot_date") != day.isoformat():
             problems.append("snapshot_date 불일치")
-        if day.weekday() >= 5:
-            problems.append("주말 저장본")
+        if skip_reason(day, svc.cfg):
+            problems.append(f"저장 요일이 아닌 날의 저장본({skip_reason(day, svc.cfg)})")
         cut = doc.get("cutoff")
         if cut:
             t = datetime.fromisoformat(str(cut))

@@ -40,18 +40,34 @@ class NotAvailableHistorically(RuntimeError):
     """그 날짜 시점의 값을 복원할 수 없다 — 지금 값으로 채우지 않고 null + NOT_AVAILABLE_HISTORICALLY 로 저장한다."""
 
 
+#: 저장 요일 기본값 — 월~금(0=월 … 6=일). config 의 snapshot_weekdays 가 날짜별로 바꾼다.
+_DEFAULT_WEEKDAYS = frozenset(range(5))
+
+
+def snapshot_weekdays(d: date, cfg: Mapping[str, Any] | None = None) -> frozenset[int]:
+    """
+    날짜 d 에 적용되는 저장 요일. config 의 snapshot_weekdays([{from: YYYY-MM-DD, days: [..]}]) 중 from 이 d 이하인 가장 늦은 줄을 쓴다.
+    2026-11-21 부터 화~토다 — 한국 화~토 아침이 미국 월~금 종가 직후라서다. 그 전 날짜는 월~금 그대로(지난 저장본의 요일 판정이 바뀌지 않는다).
+    """
+    best: tuple[str, frozenset[int]] | None = None
+    for row in (cfg or {}).get("snapshot_weekdays") or []:
+        start = str(row.get("from") or "")
+        if start <= d.isoformat() and (best is None or start > best[0]):
+            best = (start, frozenset(int(x) for x in (row.get("days") or [])))
+    return best[1] if best else _DEFAULT_WEEKDAYS
+
+
 def is_snapshot_day(d: date, cfg: Mapping[str, Any] | None = None) -> bool:
-    """Daily Snapshot 대상일 — 월~금(weekday < 5). config 의 holidays(YYYY-MM-DD 목록)는 휴장일 확장 자리다(지금은 비어 있다)."""
-    cfg = cfg or {}
-    if cfg.get("weekdays_only", True) and d.weekday() >= 5:
-        return False
-    return d.isoformat() not in set(str(x) for x in (cfg.get("holidays") or []))
+    """Daily Snapshot 대상일 — 저장 요일(snapshot_weekdays)이고 holidays(YYYY-MM-DD 목록, 휴장일 확장 자리)가 아닌 날."""
+    return skip_reason(d, cfg) is None
 
 
 def skip_reason(d: date, cfg: Mapping[str, Any] | None = None) -> str | None:
-    if (cfg or {}).get("weekdays_only", True) and d.weekday() >= 5:
-        return "WEEKEND"
-    if d.isoformat() in set(str(x) for x in ((cfg or {}).get("holidays") or [])):
+    """저장하지 않는 날이면 이유: WEEKEND(토·일) · OFFDAY(저장 요일이 아닌 평일 — 2026-11-21 부터 월요일) · HOLIDAY."""
+    cfg = cfg or {}
+    if cfg.get("weekdays_only", True) and d.weekday() not in snapshot_weekdays(d, cfg):
+        return "WEEKEND" if d.weekday() >= 5 else "OFFDAY"
+    if d.isoformat() in set(str(x) for x in (cfg.get("holidays") or [])):
         return "HOLIDAY"
     return None
 
@@ -161,7 +177,7 @@ class DailyArchiveService:
         return now.astimezone(self.tz).date()
 
     def due(self, now: datetime) -> bool:
-        """정기 저장 시각이 지났고 오늘 저장본이 아직 없으면 참. 주말은 weekdays_only 면 건너뛴다."""
+        """정기 저장 시각이 지났고 오늘 저장본이 아직 없으면 참. 저장 요일이 아니면(weekdays_only) 건너뛴다."""
         local = now.astimezone(self.tz)
         if not is_snapshot_day(local.date(), self.cfg):
             return False
@@ -287,7 +303,7 @@ class DailyArchiveService:
     def capture(self, *, now: datetime | None = None, collectors: Mapping[str, Collector] | None = None,
                 created_by: str | None = None, generated_at_basis: str = "capture_time", origin: str = "daily_archive",
                 cutoff: datetime | None = None, check_future: bool = False, extra_meta: Mapping[str, Any] | None = None) -> CaptureResult:
-        """저장. 토·일(휴장일 설정 포함)이면 만들지 않고 SKIPPED, 같은 날짜가 있으면 아무것도 모으지 않고 EXISTS — 기존 파일은 그대로."""
+        """저장. 저장 요일이 아니면(휴장일 설정 포함) 만들지 않고 SKIPPED, 같은 날짜가 있으면 아무것도 모으지 않고 EXISTS — 기존 파일은 그대로."""
         now = now or datetime.now(timezone.utc)
         d = self.archive_date(now)
         why = skip_reason(d, self.cfg)
