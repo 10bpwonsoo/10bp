@@ -895,3 +895,29 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   (US2Y · US10Y 는 기본이 FRED, 종목 묶음이 Yahoo 라 원래 다르다). 아침 07:31 에는 Yahoo 가 더 막을 수 있어 실제 시간은 11/23 스냅샷에서 확인한다.
 - 예약: Daily Snapshot 을 평일 07:47 → **07:31 KST** 로 당겼다(기준 시각 07:30 은 그대로 — 사용자 선택). 정책 · 지표 이벤트 갱신은 06:40 그대로.
 - 테스트: `tests/test_paced_http.py` 7개 추가. 전체 통과.
+
+### 2026-11-21 — 저장 요일을 월~금 → 화~토로
+- 요청: "월-금 오전 업데이트를 화-토로 바꿔줘". 한국 화~토 07:30 이 미국 월~금 종가 직후다(월요일 아침에는 새 미국 종가가 없다).
+- 규칙: `config/archive.yaml` 에 `snapshot_weekdays`(날짜별 저장 요일)를 더했다 — 2026-11-21 부터 화~토, 그 전은 월~금 그대로라 지난 저장본(월요일 포함)의 판정은 바뀌지 않는다.
+  `archive/service.py` 의 `snapshot_weekdays` · `is_snapshot_day` · `skip_reason`(WEEKEND · OFFDAY · HOLIDAY)이 이것을 읽고, plan · capture · due · validate 가 모두 같은 규칙을 쓴다.
+  history 행 날짜는 미국 시장 날짜(UTC)라 그대로다 — 토요일 스냅샷의 행은 금요일. 뉴스 창은 직전 저장본부터라 화요일 창이 토 07:30 ~ 화 07:30 이 된다.
+- 화면: 날짜 달력(`ArchiveControl.tsx` `SCHEDULE` · `isOffDay`)이 같은 규칙을 쓴다 — 11/21 부터 일 · 월이 '생성 대상 아님', 저장된 토요일은 고를 수 있다. 문구 '화~토 07:30 KST'.
+- 예약: Daily Snapshot `31 7 * * 2-6`, 정책 · 지표 이벤트 `40 6 * * 2-6`(둘 다 Asia/Seoul). `.github/workflows/daily-archive.yml` cron 도 UTC 월~금으로.
+- 테스트: 백엔드 1개 · 프론트 1개 추가(바뀌기 전 · 뒤 요일 판정, 월요일 SKIPPED_OFFDAY, 토요일 저장, ◀▶ 금 → 토 → 화). 전체 통과.
+
+### 2026-11-21 — 11/21(토) Daily Snapshot (07:30 KST 기준, 화~토 첫날)
+- 요일 변경이 토요일 오후에 들어와 아침 예약 시각이 지난 뒤였다. 금요일 미국 종가(11/20)가 history 에서 빠지지 않도록 같은 날 14:16 KST 에 수집해 07:30 cutoff 로 만들었다
+  (cutoff 뒤 봉 · 기사는 재구성 코드가 잘랐다 — cutoff 뒤 기사 12건 제외. 주말이라 그 사이 새 시장 봉은 없다).
+- 입력: 새 수집 클라이언트로 4분 21초 — 기본 47/60 · 종목 94/101 · 바스켓 52/52, 요청 152건 · 재사용 41건 · 429 0건. 빠진 계열 0(전날 대비), 재수집 없음. 단위 불연속 없음.
+  미국 주식은 11/20(금) 종가, 미국채 · TIPS · HY 스프레드는 11/19 관측. RSS 창(11/20 07:30 ~ 11/21 07:30 KST) 88건 중 26건 태깅.
+- 결과: 금요일 미국은 AI · 반도체 투매로 S&P 500 −3.7% · Nasdaq 100 −5.6% · Russell 2000 −2.8% · SOXX −10.6%, VIX 35.9. 코스피 · 코스닥 5%대 급락(코스피 4869, 두 시장 사이드카).
+  목요일 미국채는 2년물 −4bp 로 나흘째 하락, 기대인플레이션 동반 하락. HY 스프레드 1주 +32bp.
+  자격 후보 Risk-Off(RiskAppetite −2.47 / 기준 −0.8, 변동성 · 신용 통과) · Liquidity Stress(−1.05 / −1.0) → REGIME v2 **Risk-Off**(세션, CONFIRMED, 80 — 정량 89 보다 낮춤: 미국채/신용은 11/19 관측 · 한국 수급 결측).
+  공식 regime 은 Neutral / Mixed 유지 — 전날의 Growth Shock 진입(1/2)은 끊기고 Liquidity Stress / Risk-Off 진입 확인 1/2. 탭별 판정:
+  - AI: AI-SPECIFIC DE-RISKING(센티 15 EXTREME FEAR — 바스켓 하루 −8.4% · 5일 −15.9%, 오른 종목 0) · THEME VIEW "오른 종목이 없는 AI 투매, 반도체가 진앙"
+  - 금리: GROWTH-LED RATES — Inflation Repricing Not Confirmed(MARKET READ 는 flight_to_quality / consistent)
+  - 물가: COOLING BIAS(기대인플레이션 강한 하락 압력, 원자재 하락, 임금 · 서비스만 끈적)
+  - 유가: Demand — UNCONFIRMED
+  - 반도체: UPSWING 27.0(축: PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL STRONG · EQUITY WEAK — 주가 점수 −100)
+  - MARKET OVERVIEW: "미국·한국 동반 급락, 위험 회피가 전 자산으로 번졌다"(EQUITY Weak · MACRO Headwind · RISK High · AI ↔ 반도체 DIVERGING)
+- history: 7개 탭에 11/20 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-20.json` 1개 추가. COMPLETE, 테스트 통과, 화면 점검 오류 0.

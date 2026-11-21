@@ -4645,6 +4645,92 @@
     "suspect": false
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-20",
+   "tab_id": "oil_regime",
+   "state": "demand",
+   "state_label": "Demand — UNCONFIRMED",
+   "state_label_ko": "",
+   "state_score": -79.4,
+   "confidence": 79.4,
+   "component_scores": {
+    "driver:macro_liquidity": -76.2,
+    "driver:demand": -79.4,
+    "driver:supply": -32.5,
+    "driver:geopolitical": -8.6,
+    "brent_z": -0.009863899690899777,
+    "wti_z": -0.02685789584152897,
+    "oil_z": -0.018360897766214374
+   },
+   "key_drivers": [
+    "Demand -79 UNCONFIRMED",
+    "Macro / Liquidity -76 UNCONFIRMED",
+    "Supply -32 UNCONFIRMED"
+   ],
+   "data_coverage": 0.78975,
+   "data_asof": "2026-11-20T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-21T05:24:12.220348Z",
+   "model_version": "oil_regime_v0.1.0",
+   "logic_version": "rules_3af3b98f",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-79, STRONG) — 거시·유동성 (위험회피) -76 보다 3 앞선다. 상태 미확인: 유가가 평탄하다(-0.0σ) — 이 driver 의 방향이 가격에 아직 안 찍혔다.",
+   "payload": {
+    "regime_label": "Demand — UNCONFIRMED",
+    "dominant": "demand",
+    "runner_up": "macro_liquidity",
+    "margin": 3.2,
+    "signal_strength_label": "STRONG",
+    "drivers": {
+     "macro_liquidity": {
+      "label": "Macro / Liquidity",
+      "score": -76.2,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "demand": {
+      "label": "Demand",
+      "score": -79.4,
+      "status": "UNCONFIRMED",
+      "coverage": 1.0
+     },
+     "supply": {
+      "label": "Supply",
+      "score": -32.5,
+      "status": "UNCONFIRMED",
+      "coverage": 0.614
+     },
+     "geopolitical": {
+      "label": "Geopolitical Premium",
+      "score": -8.6,
+      "status": "UNCONFIRMED",
+      "coverage": 0.545
+     }
+    },
+    "confirmations": {
+     "Brent / WTI": "contradicts",
+     "원유 커브 (기간 구조)": "missing",
+     "원유 변동성 (OVX)": "missing",
+     "정제 마진 (휘발유·디젤)": "neutral",
+     "기대인플레이션 (BE10Y)": "neutral",
+     "달러 / 금리": "confirms",
+     "HY OAS / VIX": "contradicts",
+     "에너지 주식 (XLE)": "contradicts",
+     "항공 (JETS)": "neutral",
+     "방산 (ITA)": "neutral",
+     "구리 / 경기민감": "contradicts",
+     "금": "neutral"
+    },
+    "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+    "oil_direction": "flat",
+    "suspect": false
+   },
+   "corrections": []
   }
  ]
 }
