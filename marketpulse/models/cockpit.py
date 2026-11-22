@@ -32,7 +32,7 @@ class KeyVariable(Base):
 class RegimeStateView(Base):
     """공식 regime Exit / Entry 상태(2026-11-09 Daily Snapshot~, logic_version=exit_entry_v2). legacy 날짜는 official · candidate 만 채운다."""
 
-    logic_version: str = Field(default="legacy", description="legacy · exit_entry_v2")
+    logic_version: str = Field(default="legacy", description="legacy · exit_entry_v2 · same_day_v1(2026-11-20 Daily Snapshot~, 그날 선택 = 공식)")
     snapshot_date: str = Field(default="", description="KST Daily Snapshot 날짜")
     date: str = Field(default="", description="행(시장) 날짜")
     official: str = Field(description="그날 끝의 공식 regime(taxonomy key)")
@@ -590,7 +590,7 @@ class RegimeHistory(Base):
     changed_today: bool = False
     #: 공식 regime Exit / Entry 상태(오늘) — None 이면 legacy 규칙의 날짜
     state: RegimeStateView | None = None
-    logic_version: str = Field(default="legacy", description="오늘 공식 regime 을 정한 규칙 — legacy · exit_entry_v2")
+    logic_version: str = Field(default="legacy", description="오늘 공식 regime 을 정한 규칙 — legacy · exit_entry_v2 · same_day_v1")
     logic_effective_from: str = Field(default="", description="exit_entry_v2 적용 시작 KST Daily Snapshot 날짜")
     days: list[RegimeDay] = Field(default_factory=list)
     blocks: list[RegimeBlock] = Field(default_factory=list)

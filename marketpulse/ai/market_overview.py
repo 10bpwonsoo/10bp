@@ -340,7 +340,12 @@ def build_context(doc: Mapping[str, Any]) -> dict:
         "snapshot_date": sd, "as_of_utc": snap.get("as_of"),
         "market_regime": {
             "official": now.get("label_text"), "candidate": st.get("candidate_label"), "official_support": st.get("support"),
-            "exit": f"{st.get('exit_streak', 0)}/{st.get('exit_required', 2)}" if st else None, "entry": (f"{st.get('entry_label')} {st.get('entry_streak')}/{st.get('entry_required')}" if st.get("entry_regime") else None),
+            # same_day_v1(2026-11-20~): 확인 일수가 없다 — 그날 선택이 곧 공식이라 exit · entry 진행은 비우고 규칙과 오늘 전환만 알려 준다
+            **({"exit": None, "entry": None, "official_rule": "그날 선택이 곧 공식 regime 이다(확인 일수 없음)",
+                "changed_today": ({"from": st.get("previous_official_label"), "to": st.get("official_label")} if st.get("changed") else None)}
+               if st.get("logic_version") == "same_day_v1" else
+               {"exit": f"{st.get('exit_streak', 0)}/{st.get('exit_required', 2)}" if st else None,
+                "entry": (f"{st.get('entry_label')} {st.get('entry_streak')}/{st.get('entry_required')}" if st.get("entry_regime") else None)}),
             "released_previous_official": st.get("released_label"), "raw_signal": st.get("raw_signal"), "transition_status": now.get("transition_status"),
             "selection_confidence": sel.get("regime_confidence"), "equity_confirmation": {"us": sel.get("us_equity_confirmation"), "korea": sel.get("korea_equity_confirmation"), "global": sel.get("global_equity_confirmation")},
             "selection_commentary": sel.get("commentary"), "market_read": now.get("read"),

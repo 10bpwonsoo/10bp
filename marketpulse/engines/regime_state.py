@@ -29,6 +29,8 @@ from typing import Any, Iterable, Mapping, Sequence
 KST = timezone(timedelta(hours=9))
 NEUTRAL = "neutral"
 LEGACY = "legacy"
+#: 2026-11-22 요청 — same_day_from(KST Daily Snapshot 날짜) 부터는 확인 일수 없이 그날 선택이 곧 공식 regime 이다.
+SAME_DAY = "same_day_v1"
 
 _EXPR = re.compile(r"^\s*(abs\()?\s*([A-Za-z_]+)\s*\)?\s*(>=|<=)\s*([+-]?\d+(?:\.\d+)?)\s*$")
 
@@ -98,6 +100,34 @@ def sm_config(history_cfg: Mapping) -> dict:
 def effective_from(smcfg: Mapping) -> date | None:
     v = smcfg.get("effective_from")
     return date.fromisoformat(str(v)) if v else None
+
+
+def is_same_day(smcfg: Mapping, snapshot_date: str | date | None) -> bool:
+    """그 KST Daily Snapshot 날짜에 '그날 선택 = 공식'(same_day_v1) 규칙이 적용되는가."""
+    v = (smcfg or {}).get("same_day_from")
+    if not v or not snapshot_date:
+        return False
+    sd = snapshot_date.isoformat() if isinstance(snapshot_date, date) else str(snapshot_date)
+    return sd >= str(v)
+
+
+def step_same_day(prev: State, obs: Observation, labels: Mapping[str, str]) -> State:
+    """same_day_v1 — 그날 선택된 후보가 곧 공식 regime 이다(후보 없음 = Neutral / Mixed). 이탈 · 진입 일수를 세지 않는다.
+    장중(LIVE) 값은 지금처럼 공식을 바꾸지 않는다 — 공식은 직전 Daily Snapshot 그대로, 후보만 보인다."""
+    official = prev.official
+    st = State(logic_version=SAME_DAY, snapshot_date=obs.snapshot_date, date=obs.date, official=official, previous_official=official,
+               candidate=obs.candidate, candidate_state=obs.candidate_state, raw_signal=obs.raw_signal, support="NA",
+               support_reasons=["그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"],
+               equity=None, exit_required=1, entry_required=1, counted=obs.counted)
+    if not obs.counted or obs.candidate == official:
+        return st
+    st.official = obs.candidate; st.changed = True
+    if obs.candidate == NEUTRAL:
+        st.change_kind = "exit"; st.exit_confirmed = True; st.exit_streak = 1; st.exited_regime = official
+    else:
+        st.change_kind = "entry"; st.entry_confirmed = True; st.entry_regime = obs.candidate; st.entry_streak = 1
+        st.exited_regime = official if official != NEUTRAL else None
+    return st
 
 
 def _cond(expr: str, factors: Mapping[str, float | None], near_ratio: float) -> tuple[bool | None, bool | None, str]:
@@ -180,7 +210,9 @@ def support(official: str, obs: Observation, smcfg: Mapping, labels: Mapping[str
 
 
 def step(prev: State, obs: Observation, smcfg: Mapping, labels: Mapping[str, str]) -> State:
-    """전날 상태 + 오늘 관측 → 오늘 상태. 출구(exit)와 진입(entry) 일수는 따로 센다."""
+    """전날 상태 + 오늘 관측 → 오늘 상태. 출구(exit)와 진입(entry) 일수는 따로 센다. same_day_from 부터는 그날 선택이 곧 공식이다."""
+    if is_same_day(smcfg, obs.snapshot_date):
+        return step_same_day(prev, obs, labels)
     need_entry = int(smcfg.get("entry_days", 2)); need_exit = int(smcfg.get("exit_days", 2))
     official = prev.official
     sup, reasons, eq = support(official, obs, smcfg, labels)

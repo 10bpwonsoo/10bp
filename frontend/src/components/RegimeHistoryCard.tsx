@@ -4,7 +4,7 @@ import { duplicateDates, kstTime, maxLabelsFor, md, mergedNote, snapshotLine, th
 import { sourceLine } from "./DailyHistoryStrip";
 import { fetchArchive, fetchArchiveIndex } from "../api/client";
 import { dayDocDateFor, dayDocMatches, explainTransition, type TransitionDayDoc } from "./transitionWhy";
-import { HistoryStateSummary, SUPPORT_COLOR, entryText, exitText, isV2, keyColor, keyText } from "./RegimeStatePanel";
+import { HistoryStateSummary, SUPPORT_COLOR, entryText, exitText, isSameDay, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
 /**
  * MARKET REGIME HISTORY · 1M — 실시간 2 탭 전용. "최근 한 달 시장의 색이 어떻게 변해 왔는가" 를 3초에 읽게 한다.
@@ -76,8 +76,9 @@ function DayTip({ d, palette }: { d: CkRegimeDay; palette: Record<string, string
       {d.top_evidence.length > 1 ? <span>{d.top_evidence.slice(0, 2).join(" · ")}</span> : null}
       {isV2(d.state) ? (
         <span data-testid="ck-h-tip-state">Official <em style={{ color: color(d.display_regime) }}>{short(d.display_label)}</em> · Candidate <em style={{ color: keyColor(d.state.candidate) }}>{keyText(d.state.candidate)}</em>
-          {d.state.official !== "neutral" || d.state.changed ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
-          {d.state.entry_regime || d.state.entry_confirmed ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}</span>
+          {isSameDay(d.state) ? <> · Same-day{d.state.changed ? ` · ${keyText(d.state.previous_official)} → ${keyText(d.state.official)}` : ""}</> : null}
+          {!isSameDay(d.state) && (d.state.official !== "neutral" || d.state.changed) ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
+          {!isSameDay(d.state) && (d.state.entry_regime || d.state.entry_confirmed) ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}</span>
       ) : d.bridged ? <span className="ck-h-note">raw {d.raw_state} — 하루짜리라 직전 regime 에 이어짐</span> : null}
       <span className="ck-h-src" data-testid="ck-h-tip-source">{sourceLine(d.source, d.calculated_at, d.model_version, "", d.locked)}</span>
       {d.merged && d.merged.length ? <span className="ck-h-note">{mergedNote(d.merged)}</span> : null}
@@ -108,9 +109,10 @@ function DayDetail({ d, h, onClose }: { d: CkRegimeDay; h: CkRegimeHistory; onCl
         <div className="mono ck-h-detail-ev" data-testid="ck-h-detail-state">
           Candidate <b style={{ color: keyColor(d.state.candidate) }}>{keyText(d.state.candidate)}</b>
           {d.state.raw_signal ? <> · Raw {d.state.raw_signal}</> : null}
-          {d.state.official !== "neutral" || d.state.changed ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
-          {d.state.entry_regime || d.state.entry_confirmed ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}
-          {d.state.support_reasons.length && d.state.official !== "neutral" ? <div className="ck-h-note">{d.state.support_reasons.join(" / ")}</div> : null}
+          {isSameDay(d.state) ? <> · Same-day{d.state.changed ? ` · ${keyText(d.state.previous_official)} → ${keyText(d.state.official)}` : ""}</> : null}
+          {!isSameDay(d.state) && (d.state.official !== "neutral" || d.state.changed) ? <> · Support <b style={{ color: SUPPORT_COLOR[d.state.support] }}>{d.state.support}</b> · Exit {exitText(d.state).text}</> : null}
+          {!isSameDay(d.state) && (d.state.entry_regime || d.state.entry_confirmed) ? <> · Entry {entryText(d.state).regime ? keyText(entryText(d.state).regime) + " " : ""}{entryText(d.state).text}</> : null}
+          {d.state.support_reasons.length && (d.state.official !== "neutral" || isSameDay(d.state)) ? <div className="ck-h-note">{d.state.support_reasons.join(" / ")}</div> : null}
         </div>
       ) : null}
       {d.top_evidence.length ? <div className="mono ck-h-detail-ev">주도 변수 {d.top_evidence.join(" · ")}</div> : null}

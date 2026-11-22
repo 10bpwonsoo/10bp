@@ -1,6 +1,6 @@
 import type { AiRegime, Cockpit, CkLeaderRow, MarketOverview, MoAiSemiView, MoCrossView, MoEquitySide, MoRatesView, OilRegime, RatesRegime, RsSignal } from "../api/types";
 import type { SemiconductorCycle } from "../api/semiconductor";
-import { KEY_COLOR, isV2, keyColor, keyText } from "./RegimeStatePanel";
+import { KEY_COLOR, isSameDay, isV2, keyColor, keyText } from "./RegimeStatePanel";
 
 /**
  * MARKET OVERVIEW · 시장 종합 (2026-11-12).
@@ -51,6 +51,11 @@ function regimeFlow(c: Cockpit): { from: string; fromKey: string | null; to: str
     return { from: n.label_text, fromKey: null, to: watch ? n.raw_text : null, toKey: null, progress: watch ? `${Math.min(n.raw_persistence_days, n.required_days)} / ${n.required_days} DAYS` : null,
              status: watch ? "TRANSITION WATCH" : n.transition_status === "CHANGED" ? "TRANSITION CONFIRMED" : "STABLE", sub: n.transition_status_ko };
   }
+  if (isSameDay(st)) { // 2026-11-20~ — 그날 선택이 곧 공식. 진행 일수가 없다
+    if (st.changed) return { from: keyText(st.previous_official), fromKey: st.previous_official, to: keyText(st.official), toKey: st.official, progress: "SAME-DAY", status: "REGIME CHANGED",
+                             sub: st.change_kind === "exit" ? "오늘 뚜렷한 방향의 후보 없음" : "오늘 선택으로 공식 전환" };
+    return { from: keyText(st.official), fromKey: st.official, to: null, toKey: null, progress: null, status: "STABLE", sub: "오늘 선택과 같다" };
+  }
   if (st.changed && st.change_kind === "entry") return { from: keyText(st.previous_official), fromKey: st.previous_official, to: keyText(st.official), toKey: st.official, progress: `${Math.min(st.entry_streak || st.entry_required, st.entry_required)} / ${st.entry_required} DAYS`, status: "TRANSITION CONFIRMED", sub: "오늘 공식 전환" };
   if (st.changed && st.change_kind === "exit") return { from: keyText(st.exited_regime), fromKey: st.exited_regime, to: keyText("neutral"), toKey: "neutral", progress: "EXIT CONFIRMED", status: "REGIME RELEASED", sub: "이전 레짐 해제 · 새 레짐 미확정" };
   if (st.entry_regime) return { from: keyText(st.official), fromKey: st.official, to: keyText(st.entry_regime), toKey: st.entry_regime, progress: `${Math.min(st.entry_streak, st.entry_required)} / ${st.entry_required} DAYS`,
@@ -68,7 +73,7 @@ function RegimeState({ c, summary }: { c: Cockpit; summary?: string }) {
   return (
     <div className="mo-rs" data-testid="mo-regime-state" data-status={f.status}>
       {summary ? <p className="mo-rs-sum" data-testid="mo-state-summary">{summary}</p> : null}
-      <span className="mo-k mono">{f.to ? "OFFICIAL → CANDIDATE" : "OFFICIAL"}</span>
+      <span className="mo-k mono">{f.to ? (f.status === "REGIME CHANGED" ? "PREVIOUS → OFFICIAL" : "OFFICIAL → CANDIDATE") : "OFFICIAL"}</span>
       <div className="mo-rs-flow mono" data-testid="mo-regime-flow">
         <span className="mo-rs-from">{f.from}</span>
         {f.to ? <><span className="mo-rs-ar" aria-hidden="true">→</span><span className="mo-rs-to" style={{ color: f.toKey ? keyColor(f.toKey) : "var(--ink)" }} data-testid="mo-regime-to">{f.to}</span></> : null}

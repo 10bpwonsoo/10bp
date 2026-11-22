@@ -82,6 +82,21 @@ describe("MARKET OVERVIEW", () => {
     expect(order[1]!.compareDocumentPosition(order[2]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("same_day_v1(11/20~) — 그날 선택으로 바뀐 날은 PREVIOUS → OFFICIAL · REGIME CHANGED · SAME-DAY, 진행 일수는 없다", () => {
+    const st = { logic_version: "same_day_v1", official: "liquidity_stress", official_label: "Liquidity Stress / Risk-Off", previous_official: "growth", candidate: "liquidity_stress", candidate_label: "Liquidity Stress / Risk-Off",
+      entry_regime: "liquidity_stress", entry_streak: 1, entry_required: 1, exit_streak: 0, exit_required: 1, changed: true, change_kind: "entry", exited_regime: "growth" } as unknown as CkRegimeState;
+    const { unmount } = render(<MarketOverviewView cockpit={{ ...cockpit, market_now: { ...cockpit.market_now, state: st } } as Cockpit} overview={mo} rates={null} oil={null} ai={ai} semi={null} />);
+    expect(screen.getByTestId("mo-regime-state").textContent).toMatch(/PREVIOUS → OFFICIAL/);
+    expect(screen.getByTestId("mo-regime-flow").textContent).toMatch(/GROWTH.*→.*LIQUIDITY/);
+    expect(screen.getByTestId("mo-regime-transition").textContent).toMatch(/REGIME CHANGED.*SAME-DAY/);
+    expect(screen.getByTestId("mo-regime-transition").textContent).not.toMatch(/\d \/ \d DAYS/);
+    unmount();
+    const same = { ...st, previous_official: "liquidity_stress", changed: false, change_kind: null, entry_regime: null, exited_regime: null } as unknown as CkRegimeState;
+    render(<MarketOverviewView cockpit={{ ...cockpit, market_now: { ...cockpit.market_now, state: same } } as Cockpit} overview={mo} rates={null} oil={null} ai={ai} semi={null} />);
+    expect(screen.getByTestId("mo-regime-state").getAttribute("data-status")).toBe("STABLE");
+    expect(screen.queryByTestId("mo-regime-to")).toBeNull();
+  });
+
   it("공식 전환일 — TRANSITION CONFIRMED 2 / 2 DAYS(같은 말을 두 번 쓰지 않는다)", () => {
     const st = { logic_version: "exit_entry_v2", official: "policy", official_label: "Policy Driven", previous_official: "neutral", candidate: "policy", candidate_label: "Policy Driven", entry_regime: null,
       entry_streak: 2, entry_required: 2, exit_streak: 0, exit_required: 2, changed: true, change_kind: "entry", exited_regime: null } as unknown as CkRegimeState;

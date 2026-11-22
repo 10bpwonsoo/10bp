@@ -7,6 +7,10 @@
 바꾸는 것은 실시간 탭의 공식 regime 표시뿐이다: cockpit.history(공식 띠 · CURRENT · 전환) · market_now(공식 · 후보 · 이탈 · 진입 · 문장) ·
 cross_asset(공식 regime 기준 대조, 저장된 z 그대로) · tone 의 regime 대조. 원천 데이터 · factor · 후보 선택은 그대로다.
 저장본은 archive correct 경로로만 교체한다(이전 파일 superseded/ · meta.corrections). effective_from 이전 날짜는 받지 않는다.
+
+--replace-log: 그날 상태 로그가 이미 있어도 새 규칙으로 다시 계산해 교체한다(이전 로그는 regime_state/superseded/, corrections 에 이유).
+               규칙이 소급해 바뀔 때만 쓴다 — 2026-11-22 'same_day_from: 2026-11-20'(그날 선택 = 공식) 적용에 썼다.
+--write-context: 미리 보기에서도 전환 해설 컨텍스트(transition_read_context.json)를 캡처 폴더에 써 둔다(세션본을 쓰기 위해).
 """
 import argparse
 import json
@@ -38,7 +42,7 @@ def _j(x):
     return json.loads(x.model_dump_json()) if hasattr(x, "model_dump_json") else x
 
 
-def process(day: date, *, svc, mgr, log, cfg, apply: bool) -> dict:
+def process(day: date, *, svc, mgr, log, cfg, apply: bool, replace_log: bool = False, write_context: bool = False, reason: str = "") -> dict:
     hcfg = cfg.get("history") or {}
     smcfg = RSM.sm_config(hcfg)
     eff = RSM.effective_from(smcfg)
@@ -55,14 +59,17 @@ def process(day: date, *, svc, mgr, log, cfg, apply: bool) -> dict:
     cand_state = lp.label.value if hasattr(lp.label, "value") else str(lp.label)
     obs = RSM.Observation(date=lp.date.isoformat(), snapshot_date=day.isoformat(), candidate=tax.get(cand_state, cand_state.lower()), candidate_state=cand_state,
                           raw_signal=sel.get("quant_label"), factors=dict(lp.factors or {}), equity_broad=RSM.broad_equity_from_selection(sel))
-    rh = build_regime_history(hist, hcfg, as_of=as_of, stored_days=len(hist.points), state_log=log.all(), today_obs=obs)
+    state_log = log.all()
+    if replace_log:
+        state_log.pop(lp.date.isoformat(), None)   # 이 행은 새 규칙으로 다시 계산한다(앞 행은 이미 교체된 로그를 잇는다)
+    rh = build_regime_history(hist, hcfg, as_of=as_of, stored_days=len(hist.points), state_log=state_log, today_obs=obs)
     st = rh.state
     cap = CAP / f"{day.isoformat()}-backfill"
     # 전환 해설 — 그날 데이터만(이 저장본 + 그날까지의 행)
     tc = None
     if st is not None and st.changed:
         ctx = TR.build_context(doc, st.model_dump(mode="json"), [d.model_dump(mode="json") for d in rh.days])
-        if apply:
+        if apply or write_context:
             (cap / "transition_read_context.json").write_text(json.dumps(ctx, ensure_ascii=False, indent=1), encoding="utf-8")
         sr = cap / "transition_read_session.json"
         tc = TR.write(ctx, client=None, session_read=json.loads(sr.read_text(encoding="utf-8")) if sr.exists() else None)
@@ -94,6 +101,8 @@ def process(day: date, *, svc, mgr, log, cfg, apply: bool) -> dict:
         prev_st = (log.all().get(st.date) or {}) if st else {}
         logged_prev = [e for d_, e in sorted(log.all().items()) if (e.get("snapshot_date") or "") < day.isoformat()]
         ps = dict((logged_prev[-1].get("state") or {})) if logged_prev else None
+        if RSM.is_same_day(smcfg, day):
+            ps = {**(ps or {}), "rule_today": "same_day"}
         if ps and ps.get("entry_regime"):
             ps["entry_label"] = {str(v["key"]): str(v["label"]) for v in (hcfg.get("taxonomy") or {}).values()}.get(ps["entry_regime"], ps["entry_regime"])
         prev_off = (logged_prev[-1]["state"]["official"] if logged_prev else None)
@@ -131,7 +140,10 @@ def process(day: date, *, svc, mgr, log, cfg, apply: bool) -> dict:
            "before": (old_h.get("current_label"), old_h.get("duration_days"), old_h.get("transitions_1m")), "comment": (tc or {}).get("text")}
     if apply:
         if entry is not None:
-            if not log.put_once(entry):
+            if replace_log:
+                old = log.replace(entry, reason=reason)
+                print(f"  → 상태 로그 {st.date} 교체" + (f" (이전 {old.relative_to(ROOT)})" if old else ""))
+            elif not log.put_once(entry):
                 print(f"  = {day}: 상태 로그 {st.date} 가 이미 있다 — 그대로 둔다")
         (cap / "cockpit.json").write_text(json.dumps(new_ck, ensure_ascii=False), encoding="utf-8")
     return {"row": row, "doc": new_doc}
@@ -143,6 +155,8 @@ def main() -> None:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--reason", default="")
     ap.add_argument("--by", default="")
+    ap.add_argument("--replace-log", action="store_true")
+    ap.add_argument("--write-context", action="store_true")
     a = ap.parse_args()
     days = sorted(date.fromisoformat(x) for x in a.dates)  # 오름차순 고정
     st_ = get_settings()
@@ -160,14 +174,15 @@ def main() -> None:
             shutil.copytree(st_.regime_state_dir, tmp / "rs")
         log = RSM.RegimeStateLog(tmp / "rs")
     for d in days:
-        res = process(d, svc=svc, mgr=mgr, log=log, cfg=cfg, apply=a.apply)
+        res = process(d, svc=svc, mgr=mgr, log=log, cfg=cfg, apply=a.apply, replace_log=a.replace_log, write_context=a.write_context, reason=a.reason)
         if not a.apply:
             # 다음 날짜가 잇도록 임시 로그에만 쓴다
             r = res["row"]
             hist_state = res["doc"]["cockpit"]["history"]["state"]
             if hist_state:
-                log.put_once({"date": hist_state["date"], "snapshot_date": hist_state["snapshot_date"], "state": hist_state,
-                              "observation": {"candidate": hist_state["candidate"], "raw_signal": hist_state.get("raw_signal")}})
+                e_ = {"date": hist_state["date"], "snapshot_date": hist_state["snapshot_date"], "state": hist_state,
+                      "observation": {"candidate": hist_state["candidate"], "raw_signal": hist_state.get("raw_signal")}}
+                log.replace(e_, reason="preview") if a.replace_log else log.put_once(e_)
         print(json.dumps(res["row"], ensure_ascii=False))
         if a.apply:
             final, keep = svc.correct(d, res["doc"], reason=a.reason, by=a.by)

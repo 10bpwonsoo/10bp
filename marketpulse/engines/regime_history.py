@@ -249,7 +249,10 @@ def build_regime_history(
         if d.top_driver_1: ev.append(f"주도 변수 {d.top_driver_1}" + (f" · {d.top_driver_2}" if d.top_driver_2 else ""))
         if d.dominant_regime_dwell is not None: ev.append(f"Daily dwell {d.dominant_regime_dwell * 100:.0f}%")
         kind = (d.state.change_kind if d.state is not None and d.state.logic_version != RSM.LEGACY else None) or "legacy"
-        if kind == "exit" and d.state is not None:
+        if d.state is not None and d.state.logic_version == RSM.SAME_DAY and kind in ("exit", "entry"):
+            ev.insert(0, f"{d.display_label} — 그날 선택이 곧 공식 regime(확인 일수 없음)" if kind == "entry"
+                      else f"{prev.display_label} 해제 — 그날 뚜렷한 방향의 후보가 없어 Neutral / Mixed")
+        elif kind == "exit" and d.state is not None:
             ev.insert(0, f"{prev.display_label} 이탈 확인 {d.state.exit_streak}/{d.state.exit_required} — 지지되지 않은 거래일이 이어져 공식 해제, 새 후보 미확정이라 Neutral / Mixed")
         elif kind == "entry" and d.state is not None:
             ev.insert(0, f"{d.display_label} 진입 확인 {d.state.entry_streak}/{d.state.entry_required} — 같은 후보가 서로 다른 거래일 연속 선택")
@@ -311,7 +314,10 @@ def build_regime_history(
     if st_today is not None:
         # exit_entry_v2 — 후보 = 오늘 선택, PENDING = 진입 후보(공식과 다른 방향성 후보), 상태는 exit · entry 진행으로
         need_days = st_today.entry_required
-        if st_today.changed:
+        if st_today.changed and st_today.logic_version == RSM.SAME_DAY:
+            t_status = "CHANGED"
+            t_ko = f"공식 regime 전환: {st_today.previous_official_label} → {st_today.official_label} (그날 선택)"
+        elif st_today.changed:
             t_status = "CHANGED"
             t_ko = (f"공식 regime 해제: {st_today.exited_label} 이탈 확인 {st_today.exit_streak}/{st_today.exit_required} → Neutral / Mixed (새 후보 미확정)" if st_today.change_kind == "exit"
                     else f"공식 regime 전환 확정: {st_today.previous_official_label} → {st_today.official_label} (진입 {st_today.entry_streak}/{st_today.entry_required})")

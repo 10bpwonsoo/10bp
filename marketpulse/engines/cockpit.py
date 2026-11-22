@@ -237,8 +237,12 @@ def state_read(cfg: Mapping, st) -> str:
     t = (((cfg.get("history") or {}).get("state_text") or {}).get("read") or {})
     f = dict(official=st.official_label.split(" / ")[0] if st.official != "neutral" else "Neutral / Mixed", candidate=(st.candidate_label or "").split(" / ")[0] if st.candidate != "neutral" else "Neutral / Mixed",
              prev=(st.exited_label or st.previous_official_label or "").split(" / ")[0], exit=st.exit_streak, entry=st.entry_streak, need=st.exit_required)
+    same_day = st.logic_version == "same_day_v1"
     if not st.counted:
-        k = "live"
+        k = "same_day_live" if same_day else "live"
+    elif same_day and st.changed:
+        k = "same_day_entry" if st.change_kind == "entry" else "same_day_exit"
+        f["prev"] = (st.previous_official_label or "").split(" / ")[0] if st.previous_official != "neutral" else "Neutral / Mixed"
     elif st.changed and st.change_kind == "exit":
         k = "exit_confirmed"
     elif st.changed and st.change_kind == "entry":

@@ -128,3 +128,60 @@ def test_stored_archive_official_after_reprocess(snap, official):
     if h.get("logic_version") != "exit_entry_v2":
         pytest.skip("저장본이 아직 재정렬되지 않았다")
     assert h["current_regime"] == official and h["state"]["official"] == official
+
+
+# ── same_day_v1 (2026-11-22 요청, 2026-11-20 Daily Snapshot~) — 그날 선택이 곧 공식 ─────────────
+def _same_day_run(states, *, sources=None, initial="NEUTRAL", same_day_from="2026-11-03"):
+    """첫 행 = 적용 직전 legacy 행. as_of 22:30 UTC = 다음 날 07:30 KST 라 행 i 의 snapshot_date 는 11/(3+i)."""
+    cfg = {**CFG, "state_machine": {**CFG["state_machine"], "effective_from": "2026-11-01", "same_day_from": same_day_from}}
+    rows = [_row(-5, initial, {}, start=datetime(2026, 10, 27, 22, 30, tzinfo=timezone.utc))]
+    rows += [_row(i, s, {}, source=(sources or {}).get(i, "RECORDED")) for i, s in enumerate(states)]
+    return RSM.run(rows, [TAX[initial]] * len(rows), cfg)[1:]
+
+
+def test_same_day_official_follows_each_days_selection():
+    """확인 일수 없이 그날 선택이 곧 공식 — 방향이 바뀌면 바로 바뀌고, 후보가 없으면(NEUTRAL) Neutral / Mixed."""
+    d1, d2, d3, d4, d5 = _same_day_run(["GROWTH_SHOCK", "RISK_OFF", "RISK_OFF", "NEUTRAL", "NEUTRAL"])
+    assert (d1.logic_version, d1.previous_official, d1.official, d1.change_kind) == (RSM.SAME_DAY, "neutral", "growth", "entry")
+    assert d1.entry_confirmed and (d1.entry_streak, d1.entry_required, d1.exit_required) == (1, 1, 1) and d1.support == "NA"
+    assert (d2.previous_official, d2.official, d2.change_kind, d2.exited_regime) == ("growth", "liquidity_stress", "entry", "growth")
+    assert d3.official == "liquidity_stress" and not d3.changed and d3.entry_regime is None and d3.exit_streak == 0
+    assert (d4.official, d4.change_kind, d4.exited_regime, d4.exit_confirmed) == ("neutral", "exit", "liquidity_stress", True)
+    assert d5.official == "neutral" and not d5.changed
+
+
+def test_same_day_starts_only_from_its_snapshot_date():
+    """same_day_from 이전 Daily Snapshot 은 exit_entry_v2 그대로(진입 1/2) — 그날부터만 바로 공식이 된다."""
+    d1, d2, d3 = _same_day_run(["GROWTH_SHOCK", "RISK_OFF", "RISK_OFF"], same_day_from="2026-11-05")
+    assert (d1.logic_version, d1.official, d1.entry_regime, d1.entry_streak) == ("exit_entry_v2", "neutral", "growth", 1)
+    assert (d2.logic_version, d2.official, d2.entry_regime, d2.entry_streak) == ("exit_entry_v2", "neutral", "liquidity_stress", 1)
+    assert (d3.logic_version, d3.previous_official, d3.official) == (RSM.SAME_DAY, "neutral", "liquidity_stress")
+    assert RSM.is_same_day({"same_day_from": "2026-11-20"}, "2026-11-20") and not RSM.is_same_day({"same_day_from": "2026-11-20"}, "2026-11-19")
+    assert not RSM.is_same_day({}, "2026-11-25")   # 설정이 비면 exit_entry_v2 가 계속 쓰인다
+
+
+def test_same_day_live_row_does_not_change_official():
+    """장중(LIVE) 값은 공식을 바꾸지 않는다 — 다음 Daily Snapshot 의 선택이 정한다."""
+    d1, d2, d3 = _same_day_run(["GROWTH_SHOCK", "RISK_OFF", "RISK_OFF"], sources={1: "LIVE"})
+    assert d1.official == "growth"
+    assert d2.official == "growth" and not d2.counted and not d2.changed and d2.candidate == "liquidity_stress"
+    assert d3.official == "liquidity_stress" and d3.previous_official == "growth" and d3.changed
+
+
+def test_same_day_texts_and_configured_start():
+    """문구 — 진행 일수(1/2 · 2거래일)를 말하지 않는다. 운영 설정의 시작일은 2026-11-20 Daily Snapshot."""
+    from types import SimpleNamespace
+
+    from marketpulse.engines.cockpit import state_read
+    from marketpulse.engines.regime_select import persistence_hint_v2
+    assert CFG["state_machine"]["same_day_from"] == "2026-11-20"
+    full = load_cockpit_config(None)
+    st = SimpleNamespace(logic_version=RSM.SAME_DAY, counted=True, changed=True, change_kind="entry", official="growth", official_label="Growth", candidate="growth", candidate_label="Growth",
+                         previous_official="neutral", previous_official_label="Neutral / Mixed", exited_label=None, exit_streak=0, entry_streak=1, exit_required=1, entry_required=1, entry_regime="growth", support="NA")
+    t = state_read(full, st)
+    assert "Neutral / Mixed" in t and "Growth" in t and "거래일" not in t and "/1" not in t
+    st.change_kind = "exit"; st.official = "neutral"; st.official_label = "Neutral / Mixed"; st.previous_official = "growth"; st.previous_official_label = "Growth"; st.candidate = "neutral"
+    assert "Growth" in state_read(full, st) and "Neutral / Mixed" in state_read(full, st)
+    hint = persistence_hint_v2("Neutral / Mixed", {"rule_today": "same_day", "official": "neutral"})
+    assert "오늘 선택이 곧 공식" in hint and "2일" not in hint
+    assert "2일 연속" in persistence_hint_v2("Neutral / Mixed", {"official": "neutral"})   # 예전 규칙의 안내는 그대로

@@ -22,12 +22,16 @@ const SUPPORT_KO: Record<string, string> = { SUPPORTED: "핵심 근거 유지", 
 const EQ_COLOR: Record<string, string> = { STRONG: "var(--ok)", CONFIRMED: "var(--ok)", PARTIAL: "var(--warn)", MIXED: "var(--warn)", CONTRADICTED: "var(--crit)", UNAVAILABLE: "var(--faint)" };
 
 export const isV2 = (s: CkRegimeState | null | undefined): s is CkRegimeState => !!s && s.logic_version !== "legacy";
+/** same_day_v1 (2026-11-20 Daily Snapshot~) — 확인 일수 없이 그날 선택이 곧 공식 regime. backend engines/regime_state.py SAME_DAY 와 같은 값 */
+export const isSameDay = (s: CkRegimeState | null | undefined): boolean => !!s && s.logic_version === "same_day_v1";
+export const SAME_DAY_RULE = "그날 선택이 곧 공식 (확인 일수 없음)";
 export const keyText = (k: string | null | undefined) => (k ? KEY_TEXT[k] ?? k.toUpperCase() : "–");
 export const keyColor = (k: string | null | undefined) => (k ? KEY_COLOR[k] ?? "var(--ink)" : "var(--muted)");
 const md = (d: string | null | undefined) => (d ? d.slice(5).replace("-", "/") : "");
 
 /** EXIT 칸 — 공식이 방향성 regime 이면 n / need, 이날 해제됐으면 CONFIRMED, 공식이 Neutral 이면 직전 해제 기록 */
 export function exitText(s: CkRegimeState): { text: string; tone: string } {
+  if (isSameDay(s)) return s.changed && s.change_kind === "exit" ? { text: `${keyText(s.exited_regime)} 해제 · 오늘 선택`, tone: "var(--accent)" } : { text: "해당 없음 — 그날 선택 = 공식", tone: "var(--faint)" };
   if (s.changed && s.change_kind === "exit") return { text: `${keyText(s.exited_regime)} EXIT CONFIRMED`, tone: "var(--accent)" };
   if (s.official === "neutral") {
     return s.released_label ? { text: `${keyText(labelKey(s.released_label))} EXIT CONFIRMED${s.released_on ? ` · ${md(s.released_on)}` : ""}`, tone: "var(--muted)" }
@@ -38,6 +42,7 @@ export function exitText(s: CkRegimeState): { text: string; tone: string } {
 
 /** ENTRY 칸 — 진입 후보가 있으면 후보 n / need, 이날 확정됐으면 CONFIRMED, 없으면 — */
 export function entryText(s: CkRegimeState): { regime: string | null; text: string; tone: string } {
+  if (isSameDay(s)) return s.changed && s.change_kind === "entry" ? { regime: s.official, text: "SAME-DAY · 오늘 선택으로 전환", tone: "var(--accent)" } : { regime: null, text: "확인 일수 없음 — 그날 선택 = 공식", tone: "var(--muted)" };
   if (s.changed && s.change_kind === "entry") return { regime: s.official, text: "CONFIRMED", tone: "var(--accent)" };
   if (s.entry_regime) return { regime: s.entry_regime, text: `${Math.min(s.entry_streak, s.entry_required)} / ${s.entry_required} DAYS`, tone: "var(--warn)" };
   if (s.candidate === s.official) return { regime: null, text: "진입 대기 후보 없음 — 오늘 후보가 공식과 같다", tone: "var(--muted)" };
@@ -69,17 +74,26 @@ export function RegimeStateGrid({ s }: { s: CkRegimeState }) {
       <Row k={s.counted ? "Current candidate" : "Live candidate"} testid="ck-now-candidate">
         <b style={{ color: keyColor(s.candidate) }}>{keyText(s.candidate)}</b>{!s.counted ? <small> 장중 — 일수에 넣지 않음</small> : null}
       </Row>
-      {s.official !== "neutral" ? (
+      {isSameDay(s) ? (
+        <>
+          <Row k="Official rule" testid="ck-now-rule"><b>SAME-DAY</b><small> {SAME_DAY_RULE}</small></Row>
+          {s.changed ? <Row k="Previous official" testid="ck-now-prev-official"><b style={{ color: keyColor(s.previous_official) }}>{keyText(s.previous_official)}</b><small> 오늘 전환</small></Row> : null}
+        </>
+      ) : s.official !== "neutral" ? (
         <Row k={`${keyText(s.official)} support`} testid="ck-now-support">
           <b style={{ color: SUPPORT_COLOR[s.support] }}>{s.support}</b>{SUPPORT_KO[s.support] ? <small> {SUPPORT_KO[s.support]}</small> : null}
         </Row>
       ) : s.released_label ? (
         <Row k="Previous official" testid="ck-now-prev-official"><b style={{ color: keyColor(labelKey(s.released_label)) }}>{keyText(labelKey(s.released_label))}</b></Row>
       ) : null}
-      <Row k="Exit confirmation" testid="ck-now-exit"><b style={{ color: ex.tone }}>{ex.text}</b></Row>
-      <Row k="Entry confirmation" testid="ck-now-entry">
-        {en.regime ? <b style={{ color: keyColor(en.regime) }}>{keyText(en.regime)} </b> : null}<b style={{ color: en.tone }}>{en.text}</b>
-      </Row>
+      {isSameDay(s) ? null : (
+        <>
+          <Row k="Exit confirmation" testid="ck-now-exit"><b style={{ color: ex.tone }}>{ex.text}</b></Row>
+          <Row k="Entry confirmation" testid="ck-now-entry">
+            {en.regime ? <b style={{ color: keyColor(en.regime) }}>{keyText(en.regime)} </b> : null}<b style={{ color: en.tone }}>{en.text}</b>
+          </Row>
+        </>
+      )}
       <Row k="Raw signal" testid="ck-now-rawsig">
         <b>{s.raw_signal ? RAW_TEXT[s.raw_signal] ?? s.raw_signal : "–"}</b>{s.raw_signal ? <small> 정량 · {s.raw_persistence_days}D 연속</small> : null}
       </Row>
@@ -88,7 +102,7 @@ export function RegimeStateGrid({ s }: { s: CkRegimeState }) {
           {(["us", "kr", "global"] as const).map((m) => <span key={m} className="ck-st-eq">{m === "kr" ? "KOREA" : m.toUpperCase()} <b style={{ color: EQ_COLOR[s.equity![m]] ?? "var(--ink)" }}>{s.equity![m]}</b></span>)}
         </Row>
       ) : null}
-      {s.support_reasons.length && s.official !== "neutral" ? (
+      {s.support_reasons.length && s.official !== "neutral" && !isSameDay(s) ? (
         <details className="ck-st-why"><summary>support 근거</summary><ul>{s.support_reasons.map((r) => <li key={r}>{r}</li>)}</ul></details>
       ) : null}
     </div>
@@ -104,8 +118,14 @@ export function HistoryStateSummary({ s, previousLabel, status, statusKo }: { s:
       {en.regime && !(s.changed && s.change_kind === "entry") ? (
         <div className="ck-h-st-r" data-testid="ck-h-pending"><span className="ck-k">Pending candidate</span><b style={{ color: keyColor(en.regime) }}>{keyText(en.regime)}</b></div>
       ) : null}
-      <div className="ck-h-st-r" data-testid="ck-h-entry"><span className="ck-k">Entry</span><b style={{ color: en.tone }}>{en.text}</b></div>
-      <div className="ck-h-st-r" data-testid="ck-h-exit"><span className="ck-k">{s.official !== "neutral" ? `Exit · ${keyText(s.official)} ${s.support}` : "Exit"}</span><b style={{ color: ex.tone }}>{ex.text}</b></div>
+      {isSameDay(s) ? (
+        <div className="ck-h-st-r" data-testid="ck-h-rule"><span className="ck-k">Official rule</span><b>SAME-DAY</b><small>{SAME_DAY_RULE}</small></div>
+      ) : (
+        <>
+          <div className="ck-h-st-r" data-testid="ck-h-entry"><span className="ck-k">Entry</span><b style={{ color: en.tone }}>{en.text}</b></div>
+          <div className="ck-h-st-r" data-testid="ck-h-exit"><span className="ck-k">{s.official !== "neutral" ? `Exit · ${keyText(s.official)} ${s.support}` : "Exit"}</span><b style={{ color: ex.tone }}>{ex.text}</b></div>
+        </>
+      )}
       <div className="ck-h-st-r"><span className="ck-k">Previous official</span><b>{previousLabel ?? "–"}</b></div>
       <div className="ck-h-st-r" data-testid="ck-h-rawsig"><span className="ck-k">Raw signal</span><b>{s.raw_signal ? RAW_TEXT[s.raw_signal] ?? s.raw_signal : keyText(s.candidate)}</b>{s.raw_signal ? <small>{s.raw_persistence_days}D</small> : null}</div>
       <div className="ck-h-st-r" data-testid="ck-h-tstatus"><span className="ck-k">Transition status</span><b style={{ color: stColor }}>{status === "TRANSITION_WATCH" ? "WATCH" : status.replace(/_/g, " ")}</b></div>

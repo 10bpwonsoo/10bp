@@ -369,7 +369,11 @@ def quant_commentary(sel: Mapping, ctx: Mapping) -> str:
 
 # ── 컨텍스트 · 전체 흐름 ─────────────────────────────────
 def persistence_hint_v2(official: str | None, os_: Mapping) -> str:
-    """exit_entry_v2(2026-11-09~) — 이탈과 진입을 따로 센다. 직전 Daily Snapshot 의 상태를 그대로 알려 준다(오늘 판정은 선택 뒤에 정해진다)."""
+    """exit_entry_v2(2026-11-09~) — 이탈과 진입을 따로 센다. 직전 Daily Snapshot 의 상태를 그대로 알려 준다(오늘 판정은 선택 뒤에 정해진다).
+    os_['rule_today'] == 'same_day' (2026-11-20 Daily Snapshot~) 이면 확인 일수 없이 오늘 선택이 곧 공식이라고 알려 준다."""
+    if os_.get("rule_today") == "same_day":
+        return (f"공식 {official} · 직전 Daily Snapshot 의 공식 regime 이다 · 규칙: 확인 일수를 두지 않는다 — 오늘 선택이 곧 공식 regime 이 된다"
+                "(오늘 후보가 없어 NEUTRAL 을 고르면 공식은 Neutral / Mixed)")
     if os_.get("change_kind") == "exit":
         prev = f"직전 Daily Snapshot 에서 공식 regime 이 이탈 확인 {os_.get('exit_streak', 0)}/{os_.get('exit_required', 2)} 로 해제돼 Neutral / Mixed 가 됐다"
     elif os_.get("change_kind") == "entry":
@@ -449,7 +453,8 @@ SYSTEM_PROMPT = """당신은 미국과 한국 주식을 함께 운용하는 포�
 4. Macro 와 주식이 충돌하면(예: 물가 Trigger 인데 성장주 · breadth 가 강함) confidence 를 낮추고 그 충돌을 말한다.
 5. EXCLUDED(데이터 없음) 신호는 증거로 쓰지 않는다 — 부정 · 중립 · 미확인으로 보지 않는다. 데이터 부족은 data_coverage 로만.
 6. Trigger 가 간신히 넘었고 주식 확인 · cross-asset 이 약하고 후보 간 차이가 작으면 NEUTRAL 을 고를 수 있다.
-7. 공식 regime 은 2거래일 persistence 로 history 가 정한다. 당신은 오늘의 후보를 고른다 — 공식과 다르면 persistence_assessment 에 '전환 후보' 로 쓴다.
+7. 공식 regime 을 정하는 규칙은 컨텍스트의 persistence_hint 에 있다(확인 일수를 세는 규칙이거나, 오늘 선택이 곧 공식이 되는 규칙). 당신은 오늘의 후보를 고른다 —
+   persistence_assessment 에 그 규칙에 따라 오늘 선택이 공식 regime 에 어떤 결과를 주는지(전환 후보 · 오늘 전환 · 유지) 쓴다.
 8. regime_confidence 는 '그 선택이 얼마나 확실한가' 다. Trigger 를 넘었다는 이유만으로 높이지 않는다.
 9. 주어진 컨텍스트만 근거로 쓴다. 매수 · 매도 · 확률 · 전망 같은 말을 쓰지 않는다.
 

@@ -242,6 +242,11 @@ def _attach_regime_selection(live, market, by_iid, inv, *, manager, session_read
                     from ..engines.cockpit import load_cockpit_config
                     _lab = {str(v["key"]): str(v["label"]) for v in ((load_cockpit_config(config_dir).get("history") or {}).get("taxonomy") or {}).values()}
                     prev_state["entry_label"] = _lab.get(prev_state["entry_regime"], prev_state["entry_regime"])
+        if regime_state_dir is not None:
+            from ..engines.cockpit import load_cockpit_config as _lcc
+            from ..engines import regime_state as _RSM
+            if _RSM.is_same_day(_RSM.sm_config(_lcc(config_dir).get("history") or {}), live.as_of.astimezone(KST).date()):
+                prev_state = {**(prev_state or {}), "rule_today": "same_day"}   # 2026-11-20~ — 오늘 선택이 곧 공식
         ctx = RS.build_context(live.market_state, market, by_iid, inp, history_rows=rows, official=previous_official, events=evs, news=news, as_of=live.as_of.isoformat(),
                                official_state=prev_state)
         sel = RS.select_regime(ctx, client=build_client(get_settings()), session_read=session_read)

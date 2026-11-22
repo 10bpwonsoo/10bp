@@ -81,6 +81,37 @@ describe("Exit / Entry 상태 — MARKET REGIME HISTORY 우측 요약", () => {
   });
 });
 
+describe("same_day_v1 (2026-11-20 Daily Snapshot~) — 그날 선택이 곧 공식", () => {
+  const sd: CkRegimeState = { ...base, logic_version: "same_day_v1", official: "liquidity_stress", official_label: "Liquidity Stress / Risk-Off", previous_official: "growth", previous_official_label: "Growth",
+    candidate: "liquidity_stress", candidate_label: "Liquidity Stress / Risk-Off", support: "NA", support_reasons: ["그날 선택이 곧 공식 regime 이다"], equity: null,
+    exit_streak: 0, exit_required: 1, entry_regime: "liquidity_stress", entry_label: "Liquidity Stress / Risk-Off", entry_streak: 1, entry_required: 1, entry_confirmed: true, changed: true, change_kind: "entry", exited_regime: "growth", exited_label: "Growth" };
+
+  it("MARKET NOW — 진행 일수(n / need DAYS) · support 줄 없이 규칙과 오늘 전환만 보인다", () => {
+    render(<CockpitView cockpit={withState(sd, "LIQUIDITY_STRESS", "LIQUIDITY STRESS", "liquidity_stress", "Liquidity Stress / Risk-Off")} snapshot={snapshot} history={history} />);
+    const box = screen.getByTestId("ck-now-state");
+    expect(within(box).getByTestId("ck-now-rule").textContent).toMatch(/SAME-DAY.*그날 선택이 곧 공식/);
+    expect(within(box).getByTestId("ck-now-prev-official").textContent).toMatch(/GROWTH SHOCK.*오늘 전환/);
+    expect(within(box).queryByTestId("ck-now-exit")).toBeNull();
+    expect(within(box).queryByTestId("ck-now-entry")).toBeNull();
+    expect(within(box).queryByTestId("ck-now-support")).toBeNull();
+    expect(box.textContent).not.toMatch(/\d \/ \d DAYS/);
+  });
+
+  it("바뀌지 않은 날 — 규칙 줄만, 이전 공식 줄은 없다", () => {
+    const st = { ...sd, previous_official: "liquidity_stress", previous_official_label: "Liquidity Stress / Risk-Off", changed: false, change_kind: null, entry_regime: null, entry_confirmed: false, entry_streak: 0, exited_regime: null };
+    render(<CockpitView cockpit={withState(st, "LIQUIDITY_STRESS", "LIQUIDITY STRESS", "liquidity_stress", "Liquidity Stress / Risk-Off")} snapshot={snapshot} history={history} />);
+    expect(screen.getByTestId("ck-now-rule")).toBeTruthy();
+    expect(screen.queryByTestId("ck-now-prev-official")).toBeNull();
+  });
+
+  it("문구 — 전환 · 해제 · 해당 없음", () => {
+    expect(entryText(sd)).toMatchObject({ regime: "liquidity_stress", text: "SAME-DAY · 오늘 선택으로 전환" });
+    expect(exitText(sd).text).toMatch(/해당 없음/);
+    expect(exitText({ ...sd, official: "neutral", candidate: "neutral", change_kind: "exit", exited_regime: "growth" }).text).toMatch(/GROWTH SHOCK 해제/);
+    expect(entryText({ ...sd, changed: false, change_kind: null }).text).toMatch(/확인 일수 없음/);
+  });
+});
+
 describe("exit / entry 문구", () => {
   it("공식 확정 · 진행 · 없음", () => {
     expect(exitText({ ...base, exit_streak: 0 }).text).toBe("0 / 2 DAYS");

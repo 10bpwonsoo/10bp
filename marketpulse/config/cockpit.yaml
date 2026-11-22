@@ -699,6 +699,9 @@ history:
     effective_from: "2026-11-09"
     entry_days: 2
     exit_days: 2
+    #: 2026-11-22 요청 — 이 KST Daily Snapshot 날짜부터는 확인 일수 없이 그날 선택이 곧 공식 regime 이다(logic_version same_day_v1).
+    #: 후보가 없는 날(선택 NEUTRAL)은 Neutral / Mixed. 그 전 날짜(11/09~11/19)의 exit_entry_v2 판정은 그대로다. 비우면 exit_entry_v2 가 계속 쓰인다.
+    same_day_from: "2026-11-20"
     neutral_bridge: false
     near_ratio: 0.5
     core:
@@ -723,6 +726,10 @@ history:
       neutral_entry: "공식 레짐은 Neutral / Mixed이고, 오늘 데이터는 {candidate}을(를) 가리켜 진입 확인이 {entry}/{need}일째입니다."
       neutral_idle: "공식 레짐은 Neutral / Mixed이고, 오늘도 뚜렷한 방향의 후보가 없습니다."
       live: "장중 값은 일수에 넣지 않습니다 — 공식 레짐은 직전 Daily Snapshot 의 {official} 그대로이고, 지금 후보는 {candidate}입니다."
+      # same_day_v1 (2026-11-20 Daily Snapshot~) — 그날 선택이 곧 공식
+      same_day_entry: "오늘 선택에 따라 공식 레짐이 {prev}에서 {official}(으)로 바뀌었습니다."
+      same_day_exit: "오늘은 뚜렷한 방향의 후보가 없어 공식 레짐이 {prev}에서 Neutral / Mixed로 돌아갔습니다."
+      same_day_live: "장중 값으로는 공식 레짐을 바꾸지 않습니다 — 공식 레짐은 직전 Daily Snapshot 의 {official} 그대로이고, 지금 후보는 {candidate}입니다."
   #: OFFICIAL vs RAW 전환 상태 문구 (2026-10-07). {cur}=공식 regime, {raw}=오늘 raw 후보, {n}=raw 지속 일수, {need}=확정에 필요한 연속 일수
   transition:
     confirmed: "raw 신호가 공식 regime {cur}과(와) 같은 방향"
