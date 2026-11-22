@@ -727,8 +727,9 @@ history:
       neutral_idle: "공식 레짐은 Neutral / Mixed이고, 오늘도 뚜렷한 방향의 후보가 없습니다."
       live: "장중 값은 일수에 넣지 않습니다 — 공식 레짐은 직전 Daily Snapshot 의 {official} 그대로이고, 지금 후보는 {candidate}입니다."
       # same_day_v1 (2026-11-20 Daily Snapshot~) — 그날 선택이 곧 공식
-      same_day_entry: "오늘 선택에 따라 공식 레짐이 {prev}에서 {official}(으)로 바뀌었습니다."
-      same_day_exit: "오늘은 뚜렷한 방향의 후보가 없어 공식 레짐이 {prev}에서 Neutral / Mixed로 돌아갔습니다."
+      # 영문 라벨 뒤 조사를 정할 수 없어 화살표로 쓴다
+      same_day_entry: "오늘 선택에 따라 공식 레짐이 바뀌었습니다 ({prev} → {official})."
+      same_day_exit: "오늘은 뚜렷한 방향의 후보가 없어 공식 레짐을 Neutral / Mixed 로 되돌렸습니다 (이전 {prev})."
       same_day_live: "장중 값으로는 공식 레짐을 바꾸지 않습니다 — 공식 레짐은 직전 Daily Snapshot 의 {official} 그대로이고, 지금 후보는 {candidate}입니다."
   #: OFFICIAL vs RAW 전환 상태 문구 (2026-10-07). {cur}=공식 regime, {raw}=오늘 raw 후보, {n}=raw 지속 일수, {need}=확정에 필요한 연속 일수
   transition:

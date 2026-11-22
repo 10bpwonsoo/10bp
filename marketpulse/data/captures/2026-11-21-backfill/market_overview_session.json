@@ -1,15 +1,15 @@
 {
- "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/21 07:30 KST Daily Snapshot 저장 데이터만) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. EXCLUDED 데이터는 근거로 쓰지 않았다.",
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/21 07:30 KST Daily Snapshot 저장 데이터만) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. EXCLUDED 데이터는 근거로 쓰지 않았다. 2026-11-22 공식 regime 규칙 변경(11/20 스냅샷부터 그날 선택 = 공식)에 맞춰 공식 레짐을 말하는 칸(labels.regime · market_view 마지막 문장 · state_summary · regime_read · what_matters_next 첫 항목)만 같은 컨텍스트 · 같은 검증으로 다시 썼다. 나머지 문장은 그대로다.",
  "headline": "미국·한국 동반 급락, 위험 회피가 전 자산으로 번졌다",
- "market_view": "금요일 미국 주식은 AI·반도체 투매가 이어져 나스닥이 5.6% 급락하고 대형주와 소형주가 함께 무너졌으며, 주식과 채권 변동성이 동시에 뛰었습니다. 한국도 반도체 대형주 급락과 외국인 이탈로 코스피와 코스닥이 나란히 5%대 내렸습니다. 미국채 금리는 기대인플레이션과 함께 내려 안전자산 선호를 반영하지만 하이일드 스프레드가 빠르게 벌어지고 금까지 밀려, 기댈 자산이 거의 없는 하루였습니다. 공식 레짐은 Neutral / Mixed 이고 오늘 Risk-Off 가 처음 선택돼 진입 확인 첫날이며, 다음 거래일에도 이어지면 공식 레짐이 바뀝니다.",
+ "market_view": "금요일 미국 주식은 AI·반도체 투매가 이어져 나스닥이 5.6% 급락하고 대형주와 소형주가 함께 무너졌으며, 주식과 채권 변동성이 동시에 뛰었습니다. 한국도 반도체 대형주 급락과 외국인 이탈로 코스피와 코스닥이 나란히 5%대 내렸습니다. 미국채 금리는 기대인플레이션과 함께 내려 안전자산 선호를 반영하지만 하이일드 스프레드가 빠르게 벌어지고 금까지 밀려, 기댈 자산이 거의 없는 하루였습니다. 오늘 선택에 따라 공식 레짐이 Growth Shock 에서 Liquidity Stress / Risk-Off 로 바뀌었고, 미국채와 신용 데이터가 이 급락을 어떻게 반영하는지가 다음 확인점입니다.",
  "labels": {
-  "regime": "Neutral / Mixed",
+  "regime": "Liquidity Stress / Risk-Off",
   "equity": "Weak",
   "macro": "Headwind",
   "risk": "High"
  },
- "state_summary": "중립 유지, 위험 회피 진입 확인 첫날",
- "regime_read": "공식 레짐은 Neutral / Mixed 이고 오늘 Risk-Off 가 선택돼 진입 확인 첫날입니다. 미국·한국·글로벌 주식이 모두 강하게 확인해, 다음 거래일에도 선택되면 공식 레짐이 바뀝니다.",
+ "state_summary": "공식 레짐 Risk-Off 전환, 전 자산 위험 회피",
+ "regime_read": "오늘 Risk-Off 가 선택돼 공식 레짐이 Growth Shock 에서 Liquidity Stress / Risk-Off 로 바뀌었습니다. 미국·한국·글로벌 주식이 모두 강하게 확인합니다.",
  "key_drivers": [
   {
    "name": "AI·반도체 투매",
@@ -190,9 +190,9 @@
  ],
  "what_matters_next": [
   {
-   "title": "위험 회피 확인",
+   "title": "위험 회피 지속",
    "condition": "다음 거래일에도 Risk-Off 가 선택되는지",
-   "implication": "이어지면 공식 레짐이 Neutral / Mixed 에서 Risk-Off 로 바뀐다"
+   "implication": "후보가 바뀌거나 없어지면 공식 레짐이 그날 바로 바뀐다"
   },
   {
    "title": "변동성과 신용",

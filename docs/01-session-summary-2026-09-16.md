@@ -921,3 +921,22 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   - 반도체: UPSWING 27.0(축: PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL STRONG · EQUITY WEAK — 주가 점수 −100)
   - MARKET OVERVIEW: "미국·한국 동반 급락, 위험 회피가 전 자산으로 번졌다"(EQUITY Weak · MACRO Headwind · RISK High · AI ↔ 반도체 DIVERGING)
 - history: 7개 탭에 11/20 행이 하나씩 삽입만 됐다(기존 행 변화 0). 상태 로그 `regime_state/2026-11-20.json` 1개 추가. COMPLETE, 테스트 통과, 화면 점검 오류 0.
+
+### 2026-11-22 — 공식 regime 을 그날 선택으로 (11/20 스냅샷부터)
+- 요청: "20일부터 레짐 그냥 당일자 판단으로 넣어줘". 어느 20일인지 물었고 답은 **스냅샷 날짜 11/20 부터**.
+- 규칙: `cockpit.yaml` `state_machine.same_day_from: "2026-11-20"`. 그 KST Daily Snapshot 날짜부터는 확인 일수(진입 2일 · 이탈 2일) 없이 그날 선택된 후보가 곧 공식 regime 이다
+  (`engines/regime_state.py` `step_same_day`, logic_version `same_day_v1`). 후보가 없어 NEUTRAL 이 선택되면 공식은 Neutral / Mixed. 장중(LIVE) 값은 지금처럼 공식을 바꾸지 않는다.
+  11/09~11/19 의 `exit_entry_v2` 판정은 그대로다. 설정을 비우면 예전 규칙이 계속 쓰인다.
+- 문구 · 화면: MARKET NOW · HISTORY 는 진행 일수(n / 2 DAYS) · support 줄 대신 `Official rule SAME-DAY` 와 오늘 전환(Previous official)을 보인다. MARKET OVERVIEW 는 바뀐 날 `PREVIOUS → OFFICIAL · REGIME CHANGED · SAME-DAY`.
+  REGIME v2 선택 프롬프트 7번과 persistence 안내, MARKET OVERVIEW 컨텍스트(exit · entry 대신 official_rule · changed_today)도 새 규칙을 말한다.
+- 저장본 정정(사용자 요청 — `archive correct` 경로, 이전 파일은 `archive/superseded/`, 상태 로그는 `regime_state/superseded/`):
+  | 스냅샷 | 행(미국 날짜) | 그날 선택 | 공식 (전 → 후) |
+  |---|---|---|---|
+  | 11/20 | 11/19 | Growth Shock (50) | Neutral / Mixed → **Growth Shock** |
+  | 11/21 | 11/20 | Risk-Off (80) | Neutral / Mixed → **Liquidity Stress / Risk-Off** (직전 공식 Growth Shock 에서 전환) |
+  날짜마다 정정 두 번: ① cockpit(공식 띠 · MARKET NOW · cross-asset 대조 · tone 대조 · 전환 이유) ② MARKET OVERVIEW 의 공식 레짐 문장(labels.regime · market_view 마지막 문장 · state_summary · regime_read · what_matters_next 첫 항목).
+  바뀐 최상위 키는 `cockpit` · `market_overview` · `meta` 뿐이다. 선택 · 신뢰도 · factor · 원천 데이터 · 다른 탭 · history 행은 그대로(행에는 그날 선택만 들어 있고 공식은 상태 로그가 정한다).
+  전환 이유(`transition_read_session.json`)와 persistence_assessment 는 그날 컨텍스트만으로 세션에서 다시 썼고 같은 검증을 통과했다.
+- `tools/daily_snapshot/regime_exit_entry_reprocess.py`: `--replace-log`(상태 로그 교체 · 이유 기록) · `--write-context`(미리 보기에서 전환 컨텍스트 쓰기) 추가.
+- 테스트: 백엔드 6개(규칙 · 시작일 · LIVE · 문구 · 정정된 저장본 · 11/19 는 그대로) · 프론트 4개 추가. 전체 통과. 화면 점검 오류 0(최신 · 11/20 · 11/19, 데스크톱 · 모바일).
+- 알아둘 점: 하루짜리 신호도 그날 바로 공식이 되므로 전환이 잦아진다(1개월 전환 수 7 → 9). 11/21 저장본 스크린샷(`archive/screenshots/2026-11-21.jpg`)은 정정 전 화면 그대로 둔다.

@@ -1,0 +1,386 @@
+{
+ "snapshot_date": "2026-11-20",
+ "market_date": "2026-11-19",
+ "cutoff": "2026-11-20T07:30:00+09:00",
+ "transition": {
+  "kind": "entry",
+  "from": "Neutral / Mixed",
+  "to": "Growth",
+  "exit_streak": 0,
+  "exit_required": 1,
+  "entry_streak": 1,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-13",
+   "candidate": "Policy Driven",
+   "official": "Policy Driven",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-16",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Policy Driven",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-17",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "WEAKENING"
+  },
+  {
+   "date": "2026-11-18",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-19",
+   "candidate": "Growth",
+   "official": "Growth",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": 0.13,
+   "today": -1.34
+  },
+  "Liquidity": {
+   "prev": -0.4,
+   "today": -0.05
+  },
+  "Rates": {
+   "prev": -0.56,
+   "today": -0.45
+  },
+  "Inflation": {
+   "prev": 0.2,
+   "today": -1.34
+  },
+  "Credit": {
+   "prev": 1.15,
+   "today": 0.4
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "CREDIT STRESS",
+   "direction": "up",
+   "strength": 0.75,
+   "why": "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 0.8,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX",
+     "z": 2.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": -3.6,
+     "display": "-2.02% (5일)"
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.67,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -3.6,
+     "display": "-2.02% (5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -2.0,
+     "display": "-2.21% (5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": -2.5,
+     "display": "-2.18% (5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": 0.7,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.26,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": -0.7,
+     "display": ""
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": -1.2,
+     "display": ""
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": 0.5,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -0.8,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "up",
+   "strength": 0.48,
+   "why": "주식·채권 변동성이 같이 오른다 — 포지션 축소 압력이 자산군을 넘어 번진다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": 2.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": -0.5,
+     "display": ""
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": 1.8,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "ALUMINUM",
+   "direction": "down",
+   "strength": -1.0,
+   "why": "알루미늄 하락 — 자동차·산업재 원가 완화.",
+   "evidence": [
+    {
+     "label": "알루미늄",
+     "z": -3.0,
+     "display": "-4.0%"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "S&P 500",
+   "z": -2.0,
+   "change": "-2.02%"
+  },
+  {
+   "label": "Russell 2000",
+   "z": -1.8,
+   "change": "-2.18%"
+  },
+  {
+   "label": "Copper/Gold Ratio",
+   "z": -1.6,
+   "change": "-2.20%"
+  },
+  {
+   "label": "VIX",
+   "z": 1.3,
+   "change": ""
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -3.6,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 0.8,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": 2.7,
+   "arrow": "↑↑"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 0.9,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -0.4,
+   "arrow": "→"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -2.2,
+   "arrow": "↓↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "CONTRADICTED",
+   "score": -0.71
+  },
+  "kr": {
+   "status": "PARTIAL",
+   "score": 0.24
+  }
+ },
+ "selection_today": {
+  "selected": "GROWTH_SHOCK",
+  "commentary": "목요일 미국 주식은 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번지며 대형주와 소형주가 함께 크게 밀렸고, 구리 급락과 미국채 금리 하락이 겹쳐 성장 우려 쪽 신호가 모였다. 한국은 미국 급락 전에 반도체 반등으로 올라 마감해 확인이 부분적이다. 성장 충격 환경으로 보지만 하루짜리 수급 이벤트의 성격이 섞여 있어 다음 거래일의 확인이 필요하다.",
+  "primary_reason": "성장 factor 가 기준을 넘었고 위험선호 약화, 금리 하락, 중국 · 원자재 약세가 함께 확인됐다. 미국 주식은 대형주와 소형주, 경기민감 업종이 동반 급락하고 방어 업종이 상대 강세라 성장 우려와 맞는다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "앤트로픽 상장 직후 AI株 투매…나스닥 2.25%↓ [뉴욕증시 브리핑]",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -35,
+   "summary": "앤트로픽 상장 직후 AI 주식에 투매가 나오며 나스닥이 2.25% 하락(뉴욕증시 브리핑, 제목)."
+  },
+  {
+   "title": "U.S. Treasury yields slip on safe-haven bid, 10-year posts four-day losing streak",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": 10,
+   "summary": "안전자산 수요로 미국채 금리가 내려 10년물 금리가 나흘 연속 하락(제목)."
+  },
+  {
+   "title": "코스피, 앤트로픽 상장 앞두고 1.4% 상승 마감…5100선 회복",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 20,
+   "summary": "코스피가 등락 끝에 70.45포인트(1.39%) 오른 5137.89 로 마감 — 5100선 회복(요약)."
+  },
+  {
+   "title": "엔터·미디어·여행주, 한중 관계 해빙에 줄줄이 상한가",
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "sentiment": 25,
+   "summary": "한중 정상회담에서 문화·콘텐츠 교류를 단계적으로 넓히기로 해 엔터·미디어·여행주가 급등(요약)."
+  },
+  {
+   "title": "앤트로픽, 17% 상승했지만...\"시장 살리기엔 역부족\" [앤트로픽 상장]",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": -20,
+   "summary": "앤트로픽이 17% 올랐지만 시장을 되살리기에는 역부족이라는 평가(제목)."
+  },
+  {
+   "title": "[속보] 앤트로픽, 상장 첫날 97.17달러로 마감",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": 15,
+   "summary": "앤트로픽이 상장 첫날 97.17달러로 마감(속보, 제목) — 공모가 83달러."
+  },
+  {
+   "title": "외국인, 10월 K주식 26조 더 팔았다…두 달째 순매도",
+   "themes": [
+    "korea_governance"
+   ],
+   "sentiment": -25,
+   "summary": "외국인이 10월 한국 주식을 26조원 순유출 — 두 달째(제목)."
+  },
+  {
+   "title": "\"중국문 열린다\" K콘텐츠株 뛰고 항공·뷰티株 날았다",
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "sentiment": 25,
+   "summary": "한중 FTA 서비스·투자 후속 협상이 실질 타결돼 한한령 완화 기대로 콘텐츠·항공·화장품주가 상승(요약)."
+  }
+ ]
+}

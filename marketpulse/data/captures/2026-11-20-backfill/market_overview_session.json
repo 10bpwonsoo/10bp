@@ -1,15 +1,15 @@
 {
- "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/20 07:30 KST Daily Snapshot 저장 데이터만) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. EXCLUDED 데이터는 근거로 쓰지 않았다.",
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/20 07:30 KST Daily Snapshot 저장 데이터만) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. EXCLUDED 데이터는 근거로 쓰지 않았다. 2026-11-22 공식 regime 규칙 변경(11/20 스냅샷부터 그날 선택 = 공식)에 맞춰 공식 레짐을 말하는 칸(labels.regime · market_view 마지막 문장 · state_summary · regime_read · what_matters_next 첫 항목)만 같은 컨텍스트 · 같은 검증으로 다시 썼다. 나머지 문장은 그대로다.",
  "headline": "AI 투매가 지수 전체로 번졌다, 성장 우려 신호가 모였다",
- "market_view": "목요일 미국 주식은 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번져 대형주와 나스닥, 소형주가 모두 2% 넘게 밀렸고 변동성이 크게 뛰었습니다. 구리가 급락하고 미국채 장기금리가 기대인플레이션과 함께 내려, 금리 하락이 호재가 아니라 성장 우려로 읽히며 하이일드 스프레드 확대도 이어집니다. 한국은 미국 급락 전에 반도체 반등으로 코스피가 1.39% 올라 마감해 아직 이 충격을 반영하지 않았습니다. 공식 레짐은 Neutral / Mixed 이고 오늘 Growth Shock 이 처음 선택돼 진입 확인 첫날이며, 다음 거래일에도 이어지는지가 방향을 정합니다.",
+ "market_view": "목요일 미국 주식은 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번져 대형주와 나스닥, 소형주가 모두 2% 넘게 밀렸고 변동성이 크게 뛰었습니다. 구리가 급락하고 미국채 장기금리가 기대인플레이션과 함께 내려, 금리 하락이 호재가 아니라 성장 우려로 읽히며 하이일드 스프레드 확대도 이어집니다. 한국은 미국 급락 전에 반도체 반등으로 코스피가 1.39% 올라 마감해 아직 이 충격을 반영하지 않았습니다. 오늘 선택에 따라 공식 레짐이 Neutral / Mixed 에서 Growth Shock 으로 바뀌었고, 하루짜리 수급 이벤트의 성격이 섞여 있어 다음 거래일에도 같은 신호가 이어지는지가 관건입니다.",
  "labels": {
-  "regime": "Neutral / Mixed",
+  "regime": "Growth Shock",
   "equity": "Weak",
   "macro": "Headwind",
   "risk": "High"
  },
- "state_summary": "중립 유지, 성장 충격 진입 확인 첫날",
- "regime_read": "공식 레짐은 Neutral / Mixed 이고 오늘 Growth Shock 이 선택돼 진입 확인 첫날입니다. 미국 주식은 강하게 확인하지만 한국은 미국 급락 전에 마감해 부분 확인에 그쳐, 다음 거래일의 확인이 필요합니다.",
+ "state_summary": "공식 레짐 Growth Shock 전환, 성장 우려 신호",
+ "regime_read": "오늘 Growth Shock 이 선택돼 공식 레짐이 Neutral / Mixed 에서 Growth Shock 으로 바뀌었습니다. 미국 주식은 강하게 확인하지만 한국은 미국 급락 전에 마감해 부분 확인에 그칩니다.",
  "key_drivers": [
   {
    "name": "AI 주식 투매",
@@ -191,9 +191,9 @@
  ],
  "what_matters_next": [
   {
-   "title": "성장 충격 확인",
+   "title": "성장 충격 지속",
    "condition": "다음 거래일에도 Growth Shock 이 선택되는지",
-   "implication": "이어지면 공식 레짐이 Neutral / Mixed 에서 Growth Shock 으로 바뀐다"
+   "implication": "다른 후보가 선택되거나 후보가 없으면 공식 레짐이 그날 바로 바뀐다"
   },
   {
    "title": "AI 투매 진정",

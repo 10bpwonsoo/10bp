@@ -32,7 +32,9 @@
    각 컨텍스트만 읽고 세션본을 쓴 뒤 검증한다:
    `ai.rates_read.check_output(normalize_output(..))` · `ai.inflation_read.check(read, ctx['inflation_map'])` · `ai.semi_read.check_output(..)` · `engines.regime_select.check_output(..)` — 모두 빈 목록이어야 한다.
    지난 세션본(예: `captures/2026-11-10-backfill/*_session.json`)의 형식 · 어조를 따른다. 숫자는 컨텍스트 값만, displayed_elsewhere 숫자는 쓰지 않는다.
-   공식 regime 전환(Exit/Entry, 2026-11-09~)이 확정되는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
+   공식 regime 규칙: 2026-11-20 스냅샷부터 **그날 선택이 곧 공식**이다(`cockpit.yaml` `state_machine.same_day_from`, logic `same_day_v1`) — 확인 일수(진입 2일 · 이탈 2일)를 세지 않고,
+   후보가 없어 NEUTRAL 을 고르면 공식은 Neutral / Mixed 다. 그래서 선택이 전날 공식과 다르면 그날 바로 전환이고, persistence_assessment 에는 그 결과(오늘 전환 · 유지)를 쓴다(11/09~11/19 는 Exit/Entry 규칙 그대로).
+   공식 regime 이 바뀌는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
    `ai.transition_read.check(why, ctx)` 가 빈 목록이어야 한다(1~3문장 · 컨텍스트 숫자만 · Exit 이면 Neutral / Mixed 로 간 것을 적는다). 이 파일이 없으면 전환 이유는 화면이 저장 데이터로 고른 문장이 된다.
    AI THEME VIEW(AI 센티 탭 맨 위): 컨텍스트 단계에서 생기는 `ai_theme_view_context.json` 만 읽고 `ai_theme_view_session.json`
    ({headline, summary, driver, strength, weak_point, next_watch})을 쓴다 — `ai.ai_theme_view.check(out, ctx)` 가 빈 목록이어야 한다.

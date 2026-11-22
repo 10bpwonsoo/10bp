@@ -12,8 +12,9 @@
  "us_equity_confirmation": "STRONG",
  "korea_equity_confirmation": "PARTIAL",
  "global_equity_confirmation": "CONFIRMED",
- "persistence_assessment": "공식 regime 은 Neutral / Mixed 이고 직전 Daily Snapshot 에서도 Neutral / Mixed 였다. 오늘 Growth Shock 이 선택돼 진입 확인 1일째이며, 다음 거래일에도 선택돼야 공식이 된다.",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Neutral / Mixed 다. 확인 일수를 두지 않는 규칙이라 오늘 선택한 Growth Shock 이 곧 공식 regime 이 된다.",
  "data_coverage": 84,
  "selection_rationale": "자격 후보는 Growth Shock(Growth -1.11, 기준 -1.0)과 Risk-Off(RiskAppetite -1.34, 기준 -0.8)다. Growth Shock 은 위험선호 · 금리 · 중국 조건을 통과하고 변동성만 기준 바로 아래라 보조 조건이 넓게 맞고, Risk-Off 는 달러 조건만 통과했다. 미국은 S&P 500 · Russell 2000 급락과 경기민감 업종 약세, 유틸리티 상대 강세로 뚜렷하지만 한국은 KOSPI · KOSDAQ 이 올라 부분 확인에 그친다 — 한국 장은 미국 급락 전에 끝났다. Growth factor 가 기준을 겨우 넘었고, 급락의 직접 계기가 대형 상장 직후의 AI 주식 투매라는 하루짜리 수급 이벤트이며, 미국채 · 신용은 11/18 관측이라 목요일 반응이 아직 없다. 그래서 확신은 정량값보다 낮게 둔다.",
- "commentary": "목요일 미국 주식은 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번지며 대형주와 소형주가 함께 크게 밀렸고, 구리 급락과 미국채 금리 하락이 겹쳐 성장 우려 쪽 신호가 모였다. 한국은 미국 급락 전에 반도체 반등으로 올라 마감해 확인이 부분적이다. 성장 충격 환경으로 보지만 하루짜리 수급 이벤트의 성격이 섞여 있어 다음 거래일의 확인이 필요하다."
+ "commentary": "목요일 미국 주식은 앤트로픽 상장 직후 AI 주식 투매가 지수 전반으로 번지며 대형주와 소형주가 함께 크게 밀렸고, 구리 급락과 미국채 금리 하락이 겹쳐 성장 우려 쪽 신호가 모였다. 한국은 미국 급락 전에 반도체 반등으로 올라 마감해 확인이 부분적이다. 성장 충격 환경으로 보지만 하루짜리 수급 이벤트의 성격이 섞여 있어 다음 거래일의 확인이 필요하다.",
+ "_persistence_note": "2026-11-22 공식 regime 규칙 변경(그날 선택 = 공식, 11/20 스냅샷~)에 맞춰 persistence_assessment 만 다시 썼다. 선택 · 신뢰도 · 근거 문장은 그대로다."
 }

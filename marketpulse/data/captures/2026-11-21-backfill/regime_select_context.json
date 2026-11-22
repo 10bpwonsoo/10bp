@@ -660,8 +660,8 @@
    "confidence": 50.0
   }
  ],
- "official_regime": "Neutral / Mixed",
- "persistence_hint": "공식 Neutral / Mixed · 직전 Daily Snapshot: 공식 Neutral / Mixed, 진입 후보 Growth 1/2 · 규칙: 공식 regime 이 지지되지 않는 거래일이 2일 이어지면 해제되고(새 후보가 미확정이면 Neutral / Mixed), 새 후보는 서로 다른 거래일 2일 연속 선택돼야 공식이 된다. 오늘 선택이 다른 후보면 진입 일수는 다시 1일부터다",
+ "official_regime": "Growth",
+ "persistence_hint": "공식 Growth · 직전 Daily Snapshot 의 공식 regime 이다 · 규칙: 확인 일수를 두지 않는다 — 오늘 선택이 곧 공식 regime 이 된다(오늘 후보가 없어 NEUTRAL 을 고르면 공식은 Neutral / Mixed)",
  "events": [],
  "news": [
   {

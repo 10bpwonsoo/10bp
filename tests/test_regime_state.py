@@ -185,3 +185,24 @@ def test_same_day_texts_and_configured_start():
     hint = persistence_hint_v2("Neutral / Mixed", {"rule_today": "same_day", "official": "neutral"})
     assert "오늘 선택이 곧 공식" in hint and "2일" not in hint
     assert "2일 연속" in persistence_hint_v2("Neutral / Mixed", {"official": "neutral"})   # 예전 규칙의 안내는 그대로
+
+
+@pytest.mark.parametrize("snap,previous,official", [("2026-11-20", "neutral", "growth"), ("2026-11-21", "growth", "liquidity_stress")])
+def test_stored_archives_from_1120_use_same_day_rule(snap, previous, official):
+    """2026-11-22 정정 — 11/20 스냅샷부터 저장본의 공식 regime 은 그날 선택이다(11/20 Growth, 11/21 Liquidity Stress / Risk-Off)."""
+    import json
+    from pathlib import Path
+    doc = json.loads((Path(__file__).resolve().parents[1] / "marketpulse" / "data" / "archive" / "2026" / "11" / f"{snap}.json").read_text(encoding="utf-8"))
+    h = doc["cockpit"]["history"]; st = h["state"]
+    assert h["logic_version"] == RSM.SAME_DAY and st["logic_version"] == RSM.SAME_DAY
+    assert (st["previous_official"], st["official"], st["candidate"], st["changed"]) == (previous, official, official, True)
+    assert h["current_regime"] == official and doc["cockpit"]["market_now"]["transition_status"] == "CHANGED"
+    assert any("same_day_v1" in str(c.get("reason", "")) for c in doc["meta"].get("corrections") or [])
+
+
+def test_stored_archive_before_1120_keeps_exit_entry_rule():
+    """11/19 스냅샷(그 전 날짜)은 손대지 않았다 — exit_entry_v2 그대로."""
+    import json
+    from pathlib import Path
+    doc = json.loads((Path(__file__).resolve().parents[1] / "marketpulse" / "data" / "archive" / "2026" / "11" / "2026-11-19.json").read_text(encoding="utf-8"))
+    assert doc["cockpit"]["history"]["logic_version"] == "exit_entry_v2" and doc["cockpit"]["history"]["state"]["official"] == "neutral"

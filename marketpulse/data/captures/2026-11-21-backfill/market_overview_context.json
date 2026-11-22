@@ -2,14 +2,19 @@
  "snapshot_date": "2026-11-21",
  "as_of_utc": "2026-11-20T22:30:00Z",
  "market_regime": {
-  "official": "NEUTRAL / MIXED",
+  "official": "LIQUIDITY STRESS",
   "candidate": "Liquidity Stress / Risk-Off",
   "official_support": "NA",
-  "exit": "0/2",
-  "entry": "Liquidity Stress / Risk-Off 1/2",
-  "released_previous_official": "Policy Driven",
+  "exit": null,
+  "entry": null,
+  "official_rule": "그날 선택이 곧 공식 regime 이다(확인 일수 없음)",
+  "changed_today": {
+   "from": "Growth",
+   "to": "Liquidity Stress / Risk-Off"
+  },
+  "released_previous_official": null,
   "raw_signal": "RISK_OFF",
-  "transition_status": "TRANSITION_WATCH",
+  "transition_status": "CHANGED",
   "selection_confidence": 80,
   "equity_confirmation": {
    "us": "STRONG",
@@ -17,7 +22,7 @@
    "global": "STRONG"
   },
   "selection_commentary": "금요일 미국 주식은 AI · 반도체 투매가 이어지며 3대 지수와 소형주가 모두 급락했고 주식과 채권 변동성이 함께 뛰었다. 한국도 반도체 대형주 급락과 외국인 이탈로 코스피와 코스닥이 나란히 5%대 내렸다. 두 시장에서 주식 약세가 넓고 강하게 확인돼 위험 회피 환경으로 보며, 성장 우려보다 위험선호 붕괴가 앞선 날이다.",
-  "market_read": "공식 레짐은 Neutral / Mixed이고, 오늘 데이터는 Liquidity Stress를 가리켜 진입 확인이 1/2일째입니다.",
+  "market_read": "오늘 선택에 따라 공식 레짐이 바뀌었습니다 (Growth → Liquidity Stress).",
   "factors_today": {
    "RiskAppetite": -2.47,
    "Liquidity": -1.05,
@@ -58,12 +63,12 @@
    },
    {
     "date": "2026-11-19",
-    "official": "Neutral / Mixed",
+    "official": "Growth",
     "candidate": "Growth"
    },
    {
     "date": "2026-11-20",
-    "official": "Neutral / Mixed",
+    "official": "Liquidity Stress / Risk-Off",
     "candidate": "Liquidity Stress / Risk-Off"
    }
   ]
