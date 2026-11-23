@@ -174,8 +174,12 @@ class PacedHttpClient(HttpClient):
          응답이 있으면 그것을 쓴다 — 더 긴 기간의 응답은 짧은 기간을 포함한다.
       2. 같은 호스트 요청 사이에 처음부터 간격을 둔다(몰아 보내다 429 로 막히지 않게).
       3. 429 를 받으면 그 호스트를 쉬었다가 같은 요청을 다시 보낸다. 회로를 열어 남은 계열을
-         전부 실패시키지 않는다. 쉬는 시간의 합이 `wait_budget_sec` 를 넘으면 그때부터는
-         기다리지 않고 실패로 남긴다(결측 — 0 이나 전날 값으로 채우지 않는다).
+         전부 실패시키지 않는다. 쉬는 시간은 45 → 90 → 180초로 늘고 그 뒤로는 마지막 값을 되풀이한다 —
+         예산이 남아 있는 동안에는 그 요청을 포기하지 않는다(2026-11-24: 공급자가 통째로 막힌 아침에
+         계열마다 세 번 쉬고 넘어가느라 예산만 쓰고 아무것도 못 받았다).
+      4. 쉬는 시간의 합이 `wait_budget_sec` 를 넘으면 그 호스트는 '막힘' 으로 표시하고, 남은 요청은
+         보내지도 기다리지도 않고 바로 실패로 남긴다(결측 — 0 이나 전날 값으로 채우지 않는다).
+         수집이 빨리 끝나야 호출한 쪽이 나중에 다시 시도할 수 있다.
     """
 
     retries: int = 0  # 재시도는 아래에서 간격을 두고 한다 — 0.6초 뒤 재시도는 429 를 키울 뿐이다
@@ -188,7 +192,8 @@ class PacedHttpClient(HttpClient):
     _last_at: dict[str, float] = field(default_factory=dict, repr=False)
     _gap: dict[str, float] = field(default_factory=dict, repr=False)
     _waited: float = field(default=0.0, repr=False)
-    stats: dict[str, int] = field(default_factory=lambda: {"requests": 0, "reused": 0, "throttled": 0, "gave_up": 0})
+    _blocked: dict[str, str] = field(default_factory=dict, repr=False)
+    stats: dict[str, int] = field(default_factory=lambda: {"requests": 0, "reused": 0, "throttled": 0, "gave_up": 0, "skipped": 0})
     _sleep = staticmethod(time.sleep)
 
     def _key(self, url: str, params: Mapping[str, str | int | float] | None) -> tuple[tuple, float | None]:
@@ -206,7 +211,11 @@ class PacedHttpClient(HttpClient):
             return hit[1]
 
         host = url.split("/")[2] if "//" in url else url
-        for cooldown in (*self.cooldowns_sec, None):
+        if host in self._blocked:  # 예산을 다 쓴 호스트 — 보내지도 기다리지도 않는다
+            self.stats["skipped"] += 1
+            raise FetchError(f"{host} 수집 대기 예산 소진 — 건너뜀({self._blocked[host]})", kind="http_429", permanent=False)
+        attempt = 0
+        while True:
             gap = self._gap.get(host, self.min_gap_sec)
             wait = self._last_at.get(host, -1e9) + gap - time.monotonic()
             if wait > 0:
@@ -219,8 +228,12 @@ class PacedHttpClient(HttpClient):
                 if exc.kind != "http_429":
                     raise
                 self.stats["throttled"] += 1
+                cooldown = self.cooldowns_sec[min(attempt, len(self.cooldowns_sec) - 1)] if self.cooldowns_sec else None
+                attempt += 1
                 if cooldown is None or self._waited + cooldown > self.wait_budget_sec:
                     self.stats["gave_up"] += 1
+                    self._blocked[host] = str(exc)
+                    logger.warning("%s 429 — 대기 예산(%.0f초)을 다 썼다. 이 호스트의 남은 요청은 건너뛴다", host, self.wait_budget_sec)
                     raise
                 # 막혔다 — 간격을 늘리고 쉬었다가 같은 요청을 다시. 회로는 닫아 둔다(남은 계열을 살린다).
                 self._gap[host] = min(self.max_gap_sec, gap * 2)
@@ -234,4 +247,3 @@ class PacedHttpClient(HttpClient):
             self._last_at[host] = time.monotonic()
             self._cache[key] = (start, payload)
             return payload
-        raise AssertionError("unreachable")  # pragma: no cover

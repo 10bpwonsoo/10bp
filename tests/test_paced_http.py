@@ -92,13 +92,27 @@ def test_429_cools_down_then_resumes_without_opening_the_circuit(paced):
 
 
 def test_gives_up_when_the_wait_budget_is_spent_and_never_caches_a_failure(paced):
-    c, net = paced({"/A": [429], "/B": [b"b"]}, cooldowns_sec=(30.0, 60.0), wait_budget_sec=40.0)
+    c, net = paced({"/A": [429], "/B": [b"b"], "other.test": [b"o"]}, cooldowns_sec=(30.0, 60.0), wait_budget_sec=40.0)
     with pytest.raises(FetchError) as exc:
         c.get(YAHOO + "A")
     assert exc.value.kind == "http_429" and c.stats["gave_up"] == 1
     assert [s for s in c.sleeps if s >= 30.0] == [30.0]     # 60초는 예산(40초)을 넘어 기다리지 않는다
     assert c._cache == {}                                    # 실패는 값이 아니다 — 결측으로 남는다
-    assert c.get(YAHOO + "B") == b"b"
+    # 예산을 다 쓴 호스트의 남은 요청은 보내지도 기다리지도 않고 바로 실패한다(수집이 빨리 끝나야 나중에 다시 시도할 수 있다)
+    sent, slept = len(net.urls), len(c.sleeps)
+    with pytest.raises(FetchError) as exc2:
+        c.get(YAHOO + "B")
+    assert exc2.value.kind == "http_429" and "건너뜀" in str(exc2.value)
+    assert len(net.urls) == sent and len(c.sleeps) == slept and c.stats["skipped"] == 1
+    assert c.get("https://other.test/x") == b"o"              # 다른 호스트는 그대로 받는다
+
+
+def test_keeps_waiting_on_one_request_while_budget_remains(paced):
+    """공급자가 통째로 막힌 동안에는 그 요청을 포기하고 다음으로 넘어가지 않는다 — 마지막 쉬는 시간을 되풀이한다(2026-11-24)."""
+    c, net = paced({"/A": [429, 429, 429, 429, 429, b"a"]}, cooldowns_sec=(30.0, 60.0), wait_budget_sec=1000.0)
+    assert c.get(YAHOO + "A") == b"a"
+    assert [s for s in c.sleeps if s >= 30.0] == [30.0, 60.0, 60.0, 60.0, 60.0]
+    assert c.stats["throttled"] == 5 and c.stats["gave_up"] == 0 and len(net.urls) == 6
 
 
 def test_other_errors_are_not_retried_here(paced):
