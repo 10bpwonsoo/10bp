@@ -242,6 +242,41 @@ def test_point_in_time_cut_drops_bars_not_yet_published():
     assert {k: v.timestamps[-1].isoformat()[:10] for k, v in cut.items()} == {"SPX": "2026-10-15", "KOSPI": "2026-10-15"}
 
 
+def test_futures_bar_is_available_at_its_new_york_close_from_2026_11_25():
+    """선물 · DXY 일봉은 뉴욕 0시에 찍히고 17:00 ET 에 끝난다. 겨울(05:00Z)에는 +18h 가 23:00Z 라 07:30 KST(22:30Z) 기준에서 빠졌다 —
+    2026-11-25 스냅샷부터는 그 거래일 뉴욕 17:00 으로 본다. 그 전 스냅샷 날짜의 판정은 그대로다."""
+    from marketpulse.models.common import DataMeta, DataMode
+    from marketpulse.models.market import MarketSeries
+
+    def s(iid, source, stamps):
+        ts = [datetime.fromisoformat(t.replace("Z", "+00:00")) for t in stamps]
+        return MarketSeries(instrument_id=iid, timestamps=ts, values=[float(i) for i in range(len(ts))],
+                            meta=DataMeta(source=source, mode=DataMode.DELAYED, retrieved_at=ts[-1], as_of=ts[-1]))
+    last = lambda cut: {k: v.timestamps[-1].isoformat()[:16] for k, v in cut.items()}  # noqa: E731
+    winter = ["2026-11-20T05:00:00Z", "2026-11-23T05:00:00Z", "2026-11-24T05:00:00Z"]
+    series = {"GOLD": s("GOLD", "yahoo:GC=F", winter), "DXY": s("DXY", "yahoo:DX-Y.NYB", winter),
+              "COPPER_GOLD": s("COPPER_GOLD", "derived:ratio(COPPER,GOLD)", winter), "COPPER": s("COPPER", "yahoo:HG=F", winter),
+              "SPX": s("SPX", "yahoo:^GSPC", ["2026-11-20T14:30:00Z", "2026-11-23T14:30:00Z", "2026-11-24T14:30:00Z"]),
+              "USDKRW": s("USDKRW", "yahoo:KRW=X", ["2026-11-20T00:00:00Z", "2026-11-23T00:00:00Z", "2026-11-24T00:00:00Z"])}
+    # 11/24 스냅샷(이전 규칙): 11/23 선물 봉은 05:00Z + 18h = 23:00Z 라 빠진다 — 저장본과 같은 판정
+    assert last(cut_series(series, kst(2026, 11, 24))) == {"GOLD": "2026-11-20T05:00", "DXY": "2026-11-20T05:00", "COPPER_GOLD": "2026-11-20T05:00", "COPPER": "2026-11-20T05:00",
+                                                           "SPX": "2026-11-23T14:30", "USDKRW": "2026-11-20T00:00"}
+    # 11/25 스냅샷(새 규칙): 11/24 선물 봉은 뉴욕 17:00 = 22:00Z 에 끝나 22:30Z 기준에 들어온다. 주식 · 환율 판정은 그대로
+    assert last(cut_series(series, kst(2026, 11, 25))) == {"GOLD": "2026-11-24T05:00", "DXY": "2026-11-24T05:00", "COPPER_GOLD": "2026-11-24T05:00", "COPPER": "2026-11-24T05:00",
+                                                           "SPX": "2026-11-24T14:30", "USDKRW": "2026-11-23T00:00"}
+    # 진행 중 봉은 수집 시각으로 찍힌다: 11/25 11:27 KST(02:27Z)에 받은 봉은 11/25 거래일 세션(뉴욕 18시 이후 시작)이라 11/25 스냅샷에 들어오지 않는다
+    late = {"GOLD": s("GOLD", "yahoo:GC=F", winter + ["2026-11-25T02:27:00Z"])}
+    assert last(cut_series(late, kst(2026, 11, 25))) == {"GOLD": "2026-11-24T05:00"}
+    # 마감 직전 시각(뉴욕 16:59)으로 찍힌 그날 봉은 17:00 에 끝난 봉이다 — 들어온다. 뉴욕 낮에 찍힌 다음 날 봉은 아직이다
+    brk = {"GOLD": s("GOLD", "yahoo:GC=F", winter[:2] + ["2026-11-24T21:59:00Z"])}
+    assert last(cut_series(brk, kst(2026, 11, 25))) == {"GOLD": "2026-11-24T21:59"}
+    assert last(cut_series({"GOLD": s("GOLD", "yahoo:GC=F", winter + ["2026-11-25T15:00:00Z"])}, kst(2026, 11, 25))) == {"GOLD": "2026-11-24T05:00"}
+    # 여름(04:00Z · 뉴욕 17:00 = 21:00Z)도 같은 규칙으로 그날 봉이 들어온다
+    summer = {"GOLD": s("GOLD", "yahoo:GC=F", ["2027-06-10T04:00:00Z", "2027-06-11T04:00:00Z"])}
+    assert last(cut_series(summer, kst(2027, 6, 12))) == {"GOLD": "2027-06-11T04:00"}
+    assert last(cut_series(summer, kst(2027, 6, 11))) == {"GOLD": "2027-06-10T04:00"}
+
+
 def test_history_never_records_a_weekend_day(tmp_path):
     from marketpulse.history import DailySnapshotManager, JsonDirStore
     from marketpulse.models.daily_history import DailySnapshot

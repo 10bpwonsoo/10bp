@@ -7,7 +7,9 @@ Point-in-time 절단 — 과거 날짜 D 의 화면을 만들 때 D cutoff(기�
 
     yahoo 주식·지수·ETF   타임스탬프 = 개장(미국 13:30Z · 한국/일본 00:00Z · 홍콩 01:30Z)     → +7h  (유럽 07:00Z 개장은 +9h)
     yahoo ^VIX            07:00Z 로 찍힌다 · 마감 20:15Z                                      → +14h
-    yahoo 선물(=F) · DXY   04:00Z(뉴욕 0시) 로 찍힌다 · 정산 17:00 ET                          → +18h
+    yahoo 선물(=F) · DXY   뉴욕 0시(여름 04:00Z · 겨울 05:00Z)로 찍힌다 · 마감 17:00 ET         → 그 거래일 뉴욕 17:00 (0시 봉이면 +17h)
+                          2026-11-25 스냅샷부터. 그 전 스냅샷은 +18h 였다 — 겨울(05:00Z)에는 23:00Z 가 돼 07:30 KST(22:30Z) 기준에서
+                          이미 끝난 봉이 빠졌고, 11/03~11/24 스냅샷의 금 · 유가 · 구리 · 천연가스 · DXY 가 하루 늦었다(저장본은 그대로 둔다).
     yahoo 환율(=X)         전날 23:00Z 에 찍힌 하루 봉                                          → +24h
     fred                  관측일 00:00Z · H.15 금리·기대인플레는 다음 영업일 오후에 공개        → 관측일 다음 평일 22:00Z
     csv · 그 밖            일 단위 수기·수집 파일                                               → +24h
@@ -20,8 +22,9 @@ Point-in-time 절단 — 과거 날짜 D 의 화면을 만들 때 D cutoff(기�
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Mapping
+from zoneinfo import ZoneInfo
 
 from ..models.market import MarketSeries
 
@@ -29,6 +32,24 @@ H = timedelta(hours=1)
 
 
 FRED = timedelta(hours=-1)  # 표식 — 고정 지연이 아니라 '다음 평일 22:00Z' 규칙
+FUTURES_OLD = 18 * H  # 2026-11-24 스냅샷까지 — 찍힌 시각 + 18h
+FUTURES = 17 * H  # 2026-11-25 스냅샷부터 — 표식이기도 하다: bar_available 이 '그 거래일 뉴욕 17:00' 으로 판정한다
+FUTURES_CLOSE_RULE_FROM = date(2026, 11, 25)  # KST Daily Snapshot 날짜(사용자 요청 2026-11-24)
+_NY = ZoneInfo("America/New_York")
+_KST = timezone(timedelta(hours=9))
+
+
+def _futures_lag(cutoff: datetime | None) -> timedelta:
+    if cutoff is not None and cutoff.astimezone(_KST).date() < FUTURES_CLOSE_RULE_FROM:
+        return FUTURES_OLD
+    return FUTURES
+
+
+def _futures_close(ts: datetime) -> datetime:
+    """그 봉이 속한 거래일의 마감(뉴욕 17:00). 뉴욕 18시 이후에 찍힌 봉은 다음 거래일 세션이다(진행 중 봉은 수집 시각으로 찍힌다)."""
+    ny = ts.astimezone(_NY)
+    d = ny.date() + timedelta(days=1 if ny.hour >= 18 else 0)
+    return datetime(d.year, d.month, d.day, 17, 0, tzinfo=_NY)
 
 
 def _next_weekday_22z(ts: datetime) -> datetime:
@@ -38,7 +59,7 @@ def _next_weekday_22z(ts: datetime) -> datetime:
     return datetime(d.year, d.month, d.day, 22, 0, tzinfo=ts.tzinfo)
 
 
-def availability_lag(source: str, lags_by_id: Mapping[str, timedelta] | None = None) -> timedelta:
+def availability_lag(source: str, lags_by_id: Mapping[str, timedelta] | None = None, *, cutoff: datetime | None = None) -> timedelta:
     s = (source or "").strip()
     low = s.lower()
     if low.startswith("derived:"):
@@ -54,7 +75,7 @@ def availability_lag(source: str, lags_by_id: Mapping[str, timedelta] | None = N
         if sym.endswith("=X"):
             return 24 * H
         if sym.endswith("=F") or sym.startswith("DX-Y"):
-            return 18 * H
+            return _futures_lag(cutoff)
         if sym == "^VIX":
             return 14 * H
         return 7 * H  # 유럽(07:00Z 개장)은 bar_available 에서 +9h
@@ -64,6 +85,8 @@ def availability_lag(source: str, lags_by_id: Mapping[str, timedelta] | None = N
 def bar_available(ts: datetime, lag: timedelta, cutoff: datetime) -> bool:
     if lag == FRED:
         return _next_weekday_22z(ts) <= cutoff
+    if lag == FUTURES:
+        return _futures_close(ts) <= cutoff
     if lag == 7 * H and ts.hour == 7:  # 유럽 지수·주식: 07:00Z 개장 · 15:30Z 마감
         lag = 9 * H
     return ts + lag <= cutoff
@@ -75,11 +98,11 @@ def cut_series(series: Mapping[str, MarketSeries], cutoff: datetime) -> dict[str
     for iid, s in series.items():
         src = str(getattr(s.meta, "source", "") or "")
         if not src.lower().startswith("derived:"):
-            lags[iid] = availability_lag(src)
+            lags[iid] = availability_lag(src, cutoff=cutoff)
     out: dict[str, MarketSeries] = {}
     for iid, s in series.items():
         src = str(getattr(s.meta, "source", "") or "")
-        lag = lags.get(iid) or availability_lag(src, lags)
+        lag = lags.get(iid) or availability_lag(src, lags, cutoff=cutoff)
         keep = [i for i, t in enumerate(s.timestamps) if bar_available(t, lag, cutoff)]
         if not keep:
             continue
