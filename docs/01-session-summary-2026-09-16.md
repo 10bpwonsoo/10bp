@@ -940,3 +940,30 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - `tools/daily_snapshot/regime_exit_entry_reprocess.py`: `--replace-log`(상태 로그 교체 · 이유 기록) · `--write-context`(미리 보기에서 전환 컨텍스트 쓰기) 추가.
 - 테스트: 백엔드 6개(규칙 · 시작일 · LIVE · 문구 · 정정된 저장본 · 11/19 는 그대로) · 프론트 4개 추가. 전체 통과. 화면 점검 오류 0(최신 · 11/20 · 11/19, 데스크톱 · 모바일).
 - 알아둘 점: 하루짜리 신호도 그날 바로 공식이 되므로 전환이 잦아진다(1개월 전환 수 7 → 9). 11/21 저장본 스크린샷(`archive/screenshots/2026-11-21.jpg`)은 정정 전 화면 그대로 둔다.
+
+### 2026-11-24 — 11/24(화) Daily Snapshot (07:30 KST 기준, 저장은 11:50 KST 무렵)
+- 예약 작업(07:31 시작). 기준 시각은 07:30 KST 그대로이고, 그 뒤에 생긴 봉 · 기사는 절단 규칙이 계산에서 뺐다. 행 날짜는 미국 11/23.
+- **수집 지연**: Yahoo 가 07:32 부터 429 로 요청을 거의 다 막았다(07:32 · 08:00 · 08:58 · 09:31 네 번 시도 — 가장 많이 받은 것이 기본 23/60 · 종목 9/101 · 바스켓 0/52).
+  8분마다 실제 수집과 같은 요청 5건을 보내 보다가 **10:40 KST 에 풀려** 전체 수집을 돌렸다(44분, 요청 170 · 재사용 41 · 429 20회 → 기본 47/60 · 종목 94/101 · 바스켓 50/52).
+  - 그 수집에서 Yahoo 응답이 KOSPI · KOSDAQ · 홍콩/중국 지수 · DXY · 원자재 선물의 **11/23 봉을 비운 채** 왔다. 11:34 KST 에 그 계열과 실패한 NET · APP 만 다시 받아(요청 20 · 429 1회) 합쳤다.
+    겹치는 과거 봉 값은 두 수집에서 전부 같았다. 전날 수집분은 섞지 않았다(`captures/2026-11-24-backfill/input_merge_report.json`).
+  - HSTECH · CSI300_ETF · CHINEXT 는 다시 받아도 11/23 봉이 없어 그대로 둔다. NIKKEI · Tokyo Electron 은 11/23 일본 휴장.
+  - 최종: 기본 47/60 · 종목 94/101 · 바스켓 52/52. 단위 점검은 VIX 11/05 (+69.7%, 전부터 있던 실제 움직임)뿐.
+- 수집 클라이언트 수정(`7d28fc5`): 막힌 동안 같은 요청을 계속 기다리고(45 → 90 → 180초, 그 뒤 180초 반복), 대기 예산(1200초)을 다 쓰면 그 서버의 남은 요청은 보내지 않고 바로 결측으로 남긴다.
+  전에는 계열마다 세 번 쉬고 넘어가 예산만 쓰고 아무것도 못 받았다.
+- 기사: 창 11/21 07:30 → 11/24 07:30 KST, 117건 · 태그 28건. RSS 에 11/21 13:52 ~ 11/23 12:31 KST 기사가 남아 있지 않아 그 구간은 비어 있다(채우지 않음).
+- 그날 판정
+  - REGIME: 후보 Risk-On(72) · Policy-Driven(51) · Liquidity Stress(45) → 선택 **Risk-On 62 · TENTATIVE**(미국 STRONG · 한국 CONTRADICTED · 글로벌 MIXED).
+    `same_day_v1` 이라 공식이 **Liquidity Stress / Risk-Off → Risk-On** 으로 하루 만에 바뀌었다(상태 로그 `regime_state/2026-11-23.json`, 전환 이유 세션본).
+    factor: RiskAppetite −2.47 → +2.29 · Liquidity −1.61 · Rates −2.25 · Credit +3.25(HY OAS 는 11/20 관측).
+  - 금리: INFLATION REPRICING — Not Confirmed. 미국채 · TIPS · HY OAS 는 11/20 관측(2년 −13bp · 10년 −12bp, HY OAS 1주 +53bp) — 월요일 반등은 아직 없다. move quality: flight to quality.
+  - 물가: MIXED(기대인플레 · 원자재 하락 압력 ↔ 임금 · 서비스 · 원화 약세 상승 압력).
+  - 유가: Geopolitical Premium — UNCONFIRMED.
+  - AI: LEADERSHIP NARROWING · sentiment 64. 바스켓 하루 +9.2%, 오른 종목 91%, 20일선 위 6%.
+  - 반도체: EARLY RECOVERY 21.1(PRICING IMPROVING · AI MEMORY STRONG · FUNDAMENTAL IMPROVING · EQUITY WEAK).
+  - MARKET OVERVIEW: "미국은 급반등, 한국은 급락 마감, 공식 레짐 Risk-On 전환"(EQUITY Mixed · MACRO Neutral · RISK Elevated · AI ↔ 반도체 PARTIAL).
+- history: 7개 탭에 11/23 행이 하나씩 삽입만 됐다(기존 행 변화 0). COMPLETE, 테스트 통과, 화면 점검 오류 0.
+- **찾았지만 고치지 않은 것(보고)**: 절단 규칙 `archive/pit.py` 가 Yahoo 선물 · DXY 봉을 "찍힌 시각 + 18시간" 뒤에 쓸 수 있다고 본다. 서머타임이 끝난 뒤(11/01~) 봉이 05:00Z 에 찍혀 23:00Z 가 되므로
+  07:30 KST(22:30Z) 기준에서 빠진다 — 실제 마감은 17:00 ET = 22:00Z 라 기준 시각 전에 끝난 봉이다. 그래서 **11/03 스냅샷부터 금 · 유가 · 구리 · 천연가스 · DXY 가 하루 늦게** 들어간다(오늘은 11/20 값).
+  17시간으로 바꾸면 겨울에도 그날 봉이 들어온다. 계산 규칙이라 사용자 확인 뒤에 바꾼다. 저장된 과거 스냅샷은 그대로 둔다.
+- 시작 시각 근거: 07:31 로 옮긴 뒤 첫 평일 아침에 3시간 넘게 막혔다(07:32 ~ 10:40 KST). 11/20 · 11/21 오후 2시대 수집은 429 없이 4분대였다.

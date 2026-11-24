@@ -4882,6 +4882,99 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-23",
+   "tab_id": "market_regime",
+   "state": "RISK_ON",
+   "state_label": "Risk-On",
+   "state_label_ko": "",
+   "state_score": 29.022607929918106,
+   "confidence": 62.0,
+   "component_scores": {
+    "RiskAppetite": 81.59710845108175,
+    "Volatility": 58.55334026669632,
+    "Growth": 54.39207257615952,
+    "Credit": -92.5223264390626,
+    "KoreaFlow": null,
+    "news": 7.74953389087386,
+    "factor:Growth": 1.219,
+    "factor:Inflation": -0.237,
+    "factor:Rates": -2.246,
+    "factor:USD": -0.065,
+    "factor:Liquidity": -1.607,
+    "factor:RiskAppetite": 2.289,
+    "factor:Credit": 3.248,
+    "factor:Volatility": -1.342,
+    "factor:China": -0.525
+   },
+   "key_drivers": [
+    "S&P 500 +4.0σ",
+    "Nasdaq 100 +4.0σ",
+    "US HY OAS +3.2σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-23T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-24T02:47:29.125036Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "RISK_ON 62% · 온도 +29",
+   "payload": {
+    "date": "2026-11-23",
+    "as_of": "2026-11-23T22:30:00Z",
+    "label": "RISK_ON",
+    "secondary_label": "LIQUIDITY_STRESS",
+    "confidence": 62.0,
+    "price_temperature": 43.20465728928094,
+    "news_temperature": 7.74953389087386,
+    "composite": 29.022607929918106,
+    "news_events": 28,
+    "thermo_confidence": 91.45448766015929,
+    "components": {
+     "RiskAppetite": 81.59710845108175,
+     "Volatility": 58.55334026669632,
+     "Growth": 54.39207257615952,
+     "Credit": -92.5223264390626,
+     "KoreaFlow": null,
+     "news": 7.74953389087386
+    },
+    "band": "warm",
+    "band_label": "온기",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": 1.219,
+     "Inflation": -0.237,
+     "Rates": -2.246,
+     "USD": -0.065,
+     "Liquidity": -1.607,
+     "RiskAppetite": 2.289,
+     "Credit": 3.248,
+     "Volatility": -1.342,
+     "China": -0.525
+    },
+    "hypotheses": {
+     "RISK_ON": 0.867,
+     "LIQUIDITY_STRESS": 0.675,
+     "POLICY_DRIVEN": 0.6
+    },
+    "drivers": [
+     "S&P 500 +4.0σ",
+     "Nasdaq 100 +4.0σ",
+     "US HY OAS +3.2σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }
