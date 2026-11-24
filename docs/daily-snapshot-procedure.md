@@ -40,6 +40,10 @@
    후보가 없어 NEUTRAL 을 고르면 공식은 Neutral / Mixed 다. 그래서 선택이 전날 공식과 다르면 그날 바로 전환이고, persistence_assessment 에는 그 결과(오늘 전환 · 유지)를 쓴다(11/09~11/19 는 Exit/Entry 규칙 그대로).
    공식 regime 이 바뀌는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
    `ai.transition_read.check(why, ctx)` 가 빈 목록이어야 한다(1~3문장 · 컨텍스트 숫자만 · Exit 이면 Neutral / Mixed 로 간 것을 적는다). 이 파일이 없으면 전환 이유는 화면이 저장 데이터로 고른 문장이 된다.
+   반도체 CYCLE READ(반도체 사이클 탭 맨 위, 2026-11-24~): 컨텍스트 단계에서 생기는 `semiconductor_cycle_read_context.json` 만 읽고 `semiconductor_cycle_read_session.json`
+   ({read 2~3문장(…습니다) · verdict 한 줄 · support/constraint [{key, note}] 각 2~4개})을 쓴다 — `ai.semi_cycle_read.check_output(normalize_output(..), ctx, cfg['cycle_read'])` 가 빈 목록이어야 한다.
+   '왜 지금 이 국면인가' 만 쓴다(어떤 증거가 지지하고 무엇이 막는지 · 신뢰도가 왜 그 수준인지 · path 로 올라온 것인지 내려온 것인지). 시장 해석 · 시나리오는 MARKET READ 몫이라 반복하지 않는다.
+   support 는 factors 의 side 가 support 인 key 만, constraint 는 constraint 인 key 만. Equity Confirm(현물과 같은 방향인가)을 주가 강세로 쓰지 않는다. 없으면 그날 CYCLE READ 는 비워 둔다(고정 문장 없음).
    AI THEME VIEW(AI 센티 탭 맨 위): 컨텍스트 단계에서 생기는 `ai_theme_view_context.json` 만 읽고 `ai_theme_view_session.json`
    ({headline, summary, driver, strength, weak_point, next_watch})을 쓴다 — `ai.ai_theme_view.check(out, ctx)` 가 빈 목록이어야 한다.
    고정 문구 없이 그날 데이터의 관계를 해석한다(주도 · 확인 · 반대 증거 · 다음 확인점, 미국 · 한국). missing 의 데이터로 결론을 만들지 않는다. AI REGIME READ 문장을 반복하지 않는다.

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { DailyHistory } from "../api/types";
-import type { SemiconductorCycle, SemiMapRow, SemiPremium, SemiProduct, SemiStage, SemiNormalized } from "../api/semiconductor";
+import type { SemiComponent, SemiconductorCycle, SemiMapRow, SemiPremium, SemiProduct, SemiStage, SemiNormalized } from "../api/semiconductor";
+import { chipMeaning, chipTone, compositeRead, contribution, EQUITY_NOTE, FACTOR_MEANING, factorBasis, factorWord, groupTitles, METRIC_MEANING, REGIME_MEANING, REGIME_SCALE,
+  SCALE_FLOOR_LABEL, SCORE_LEGEND, SIDE_MIN, sideOf, TURNING_NOTE, WEIGHT_LEGEND, type Side } from "./semiExplain";
 import { DailyHistoryStrip } from "./DailyHistoryStrip";
 import "../theme/semiconductor.css";
 
@@ -61,9 +63,56 @@ function useWidth<T extends HTMLElement>(fallback = 600): [React.RefObject<T | n
 }
 
 // ── 1. REGIME ───────────────────────────────────────────────
+// 2026-11-24 설명 레이어: 국면의 뜻 · 지표 설명 · 지지/제약 묶음 · 점수 안내. 숫자와 판정은 서버 값 그대로(semiExplain.ts 는 설명만).
+function CompositeScale({ v }: { v: number }) {
+  const pos = (x: number) => `${Math.max(0, Math.min(100, (x + 100) / 2))}%`;
+  return (
+    <div className="sm-scale" data-testid="semi-scale" aria-hidden="true">
+      <div className="sm-scale-bar">
+        <i className="sm-scale-zero" />
+        {REGIME_SCALE.map((s) => <i key={s.key} className="sm-scale-tick" style={{ left: pos(s.min) }} />)}
+        <i className="sm-scale-mark" style={{ left: pos(v), background: v >= 0 ? "var(--up)" : "var(--down)" }} />
+      </div>
+      <div className="sm-scale-ends mono"><span>−100 DOWN</span><span>0 NEUTRAL</span><span>+100 UP</span></div>
+    </div>
+  );
+}
+
+function WhyGroup({ title, tone, rows, notes, c }: { title: string; tone: "up" | "down"; rows: SemiComponent[]; notes: Map<string, string>; c: SemiconductorCycle }) {
+  return (
+    <div className="sm-why-col" data-side={tone === "up" ? "support" : "constraint"}>
+      <span className="sm-why-title mono" style={{ color: `var(--${tone})` }}>{title}</span>
+      {rows.length === 0 ? <span className="sm-why-none">해당 증거 없음</span> : rows.map((x) => (
+        <div key={x.key} className="sm-why-row" data-key={x.key}>
+          <span className="sm-why-name">{x.label}</span>
+          <b className="mono" style={{ color: `var(--${tone})` }}>{factorWord(x, c)}</b>
+          <span className="num mono sm-why-score">{sg(x.score, 0, "")}</span>
+          {notes.get(x.key) ? <small className="sm-why-note">{notes.get(x.key)}</small> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RegimeCard({ c }: { c: SemiconductorCycle }) {
   const r = c.regime;
   const color = REGIME_COLOR[r.state] ?? "var(--muted)";
+  const [open, setOpen] = useState<string | null>(null);
+  const cr = c.cycle_read && c.cycle_read.status === "ok" ? c.cycle_read : null;
+  const notes = new Map<string, string>([...(cr?.support ?? []), ...(cr?.constraint ?? [])].map((x) => [x.key, x.note]));
+  // 지지 · 제약 = 점수의 부호. composite 에 미치는 몫(|점수 × 가중치|)이 큰 순서로 4개까지
+  const ranked = (side: Side) => r.components.filter((x) => sideOf(x.score) === side).sort((a, b) => Math.abs((b.score ?? 0) * b.weight) - Math.abs((a.score ?? 0) * a.weight));
+  const support = ranked("support").slice(0, 4), constraint = ranked("constraint").slice(0, 4);
+  const more = [...ranked("support").slice(4), ...ranked("constraint").slice(4)];
+  const neutral = r.components.filter((x) => sideOf(x.score) === "neutral"), missing = r.components.filter((x) => x.score === null);
+  const [tSup, tCon] = groupTitles(r.state);
+  const h = c.memory_history;
+  const path = h && h.previous_label && h.current_label && h.previous_label !== h.current_label
+    ? `직전 국면 ${h.previous_label.toUpperCase()} 에서 ${(h.score_change_1w ?? 0) < 0 ? "내려옴" : "올라옴"} · ${h.current_streak}거래일째${h.score_change_1w !== null ? ` · composite 1주 ${sg(h.score_change_1w, 1, "")}` : ""}`
+    : h && h.current_streak ? `${h.current_streak}거래일째 같은 국면${h.score_change_1w !== null ? ` · composite 1주 ${sg(h.score_change_1w, 1, "")}` : ""}` : null;
+  const turning = r.chips.find((ch) => ch.key === "turning");
+  const tEv = turning?.value === "EARLY SOFTENING" ? c.turning?.softening : turning?.value === "EARLY TIGHTENING" ? c.turning?.tightening : [];
+  const hasEquityGap = r.chips.some((ch) => ch.key === "equity" && !ch.value.startsWith(NO)) && r.components.some((x) => x.key === "equity" && x.score !== null);
   return (
     <section className="panel sm-panel sm-wide sm-regime" data-testid="semi-regime" data-state={r.state}>
       <div className="panel-body">
@@ -73,23 +122,96 @@ function RegimeCard({ c }: { c: SemiconductorCycle }) {
         </div>
         <div className="sm-regime-head">
           <b className="sm-regime-label" style={{ color }} data-testid="semi-regime-label">{r.label}</b>
-          <span className="sm-conf mono" data-testid="semi-confidence">신뢰도 {r.confidence.toFixed(0)} · 증거 확보 {(r.coverage * 100).toFixed(0)}%{r.composite !== null ? ` · composite ${sg(r.composite, 0, "")}` : ""}</span>
+          {path ? <span className="sm-path mono" data-testid="semi-path">{path}</span> : null}
         </div>
-        <div className="sm-chips" data-testid="semi-chips">
-          {r.chips.map((ch) => (
-            <span key={ch.key} className="sm-chip mono" data-key={ch.key}><small>{ch.label}</small><b style={{ color: chipColor(ch.value) }}>{ch.value}</b></span>
+        {REGIME_MEANING[r.state] ? <p className="sm-meaning" data-testid="semi-regime-meaning">{REGIME_MEANING[r.state]}</p> : null}
+
+        <div className="sm-metrics" data-testid="semi-confidence">
+          <div className="sm-metric" data-key="composite">
+            <small className="mono">COMPOSITE</small><b className="num mono">{r.composite !== null ? sg(r.composite, 0, "") : NO}</b>
+            <span>{METRIC_MEANING.composite} — {compositeRead(r.composite)}</span>
+            {r.composite !== null ? <CompositeScale v={r.composite} /> : null}
+          </div>
+          <div className="sm-metric" data-key="confidence">
+            <small className="mono">CONFIDENCE · 신뢰도</small><b className="num mono">{r.confidence.toFixed(0)}</b>
+            <span>{METRIC_MEANING.confidence}</span>
+          </div>
+          <div className="sm-metric" data-key="evidence">
+            <small className="mono">EVIDENCE · 증거 확보</small><b className="num mono">{(r.coverage * 100).toFixed(0)}%</b>
+            <span>{METRIC_MEANING.evidence}</span>
+          </div>
+        </div>
+        <details className="sm-thresholds">
+          <summary className="mono">국면 구간 기준</summary>
+          <p className="sm-note" data-testid="semi-thresholds">{REGIME_SCALE.map((s) => `${s.label} ≥ ${sg(s.min, 0, "")}`).join(" · ")} · {SCALE_FLOOR_LABEL} 그 아래 — composite 가 어느 구간에 있는지로만 정한다. 증거 확보가 {((r.min_coverage ?? 0) * 100).toFixed(0)}% 미만이거나 메모리 가격 증거가 없으면 정하지 않는다.</p>
+        </details>
+
+        {cr ? (
+          <div className="sm-cread" data-testid="semi-cycle-read">
+            <span className="sm-sub mono">CYCLE READ <small>{cr.generator === "session" ? "AI · 세션 생성(같은 검증)" : "AI"} · 판정의 설명 — 시장 해석은 아래 Market Read</small></span>
+            <p className="sm-read" data-testid="semi-cycle-read-text">{cr.read}</p>
+          </div>
+        ) : c.cycle_read ? <p className="sm-note mono" data-testid="semi-cycle-read-none">CYCLE READ 없음 — {c.cycle_read.reason || "AI 해설이 생성되지 않았습니다"}</p> : null}
+
+        <div className="sm-why" data-testid="semi-why">
+          <span className="sm-sub mono">WHY {r.label}?</span>
+          <div className="sm-why-grid">
+            <WhyGroup title={tSup} tone="up" rows={support} notes={notes} c={c} />
+            <WhyGroup title={tCon} tone="down" rows={constraint} notes={notes} c={c} />
+          </div>
+          {cr?.verdict ? <p className="sm-verdict" data-testid="semi-verdict">→ {cr.verdict}</p> : null}
+          {more.length || neutral.length || missing.length ? (
+            <p className="sm-note">
+              {more.length ? `그 밖 · ${more.map((x) => `${x.label} ${sg(x.score, 0, "")}`).join(" · ")}${neutral.length || missing.length ? " / " : ""}` : ""}
+              {neutral.length ? `중립(|점수| < ${SIDE_MIN}) · ${neutral.map((x) => x.label).join(" · ")}` : ""}{neutral.length && missing.length ? " / " : ""}
+              {missing.length ? `NO DATA · ${missing.map((x) => x.label).join(" · ")} — 값이 없어 계산에서 뺀다(0 으로 넣지 않음)` : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <span className="sm-sub mono">INDICATORS <small>상태 배지 — 각 지표가 지금 어떤 상태인가</small></span>
+        <div className="sm-chips sm-chips-x" data-testid="semi-chips">
+          {r.chips.filter((ch) => ch.key !== "turning").map((ch) => (
+            <span key={ch.key} className="sm-chip mono" data-key={ch.key}>
+              <small>{ch.label}</small><b style={{ color: chipTone(ch, c) === "down" ? "var(--down)" : chipColor(ch.value) }}>{ch.value}</b>
+              <em className="sm-chip-desc">{chipMeaning(ch, c)}</em>
+            </span>
           ))}
+          {turning ? (
+            <span className="sm-chip sm-chip-turning mono" data-key="turning" data-testid="semi-turning">
+              <small>TURNING POINT · {TURNING_NOTE}</small><b style={{ color: chipColor(turning.value === "NONE" ? "FLAT" : turning.value) }}>{turning.value}</b>
+              <em className="sm-chip-desc">{chipMeaning(turning, c)}{tEv && tEv.length ? ` — ${tEv.join(" · ")}` : ""}</em>
+            </span>
+          ) : null}
         </div>
+        {hasEquityGap ? <p className="sm-note" data-testid="semi-equity-note">{EQUITY_NOTE}</p> : null}
+
+        <span className="sm-sub mono">FACTOR SCORE <small>증거 이름을 누르면 무엇을 재는지 · 지금 근거가 펼쳐집니다</small></span>
+        <p className="sm-note sm-legend" data-testid="semi-score-legend">{SCORE_LEGEND} {WEIGHT_LEGEND}</p>
         <div className="sm-evidence">
-          {r.components.map((x) => (
-            <div key={x.key} className="sm-ev-row" data-key={x.key}>
-              <span className="sm-ev-name">{x.label}<small className="mono"> ×{x.weight}</small></span>
-              {x.score === null ? <span className="sm-ev-bar mono sm-nd">{NO}</span> : (
-                <span className="sm-ev-bar"><i className="sm-zero" /><i className="sm-fill" style={{ width: `${Math.min(100, Math.abs(x.score)) / 2}%`, [x.score >= 0 ? "left" : "right"]: "50%", background: x.score >= 0 ? "var(--up)" : "var(--down)" } as React.CSSProperties} />
-                  <b className="num mono">{sg(x.score, 0, "")}</b></span>
-              )}
-            </div>
-          ))}
+          {r.components.map((x) => {
+            const con = contribution(x, r.components);
+            return (
+              <div key={x.key} className="sm-ev-item" data-key={x.key}>
+                <div className="sm-ev-row">
+                  <button type="button" className="sm-ev-name sm-ev-btn" aria-expanded={open === x.key} onClick={() => setOpen(open === x.key ? null : x.key)} data-testid="semi-factor-btn">
+                    {x.label}<small className="mono"> ×{x.weight}</small>
+                  </button>
+                  {x.score === null ? <span className="sm-ev-bar mono sm-nd">{NO}</span> : (
+                    <span className="sm-ev-bar"><i className="sm-zero" /><i className="sm-fill" style={{ width: `${Math.min(100, Math.abs(x.score)) / 2}%`, [x.score >= 0 ? "left" : "right"]: "50%", background: x.score >= 0 ? "var(--up)" : "var(--down)" } as React.CSSProperties} />
+                      <b className="num mono">{sg(x.score, 0, "")}</b></span>
+                  )}
+                </div>
+                {open === x.key ? (
+                  <div className="sm-ev-detail" data-testid="semi-factor-detail">
+                    <p><b className="mono">WHAT IT MEANS</b> {FACTOR_MEANING[x.key] ?? ""}</p>
+                    <p><b className="mono">NOW</b> {factorBasis(x, c)}</p>
+                    {con !== null && r.composite !== null ? <p><b className="mono">COMPOSITE 몫</b> {sg(con, 1, "")} <span className="sm-faint">(전체 {sg(r.composite, 0, "")} 중 · 점수 × 가중치 ÷ 확보된 가중치 합)</span></p> : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
         <p className="sm-note">{r.note}</p>
       </div>

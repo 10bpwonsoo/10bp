@@ -29,6 +29,48 @@
 .sm-fill { position: absolute; top: 3px; bottom: 3px; border-radius: 1px; opacity: 0.85; }
 .sm-ev-bar b { position: absolute; right: 4px; top: 0; font-size: 10px; color: var(--ink-2); }
 
+/* 1b · 설명 레이어 (2026-11-24) — 국면의 뜻 · 지표 설명 · 지지/제약 묶음 · 점수 안내 */
+.sm-path { font-size: 10.5px; color: var(--muted); }
+.sm-meaning { margin: -4px 0 10px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.sm-metrics { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-bottom: 4px; }
+@media (min-width: 900px) { .sm-metrics { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); } }
+.sm-metric { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface-2); min-width: 0; }
+.sm-metric small { grid-column: 1 / -1; font-size: 9.5px; color: var(--faint); letter-spacing: 0.06em; }
+.sm-metric > b { font-size: 20px; font-weight: 600; color: var(--ink); }
+.sm-metric > span { font-size: 11.5px; line-height: 1.45; color: var(--ink-2); min-width: 0; }
+.sm-scale { grid-column: 1 / -1; margin-top: 4px; }
+.sm-scale-bar { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--down) 35%, transparent), var(--surface) 50%, color-mix(in srgb, var(--up) 35%, transparent)); border: 1px solid var(--rule); }
+.sm-scale-zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--rule-hi); }
+.sm-scale-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule-hi); opacity: 0.7; }
+.sm-scale-mark { position: absolute; top: -4px; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px; }
+.sm-scale-ends { display: flex; justify-content: space-between; margin-top: 3px; font-size: 9px; color: var(--faint); letter-spacing: 0.04em; }
+.sm-thresholds { margin: 2px 0 10px; }
+.sm-thresholds summary { cursor: pointer; font-size: 10px; color: var(--faint); letter-spacing: 0.04em; }
+.sm-thresholds .sm-note { margin-top: 4px; }
+.sm-sub { display: block; margin: 12px 0 6px; font-size: 10.5px; color: var(--accent); letter-spacing: 0.08em; }
+.sm-sub small { margin-left: 6px; font-size: 10px; color: var(--faint); letter-spacing: 0; }
+.sm-cread .sm-read { font-size: 13.5px; }
+.sm-why-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 640px) { .sm-why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sm-why-col { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); min-width: 0; }
+.sm-why-title { font-size: 10px; letter-spacing: 0.08em; margin-bottom: 2px; }
+.sm-why-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 34px; gap: 0 8px; align-items: baseline; font-size: 12px; }
+.sm-why-row b { font-size: 10.5px; font-weight: 600; text-align: right; }
+.sm-why-score { font-size: 10.5px; color: var(--muted); text-align: right; }
+.sm-why-note { grid-column: 1 / -1; font-size: 11px; line-height: 1.4; color: var(--muted); }
+.sm-why-none { font-size: 11px; color: var(--faint); }
+.sm-verdict { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink); }
+.sm-chips-x { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; margin-bottom: 6px; }
+.sm-chip-desc { font-style: normal; font-family: var(--font-sans, inherit); font-size: 11px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.sm-chip-turning { grid-column: 1 / -1; border-color: var(--rule-hi); }
+.sm-legend { margin: 0 0 6px; }
+.sm-ev-item { min-width: 0; }
+.sm-ev-btn { all: unset; cursor: pointer; font-size: 12px; color: var(--ink); min-width: 0; overflow-wrap: anywhere; border-bottom: 1px dotted var(--rule-hi); justify-self: start; }
+.sm-ev-btn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.sm-ev-detail { margin: 2px 0 6px; padding: 6px 8px; border-left: 2px solid var(--rule-hi); background: var(--surface-2); font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+.sm-ev-detail p { margin: 0 0 2px; overflow-wrap: anywhere; }
+.sm-ev-detail b { font-size: 9.5px; color: var(--faint); letter-spacing: 0.06em; margin-right: 6px; font-weight: 500; }
+
 /* 2 · read */
 .sm-read { margin: 0; font-size: 14px; line-height: 1.65; color: var(--ink); }
 .sm-read-small { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: var(--ink-2); }

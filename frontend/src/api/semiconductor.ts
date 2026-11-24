@@ -101,6 +101,12 @@ export interface SemiHbm {
   anchors: { id: string; label: string; available: boolean; value?: number; date?: string; period?: string; confidence?: string; source?: string; prev?: Num; prev_date?: string | null; change_pct?: Num }[];
 }
 
+/** CYCLE READ (2026-11-24) — 국면 판정의 설명(LLM). 없으면(옛 저장본 · 생성 실패) 화면은 고정 설명과 점수 묶음만 보인다. */
+export interface SemiCycleReadItem { key: string; label: string; note: string }
+export interface SemiCycleRead {
+  status: "ok" | "unavailable" | string; source: "llm" | "none" | string; generator: string; reason: string; read: string; verdict: string;
+  support: SemiCycleReadItem[]; constraint: SemiCycleReadItem[]; warnings: string[]; generated_at: string | null;
+}
 export interface SemiconductorCycle {
   as_of: string; version: string; regime: SemiRegime; market_read: SemiMarketRead; memory_prices: SemiProduct[]; spot_premium: SemiPremium[];
   momentum: { products: Partial<SemiProduct>[] };
@@ -112,6 +118,7 @@ export interface SemiconductorCycle {
   equity_confirmation: SemiEquity; stock_impact: SemiStockImpact[]; news: SemiNews[]; what_matters_next: SemiNext[]; data_quality: SemiQuality[]; not_supported?: string[];
   coverage_table?: SemiCoverageRow[]; history_note?: string;
   turning?: { signal: string; tightening: string[]; softening: string[]; breadth_trend: string | null; note: string };
+  cycle_read?: SemiCycleRead | null;
 }
 
 /** 탭이 열려 있고 스냅샷 as_of 가 바뀔 때만 받는다. 과거 날짜는 저장본(archive.semiconductor_cycle)에서만 — 없으면 NOT ARCHIVED. */

@@ -984,3 +984,26 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 영향: 금 · 유가(WTI · 브렌트) · 구리 · 천연가스 · DXY · 구리/금 비율이 11/25 스냅샷부터 미국 주식과 같은 날 값으로 들어온다. 바뀌는 첫날은 이틀치 움직임(11/23 · 11/24)이 한 번에 반영된다.
   11/03~11/24 저장본 · history 행은 고치지 않는다. 주식 · VIX · 환율(+24h, 하루 늦음은 설계) · FRED 판정은 그대로.
 - 테스트 1개 추가(겨울 · 여름 · 이전 날짜 · 진행 중 봉 · 마감 직전 시각). 전체 통과.
+
+### 2026-11-24 — 반도체 사이클 탭 상단 설명 레이어 (CYCLE READ · 지지/제약 · 지표 설명)
+- 요청: 상단 SEMICONDUCTOR CYCLE 영역에서 Regime 의 뜻 · 왜 그 Regime 인지 · 각 지표의 뜻을 30초 안에 알 수 있게. **판정 · composite · 신뢰도 · 증거 점수 · 가중치 · 계산식 · 데이터 · Market Read 는 바꾸지 않는다** — 설명만 더한다.
+- 정의 확인(엔진 코드 기준, 추측 없음)
+  - **Equity Confirm ≠ Equity 점수**. Equity Confirm 칩은 메모리 3사의 1개월 주가 방향이 *현물 가격 모멘텀(Memory Pricing)의 방향과 같은가* 다. 11/24 는 현물 −24 · 주가 −15~−19% 로 **둘 다 하락**이라 BROAD CONFIRMATION 이고,
+    Equity 점수(3사 1개월 수익률 평균 × 5)는 −87 이다. 계산 · mapping 오류가 아니라 서로 다른 개념이다. 다만 칩이 초록으로 보여 좋은 신호처럼 읽혔다 → 설명 한 줄(지금은 둘 다 하락)과 색(하락 방향이면 하락색)으로 바로잡았다. 값은 그대로.
+  - Spot Premium 칩(EXPANDING / STABLE / COMPRESSING)은 프리미엄의 **방향**이고 점수(+94)는 프리미엄의 **수준**이다.
+  - Turning Point 는 현물 1개월 모멘텀 부호 전환 · 프리미엄의 1년 평균 통과 · 가격 breadth 변화 중 둘 이상이 같은 방향일 때만 켜진다 — 현재 Regime 이 아니라 변화 조짐.
+  - STALE: 계약가가 공개된 지 45일을 넘으면 점수를 절반만 반영한다(RISING 판정은 그대로). NO DATA 는 Composite 분모에서 뺀다. 이 탭에는 EXCLUDED 가 없다.
+  - Regime 은 composite 구간(≥+55 · ≥+25 · ≥+8 · ≥−8 · ≥−40)으로만 정한다. **11/24 의 EARLY RECOVERY 는 저점에서 올라온 것이 아니라 21거래일 UPSWING 에서 내려온 것**(composite +27 → +21)이다.
+    그래서 Regime 뜻 문구는 방향을 단정하지 않게 쓰고, 이름 옆에 이력에서 읽은 경로(직전 국면 · 며칠째 · composite 1주 변화)를 보인다.
+- 백엔드: `ai/semi_cycle_read.py` — 컨텍스트(국면 · 구간 기준 · 증거별 점수/가중치/방향/정의 · 신뢰도 구성 · Equity Confirm/Turning Point 정의 · 경로 · 현물/프리미엄/계약가/HBM/수출 · 데이터 품질) → LLM →
+  `{read 2~3문장, verdict 한 줄, support/constraint [{key, note}]}`. 검증: 문장 수 · 길이 · 숫자(≤2, 컨텍스트 값만) · 금지어 · 상투 문구 · 증거의 방향(지지엔 점수 ≥ +10, 제약엔 ≤ −10 인 key 만) · 개수(각 2~4) · 메모 길이/숫자.
+  API → 세션 생성본(`semiconductor_cycle_read_session.json`) → 비움. 고정 문장 사전은 없다. 붙이는 것은 `semiconductor_cycle.cycle_read` 하나(이력이 붙은 뒤 `reconstruct` 에서). 설정 `semiconductor_cycle.yaml` `cycle_read`.
+- 화면(`SemiconductorCycleView` RegimeCard · `semiExplain.ts` · `semiconductor.css`), 위에서부터:
+  Regime 이름 + 경로 → 뜻 한 줄 → COMPOSITE(뜻 · 방향 눈금 −100 DOWN / 0 / +100 UP) · CONFIDENCE · EVIDENCE(각 한 줄 설명) · 접힌 '국면 구간 기준' → **CYCLE READ**(LLM) →
+  **WHY {REGIME}?** 지지/제약 두 묶음(점수 부호로 나누고 |점수 × 가중치| 큰 순 4개, 상태 단어 · 점수 · LLM 메모) + 결론 한 줄 → INDICATORS(배지마다 한 줄 설명, Turning Point 는 따로 넓게 · 근거 표시) →
+  Equity Confirm/점수 구분 안내 → FACTOR SCORE(점수 · 가중치 안내, 막대는 그대로. 증거 이름을 누르면 WHAT IT MEANS · NOW · COMPOSITE 몫).
+  고정 설명은 프론트 상수라 옛 저장본에서도 보인다. CYCLE READ 와 메모는 저장본에 있을 때만(없으면 묶음은 점수만으로 보인다).
+- 11/24 저장본: 그날 컨텍스트만으로 세션본을 써서 `tools/daily_snapshot/semi_cycle_read_attach.py`(archive correct, 이전 파일 superseded/)로 붙였다. 바뀐 것은 `semiconductor_cycle.cycle_read` · `meta` 뿐(regime · market_read 동일 확인).
+  11/21 이전 저장본에는 CYCLE READ 가 없다(고정 설명 · 묶음만 보인다).
+- 테스트: 백엔드 5개(컨텍스트 방향/정의 · 세션본 통과와 다른 필드 불변 · 검증 거부 사례 · 비움 · 화면 구간 상수 = config) · 프론트 5개 추가. 전체 통과. 화면 점검 오류 0(데스크톱 · 모바일 390px, 가로 넘침 없음).
+- 찾았지만 고치지 않은 것: 수출 나우캐스트의 최신 발표가 '10월 1~20일' 에 머물러 있다(`data/semiconductor/exports.json` 수기 입력분 — 10월 확정 · 11월 1~10일 · 1~20일 미반영). Export Nowcast +69 는 그 자료 기준이다.

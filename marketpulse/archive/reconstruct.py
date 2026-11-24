@@ -476,9 +476,15 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     semi = build_semiconductor_cycle(as_of=live.as_of, series_by_id=semi_series, events=[e.model_dump(mode="json") for e in live.events],
                                      session_read=reads.get("semiconductor_read"), client=client)
     semi["memory_history"] = sync_semiconductor(manager, semi, series_by_id=semi_series, as_of=live.as_of).model_dump(mode="json")
+    # CYCLE READ(2026-11-24) — 국면 판정의 설명. 이력(직전 국면)이 붙은 뒤에 만든다. 위 계산은 건드리지 않고 cycle_read 필드만 붙인다
+    from ..ai.semi_cycle_read import attach_cycle_read
+    attach_cycle_read(semi, reads.get("semiconductor_cycle_read"), client=client)
     (out / "semiconductor_cycle.json").write_text(json.dumps(semi, ensure_ascii=False), encoding="utf-8")
     from ..ai.semi_read import build_context as semi_context
     (out / "semiconductor_read_context.json").write_text(json.dumps(semi_context(semi), ensure_ascii=False, indent=1), encoding="utf-8")
+    from ..ai.semi_cycle_read import build_context as semi_cycle_context
+    from ..engines.semiconductor_cycle import load_config as _semi_cfg
+    (out / "semiconductor_cycle_read_context.json").write_text(json.dumps(semi_cycle_context(semi, _semi_cfg().get("regime") or {}), ensure_ascii=False, indent=1), encoding="utf-8")
 
     # 14) AI THEME VIEW (2026-11-12) — 같은 cutoff 의 AI 판정 · 반도체 사이클 · 실시간 탭 regime 을 모두 읽은 LLM 종합(API → 세션 생성본 → 비움)
     from ..ai import ai_theme_view as ATV

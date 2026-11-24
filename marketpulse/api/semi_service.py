@@ -21,6 +21,7 @@ class SemiconductorCycleService:
         self._lock = threading.Lock()
         self._cache: dict[str, tuple[object, dict]] = {}
         self._reads: dict[str, tuple[object, dict]] = {}
+        self._cycle_reads: dict[str, tuple[object, dict]] = {}
         self._pending: set[str] = set()
 
     def _series(self, settings: Settings) -> dict:
@@ -35,10 +36,16 @@ class SemiconductorCycleService:
 
     def _generate(self, settings: Settings, key: str, as_of, cyc: dict) -> None:
         from ..ai.client import build_client
+        from ..ai.semi_cycle_read import attach_cycle_read
         from ..ai.semi_read import attach_read
         try:
-            out = attach_read(dict(cyc), client=build_client(settings))
+            client = build_client(settings)
+            out = attach_read(dict(cyc), client=client)
             read = out["market_read"]
+            try:
+                self._cycle_reads[key] = (as_of, attach_cycle_read(dict(cyc), client=client)["cycle_read"])
+            except Exception:
+                logger.exception("반도체 CYCLE READ 생성 실패 — 비워 둔다")
         except Exception:
             logger.exception("반도체 MARKET READ 생성 실패 — 규칙 기반 문장 유지")
             read = None
@@ -79,7 +86,8 @@ class SemiconductorCycleService:
         with self._lock:
             hit = self._reads.get(key)
             if hit and hit[0] == as_of:
-                return {**cyc, "market_read": hit[1]}
+                cr = self._cycle_reads.get(key)
+                return {**cyc, "market_read": hit[1], **({"cycle_read": cr[1]} if cr and cr[0] == as_of else {})}
             start = key not in self._pending
             if start:
                 self._pending.add(key)
@@ -89,7 +97,7 @@ class SemiconductorCycleService:
 
     def clear(self) -> None:
         with self._lock:
-            self._cache.clear(); self._reads.clear(); self._pending.clear()
+            self._cache.clear(); self._reads.clear(); self._cycle_reads.clear(); self._pending.clear()
 
 
 _semi = SemiconductorCycleService()
