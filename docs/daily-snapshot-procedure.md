@@ -3,6 +3,8 @@
 한국 **화~토** 아침마다(2026-11-21~, 그 전은 월~금) 그날 07:30 KST cutoff 의 대시보드 전체를 만들어 저장(archive · history 행)하고 정적 배포본을 갱신한다.
 화~토인 이유: 한국 화~토 07:30 이 미국 월~금 종가 직후다. 월요일 아침에는 새 미국 종가가 없다. 저장 요일은 `config/archive.yaml` 의 `snapshot_weekdays` 가 정한다
 (화면 달력 `ArchiveControl.tsx` 의 `SCHEDULE` · `.github/workflows/daily-archive.yml` 의 cron 과 같은 규칙). 토요일 스냅샷의 history 행 날짜는 금요일(미국 시장 날짜)이다.
+예약 작업은 **07:00 KST** 에 시작한다(2026-11-25~, 그 전은 07:31). 기준 시각은 07:30 그대로다 — 가격은 07:00 에 받고(미국 주식 06:00 · 선물 07:00 KST 마감, 07:00~07:30 에 새로 닫히는 봉이 없다),
+기사만 07:30 이 지난 뒤 한 번 더 받아 창의 끝까지 채운다(순서 3 · 5).
 도구는 `tools/daily_snapshot/`, 저장소 루트에서 실행한다. 이 문서의 규칙은 지금까지(10/12~11/10) 손으로 한 절차를 그대로 옮긴 것이다.
 
 ## 지킬 것
@@ -25,8 +27,10 @@
    그래도 전날 입력보다 빠진 계열이 있으면 `tools/daily_snapshot/fetch_missing.py` 로 빠진 것만 간격을 두고 받고 `merge_inputs.py` 로 합친다(계열마다 마지막 봉이 가장 늦은 것).
    끝내 못 받은 계열은 결측으로 둔다.
    **전날 수집분은 합치지 않는다** — 수집 시점의 장중 봉이 섞인다.
+   07:00 시작이라 수집은 선물 마감(07:00 KST) 뒤에 시작한다(순서 2 가 먼저라 자연히 그렇게 된다). Yahoo 가 막혀 있으면 지금처럼 기다린다 — 막힌 시각 · 풀린 시각을 그날 문서에 적는다.
 4. `tools/daily_snapshot/scan_units.py P/inputs_D` — 단위 불연속(분할 조정 혼재 등)이 있으면 그 계열을 빼고 이유를 캡처 폴더 `input_merge_report.json` 에 남긴다. VIX 처럼 실제로 큰 움직임은 기사로 확인하고 둔다.
-5. 뉴스: 전날 합친 RSS 와 오늘 수집분을 id 로 합쳐 `P/inputs_D/news_rss.json` 에 둔다. 창(직전 스냅샷 07:30 ~ D 07:30 KST — 화요일은 토요일 07:30 부터라 일 · 월 기사 포함)의 기사를 읽고
+5. 뉴스: **07:30 KST 가 지난 뒤** `python tools/daily_snapshot/fetch_news.py P/inputs_D/news_rss.json <전날 합친 RSS> P/inputs_D/news_rss.json` 로 RSS 를 한 번 더 받아
+   전날 합친 것 · 07:00 수집분과 id 로 합친다(07:00 수집에는 07:00~07:30 기사가 없다). 07:30 전이면 기다린다 — 그동안 순서 4 를 한다. 창(직전 스냅샷 07:30 ~ D 07:30 KST — 화요일은 토요일 07:30 부터라 일 · 월 기사 포함)의 기사를 읽고
    시장 관련 기사만 `marketpulse/data/captures/D-backfill/manual_tags.json` 에 수기 태깅(themes 는 config/themes.yaml 의 id, theme_direction 은 up/down 만 — 0 은 테마에서 뺀다). 커밋.
 6. `python tools/daily_snapshot/build_day.py D P/inputs_D context` → 캡처 폴더의 `rates_read_context.json` · `semiconductor_read_context.json` · `regime_select_context.json`(물가 해석은 rates 컨텍스트의 inflation_map).
    각 컨텍스트만 읽고 세션본을 쓴 뒤 검증한다:
