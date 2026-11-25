@@ -346,6 +346,7 @@ def test_handoff_branch_carries_one_days_inputs_and_keeps_no_history(tmp_path):
     for repo in (work, reader):
         git("init", str(repo), cwd=tmp_path)
         git("remote", "add", "origin", str(remote), cwd=repo)
+    assert handoff.pull("2026-11-25", reader / "none", repo=reader) == []        # 전달 가지가 아직 없으면 '없다' — 오류가 아니다
     for day, value in (("2026-11-24", 1), ("2026-11-25", 2)):
         src = tmp_path / "src" / day
         src.mkdir(parents=True)

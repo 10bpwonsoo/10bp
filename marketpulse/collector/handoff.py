@@ -56,7 +56,12 @@ def publish(src: Path, day: str, *, branch: str = DEFAULT_BRANCH, remote: str = 
 
 def pull(day: str, dest: Path, *, branch: str = DEFAULT_BRANCH, remote: str = "origin", repo: Path = REPO) -> list[str]:
     """전달 가지에서 그 날짜 수집 결과를 dest 로 꺼낸다. 그 날짜가 없으면 빈 목록(다른 날짜 것을 대신 쓰지 않는다)."""
-    _git(["fetch", "--quiet", remote, branch], repo=repo)
+    try:
+        _git(["fetch", "--quiet", remote, branch], repo=repo)
+    except RuntimeError as exc:
+        if "couldn't find remote ref" in str(exc):
+            return []  # 전달 가지가 아직 없다 — 다른 기기에서 올린 적이 없는 것이다
+        raise
     try:
         names = _git(["ls-tree", "--name-only", "FETCH_HEAD", f"inputs/{day}/"], repo=repo).splitlines()
     except RuntimeError:
