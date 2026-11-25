@@ -1007,3 +1007,24 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
   11/21 이전 저장본에는 CYCLE READ 가 없다(고정 설명 · 묶음만 보인다).
 - 테스트: 백엔드 5개(컨텍스트 방향/정의 · 세션본 통과와 다른 필드 불변 · 검증 거부 사례 · 비움 · 화면 구간 상수 = config) · 프론트 5개 추가. 전체 통과. 화면 점검 오류 0(데스크톱 · 모바일 390px, 가로 넘침 없음).
 - 찾았지만 고치지 않은 것: 수출 나우캐스트의 최신 발표가 '10월 1~20일' 에 머물러 있다(`data/semiconductor/exports.json` 수기 입력분 — 10월 확정 · 11월 1~10일 · 1~20일 미반영). Export Nowcast +69 는 그 자료 기준이다.
+
+### 2026-11-25 — 입력 수집 구조 변경: 공급처 회로 · 단독 수집기 · PARTIAL 스냅샷
+
+사용자 요청("Yahoo 429 대응을 전면 수정 … 수 시간 기다리는 방식은 중단"). 자세한 내용은 [docs/data-collection.md](data-collection.md).
+
+- 진단(11/25 09:32~09:35 KST): 수집은 `urllib` 로 Yahoo 차트 API 를 직접 부른다(`yfinance` · `curl_cffi` 없음). 429 는 Yahoo 엣지가 낸다(`server: ATS`, 본문 `Too Many Requests` 19바이트, `Retry-After` 없음).
+  9분 쉰 뒤의 첫 요청도 429 였고, 같은 요청을 8초 간격으로 10번 보내면 200 이 4번 · 429 가 6번 섞였다. 클라이언트 · 이 세션 호출량으로는 설명되지 않는다 —
+  여러 사용자가 같이 쓰는 클라우드 출구 주소의 한도와 맞는 모습이지만, 출구 주소를 볼 수 없어 확정하지는 못했다. 브라우저 식별자 흉내는 시험하지 않았다.
+- 중단: 8분 간격 대기 작업 · 재확인 예약(둘 다 삭제). 앞으로 걸지 않는다.
+- `adapters/breaker.py`: 공급처 단위 회로. `Retry-After` 를 따르고, 없으면 10 · 20초 쉰 뒤 연속 3번째에 열어 5분부터 2배씩(최대 60분). 열려 있는 동안 요청을 보내지 않는다.
+  상태는 `.marketpulse_state/provider_breaker.json`(재시작 뒤에도 이어짐).
+- `marketpulse/collector`: Claude 없이 도는 수집기. 계열마다 체크포인트 · 25분 예산 · 종료 코드 75(나중에 이어 받기) · 대체 공급처 값은 직전 수집분과 대조 · git 가지(`collector-inputs`)로 넘겨주기.
+  Windows 작업 스케줄러 · cron 용 스크립트 `tools/collector/`.
+- `archive/input_status.py`: 계열별 OK · STALE · MISSING, FULL / PARTIAL 판정(`config/collection.yaml` gate). STALE 계열은 계산에서 뺀다.
+- PARTIAL: `build_day.py … partial` → `archive/partial/<날짜>.json`. 공식 regime 보류, history · regime 상태 로그 · 확정 저장본은 쓰지 않는다. 나중에 `full` 로 확정본을 만들면 PARTIAL 은 superseded/ 로.
+  `full` 은 판정이 PARTIAL 이면 거절한다.
+- 대체 공급처 조사: FRED 는 된다(금리 · 크레딧은 채우지만 S&P500 하루 · 유가 1주 · 환율 주 1회 늦음 → 당일 대체 불가). Stooq 는 이 환경에서 연결이 끊긴다. Twelve Data · 증권사 API 는 키가 없다.
+  **이 환경 안에서는 미국 주식 · ETF · 선물 · 한국 종목의 당일 종가를 Yahoo 말고 받을 길이 없다** — Yahoo 가 막힌 날 당일 FULL 을 지키려면 수집기를 다른 망에서 돌리거나 키를 넣어야 한다.
+- 검증: 새 테스트 17개(`tests/test_collection.py`) 포함 전체 통과. 실제 시험 — 수집 중 프로세스를 강제 종료한 뒤 새 프로세스가 받은 54계열을 다시 요청하지 않고, 열려 있던 Yahoo 회로를 지켜 12초 만에
+  '다음 시도 시각' 을 남기고 끝났다. 아침의 실패한 수집분(기본 20/60)으로 `full` 은 거절되고 `partial` 은 저장되며 history · regime 상태 · 날짜 목록이 그대로임을 확인(시험 산출물은 지웠다).
+- 바꾸지 않은 것: regime 계산식 · 가중치 · 임계, 화면 · 모바일, 기존 저장본 · history. PARTIAL 은 화면에 나오지 않는다(직전 확정 스냅샷이 보인다).

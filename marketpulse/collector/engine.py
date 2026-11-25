@@ -245,16 +245,40 @@ class Collector:
         _write_json(self.status_path, self.status, indent=1)
 
     # ── 잠금(같은 폴더에 두 번 돌지 않게) ───────────────────
+    LOCK_STALE_SEC = 120.0  # 수집 중에는 30초 안쪽으로 맥박을 남긴다 — 이보다 오래 조용하면 죽은 것으로 본다
+
     def _lock(self) -> bool:
+        """
+        같은 폴더에서 다른 수집이 돌고 있으면 False. 죽은 수집이 남긴 잠금은 넘겨받는다 —
+        컨테이너가 재시작되면 그 프로세스는 없으므로(POSIX: pid 확인) 바로 이어 받고, pid 를 확인할 수 없는 곳(Windows)에서는 맥박이 끊긴 지 2분이면 넘겨받는다.
+        """
         p = self.out / ".lock"
         try:
-            beat = float(json.loads(p.read_text(encoding="utf-8")).get("beat", 0))
-            if self._now() - beat < 600:
+            doc = json.loads(p.read_text(encoding="utf-8"))
+            beat, pid = float(doc.get("beat", 0)), int(doc.get("pid", 0))
+            alive = self._now() - beat < self.LOCK_STALE_SEC
+            if alive and os.name != "nt" and pid and pid != os.getpid():
+                try:
+                    os.kill(pid, 0)  # 신호를 보내지 않고 있는지만 본다
+                except ProcessLookupError:
+                    alive = False
+                except OSError:
+                    pass
+            if alive and pid != os.getpid():
                 return False
         except (OSError, ValueError):
             pass
         self._beat()
         return True
+
+    def _wait(self, sec: float) -> None:
+        """기다리는 동안에도 맥박을 남긴다."""
+        left = max(0.0, sec)
+        while left > 0:
+            step = min(30.0, left)
+            self._sleep(step)
+            left -= step
+            self._beat()
 
     def _beat(self) -> None:
         _write_json(self.out / ".lock", {"pid": os.getpid(), "beat": self._now()})
@@ -497,7 +521,7 @@ class Collector:
                     self.log(f"회로가 {nxt} 까지 열려 있다 — 남은 예산({remain:.0f}초) 밖이라 기다리지 않고 끝낸다")
                     break
                 self.log(f"회로가 {nxt} 까지 열려 있다 — {gap:.0f}초 뒤 이어 받는다")
-                self._sleep(max(gap, 0) + 1)
+                self._wait(max(gap, 0) + 1)
                 include_deferred = True
             counts = self.assemble()
             left = {g: len(self.pending(self.plans[g])) for g in GROUPS}
