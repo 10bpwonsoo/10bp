@@ -1042,3 +1042,21 @@ bb16287 feat(P0): Market Pulse AI 데이터 계약·MOCK 파이프라인·API·C
 - 확정 방법: Yahoo 가 그 봉을 채우면 `python -m marketpulse.collector run --date 2026-11-25` → `build_day.py 2026-11-25 marketpulse/data/inputs/2026-11-25 status` 가 FULL → 세션본 → `full`.
   다음 예약 실행(11/26 07:00)이 11/26 보다 먼저 이 날짜를 확정한다.
 - 고친 것(오늘 실제 수집에서 드러남): 죽은 수집의 잠금을 바로 넘겨받게 · 공급처가 없는 계열은 그날 다시 요청하지 않게 · 마지막 봉 재수집은 '끝난 봉' 이 늘었을 때만 교체 · 시도 횟수 상한은 실행한 날 기준.
+
+### 2026-11-25 — KRX 공식 Open API 연결 · 11/25(수) Daily Snapshot 확정 (저장 11:08 KST 무렵)
+
+- KRX Open API: 사용자가 인증키를 등록(환경의 네트워크 시크릿 — 호스트 `data-dbg.krx.co.kr` · 헤더 `AUTH_KEY`)하고 서비스 6종 이용신청 승인을 받았다.
+  첫 키는 `401 Unauthorized Key`, 다시 넣은 키는 `401 Unauthorized API Call`(서비스 미승인) → 승인 뒤 6종 모두 200(10:49 KST). 응답 형식 · 지수 이름이 만들어 둔 코드와 일치했다.
+- 쓰임: 코스피 · 코스닥 지수와 한국 종목의 **두 번째 공급처**. Yahoo 가 실패하거나 마지막 봉을 비워 둔 채 답하면 수집기가 KRX 에서 받는다(같은 날 Yahoo 계열과 겹치는 값 대조 + 끝난 봉이 더 있을 때만).
+  코스피 200 · KRX 반도체 · V-KOSPI 는 받을 수 있지만 연결하지 않았다 — 지금까지 한 번도 수집된 적 없는 계열이라 켜면 판정 입력이 늘어난다(사용자 결정 대기).
+- 11/25 입력: KOSPI · KOSDAQ 를 KRX 에서 받았다(각 300봉, 날짜별 322번 호출 · 약 15분 — 받은 날짜는 상태 폴더에 남아 다음부터는 하루 한 번). Yahoo 와 겹치는 20봉의 차이 중앙값 0.00%.
+  11/24 종가 코스피 5006.03(+6.32%) · 코스닥 665.88(+4.79%). 원유 · 금 · 구리 · 천연가스는 Yahoo 가 11:00 KST 무렵 채웠다(`--retry-stale` 로 한 번 더 받음).
+  판정 PARTIAL → **FULL(핵심 100%)**. STALE 로 뺀 것: 닛케이(기본 · Yahoo 11/24 봉 없음), DXY(종목 묶음 사본). 선물 · DXY 는 새 절단 규칙의 첫날 — 11/24 봉이 그날 봉으로 들어왔다.
+- 판정: 정량 NEUTRAL 40 · 자격 후보 없음(가장 가까운 것 Geopolitical Risk, z(BRENT) +0.74) → 선택 NEUTRAL(NO_ELIGIBLE) → 공식 **Risk-On → Neutral / Mixed**(그날 선택이 곧 공식). 주식 확인 미국 PARTIAL · 한국 CONFIRMED · Global PARTIAL.
+  미국 S&P500 −0.50% · 나스닥100 −1.99% · SOXX −8.27% · 러셀2000 +0.57%, 한국 코스피 +6.32% · 코스닥 +4.79%(전날 미국 급등의 하루 늦은 반영).
+- 탭: 금리 INFLATION REPRICING — Not Confirmed(미국채 11/23 관측, 한 주 10년물 하락은 실질금리 주도) · 유가 Demand — CONTRADICTED(WTI +2.35% · 브렌트 +2.27%, 구리 −4.70%) ·
+  AI CONFIRMED AI RISK-OFF(센티 34, 바스켓 하루 −4.2%) · 반도체 사이클 UPSWING 25.3(신뢰도 47 — 전날 EARLY RECOVERY 21.1 에서 경계 위로).
+- 해석 8종(금리 · 물가 · 반도체 MARKET READ · CYCLE READ · REGIME 선택 · AI THEME VIEW · MARKET OVERVIEW · 전환 이유) 모두 세션 생성 · 같은 검증 통과.
+- 검증: validate COMPLETE · history 7개 파일 각 +1행(2026-11-24) · 바뀐 행 0 · 전체 테스트 통과 · 화면 점검 오류 0. 아침의 PARTIAL 파일은 `superseded/2026-11-25.partial.*.json` 으로 옮겨졌다(캡처 `2026-11-25-partial/` 는 기록으로 남김).
+- 배포 V135. 기사 창 158건 중 태깅 31건.
+- 아직 모르는 것: KRX Open API 가 전날 치를 07:00 KST 전에 올려 두는지(오늘은 10:49 에 처음 불렀다). 다음 예약 실행에서 확인된다.
