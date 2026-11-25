@@ -1,0 +1,1331 @@
+{
+ "cutoff": "2026-11-26T07:30:00+09:00",
+ "counts": {
+  "base": {
+   "OK": 13,
+   "STALE": 5,
+   "MISSING": 42
+  },
+  "universe": {
+   "OK": 6,
+   "STALE": 37,
+   "MISSING": 58
+  },
+  "basket": {
+   "OK": 0,
+   "STALE": 9,
+   "MISSING": 43
+  }
+ },
+ "gate": {
+  "verdict": "PARTIAL",
+  "reasons": [
+   "필수 핵심 계열이 최신이 아니다: SPX(MISSING), NDX(MISSING), USDKRW(STALE)",
+   "핵심 계열 5/14 만 최신 — 기준 80% 미만"
+  ],
+  "must_not_ok": {
+   "SPX": "MISSING",
+   "NDX": "MISSING",
+   "USDKRW": "STALE"
+  },
+  "core_not_ok": {
+   "SPX": "MISSING",
+   "NDX": "MISSING",
+   "RUT": "MISSING",
+   "SOXX": "MISSING",
+   "DXY": "MISSING",
+   "USDKRW": "STALE",
+   "KOSDAQ": "STALE",
+   "WTI": "MISSING",
+   "GOLD": "MISSING"
+  },
+  "core_ok_ratio": 0.357
+ },
+ "closed_suspect": {},
+ "stale": {
+  "base": [
+   "EURUSD",
+   "KOSDAQ",
+   "USDCNH",
+   "USDJPY",
+   "USDKRW"
+  ],
+  "universe": [
+   "CELLTRION",
+   "CJ_CJ",
+   "DOOSAN_ENER",
+   "HANMI_SEMI",
+   "HANWHA_AERO",
+   "HANWHA_OCEAN",
+   "HD_ELECTRIC",
+   "HD_HHI",
+   "HMM",
+   "HYOSUNG_HEAVY",
+   "HYUNDAI_MOBIS",
+   "HYUNDAI_MOTOR",
+   "HYUNDAI_STEEL",
+   "KAKAO",
+   "KB",
+   "KEPCO",
+   "KIA",
+   "KOREAN_AIR",
+   "KOREA_ZINC",
+   "KOSPI",
+   "KUMHO_PETRO",
+   "LGCHEM",
+   "LG_ENSOL",
+   "LIG_NEX1",
+   "LOTTE_CHEM",
+   "LS_ELECTRIC",
+   "NAVER",
+   "PAN_OCEAN",
+   "POSCO",
+   "SAMSUNG",
+   "SAMSUNG_BIO",
+   "SAMSUNG_EM",
+   "SAMSUNG_SDI",
+   "SHINHAN",
+   "SKHYNIX",
+   "SK_INNOVATION",
+   "SOIL"
+  ],
+  "basket": [
+   "DOOSAN_ENER",
+   "HANMI_SEMI",
+   "HD_ELECTRIC",
+   "HYOSUNG_HEAVY",
+   "LS_ELECTRIC",
+   "NAVER",
+   "SAMSUNG",
+   "SAMSUNG_EM",
+   "SKHYNIX"
+  ]
+ },
+ "missing": {
+  "base": [
+   "CHINEXT",
+   "COPPER",
+   "COPPER_GOLD",
+   "CSI300_ETF",
+   "CYC_DEF",
+   "DXY",
+   "GOLD",
+   "HANGSENG",
+   "HSCEI",
+   "HSTECH",
+   "ITA",
+   "JETS",
+   "KOSPI200",
+   "KOSPI_ADV_RATIO",
+   "KOSPI_NHNL",
+   "KR10Y",
+   "KR3Y",
+   "KRX_SEMI",
+   "KR_FOREIGN_NET",
+   "KR_INSTITUTION_NET",
+   "KR_RETAIL_NET",
+   "KR_TRADING_VALUE",
+   "MOVE",
+   "NATGAS",
+   "NDX",
+   "NIKKEI",
+   "RUT",
+   "SHCOMP",
+   "SOXX",
+   "SPX",
+   "SPX_ADV_RATIO",
+   "SX5E",
+   "SZCOMP",
+   "VIX_RV_SPX",
+   "VKOSPI",
+   "VKOSPI_RV_KOSPI",
+   "WTI",
+   "XLE",
+   "XLF",
+   "XLK",
+   "XLU",
+   "XLY"
+  ],
+  "universe": [
+   "ALUMINUM",
+   "AMAT",
+   "AMD",
+   "ASML",
+   "AVGO",
+   "BRENT",
+   "CHINA_PMI",
+   "COAL_PROXY",
+   "COFFEE",
+   "COPPER",
+   "CORN",
+   "COTTON",
+   "CSI300",
+   "DIESEL_PROXY",
+   "DRY_BULK_ETF",
+   "DXY",
+   "GASOLINE",
+   "GOLD",
+   "HSI",
+   "IRON_ORE",
+   "ITA",
+   "JETS",
+   "JET_FUEL_PROXY",
+   "KR10Y",
+   "LITHIUM_ETF",
+   "LRCX",
+   "METALS_ETF",
+   "MOVE",
+   "MU",
+   "NAPHTHA_PROXY",
+   "NATGAS",
+   "NDX",
+   "NICKEL_PROXY",
+   "NVDA",
+   "PLATINUM",
+   "SCFI",
+   "SILVER",
+   "SMH",
+   "SOX",
+   "SOYBEAN",
+   "SPX",
+   "STEEL_ETF",
+   "SUGAR",
+   "TEL",
+   "TSM",
+   "URANIUM_ETF",
+   "US10Y",
+   "US2Y",
+   "USDCNH",
+   "USDJPY",
+   "USDKRW",
+   "VIX",
+   "WHEAT",
+   "WTI",
+   "XLE",
+   "XLF",
+   "XLU",
+   "ZINC_PROXY"
+  ],
+  "basket": [
+   "AMAT",
+   "AMD",
+   "AMKR",
+   "AMZN",
+   "ANET",
+   "APP",
+   "ARM",
+   "ASML",
+   "AVGO",
+   "BESI",
+   "CEG",
+   "CIEN",
+   "CRDO",
+   "CRM",
+   "DDOG",
+   "DELL",
+   "DLR",
+   "EQIX",
+   "ETN",
+   "GEV",
+   "GFS",
+   "GOOGL",
+   "KLAC",
+   "LRCX",
+   "META",
+   "MRVL",
+   "MSFT",
+   "MU",
+   "NET",
+   "NOW",
+   "NRG",
+   "NVDA",
+   "ORCL",
+   "PLTR",
+   "PWR",
+   "SMCI",
+   "SNDK",
+   "SNOW",
+   "TEL",
+   "TSM",
+   "UMC",
+   "VRT",
+   "VST"
+  ]
+ },
+ "series": {
+  "base": {
+   "BE10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:T10YIE",
+    "market": "FRED"
+   },
+   "BE5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:T5YIE",
+    "market": "FRED"
+   },
+   "BRENT": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DCOILBRENTEU",
+    "market": "FRED"
+   },
+   "EURUSD": {
+    "status": "STALE",
+    "last_bar": "2026-11-20T00:00:00+00:00",
+    "behind": 2,
+    "source": "github:exchange-rates/daily.csv[Euro]",
+    "market": "OTHER"
+   },
+   "KOSDAQ": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:코스닥",
+    "market": "KR"
+   },
+   "KOSPI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^KS11",
+    "market": "KR"
+   },
+   "TIPS10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DFII10",
+    "market": "FRED"
+   },
+   "TIPS5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DFII5",
+    "market": "FRED"
+   },
+   "US10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS10",
+    "market": "FRED"
+   },
+   "US2Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS2",
+    "market": "FRED"
+   },
+   "US30Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS30",
+    "market": "FRED"
+   },
+   "US5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS5",
+    "market": "FRED"
+   },
+   "USDCNH": {
+    "status": "STALE",
+    "last_bar": "2026-11-20T00:00:00+00:00",
+    "behind": 2,
+    "source": "github:exchange-rates/daily.csv[China]",
+    "market": "OTHER"
+   },
+   "USDJPY": {
+    "status": "STALE",
+    "last_bar": "2026-11-20T00:00:00+00:00",
+    "behind": 2,
+    "source": "github:exchange-rates/daily.csv[Japan]",
+    "market": "OTHER"
+   },
+   "USDKRW": {
+    "status": "STALE",
+    "last_bar": "2026-11-20T00:00:00+00:00",
+    "behind": 2,
+    "source": "github:exchange-rates/daily.csv[South Korea]",
+    "market": "OTHER"
+   },
+   "US_HY_OAS": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:BAMLH0A0HYM2",
+    "market": "FRED"
+   },
+   "VIX": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:VIXCLS",
+    "market": "FRED"
+   },
+   "CURVE_2S10S": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "derived:spread(US10Y,US2Y)",
+    "market": "DERIVED"
+   },
+   "KOSPI200": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SPX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NDX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "RUT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "HSCEI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "HANGSENG": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "HSTECH": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SHCOMP": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SZCOMP": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CSI300_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CHINEXT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NIKKEI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SX5E": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLK": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLU": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SOXX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ITA": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "JETS": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KRX_SEMI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR3Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR10Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "WTI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "GOLD": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COPPER": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NATGAS": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MOVE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VKOSPI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_FOREIGN_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_INSTITUTION_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_RETAIL_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_TRADING_VALUE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KOSPI_ADV_RATIO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KOSPI_NHNL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SPX_ADV_RATIO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CYC_DEF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COPPER_GOLD": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VIX_RV_SPX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VKOSPI_RV_KOSPI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   }
+  },
+  "universe": {
+   "CELLTRION": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:068270",
+    "market": "KR"
+   },
+   "CJ_CJ": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:097950",
+    "market": "KR"
+   },
+   "DDR5_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DDR5_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "DOOSAN_ENER": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:034020",
+    "market": "KR"
+   },
+   "DRAM_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DRAM_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "DXI": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DXI",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "HANMI_SEMI": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:042700",
+    "market": "KR"
+   },
+   "HANWHA_AERO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:012450",
+    "market": "KR"
+   },
+   "HANWHA_OCEAN": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:042660",
+    "market": "KR"
+   },
+   "HBM3E_CONTRACT": {
+    "status": "OK",
+    "last_bar": "2026-07-28T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:HBM3E_CONTRACT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "HBM4_CONTRACT": {
+    "status": "OK",
+    "last_bar": "2026-10-01T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:HBM4_CONTRACT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "HD_ELECTRIC": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:267260",
+    "market": "KR"
+   },
+   "HD_HHI": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:329180",
+    "market": "KR"
+   },
+   "HMM": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:011200",
+    "market": "KR"
+   },
+   "HYOSUNG_HEAVY": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:298040",
+    "market": "KR"
+   },
+   "HYUNDAI_MOBIS": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:012330",
+    "market": "KR"
+   },
+   "HYUNDAI_MOTOR": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:005380",
+    "market": "KR"
+   },
+   "HYUNDAI_STEEL": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:004020",
+    "market": "KR"
+   },
+   "KAKAO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:035720",
+    "market": "KR"
+   },
+   "KB": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:105560",
+    "market": "KR"
+   },
+   "KEPCO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:015760",
+    "market": "KR"
+   },
+   "KIA": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:000270",
+    "market": "KR"
+   },
+   "KOREAN_AIR": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:003490",
+    "market": "KR"
+   },
+   "KOREA_ZINC": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:010130",
+    "market": "KR"
+   },
+   "KOSPI": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:코스피",
+    "market": "KR"
+   },
+   "KUMHO_PETRO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:011780",
+    "market": "KR"
+   },
+   "LGCHEM": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:051910",
+    "market": "KR"
+   },
+   "LG_ENSOL": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:373220",
+    "market": "KR"
+   },
+   "LIG_NEX1": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:079550",
+    "market": "KR"
+   },
+   "LOTTE_CHEM": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:011170",
+    "market": "KR"
+   },
+   "LS_ELECTRIC": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:010120",
+    "market": "KR"
+   },
+   "NAND_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:NAND_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "NAVER": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:035420",
+    "market": "KR"
+   },
+   "PAN_OCEAN": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:028670",
+    "market": "KR"
+   },
+   "POSCO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:005490",
+    "market": "KR"
+   },
+   "SAMSUNG": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:005930",
+    "market": "KR"
+   },
+   "SAMSUNG_BIO": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:207940",
+    "market": "KR"
+   },
+   "SAMSUNG_EM": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:009150",
+    "market": "KR"
+   },
+   "SAMSUNG_SDI": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:006400",
+    "market": "KR"
+   },
+   "SHINHAN": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:055550",
+    "market": "KR"
+   },
+   "SKHYNIX": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:000660",
+    "market": "KR"
+   },
+   "SK_INNOVATION": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:096770",
+    "market": "KR"
+   },
+   "SOIL": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:010950",
+    "market": "KR"
+   },
+   "GASOLINE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DIESEL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "JET_FUEL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COAL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "URANIUM_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ALUMINUM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SILVER": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "PLATINUM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "IRON_ORE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "STEEL_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "LITHIUM_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "METALS_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NICKEL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ZINC_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NAPHTHA_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CORN": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "WHEAT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SOYBEAN": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SUGAR": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COFFEE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COTTON": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DRY_BULK_ETF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SCFI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SOX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SMH": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NVDA": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MU": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "TSM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMD": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AVGO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ASML": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMAT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "LRCX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "TEL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CSI300": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "HSI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CHINA_PMI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "BRENT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "COPPER": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "GOLD": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ITA": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "JETS": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR10Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MOVE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NATGAS": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NDX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SPX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "US10Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "US2Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "USDCNH": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "USDJPY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "USDKRW": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VIX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "WTI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLF": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "XLU": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   }
+  },
+  "basket": {
+   "DOOSAN_ENER": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:034020",
+    "market": "KR"
+   },
+   "HANMI_SEMI": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:042700",
+    "market": "KR"
+   },
+   "HD_ELECTRIC": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:267260",
+    "market": "KR"
+   },
+   "HYOSUNG_HEAVY": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:298040",
+    "market": "KR"
+   },
+   "LS_ELECTRIC": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:010120",
+    "market": "KR"
+   },
+   "NAVER": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:035420",
+    "market": "KR"
+   },
+   "SAMSUNG": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:005930",
+    "market": "KR"
+   },
+   "SAMSUNG_EM": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:009150",
+    "market": "KR"
+   },
+   "SKHYNIX": {
+    "status": "STALE",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 1,
+    "source": "krxapi:sto/stk_bydd_trd:000660",
+    "market": "KR"
+   },
+   "NVDA": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMD": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AVGO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "TSM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MRVL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ARM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MU": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SNDK": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "GFS": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "UMC": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ASML": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMAT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "LRCX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KLAC": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "TEL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMKR": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "BESI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ANET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CIEN": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CRDO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "MSFT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "GOOGL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "AMZN": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "META": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ORCL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VRT": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ETN": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "PWR": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "EQIX": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DLR": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DELL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SMCI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VST": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CEG": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "GEV": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NRG": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "PLTR": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NOW": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CRM": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SNOW": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "DDOG": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "APP": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   }
+  }
+ }
+}

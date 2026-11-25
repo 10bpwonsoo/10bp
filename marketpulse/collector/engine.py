@@ -462,9 +462,11 @@ class Collector:
                                   meta=DataMeta(source=f"{name}:{spec.get('symbol') or ins.id}", mode=DataMode.DELAYED, retrieved_at=as_of, as_of=pts[-1][0]))
             verdict, note = validate_against_reference(series, stale, self.cfg)
             last = self._last_closed(ins.id, series.model_dump_json())
-            if verdict == "REJECT" or last is None or (old_last is not None and last <= old_last):
+            if verdict == "REJECT":
                 self._count(name, "failed")
                 continue
+            if last is None or (old_last is not None and last <= old_last):
+                continue  # 이 공급처에도 아직 그 봉이 없다 — 실패가 아니다(예: KRX 는 전날 치를 아침 8시쯤 올린다)
             return series, {"primary": primary, "used": name, "check": verdict, "note": note, "why": f"{primary} 응답에 마지막 봉이 없어 다음 공급처에서 받았다"}
         return None
 
