@@ -273,7 +273,7 @@ def make_collector(tmp_path, script, *, clock=None, reference=None, specs=None, 
     plan = Plan("base", [SimpleNamespace(id=i, derived_from=None) for i in ids], [], None, 300, specs or {i: [{"provider": "yahoo", "symbol": i}] for i in ids})
     empty = lambda g: Plan(g, [], [], {}, 300, {})
     fake = FakeAdapter(script)
-    cfg = {"run": {"budget_min": budget_min, "max_tries_per_series": 2, "wait_for_breaker": True}, "gate": {"must": [], "core": []},
+    cfg = {"run": {"budget_min": budget_min, "max_tries_per_series": 3, "wait_for_breaker": True}, "gate": {"must": [], "core": []},
            "validate": {"overlap_bars": 20, "min_overlap": 5, "max_median_rel_diff": 0.02}}
     b = breaker or ProviderBreaker(tmp_path / "state" / "b.json", now=clk.now)
     c = Collector(date(2026, 11, 25), tmp_path / "inputs" / "2026-11-25", cfg=cfg, plans={"base": plan, "universe": empty("universe"), "basket": empty("basket")},
@@ -383,3 +383,23 @@ def test_full_save_is_refused_when_the_gate_says_partial(tmp_path):
     with pytest.raises(PartialInputsError, match="SPX"):
         build_one(svc, date(2026, 11, 25), inputs=tmp_path, cutoff=CUT, latest=False, input_status=st)
     assert svc.store.dates() == [] and not (tmp_path / "archive").exists()       # 아무것도 쓰지 않았다
+
+
+def test_stale_refetch_replaces_a_series_only_when_a_closed_bar_was_added(tmp_path):
+    """공급처가 최신 일봉 없이 응답한 계열: 다시 받았을 때 '끝난 봉' 이 늘었을 때만 바꾼다. 진행 중 봉의 시각만 늦어진 것은 새 봉이 아니다."""
+    d23 = weekdays(date(2026, 11, 23), 30)
+    live1 = datetime(2026, 11, 25, 0, 40, tzinfo=UTC)      # 수집 시각으로 찍힌 진행 중 봉(기준 시각 뒤 — 잘린다)
+    def kospi(days, live):
+        s = series("K", "yahoo:^KS11", days, hh=0, mm=0)
+        return s.model_copy(update={"timestamps": s.timestamps + [live], "values": s.values + [1.0]})
+    first, same, filled = kospi(d23, live1), kospi(d23, live1 + timedelta(minutes=30)), kospi(weekdays(date(2026, 11, 24), 31), live1 + timedelta(hours=1))
+    c1, _, _, _ = make_collector(tmp_path, {"K": [("yahoo", first)]})
+    c1.run(news=False)
+    assert c1.status["input_status"]["stale"]["base"] == ["K"]            # 11/24 봉이 없다
+    c2, _, _, _ = make_collector(tmp_path, {"K": [("yahoo", same)]})
+    c2.run(news=False)
+    assert c2.status["runs"][-1]["refetched_stale"] == []                 # 끝난 봉이 그대로 — 바꾸지 않는다
+    assert c2.load_group("base")["K"].timestamps[-1] == live1
+    c3, _, _, _ = make_collector(tmp_path, {"K": [("yahoo", filled)]})
+    c3.run(news=False)
+    assert c3.status["runs"][-1]["refetched_stale"] == ["base:K"] and c3.status["input_status"]["stale"]["base"] == []

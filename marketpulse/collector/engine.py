@@ -239,6 +239,13 @@ class Collector:
         doc.setdefault("runs", [])
         doc.setdefault("series", {g: {} for g in GROUPS})
         doc.setdefault("providers", {})
+        # 계열별 시도 횟수 상한은 '실행한 날' 기준이다 — PARTIAL 로 남은 날짜를 다음 날 확정하러 다시 받을 때 어제의 횟수가 막지 않게 한다
+        today = kst_today(datetime.fromtimestamp(self._now(), tz=timezone.utc)).isoformat()
+        if doc.get("tries_day") != today:
+            for rows in doc["series"].values():
+                for row in rows.values():
+                    row["tries"] = 0
+            doc["tries_day"] = today
         return doc
 
     def _save_status(self) -> None:
@@ -394,10 +401,11 @@ class Collector:
                     continue  # 원래 늦는 경로 — 다시 받아도 같다
                 cp = self._cp(g, iid)
                 old_text, old_row = cp.read_text(encoding="utf-8"), dict(row)
-                old_last = MarketSeries.model_validate_json(old_text).timestamps[-1]
+                old_last = self._last_closed(iid, old_text)
                 cp.unlink()
                 state = self.fetch_one(plan, ins, datetime.fromtimestamp(self._now(), tz=timezone.utc))
-                newer = state == "OK" and MarketSeries.model_validate_json(cp.read_text(encoding="utf-8")).timestamps[-1] > old_last
+                new_last = self._last_closed(iid, cp.read_text(encoding="utf-8")) if state == "OK" else None
+                newer = new_last is not None and (old_last is None or new_last > old_last)
                 if newer:
                     done.append(f"{g}:{iid}")
                 else:
@@ -408,6 +416,14 @@ class Collector:
         if done:
             self.log(f"마지막 봉이 빠져 있던 계열 {len(done)}개를 새로 받았다: {', '.join(done)[:300]}")
         return done
+
+    def _last_closed(self, iid: str, text: str) -> datetime | None:
+        """그날 기준 시각(07:30 KST)에 이미 끝난 마지막 봉. 진행 중인 봉(수집 시각으로 찍힌다)은 세지 않는다 — 그것이 늦어졌다고 새 봉이 생긴 것이 아니다."""
+        from ..archive.pit import cut_series
+        from ..archive.reconstruct import cutoff_for
+
+        cut = cut_series({iid: MarketSeries.model_validate_json(text)}, cutoff_for(self.day)).get(iid)
+        return cut.timestamps[-1] if cut is not None and cut.timestamps else None
 
     def pending(self, plan: Plan, *, include_deferred: bool = True) -> list[Any]:
         mx = int(self.run_cfg.get("max_tries_per_series", 4))
