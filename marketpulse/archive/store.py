@@ -4,6 +4,7 @@ Full dashboard archive 저장소 — 날짜별 JSON 파일 하나, 생성 후 �
     {root}/YYYY/MM/YYYY-MM-DD.json     그날 화면 전체 (schema_version 포함)
     {root}/index.json                  날짜 · 상태 요약 (파일이 진실이고, index 는 다시 만들 수 있는 요약이다)
     {root}/superseded/                 명시적 correction 으로 교체된 이전 파일 (지우지 않는다)
+    {root}/partial/YYYY-MM-DD.json     PARTIAL 스냅샷 — 핵심 입력이 모자란 날의 잠정본. 확정 저장본이 아니다(목록 · index 에 없다)
 
 쓰기는 `.tmp` 에 쓰고 다시 읽어 검증한 뒤 최종 이름으로 옮긴다. 최종 이름은 hard link 로 만들어
 같은 날짜 파일이 이미 있으면 실패한다 — 정기 저장이 기존 저장본을 덮어쓸 길이 없다.
@@ -115,6 +116,43 @@ class ArchiveStore:
         os.replace(tmp, final)
         self.rebuild_index()
         return final, keep
+
+    # ── PARTIAL 스냅샷(2026-11-25) — 확정 저장본과 다른 자리 ─────────────
+    # {root}/partial/YYYY-MM-DD.json. dates() · index 에 잡히지 않는다 — 그 날짜는 계속 '아직 저장되지 않음' 이고,
+    # 나중에 정상 입력으로 확정 저장본을 만들면 이 파일은 superseded/ 로 옮겨 남긴다(지우지 않는다).
+    def partial_path(self, d: date) -> Path:
+        return self.root / "partial" / f"{d.isoformat()}.json"
+
+    def partial_dates(self) -> list[date]:
+        d = self.root / "partial"
+        return sorted((date.fromisoformat(p.name[:-5]) for p in d.glob("*.json") if DATE_RE.match(p.name[:-5])), reverse=True) if d.is_dir() else []
+
+    def read_partial(self, d: date) -> dict[str, Any]:
+        p = self.partial_path(d)
+        if not p.is_file():
+            raise ArchiveNotFoundError(f"{d.isoformat()} PARTIAL 스냅샷이 없습니다")
+        return json.loads(p.read_text(encoding="utf-8"))
+
+    def write_partial(self, d: date, payload: dict[str, Any]) -> tuple[Path, Path | None]:
+        """PARTIAL 스냅샷을 쓴다. 확정 저장본이 이미 있으면 거절한다. 앞서 쓴 PARTIAL 이 있으면 superseded/ 로 옮기고 새로 쓴다."""
+        if self.exists(d):
+            raise ArchiveExistsError(f"{d.isoformat()} 확정 저장본이 이미 있습니다 — PARTIAL 을 쓰지 않습니다")
+        final = self.partial_path(d)
+        tmp = self._write_tmp(final, payload)
+        keep = self.retire_partial(d)
+        os.replace(tmp, final)
+        return final, keep
+
+    def retire_partial(self, d: date) -> Path | None:
+        """그 날짜의 PARTIAL 스냅샷을 superseded/ 로 옮긴다(확정 저장본이 만들어졌거나 새 PARTIAL 로 바뀔 때). 없으면 None."""
+        p = self.partial_path(d)
+        if not p.is_file():
+            return None
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        keep = self.root / "superseded" / f"{d.isoformat()}.partial.{stamp}.json"
+        keep.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(p, keep)
+        return keep
 
     def rebuild_index(self) -> list[dict[str, Any]]:
         rows = []

@@ -34,3 +34,7 @@ frontend/*.tsbuildinfo
 .pytest_cache/
 *.egg-info/
 frontend/dist-bundle/
+
+# 입력 수집 폴더 · 공급처 회로 상태 (marketpulse.collector) — 하루 2~3MB, git 에 넣지 않는다
+marketpulse/data/inputs/
+.marketpulse_state/

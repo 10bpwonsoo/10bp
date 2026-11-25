@@ -682,3 +682,71 @@ class CsvProvider(Provider):
                 permanent=True,
             )
         return _clean(points, bars, as_of)
+
+
+# ══════════════════════════════════════════════════════════════
+class TwelveDataProvider(Provider):
+    """
+    Twelve Data 일봉 (2026-11-25 추가 — Yahoo 가 막힌 날의 미국 주식 · ETF 대체 경로).
+
+    키가 필요하다(TWELVEDATA_API_KEY). 키가 없으면 '사용 불가' 로 보고하고 다음 공급자로 넘어간다 — 조용히 다른 값을
+    채우지 않는다. 무료 플랜은 분당 8건 · 하루 800건이고 미국 주식 · ETF 만 준다(지수 · 한국 종목 · 선물은 유료).
+    돌려주는 종가는 **수정 전 종가**다(adjust 를 따로 주지 않으면 분할만 조정된다). Yahoo 의 수정종가(배당 조정)와
+    수준이 조금 다를 수 있어, 수집기가 직전 수집분과 대조(collection.yaml validate)한 뒤에만 쓴다.
+    이 저장소의 실행 환경에는 키도 허용 호스트(api.twelvedata.com)도 아직 없어 실제 응답으로 검증하지 못했다 —
+    응답 형식은 공개 문서 기준이고, 형식이 다르면 FetchError 로 떨어져 그 계열은 결측으로 남는다.
+    """
+
+    name = "twelvedata"
+    requires_key = "TWELVEDATA_API_KEY"
+    BASE = "https://api.twelvedata.com/time_series"
+
+    def __init__(self, client: HttpClient, api_key: str | None) -> None:
+        self.client = client
+        self.api_key = api_key
+
+    def available(self) -> tuple[bool, str]:
+        if not self.api_key:
+            return False, "TWELVEDATA_API_KEY 가 없다"
+        return True, "사용 가능"
+
+    def fetch(self, spec: dict, *, bars: int, as_of: datetime) -> list[Point]:
+        if not self.api_key:
+            raise FetchError("TWELVEDATA_API_KEY 가 없다", kind="auth", permanent=True)
+        raw = self.client.get(
+            self.BASE,
+            params={
+                "symbol": str(spec["symbol"]),
+                "interval": "1day",
+                "outputsize": max(30, min(5000, int(bars * 1.1) + 5)),
+                "end_date": as_of.date().isoformat(),
+                "timezone": "UTC",
+                "apikey": self.api_key,
+            },
+        )
+        return self.parse(raw, bars=bars, scale=float(spec.get("scale", 1.0)), as_of=as_of)
+
+    @staticmethod
+    def parse(raw: bytes, *, bars: int, scale: float = 1.0, as_of: datetime | None = None) -> list[Point]:
+        try:
+            doc = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise FetchError(f"JSON 이 아니다: {exc}", kind="parse", permanent=True) from exc
+        if not isinstance(doc, dict) or doc.get("status") == "error" or "values" not in doc:
+            code = (doc or {}).get("code") if isinstance(doc, dict) else None
+            msg = str((doc or {}).get("message") if isinstance(doc, dict) else doc)[:120]
+            # 한도 초과는 HTTP 200 + {"code": 429} 로도 온다 — 재시도 가능한 실패로 남긴다
+            raise FetchError(f"Twelve Data 오류 {code}: {msg}", kind="http_429" if code == 429 else "api", permanent=code != 429, status=code if isinstance(code, int) else None)
+        points: list[Point] = []
+        for row in doc.get("values") or []:
+            day, close = row.get("datetime"), row.get("close")
+            if not day or close in (None, ""):
+                continue
+            try:
+                ts = datetime.strptime(str(day)[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                points.append((ts, float(close) * scale))
+            except ValueError:
+                continue
+        if not points:
+            raise FetchError("파싱된 행이 없다", kind="empty", permanent=True)
+        return _clean(points, bars, as_of)

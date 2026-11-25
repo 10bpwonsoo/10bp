@@ -38,11 +38,17 @@ USER_AGENT = "MarketPulseAI/0.1 (+https://github.com/10bpwonsoo/10bp)"
 class FetchError(RuntimeError):
     """HTTP 요청 실패. 호출자는 다음 공급자로 넘어간다."""
 
-    def __init__(self, message: str, *, kind: str = "error", permanent: bool = False):
+    def __init__(self, message: str, *, kind: str = "error", permanent: bool = False,
+                 status: int | None = None, retry_after: str | None = None, body: str | None = None):
         super().__init__(message)
         self.kind = kind
         #: True 면 재시도해도 소용없다. 차단·인증·404 가 여기 해당한다.
         self.permanent = permanent
+        #: HTTP 오류면 응답 그대로 — 상태 코드 · Retry-After 헤더 원문(없으면 None) · 본문 앞부분.
+        #: 429 를 '누가 왜' 냈는지(공급자 엣지인지 프록시인지, 쉬라는 시간이 있는지) 판단하는 근거다. 추측하지 않는다.
+        self.status = status
+        self.retry_after = retry_after
+        self.body = body
 
 
 @dataclass
@@ -134,8 +140,13 @@ class HttpClient:
                 return payload
             except urllib.error.HTTPError as exc:
                 permanent = exc.code in (401, 403, 404, 451)
+                try:
+                    snippet = exc.read(200).decode("utf-8", errors="replace").strip()
+                except Exception:  # noqa: BLE001 — 본문을 못 읽어도 오류 처리는 계속한다
+                    snippet = None
                 last = FetchError(
-                    f"HTTP {exc.code} {exc.reason}", kind=f"http_{exc.code}", permanent=permanent
+                    f"HTTP {exc.code} {exc.reason}", kind=f"http_{exc.code}", permanent=permanent,
+                    status=exc.code, retry_after=(exc.headers.get("Retry-After") if exc.headers else None), body=snippet,
                 )
             except urllib.error.URLError as exc:
                 reason = str(getattr(exc, "reason", exc))
@@ -245,5 +256,69 @@ class PacedHttpClient(HttpClient):
                 circuit.opened_at = None
                 continue
             self._last_at[host] = time.monotonic()
+            self._cache[key] = (start, payload)
+            return payload
+
+
+@dataclass
+class BreakerHttpClient(PacedHttpClient):
+    """
+    수집기(marketpulse.collector) 전용 — PacedHttpClient 의 중복 제거 · 요청 간격은 그대로 쓰고, 429 대응만 바꾼다 (2026-11-25).
+
+    PacedHttpClient 는 429 를 받으면 45 → 90 → 180초를 **그 자리에서 자면서** 같은 요청을 되풀이했다. 공급처가 통째로
+    막힌 아침에는 20분 예산을 다 자고도 받은 것이 없었고, 그동안 다른 공급처로도 넘어가지 못했다. 여기서는
+
+      · 429 · 503 · 연결 실패를 파일에 남는 ProviderBreaker 에 기록한다(공급처 전체 · 재시작 뒤에도 유지).
+      · 공급처가 Retry-After 를 주면 그 시간만큼 회로를 연다. 없으면 연속 실패마다 짧게 쉬고(기본 10 · 20초) 임계(3)에
+        닿으면 회로를 연다 — 쉬는 시간은 5분에서 2배씩 늘어난다.
+      · 회로가 열리면 **자지 않는다**. 곧바로 FetchError(kind="circuit_open") 를 던져 호출자가 다음 공급처로 넘어가게 한다.
+    """
+
+    breaker: object | None = None  # ProviderBreaker — 없으면 PacedHttpClient 와 같은 동작
+
+    def get(self, url, *, params=None, headers=None, data=None) -> bytes:  # type: ignore[override]
+        if self.breaker is None:
+            return super().get(url, params=params, headers=headers, data=data)
+        host = url.split("/")[2] if "//" in url else url
+        if data:  # POST(KRX OTP) — 캐시하지 않지만 회로는 지킨다
+            ok, why = self.breaker.allow(host)
+            if not ok:
+                self.stats["skipped"] += 1
+                raise FetchError(f"{host} {why}", kind="circuit_open")
+            return HttpClient.get(self, url, params=params, headers=headers, data=data)
+        key, start = self._key(url, params)
+        hit = self._cache.get(key)
+        if hit is not None and (start is None or (hit[0] is not None and hit[0] <= start)):
+            self.stats["reused"] += 1
+            return hit[1]
+        while True:
+            ok, why = self.breaker.allow(host)
+            if not ok:
+                self.stats["skipped"] += 1
+                raise FetchError(f"{host} {why}", kind="circuit_open")
+            wait = max(self._last_at.get(host, -1e9) + self._gap.get(host, self.min_gap_sec) - time.monotonic(), self.breaker.pause_remaining(host))
+            if wait > 0:
+                self._sleep(wait)
+            self.stats["requests"] += 1
+            try:
+                payload = HttpClient.get(self, url, params=params, headers=headers)
+            except FetchError as exc:
+                self._last_at[host] = time.monotonic()
+                verdict = self.breaker.failure(host, kind=exc.kind, status=exc.status, retry_after=exc.retry_after, body=exc.body, message=str(exc))
+                if verdict.get("pause_sec") is None and not verdict.get("opened"):
+                    raise  # 404 · 403 · 파싱 오류 — 공급처가 아니라 그 요청의 문제다
+                self.stats["throttled"] += 1
+                circuit = self._circuit(host)  # 메모리 회로는 닫아 둔다 — 판단은 파일에 남는 breaker 하나가 한다
+                circuit.failures = 0
+                circuit.opened_at = None
+                if verdict["opened"]:
+                    self.stats["gave_up"] += 1
+                    logger.warning("%s %s — 회로를 열었다(%s 까지, %s)", host, exc, verdict["open_until"], verdict["basis"])
+                    raise FetchError(f"{host} {exc} — 회로 열림({verdict['open_until']} 까지)", kind="circuit_open",
+                                     status=exc.status, retry_after=exc.retry_after, body=exc.body) from exc
+                logger.warning("%s %s — 공급처 전체 %.0f초 쉬고 다시", host, exc, verdict["pause_sec"])
+                continue  # 쉬는 시간은 다음 바퀴의 pause_remaining 이 지킨다(파일에 남아 재시작 뒤에도)
+            self._last_at[host] = time.monotonic()
+            self.breaker.success(host)
             self._cache[key] = (start, payload)
             return payload

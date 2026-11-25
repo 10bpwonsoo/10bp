@@ -38,6 +38,7 @@ from .providers import (
     KrxProvider,
     Provider,
     StooqProvider,
+    TwelveDataProvider,
     YahooProvider,
 )
 from .mock import derive
@@ -119,6 +120,8 @@ class LiveMarketAdapter(MarketAdapter):
                 self.client, fred_api_key or os.environ.get("FRED_API_KEY")
             ),
             "krx": KrxProvider(self.client),
+            # 키(TWELVEDATA_API_KEY)가 있을 때만 쓰인다 — 없으면 available() 이 거절하고 다음 공급자로 넘어간다
+            "twelvedata": TwelveDataProvider(self.client, os.environ.get("TWELVEDATA_API_KEY")),
             "github": GithubCsvProvider(self.client),
             "csv": self.csv,
         }
@@ -195,6 +198,12 @@ class LiveMarketAdapter(MarketAdapter):
             self.outcomes[ins.id] = outcome
 
         # 2단계: 파생. 기초 자산이 둘 다 있어야 계산된다.
+        self._derive(instruments, raw)
+
+        return self._wrap(raw, by_id, retrieved)
+
+    def _derive(self, instruments: Sequence[Instrument], raw: dict[str, list[tuple[datetime, float]]]) -> None:
+        """derived_from 계열을 raw 에 더한다(기초 자산 둘이 모두 있을 때만). outcomes 에 결과를 남긴다."""
         for ins in instruments:
             spec = ins.derived_from
             if spec is None:
@@ -237,6 +246,7 @@ class LiveMarketAdapter(MarketAdapter):
             outcome.points = len(points_out)
             self.outcomes[ins.id] = outcome
 
+    def _wrap(self, raw: dict[str, list[tuple[datetime, float]]], by_id: dict[str, Instrument], retrieved: datetime) -> dict[str, MarketSeries]:
         out: dict[str, MarketSeries] = {}
         for iid, points in raw.items():
             ins = by_id.get(iid)
@@ -256,6 +266,18 @@ class LiveMarketAdapter(MarketAdapter):
                 ),
             )
         return out
+
+    def derive_series(self, instruments: Sequence[Instrument], series: dict[str, MarketSeries]) -> dict[str, MarketSeries]:
+        """
+        이미 받은 계열(series)로 파생 계열만 계산한다 — 네트워크를 쓰지 않는다 (2026-11-25, 수집기의 이어 받기용).
+        fetch_series 의 2단계와 같은 코드다. 기초 자산이 없으면 그 파생 계열은 빠진다(0 으로 채우지 않는다).
+        """
+        raw = {iid: list(zip(s.timestamps, s.values)) for iid, s in series.items()}
+        have = set(raw)
+        self.outcomes = {}
+        self._derive(instruments, raw)
+        by_id = {i.id: i for i in instruments}
+        return self._wrap({k: v for k, v in raw.items() if k not in have}, by_id, utcnow())
 
     # ── 진단 ──────────────────────────────────────────────
     def probe(self) -> dict[str, tuple[bool, str]]:

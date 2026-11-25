@@ -16,6 +16,7 @@ sources.yaml 의 설정을 그대로 쓴다.
 from __future__ import annotations
 
 import logging
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,7 +28,7 @@ from ...models.intelligence import SourceSpec
 from ...models.market import Instrument, MarketSeries
 from ..http import FetchError, HttpClient
 from ..market.live import MIN_POINTS, FetchOutcome, load_sources
-from ..market.providers import CsvProvider, Provider, StooqProvider, YahooProvider
+from ..market.providers import CsvProvider, Provider, StooqProvider, TwelveDataProvider, YahooProvider
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class AltLiveAdapter:
         self.providers: dict[str, Provider] = {
             "yahoo": YahooProvider(self.client),
             "stooq": StooqProvider(self.client),
+            "twelvedata": TwelveDataProvider(self.client, os.environ.get("TWELVEDATA_API_KEY")),
             "csv": self.csv,
         }
         #: SqliteSnapshotRepository (선택). 없으면 매번 네트워크다.

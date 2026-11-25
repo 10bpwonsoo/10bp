@@ -18,3 +18,6 @@ numpy==2.4.6
 # P5 — LLM 경로. 없어도 정량 파이프라인은 돈다 (지연 import). 키는
 # ANTHROPIC_API_KEY 환경변수로만 받는다 (요구 15-8).
 anthropic==1.5.0
+
+# Windows 에는 시간대 자료가 없다 — zoneinfo("Asia/Seoul") 이 이것을 읽는다 (입력 수집기를 PC 에서 돌릴 때)
+tzdata==2026.1; sys_platform == "win32"

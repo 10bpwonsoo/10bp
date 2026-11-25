@@ -289,8 +289,13 @@ def record_regime_state(ck, live, sh, rr, *, out: Path, cutoff: datetime, regime
 
 def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: Mapping[str, Mapping[str, Any]], extra_news: list[dict],
                 previous_investment: Mapping[str, Any] | None, news_since: datetime | None, origin: str, session_reads: Mapping[str, Any] | None = None,
-                manager=None, previous_official: str | None = None, regime_state_dir: Path | None = None) -> ReconstructResult:
-    """한 날짜의 화면 전체를 cutoff 기준으로 계산해 out/ 에 캡처 파일로 남긴다."""
+                manager=None, previous_official: str | None = None, regime_state_dir: Path | None = None,
+                drop: Mapping[str, Any] | None = None, hold_regime: bool = False) -> ReconstructResult:
+    """한 날짜의 화면 전체를 cutoff 기준으로 계산해 out/ 에 캡처 파일로 남긴다.
+
+    drop         묶음별로 계산에서 뺄 계열 id(입력 상태 판정의 STALE — 마지막 봉이 빠진 계열). 전날 값을 오늘 값처럼 쓰지 않으려고 뺀다(결측).
+    hold_regime  PARTIAL 스냅샷 — REGIME 선택(v2)을 적용하지 않는다. 호출자가 history · regime 상태 로그의 복사본을 넘겨 원본을 쓰지 않게 한다.
+    """
     from ..adapters.analyst_view import AnalystViewStore
     from ..adapters.market.scenario import available_scenarios, load_scenario
     from ..ai.client import build_client
@@ -327,6 +332,11 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
     base = cut_series(_load_series(inputs / "series_base.json"), cutoff)
     uni = cut_series(_load_series(inputs / "series_universe.json"), cutoff)
     basket = cut_series(_load_series(inputs / "series_basket.json"), cutoff)
+    if drop:  # 2026-11-25 — 마지막 봉이 빠진(STALE) 계열은 쓰지 않는다. 값은 고치지 않고 통째로 뺀다
+        base = {k: v for k, v in base.items() if k not in set(drop.get("base") or [])}
+        uni = {k: v for k, v in uni.items() if k not in set(drop.get("universe") or [])}
+        basket = {k: v for k, v in basket.items() if k not in set(drop.get("basket") or [])}
+        summary["input_drop"] = {g: sorted(drop.get(g) or []) for g in ("base", "universe", "basket") if drop.get(g)}
     summary["series"] = {"base": len(base), "universe": len(uni), "basket": len(basket)}
     (out / "series_last_bars.json").write_text(json.dumps({"base": last_bars(base), "universe": last_bars(uni), "basket": last_bars(basket)}, ensure_ascii=False, indent=1), encoding="utf-8")
 
@@ -359,8 +369,11 @@ def reconstruct(day: date, *, inputs: Path, out: Path, cutoff: datetime, tags: M
 
     # 4b) MARKET REGIME v2 (2026-11-04) — 자격 있는 후보 · 미국/한국 주식 확인 · 선택(API → 세션 생성본 → 정량).
     #     선택이 market_state.primary_label 이 되어 history 의 raw 로 저장되고, 공식 전환은 기존 2거래일 persistence 가 정한다.
-    live, rs_ctx = _attach_regime_selection(live, market, by_iid, inv, manager=manager, session_read=(session_reads or {}).get("regime_select"),
-                                            previous_official=previous_official, config_dir=settings.config_dir, regime_state_dir=regime_state_dir)
+    if hold_regime:  # PARTIAL — 핵심 입력이 모자라 오늘의 regime 선택을 하지 않는다(정량 v1 값은 잠정치로만 남는다)
+        rs_ctx = {"held": True, "reason": "PARTIAL 스냅샷 — 핵심 입력 부족으로 REGIME 선택을 보류했다"}
+    else:
+        live, rs_ctx = _attach_regime_selection(live, market, by_iid, inv, manager=manager, session_read=(session_reads or {}).get("regime_select"),
+                                                previous_official=previous_official, config_dir=settings.config_dir, regime_state_dir=regime_state_dir)
     (out / "regime_select_context.json").write_text(json.dumps(rs_ctx, ensure_ascii=False, indent=1), encoding="utf-8")
     (out / "live.json").write_text(live.model_dump_json(), encoding="utf-8")
     sel = live.market_state.selection
