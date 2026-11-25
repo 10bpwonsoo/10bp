@@ -69,7 +69,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--budget-min", type=float); p.add_argument("--no-wait", action="store_true")
     p.add_argument("--reference"); p.add_argument("--publish", nargs="?", const="collector-inputs")
     p.add_argument("--branch", default="collector-inputs"); p.add_argument("--remote", default="origin")
-    p.add_argument("--md"); p.add_argument("--reset")
+    p.add_argument("--md"); p.add_argument("--reset"); p.add_argument("--force", action="store_true")
     a = p.parse_args(argv)
 
     if a.cmd == "inventory":
@@ -95,7 +95,13 @@ def main(argv: list[str] | None = None) -> int:
     day, out = _out(a)
     if a.cmd == "pull":
         from .handoff import pull
+        if (out / "series_base.json").is_file() and not a.force:  # 여기서 이미 받은 것을 넘겨받은 것으로 덮어쓰지 않는다
+            print(f"{out} 에 이미 수집분이 있다 — 덮어쓰지 않는다(넘겨받은 것으로 바꾸려면 --force)")
+            return 1
         got = pull(day.isoformat(), out, branch=a.branch, remote=a.remote)
+        if got and (out / "checkpoint").is_dir():
+            import shutil
+            shutil.rmtree(out / "checkpoint")  # 넘겨받은 계열 파일에서 체크포인트를 다시 만든다
         print(f"{day} 수집 결과 {len(got)}개 파일을 {out} 에 꺼냈다: {', '.join(got)}" if got else f"전달 가지 {a.branch} 에 {day} 수집 결과가 없다")
         return 0 if got else 1
     c = Collector(day, out, reference=Path(a.reference) if a.reference else None)
