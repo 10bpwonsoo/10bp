@@ -2,7 +2,7 @@
 Market Pulse 입력 수집기 — Claude 없이 도는 Python 명령.
 
     python -m marketpulse.collector run [--date 2026-11-25] [--out DIR] [--only base,universe,basket,news]
-                                        [--budget-min 25] [--no-wait] [--reference DIR] [--publish [가지]]
+                                        [--budget-min 25] [--no-wait] [--retry-stale] [--reference DIR] [--publish [가지]]
         오늘(KST) 입력을 받는다. 이미 받은 계열은 건너뛰고 빠진 것만 받는다(이어 받기).
         종료 코드 0 = 다 받음 · 75 = 일부 남음(다음 시도 시각을 출력한다 — 그 뒤에 같은 명령을 다시 부른다) · 73 = 이미 도는 중
     python -m marketpulse.collector status [--date D] [--out DIR]      받은 것 · 빠진 것 · 공급처별 성공률 · 회로 상태 · FULL/PARTIAL 판정
@@ -70,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--reference"); p.add_argument("--publish", nargs="?", const="collector-inputs")
     p.add_argument("--branch", default="collector-inputs"); p.add_argument("--remote", default="origin")
     p.add_argument("--md"); p.add_argument("--reset"); p.add_argument("--force", action="store_true")
+    p.add_argument("--retry-stale", action="store_true", help="마지막 봉이 빠진 계열을 하루 시도 상한과 상관없이 한 번 더 받는다(사람이 지금 받을 수 있다고 본 때만)")
     a = p.parse_args(argv)
 
     if a.cmd == "inventory":
@@ -114,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     only = [x.strip() for x in a.only.split(",") if x.strip()]
     code = c.run(groups=tuple(g for g in GROUPS if g in only), news="news" in only,
-                 budget_sec=a.budget_min * 60 if a.budget_min is not None else None, wait=False if a.no_wait else None)
+                 budget_sec=a.budget_min * 60 if a.budget_min is not None else None, wait=False if a.no_wait else None, force_stale=a.retry_stale)
     _print_status(c)
     gone = prune(out.parent, int(c.run_cfg.get("keep_days", 4)), day) if not a.out else []
     if gone:

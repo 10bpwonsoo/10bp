@@ -2732,6 +2732,71 @@
     "note": ""
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-24",
+   "tab_id": "semiconductor_cycle",
+   "state": "UPSWING",
+   "state_label": "Upswing",
+   "state_label_ko": "",
+   "state_score": 25.3,
+   "confidence": 47.0,
+   "component_scores": {
+    "memory_pricing": -24.7,
+    "spot_premium": 93.8,
+    "contract": 26.65,
+    "premium_breadth": -33.3,
+    "hbm": 100.0,
+    "export": 68.8,
+    "eps_revision": null,
+    "equity": -82.8,
+    "supply_news": null
+   },
+   "key_drivers": [
+    "Spot Premium",
+    "Export Nowcast",
+    "HBM"
+   ],
+   "data_coverage": 0.82,
+   "data_asof": "2026-11-24T22:30:00Z",
+   "missing_components": [
+    "eps_revision",
+    "supply_news"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-25T02:09:51.716519Z",
+   "model_version": "semiconductor_cycle_v0.2.0",
+   "logic_version": "rules_a4527ff1",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "UPSWING · composite +25 · 신뢰도 47",
+   "payload": {
+    "chips": {
+     "memory_pricing": "SOFT",
+     "spot_premium": "STABLE",
+     "contract": "RISING · STALE",
+     "hbm": "TIGHT",
+     "export": "DECELERATING",
+     "eps": "NO DATA",
+     "equity": "BROAD CONFIRMATION",
+     "turning": "EARLY SOFTENING"
+    },
+    "premium": {
+     "DDR4_16G_SPOT": 50.48,
+     "DDR4_8G_SPOT": 66.62,
+     "DDR5_16G_SPOT": 82.96
+    },
+    "export": {
+     "scope": "10월 1~20일",
+     "yoy": 222.5,
+     "nowcast_yoy": 251.4
+    },
+    "equity": "BROAD CONFIRMATION",
+    "note": ""
+   },
+   "corrections": []
   }
  ]
 }

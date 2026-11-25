@@ -382,7 +382,7 @@ class Collector:
         row["state"] = "OK"
         return "OK"
 
-    def refetch_stale(self, groups: tuple[str, ...], t0: float, budget: float) -> list[str]:
+    def refetch_stale(self, groups: tuple[str, ...], t0: float, budget: float, *, force: bool = False) -> list[str]:
         """
         앞선 실행에서 받았지만 마지막 봉이 빠져 있던 계열(STALE)을 한 번 더 받는다 — 공급처가 최신 일봉 없이 응답하는 날이 있다.
         새로 받은 쪽의 마지막 봉이 더 늦을 때만 바꾼다. 아니면 앞서 받은 것을 그대로 둔다(같은 날 수집분끼리만 — 값은 손대지 않는다).
@@ -395,7 +395,7 @@ class Collector:
             by_id = {i.id: i for i in plan.instruments}
             for iid in stale.get(g) or []:
                 ins, row = by_id.get(iid), self.status["series"][g].get(iid) or {}
-                if ins is None or not self.have(g, iid) or int(row.get("tries", 0)) >= mx or self._now() - t0 > budget:
+                if ins is None or not self.have(g, iid) or (int(row.get("tries", 0)) >= mx and not force) or self._now() - t0 > budget:
                     continue
                 if str(row.get("provider")) in ("csv", "csv_base", "github"):
                     continue  # 원래 늦는 경로 — 다시 받아도 같다
@@ -540,7 +540,7 @@ class Collector:
         return info
 
     # ── 실행 ──────────────────────────────────────────────
-    def run(self, *, groups: tuple[str, ...] = GROUPS, news: bool = True, budget_sec: float | None = None, wait: bool | None = None) -> int:
+    def run(self, *, groups: tuple[str, ...] = GROUPS, news: bool = True, budget_sec: float | None = None, wait: bool | None = None, force_stale: bool = False) -> int:
         if not self._lock():
             self.log(f"{self.out} 에서 다른 수집이 돌고 있다 — 끝낸다")
             return EXIT_LOCKED
@@ -556,7 +556,7 @@ class Collector:
             if news:
                 n = self.collect_news()
                 self.log(f"기사 {n['total']}건(새로 {n['new']}건){' · 오류 ' + n['error'] if n['error'] else ''}")
-            run["refetched_stale"] = self.refetch_stale(groups, t0, budget)
+            run["refetched_stale"] = self.refetch_stale(groups, t0, budget, force=force_stale)
             include_deferred = True
             while True:
                 run["rounds"] += 1

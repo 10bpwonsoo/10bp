@@ -1,0 +1,37 @@
+{
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(semiconductor_cycle_read_context.json, 11/25 07:30 KST 기준) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. 화면에는 '세션 생성' 으로 표시된다.",
+ "read": "HBM 계약가와 Spot Premium, 수출이 강하게 지지하지만 범용 메모리 현물 가격과 메모리 대형주 주가가 함께 약해 지지와 제약 증거가 엇갈립니다. composite 는 UPSWING 구간의 아래 경계에 걸쳐 있어 하루 전 EARLY RECOVERY 에서 한 칸 올라왔을 뿐이고, 한 주 기준으로는 오히려 내려온 흐름입니다. 데이터는 대부분 확보됐지만 신호가 갈려 신뢰도는 47 에 머뭅니다.",
+ "verdict": "지지 증거는 강하지만 가격과 주가가 약해 상승 국면의 아래 경계에 걸친 상태",
+ "support": [
+  {
+   "key": "hbm",
+   "note": "HBM 계약가 앵커 급등"
+  },
+  {
+   "key": "spot_premium",
+   "note": "현물이 계약가를 크게 웃돎"
+  },
+  {
+   "key": "export",
+   "note": "수출 증가 폭 크지만 둔화"
+  },
+  {
+   "key": "contract",
+   "note": "계약가 상승, 최신성 낮음"
+  }
+ ],
+ "constraint": [
+  {
+   "key": "equity",
+   "note": "메모리 대형주 주가 약세"
+  },
+  {
+   "key": "memory_pricing",
+   "note": "범용 현물 가격 약세"
+  },
+  {
+   "key": "premium_breadth",
+   "note": "오르는 제품이 소수"
+  }
+ ]
+}

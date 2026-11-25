@@ -4975,6 +4975,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-24",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": 11.970079309355036,
+   "confidence": 40.0,
+   "component_scores": {
+    "RiskAppetite": 6.389087115963678,
+    "Volatility": 47.211296824358286,
+    "Growth": 2.9273122131823426,
+    "Credit": 76.02936833927129,
+    "KoreaFlow": null,
+    "news": -18.97572205098144,
+    "factor:Growth": 0.059,
+    "factor:Inflation": -0.263,
+    "factor:Rates": -0.097,
+    "factor:USD": -0.533,
+    "factor:Liquidity": 1.44,
+    "factor:RiskAppetite": 0.128,
+    "factor:Credit": -1.994,
+    "factor:Volatility": -1.026,
+    "factor:China": -1.603
+   },
+   "key_drivers": [
+    "VIX − S&P 실현변동성 -4.0σ",
+    "구리 -2.8σ",
+    "KOSPI +2.4σ"
+   ],
+   "data_coverage": 0.7666666666666667,
+   "data_asof": "2026-11-24T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-25T02:09:51.558802Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 40% · 온도 +12",
+   "payload": {
+    "date": "2026-11-24",
+    "as_of": "2026-11-24T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 40.0,
+    "price_temperature": 32.60061354957936,
+    "news_temperature": -18.97572205098144,
+    "composite": 11.970079309355036,
+    "news_events": 31,
+    "thermo_confidence": 89.84236643994392,
+    "components": {
+     "RiskAppetite": 6.389087115963678,
+     "Volatility": 47.211296824358286,
+     "Growth": 2.9273122131823426,
+     "Credit": 76.02936833927129,
+     "KoreaFlow": null,
+     "news": -18.97572205098144
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7666666666666667,
+    "factors": {
+     "Growth": 0.059,
+     "Inflation": -0.263,
+     "Rates": -0.097,
+     "USD": -0.533,
+     "Liquidity": 1.44,
+     "RiskAppetite": 0.128,
+     "Credit": -1.994,
+     "Volatility": -1.026,
+     "China": -1.603
+    },
+    "hypotheses": {},
+    "drivers": [
+     "VIX − S&P 실현변동성 -4.0σ",
+     "구리 -2.8σ",
+     "KOSPI +2.4σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

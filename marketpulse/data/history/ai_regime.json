@@ -4184,6 +4184,80 @@
     "stress": "LOW"
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-24",
+   "tab_id": "ai_regime",
+   "state": "confirmed_risk_off",
+   "state_label": "CONFIRMED AI RISK-OFF",
+   "state_label_ko": "AI 위험회피 확인",
+   "state_score": 70.3,
+   "confidence": 70.3,
+   "component_scores": {
+    "basket_z_5d": -0.65,
+    "rel_ndx_5d": -2.7,
+    "rel_ndx_z_5d": -0.6,
+    "breadth_ma20": 3.0,
+    "news_tone": -25.5,
+    "driver:macro_rates": 71.0,
+    "driver:broad_risk_off": 16.6,
+    "driver:semi_cycle": -70.3,
+    "driver:ai_narrative": -68.7,
+    "driver:ai_fundamental_stress": -20.8
+   },
+   "key_drivers": [
+    "Macro / Rates +71 CONTRADICTED",
+    "Semiconductor Cycle -70 CONFIRMED",
+    "AI Narrative -69 CONFIRMED"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-24T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-25T02:09:51.238761Z",
+   "model_version": "ai_regime_v0.1.0",
+   "logic_version": "rules_5be636bd",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "AI 위험회피 확인. AI 바스켓 절대 하락(-1.2σ, 5일 -5.5%) · Nasdaq 100 대비 underperform(5일 -2.7%p, 상대 z -0.6σ) — 시장보다 더 빠진다. AI 고유 요인을 의심한다. 가장 큰 driver 는 반도체 사이클(-70, driver 방향(하락)과 AI 바스켓(-1.2σ)이 같다.) breadth 3%(narrowing). 뉴스×가격 CONFIRMED RISK-OFF. AI 고유 스트레스 HIGH.",
+   "payload": {
+    "leadership": [
+     "power",
+     "software",
+     "equipment",
+     "hyperscalers"
+    ],
+    "lagging": [
+     "networking",
+     "compute",
+     "memory_hbm"
+    ],
+    "leader_1w": "software_app",
+    "breadth_trend": "narrowing",
+    "breadth_ma20": 3.0,
+    "price_confirmation": "WEAK",
+    "fundamental_confirmation": "WEAK",
+    "narrative": "confirmed_risk_off",
+    "ai_vs_market": "underperform",
+    "abs_direction": "down",
+    "dominant": "semi_cycle",
+    "status_strip": {
+     "narrative": "NEGATIVE",
+     "relative": "SOFT",
+     "price": "WEAK",
+     "semi": "WEAK",
+     "infra": "WEAK",
+     "software": "STRONG",
+     "breadth": "NARROWING",
+     "macro": "NEUTRAL",
+     "fundamental": "WEAK"
+    },
+    "subtitle": "CONFIRMED AI RISK-OFF / FUNDAMENTALS WEAK",
+    "stress": "HIGH"
+   },
+   "corrections": []
   }
  ]
 }

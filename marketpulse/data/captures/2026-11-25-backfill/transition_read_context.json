@@ -1,0 +1,379 @@
+{
+ "snapshot_date": "2026-11-25",
+ "market_date": "2026-11-24",
+ "cutoff": "2026-11-25T07:30:00+09:00",
+ "transition": {
+  "kind": "exit",
+  "from": "Risk-On",
+  "to": "Neutral / Mixed",
+  "exit_streak": 1,
+  "exit_required": 1,
+  "entry_streak": 0,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-18",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-19",
+   "candidate": "Growth",
+   "official": "Growth",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-20",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-23",
+   "candidate": "Risk-On",
+   "official": "Risk-On",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-24",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": 2.29,
+   "today": 0.13
+  },
+  "Liquidity": {
+   "prev": -1.61,
+   "today": 1.44
+  },
+  "Rates": {
+   "prev": -2.25,
+   "today": -0.1
+  },
+  "Inflation": {
+   "prev": -0.24,
+   "today": -0.26
+  },
+  "Credit": {
+   "prev": 3.25,
+   "today": -1.99
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.79,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": -1.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": -1.6,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": -1.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -1.4,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "CHINA",
+   "direction": "down",
+   "strength": -0.96,
+   "why": "중국 주식·구리 약세 — 중국 수요 우려가 원자재로 번진다.",
+   "evidence": [
+    {
+     "label": "Hang Seng China",
+     "z": -1.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "구리",
+     "z": -2.8,
+     "display": "-4.70%"
+    },
+    {
+     "label": "USD/CNH",
+     "z": 2.0,
+     "display": "+0.16%"
+    }
+   ]
+  },
+  {
+   "label": "ALUMINUM",
+   "direction": "down",
+   "strength": -1.0,
+   "why": "알루미늄 하락 — 자동차·산업재 원가 완화.",
+   "evidence": [
+    {
+     "label": "알루미늄",
+     "z": -3.5,
+     "display": "-5.0%"
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "down",
+   "strength": -0.35,
+   "why": "신용여건 완화가 위험자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": -2.0,
+     "display": "-13.0bp"
+    },
+    {
+     "label": "VIX",
+     "z": -0.2,
+     "display": ""
+    },
+    {
+     "label": "S&P 500",
+     "z": -0.7,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "FED PATH / FRONT END",
+   "direction": "down",
+   "strength": -0.53,
+   "why": "단기금리 하락 — 시장이 완화 경로를 당겨 잡는다. 장기물과 갈리면 커브 스티프닝이다.",
+   "evidence": [
+    {
+     "label": "US 2Y Yield",
+     "z": -1.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 2s10s Curve",
+     "z": 0.2,
+     "display": "(5일)"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "VIX − S&P 실현변동성",
+   "z": -4.0,
+   "change": "-14.70"
+  },
+  {
+   "label": "구리",
+   "z": -2.8,
+   "change": "-4.70%"
+  },
+  {
+   "label": "KOSPI",
+   "z": 2.4,
+   "change": "+6.32%"
+  },
+  {
+   "label": "Semiconductors",
+   "z": -2.0,
+   "change": "-8.27%"
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -1.7,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": -2.0,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -0.2,
+   "arrow": "→"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": -1.7,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": 0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -2.3,
+   "arrow": "↓↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "PARTIAL",
+   "score": -0.09
+  },
+  "kr": {
+   "status": "CONFIRMED",
+   "score": 0.54
+  }
+ },
+ "selection_today": {
+  "selected": "NEUTRAL",
+  "commentary": "화요일 미국 주식은 엔비디아와 반도체지수가 하루 만에 급반락하면서 전날 반등의 상당 부분을 되돌렸고, 소형주와 금융만 올랐다. 한국은 전날 미국 급등을 뒤늦게 반영해 코스피가 5000선을 회복했지만, 이는 하루 시차의 반영이라 방향 신호로 읽기 어렵다. 어느 환경도 뚜렷한 Trigger 를 넘지 못해 오늘은 중립으로 본다.",
+  "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 위험선호 factor 가 전날 급등에서 기준 아래로 내려왔고, 미국은 반도체 급락으로 다시 밀린 반면 한국은 전날 미국 반등을 뒤늦게 반영해 급등하면서 두 시장의 방향이 갈렸다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "[속보] 필라델피아 반도체지수 7.8%↓…'젠슨황 복귀' 랠리 하루 만에 꺾여",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": -40,
+   "summary": "필라델피아 반도체지수 7.8% 하락 — 젠슨 황 복귀 랠리가 하루 만에 꺾임(속보, 제목)."
+  },
+  {
+   "title": "[속보] 코스피 6.32% 급등해 '오천피' 회복…코스닥도 4.79%↑",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 45,
+   "summary": "코스피 6.32% 급등해 5000선 회복, 코스닥도 4.79% 상승(속보, 제목)."
+  },
+  {
+   "title": "[속보] 엔비디아 5.86% 급락…전날 31% 폭등 하루 만에 반락",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -35,
+   "summary": "엔비디아 5.86% 급락 — 전날 31% 급등 하루 만에 반락(속보, 제목)."
+  },
+  {
+   "title": "'젠슨황 효과' 의문에 반도체지수 8% 급반락…마이크론 11%↓",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": -40,
+   "summary": "'젠슨 황 효과' 의문에 반도체지수 8% 급반락, 마이크론 11% 하락(제목)."
+  },
+  {
+   "title": "[마감시황] \"땡큐 젠슨 황\"…코스피 3거래일 만에 5000선 회복",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 40,
+   "summary": "코스피가 3거래일 만에 5000선을 회복하며 마감(마감시황, 제목)."
+  },
+  {
+   "title": "Schumer accuses Nvidia CEO of violating US export control law",
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "sentiment": -30,
+   "summary": "슈머 상원의원이 엔비디아 CEO 가 미국 수출통제법을 위반했다고 비판(제목)."
+  },
+  {
+   "title": "[속보] 앤트로픽 6.54% 급락…상장 4거래일 만에 공모가 하회",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": -30,
+   "summary": "앤트로픽 6.54% 급락 — 상장 4거래일 만에 공모가 아래로(속보, 제목)."
+  },
+  {
+   "title": "젠슨 황 복귀에 美 반도체지수 14% 급등…'역대 최대'",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": 40,
+   "summary": "젠슨 황 복귀에 미국 반도체지수가 14% 급등해 역대 최대 상승(전날 장, 제목)."
+  }
+ ]
+}
