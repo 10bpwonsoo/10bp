@@ -3,7 +3,7 @@
 `python -m marketpulse.collector inventory --md docs/data-sources-inventory.md` 로 다시 만든다(설정에서 생성 — 손으로 고치지 않는다).
 
 - 계열 213개(묶음 사이에 겹치는 것 포함) · 그중 Yahoo 가 첫 공급처인 계열 175개 = 서로 다른 Yahoo 심볼 136개
-- Yahoo 심볼 가운데 설정된 대체 경로가 있는 것 101개 · 없는 것 35개(막히면 결측)
+- Yahoo 심볼 가운데 설정된 대체 경로가 있는 것 100개 · 없는 것 36개(막히면 결측)
 - '공개 시각' 은 그 봉이 기준 시각(07:30 KST)에 쓸 수 있게 되는 때(archive/pit.py). 대체 공급처는 자기 규칙을 따른다.
 
 ## base (60)
@@ -11,7 +11,7 @@
 | 계열 | 첫 공급처 | 심볼 | 시장 | 공개 시각 | 막히면 |
 |---|---|---|---|---|---|
 | KOSPI | yahoo | `^KS11` | KR | 봉 시각 +7h | krxapi:코스피, stooq:^kospi |
-| KOSPI200 | yahoo | `^KS200` | KR | 봉 시각 +7h | krxapi:코스피 200 |
+| KOSPI200 | yahoo | `^KS200` | KR | 봉 시각 +7h | 없음(결측) |
 | KOSDAQ | yahoo | `^KQ11` | KR | 봉 시각 +7h | krxapi:코스닥 |
 | SPX | yahoo | `^GSPC` | US | 봉 시각 +7h | stooq:^spx |
 | NDX | yahoo | `^NDX` | US | 봉 시각 +7h | stooq:^ndq |
@@ -33,7 +33,7 @@
 | SOXX | yahoo | `SOXX` | US | 봉 시각 +7h | stooq:soxx.us |
 | ITA | yahoo | `ITA` | US | 봉 시각 +7h | stooq:ita.us |
 | JETS | yahoo | `JETS` | US | 봉 시각 +7h | stooq:jets.us |
-| KRX_SEMI | krx | `반도체` | OTHER | — | krxapi:KRX 반도체 |
+| KRX_SEMI | krx | `반도체` | OTHER | — | 없음(결측) |
 | US2Y | fred | `DGS2` | FRED | 관측일 다음 평일 22:00Z | yahoo:2YY=F |
 | US10Y | fred | `DGS10` | FRED | 관측일 다음 평일 22:00Z | yahoo:^TNX |
 | US30Y | fred | `DGS30` | FRED | 관측일 다음 평일 22:00Z | yahoo:^TYX |
@@ -56,7 +56,7 @@
 | NATGAS | yahoo | `NG=F` | US | 그 거래일 뉴욕 17:00 | fred:DHHNGSP, github:daily.csv |
 | VIX | yahoo | `^VIX` | US | 봉 시각 +14h | fred:VIXCLS, github:vix-daily.csv |
 | MOVE | yahoo | `^MOVE` | US | 봉 시각 +7h | 없음(결측) |
-| VKOSPI | krx | `코스피 200 변동성지수` | OTHER | — | krxapi:코스피 200 변동성지수 |
+| VKOSPI | krx | `코스피 200 변동성지수` | OTHER | — | 없음(결측) |
 | US_HY_OAS | fred | `BAMLH0A0HYM2` | FRED | 관측일 다음 평일 22:00Z | 없음(결측) |
 | KR_FOREIGN_NET | krx | `외국인` | OTHER | — | 없음(결측) |
 | KR_INSTITUTION_NET | krx | `기관합계` | OTHER | — | 없음(결측) |

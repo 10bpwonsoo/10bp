@@ -14,7 +14,9 @@
 #   fred  : api.stlouisfed.org        FRED_API_KEY 필요. 금리·크레딧의 정본
 #   krx   : data.krx.co.kr            키 불필요. 한국 수급·업종지수
 #   krxapi: data-dbg.krx.co.kr        KRX 공식 Open API. KRX_API_KEY 필요(서비스별 이용신청 승인도). 하루치 전 지수·전 종목이 한 번에 온다
-#           symbol 은 응답의 지수명(IDX_NM)과 정확히 같아야 한다 — 이름이 다르면 오류가 받은 이름 목록을 보여 준다(2026-11-25: 실제 응답 미확인)
+#           symbol 은 응답의 지수명(IDX_NM)과 정확히 같아야 한다 — 이름이 다르면 오류가 받은 이름 목록을 보여 준다(2026-11-25 실제 응답으로 확인)
+#           KOSPI200 · KRX_SEMI · VKOSPI 는 지금까지 한 번도 수집된 적이 없는 계열이다(Yahoo 1봉 · KRX 화면 403). krxapi 로는 받을 수 있지만,
+#           켜면 그날부터 판정에 새 입력이 들어간다 — 사용자 결정 전까지는 연결하지 않고 줄 끝 주석으로만 남긴다.
 #   github: raw.githubusercontent.com 공개 저장소의 CSV 미러. 키 불필요
 #   csv   : data/replay/<id>.csv      로컬 파일. 최후의 수단이자 재현 경로
 #
@@ -33,7 +35,7 @@
 sources:
   # ── Equity index ──────────────────────────────────────
   KOSPI:     [{provider: yahoo, symbol: "^KS11"},   {provider: krxapi, dataset: "idx/kospi_dd_trd", symbol: "코스피"}, {provider: stooq, symbol: "^kospi"}]
-  KOSPI200:  [{provider: yahoo, symbol: "^KS200"},  {provider: krxapi, dataset: "idx/kospi_dd_trd", symbol: "코스피 200"}]
+  KOSPI200:  [{provider: yahoo, symbol: "^KS200"}]   # krxapi 로 받을 수 있다: {provider: krxapi, dataset: "idx/kospi_dd_trd", symbol: "코스피 200"} — 아래 주석 참조
   KOSDAQ:    [{provider: yahoo, symbol: "^KQ11"},   {provider: krxapi, dataset: "idx/kosdaq_dd_trd", symbol: "코스닥"}]
   SPX:       [{provider: yahoo, symbol: "^GSPC"},   {provider: stooq, symbol: "^spx"}]
   NDX:       [{provider: yahoo, symbol: "^NDX"},    {provider: stooq, symbol: "^ndq"}]
@@ -58,7 +60,7 @@ sources:
   ITA:       [{provider: yahoo, symbol: "ITA"},  {provider: stooq, symbol: "ita.us"}]
   JETS:      [{provider: yahoo, symbol: "JETS"}, {provider: stooq, symbol: "jets.us"}]
   # KRX 업종지수는 Yahoo 에 없다. KRX 포털이 유일한 무료 경로다.
-  KRX_SEMI:  [{provider: krx, dataset: sector_index, symbol: "반도체"}, {provider: krxapi, dataset: "idx/krx_dd_trd", symbol: "KRX 반도체"}]
+  KRX_SEMI:  [{provider: krx, dataset: sector_index, symbol: "반도체"}]   # krxapi: {provider: krxapi, dataset: "idx/krx_dd_trd", symbol: "KRX 반도체"}
 
   # ── Rates ─────────────────────────────────────────────
   # FRED 가 정본이다. Yahoo 의 ^TNX 계열은 장중 스냅이라 공식 종가와
@@ -107,7 +109,7 @@ sources:
   VIX:       [{provider: yahoo, symbol: "^VIX"},  {provider: fred, symbol: "VIXCLS"},
               {provider: github, path: "datasets/finance-vix/main/data/vix-daily.csv", date_col: DATE, value_col: CLOSE}]
   MOVE:      [{provider: yahoo, symbol: "^MOVE"}]
-  VKOSPI:    [{provider: krx, dataset: index, symbol: "코스피 200 변동성지수"}, {provider: krxapi, dataset: "idx/drvprod_dd_trd", symbol: "코스피 200 변동성지수"}]
+  VKOSPI:    [{provider: krx, dataset: index, symbol: "코스피 200 변동성지수"}]   # krxapi: {provider: krxapi, dataset: "idx/drvprod_dd_trd", symbol: "코스피 200 변동성지수"}
   # VIX_RV_SPX / VKOSPI_RV_KOSPI 는 derived_from(vol_premium) 으로 계산된다.
   # CYC_DEF 도 derived_from(ratio) 이다. 여기 적지 않는다.
 

@@ -17,6 +17,14 @@ host_min_gap_sec:
   api.twelvedata.com: 8.0     # 무료 플랜 분당 8건
   data-dbg.krx.co.kr: 1.0     # 날짜마다 한 번씩 부른다(처음 한 번은 dataset 마다 수백 번 — 받은 날짜는 상태 폴더에 남아 다시 부르지 않는다)
 
+# 공급처별 인증 방식
+providers:
+  krxapi:
+    # KRX Open API 인증키(AUTH_KEY 헤더)를 실행 환경이 대신 넣어 준다(클라우드 환경의 네트워크 시크릿, 2026-11-25 등록).
+    # 그래서 KRX_API_KEY 변수가 없어도 부른다. PC · 서버에서는 KRX_API_KEY 환경변수를 두면 코드가 헤더를 직접 보낸다.
+    # 어느 쪽도 없으면 첫 요청이 401(Unauthorized Key)로 끝나고 그 실행에서는 다시 부르지 않는다. 끄려면 KRX_API_VIA_PROXY=0
+    key_via_network_secret: true
+
 # ── ② 한 번 실행 ─────────────────────────────────────────────────────────
 run:
   min_gap_sec: 2.0            # 같은 공급처 요청 사이 간격

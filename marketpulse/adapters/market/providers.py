@@ -773,8 +773,9 @@ class KrxOpenApiProvider(Provider):
     키를 받은 뒤에도 서비스마다 포털에서 'API 이용신청' 승인이 있어야 한다(없으면 401).
 
     주의 — 종목 종가(TDD_CLSPRC)는 **수정 전 종가**다. Yahoo 의 수정종가와 배당만큼 수준이 다를 수 있어 수집기가 대조한 뒤에만 쓴다.
-    응답 필드 이름은 공개된 예제들 기준이고, 이 저장소에서는 인증키가 없어 실제 응답으로 확인하지 못했다(2026-11-25). 이름이 맞지 않으면
-    받은 이름 목록을 오류에 실어 알려 준다 — 조용히 빈 값을 돌려주지 않는다.
+    실제 응답으로 확인했다(2026-11-25 10:49 KST, basDd=20261124): 지수 6개 서비스 모두 200, 필드 BAS_DD · IDX_CLSS · IDX_NM · CLSPRC_IDX …,
+    종목 ISU_CD(6자리 단축코드) · ISU_NM · TDD_CLSPRC …, 지수 이름 "코스피" · "코스피 200" · "코스닥" · "KRX 반도체" · "코스피 200 변동성지수".
+    이름이 맞지 않으면 받은 이름 목록을 오류에 실어 알려 준다 — 조용히 빈 값을 돌려주지 않는다.
     """
 
     name = "krxapi"
@@ -791,10 +792,13 @@ class KrxOpenApiProvider(Provider):
         self.api_key = api_key
         self.via_proxy = via_proxy
         self.cache_dir = cache_dir
+        self._denied: str | None = None  # 키가 없거나 틀린 곳에서 계열마다 401 을 받지 않게 한다
 
     def available(self) -> tuple[bool, str]:
         if not self.api_key and not self.via_proxy:
             return False, "KRX_API_KEY 가 없다"
+        if self._denied:
+            return False, f"KRX Open API 가 키를 거절했다({self._denied}) — 이번 실행에서는 다시 부르지 않는다"
         return True, "사용 가능"
 
     # ── 하루치 ────────────────────────────────────────────
@@ -835,7 +839,15 @@ class KrxOpenApiProvider(Provider):
                 return json.loads(path.read_text(encoding="utf-8"))
             except ValueError:
                 pass
-        raw = self.client.get(self.BASE + dataset, params={"basDd": f"{day:%Y%m%d}"}, headers={"AUTH_KEY": self.api_key or "set-by-network-secret"})
+        try:
+            raw = self.client.get(self.BASE + dataset, params={"basDd": f"{day:%Y%m%d}"}, headers={"AUTH_KEY": self.api_key} if self.api_key else None)
+        except FetchError as exc:
+            if exc.status == 401:
+                # 'Unauthorized Key' = 키 자체가 틀림(전 서비스) · 'Unauthorized API Call' = 그 서비스의 이용신청 승인이 없음(그 서비스만)
+                if "Unauthorized Key" in (exc.body or ""):
+                    self._denied = "Unauthorized Key"
+                raise FetchError(f"KRX Open API 401 — {(exc.body or '')[:80]}", kind="auth", permanent=True, status=401, body=exc.body) from exc
+            raise
         got = self.parse_day(raw)
         if path is not None and (got or (today - day).days > self.EMPTY_CACHE_AFTER_DAYS):
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -886,5 +898,14 @@ def krx_open_api(client: HttpClient) -> KrxOpenApiProvider:
     """환경에서 키 · 상태 폴더를 읽어 만든다. 받은 날짜별 응답은 상태 폴더(.marketpulse_state/krx_openapi)에 남는다."""
     import os
 
+    import yaml
+
     state = Path(os.environ.get("MARKETPULSE_STATE_DIR") or Path(__file__).resolve().parents[3] / ".marketpulse_state")
-    return KrxOpenApiProvider(client, os.environ.get("KRX_API_KEY") or None, via_proxy=os.environ.get("KRX_API_VIA_PROXY") == "1", cache_dir=state / "krx_openapi")
+    flag = os.environ.get("KRX_API_VIA_PROXY")
+    if flag is None:  # 설정이 '실행 환경이 헤더를 넣어 준다' 고 하면 키 변수 없이도 부른다(키가 없는 곳에서는 첫 401 뒤로 부르지 않는다)
+        try:
+            cfg = yaml.safe_load((Path(__file__).resolve().parents[2] / "config" / "collection.yaml").read_text(encoding="utf-8")) or {}
+            flag = "1" if ((cfg.get("providers") or {}).get("krxapi") or {}).get("key_via_network_secret") else "0"
+        except (OSError, ValueError):
+            flag = "0"
+    return KrxOpenApiProvider(client, os.environ.get("KRX_API_KEY") or None, via_proxy=flag == "1", cache_dir=state / "krx_openapi")
