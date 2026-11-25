@@ -41,6 +41,9 @@ PKG = REPO / "marketpulse"
 KST = ZoneInfo("Asia/Seoul")
 GROUPS = ("base", "universe", "basket")
 
+#: 다시 받아 볼 만한 실패의 표시 — 한도 · 연결 · 무응답. 그 밖(공급처 없음 · 파일 없음 · 403 · 봉 부족)은 그날 다시 요청하지 않는다
+TRANSIENT_MARKERS = ("429", "503", "502", "500", "연결 실패", "응답 없음", "알 수 없는 오류")
+
 EXIT_OK = 0
 EXIT_INCOMPLETE = 75  # EX_TEMPFAIL — 나중에 다시 부르면 이어 받는다
 EXIT_LOCKED = 73
@@ -338,7 +341,7 @@ class Collector:
             if "회로 열림" in why:
                 deferred = True
                 self._count(name, "circuit_skipped")
-            elif "가 없다" in why and "API_KEY" in why:
+            elif ("가 없다" in why and "API_KEY" in why) or "이 없다" in why:   # 키 없음 · 수기 파일 없음 — 공급처가 실패한 것이 아니다
                 self._count(name, "unavailable")
             else:
                 self._count(name, "failed")
@@ -348,9 +351,12 @@ class Collector:
         if series is None:
             if deferred:
                 row["state"] = "DEFERRED"
-            else:
+            elif any(m in why for _, why in attempts for m in TRANSIENT_MARKERS):
                 row["tries"] = int(row.get("tries", 0)) + 1
-                row["state"] = "FAILED"
+                row["state"] = "FAILED"       # 일시적 실패 — 다음 실행에서 다시 받아 본다(하루 max_tries 까지)
+            else:
+                row["tries"] = int(self.run_cfg.get("max_tries_per_series", 4))
+                row["state"] = "UNAVAILABLE"  # 공급처가 없거나(설정 · 파일 없음) 그 계열을 주지 않는다 — 오늘 다시 요청하지 않는다
             return row["state"]
         provider = str(getattr(outcome, "provider", "") or "")
         first = str((plan.specs.get(iid) or [{}])[0].get("provider") or provider)

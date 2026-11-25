@@ -35,6 +35,10 @@
    Yahoo 가 풀리기를 몇 시간씩 기다리는 대기 작업 · 재확인 예약은 걸지 않는다(2026-11-25 사용자 요청). **전날 수집분은 합치지 않는다** — 직전 수집분은 대체 공급처 값의 대조에만 쓰인다.
    `휴장으로 본 시장(확인 필요)` 이 나오면 그 시장이 실제로 쉬었는지 기사로 확인하고, 쉬었으면 `config/collection.yaml` 의 `market_holidays` 에 그 날짜를 더한다.
    (예전 경로 `archive fetch-inputs` · `fetch_missing.py` · `merge_inputs.py` 는 남아 있지만 쓰지 않는다.)
+   **PARTIAL 로 남은 날짜 확정하기** — `python -m marketpulse.archive plan` 에 지난 저장일이 MISSING 이고 `data/archive/partial/` 에 그 날짜 파일이 있으면, 오늘 것보다 먼저 한다(history 는 과거 → 미래 순서).
+   `python -m marketpulse.collector run --date <그 날짜>` 를 다시 부르면 그 날짜 폴더의 빠진 계열 · 마지막 봉이 빠졌던 계열만 다시 받는다(폴더가 없어졌으면 처음부터 받는다 —
+   지금 받은 계열이라도 그 날짜 07:30 KST 뒤의 봉은 재구성 때 잘린다). `build_day.py <그 날짜> <inputs> status` 가 FULL 이면 순서 6 부터 그 날짜로 진행한다. 확정본이 저장되면 PARTIAL 파일은 superseded/ 로 옮겨진다.
+   그 날짜가 여전히 PARTIAL 이면 그 뒤 날짜도 확정하지 않는다(PARTIAL 로만 저장) — 앞 날짜의 history 행 없이 뒤 날짜 행을 쓰면 지속 · 전환 계산이 어긋난다.
 4. `tools/daily_snapshot/scan_units.py I` — 단위 불연속(분할 조정 혼재 등)이 있으면 그 계열을 빼고 이유를 캡처 폴더 `input_merge_report.json` 에 남긴다. VIX 처럼 실제로 큰 움직임은 기사로 확인하고 둔다.
 5. 뉴스: **07:30 KST 가 지난 뒤** `python -m marketpulse.collector news --date D` 로 RSS 를 한 번 더 받아 I/news_rss.json 에 id 로 합친다(07:00 수집에는 07:00~07:30 기사가 없다).
    화요일처럼 창이 길면 전날 합친 RSS 도 `fetch_news.py I/news_rss.json <전날 합친 RSS> I/news_rss.json` 로 더한다. 07:30 전이면 기다린다 — 그동안 순서 4 를 한다. 창(직전 스냅샷 07:30 ~ D 07:30 KST — 화요일은 토요일 07:30 부터라 일 · 월 기사 포함)의 기사를 읽고

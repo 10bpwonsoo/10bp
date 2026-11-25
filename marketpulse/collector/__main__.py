@@ -45,7 +45,7 @@ def _print_status(c: Collector) -> None:
         print(f"  {g:9s} 직접 수집 {got}/{len(plan.instruments)}" + (f" · 파생 {len(plan.derived)}개는 재료가 있으면 계산" if plan.derived else ""))
         for k, ids in by.items():
             print(f"    {k}: {', '.join(ids[:14])}{' …' if len(ids) > 14 else ''} ({len(ids)})")
-    print("  공급처별 (성공 / 실패 / 회로로 건너뜀 / 키 없음):")
+    print("  공급처별 (성공 / 실패 / 회로로 건너뜀 / 키 · 파일 없음):")
     for name, r in sorted((st.get("providers") or {}).items()):
         tot = r.get("ok", 0) + r.get("failed", 0)
         rate = f"{r.get('ok', 0) / tot:.0%}" if tot else "—"
