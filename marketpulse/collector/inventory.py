@@ -13,6 +13,7 @@ NOTE = {
     "fred": "FRED(FRED_API_KEY)",
     "twelvedata": "Twelve Data(TWELVEDATA_API_KEY)",
     "krx": "KRX 정보데이터시스템(키 없음)",
+    "krxapi": "KRX 공식 Open API(KRX_API_KEY · 서비스별 이용신청 승인)",
     "github": "공개 GitHub CSV 미러(1~수 영업일 늦음)",
     "csv": "저장소의 수기 파일",
 }

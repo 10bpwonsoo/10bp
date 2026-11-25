@@ -403,3 +403,94 @@ def test_stale_refetch_replaces_a_series_only_when_a_closed_bar_was_added(tmp_pa
     c3, _, _, _ = make_collector(tmp_path, {"K": [("yahoo", filled)]})
     c3.run(news=False)
     assert c3.status["runs"][-1]["refetched_stale"] == ["base:K"] and c3.status["input_status"]["stale"]["base"] == []
+
+
+# ══ 5. KRX 공식 Open API ═════════════════════════════════════════
+class KrxFake:
+    """data-dbg.krx.co.kr 대역 — 날짜(basDd)별로 하루치 전 지수를 돌려준다. 호출한 날짜와 헤더를 적어 둔다."""
+
+    def __init__(self, days: dict[str, list[dict]], *, error: bytes | None = None):
+        self.days, self.error = days, error
+        self.calls: list[tuple[str, str, str]] = []
+
+    def get(self, url, *, params=None, headers=None, data=None):
+        self.calls.append((url.rsplit("/apis/", 1)[1], params["basDd"], (headers or {}).get("AUTH_KEY", "")))
+        if self.error is not None:
+            return self.error
+        return json.dumps({"OutBlock_1": self.days.get(params["basDd"], [])}).encode()
+
+
+def krx_rows(close: str, kospi200: str = "640.11") -> list[dict]:
+    return [{"BAS_DD": "x", "IDX_CLSS": "KOSPI", "IDX_NM": "코스피", "CLSPRC_IDX": close, "FLUC_RT": "6.32"},
+            {"BAS_DD": "x", "IDX_CLSS": "KOSPI", "IDX_NM": "코스피 200", "CLSPRC_IDX": kospi200},
+            {"BAS_DD": "x", "IDX_CLSS": "KOSPI", "IDX_NM": "코스피 (외국주포함)", "CLSPRC_IDX": "-"}]
+
+
+def test_krx_open_api_builds_a_series_one_day_per_call_and_never_asks_twice(tmp_path):
+    from marketpulse.adapters.market.providers import KrxOpenApiProvider
+
+    days = {f"{d:%Y%m%d}": krx_rows(f"{4000 + i:,}.50") for i, d in enumerate(weekdays(date(2026, 11, 24), 25))}
+    days.pop("20261113")                                                   # 휴장일 — 응답이 비어 있다
+    net = KrxFake(days)
+    p = KrxOpenApiProvider(net, "k-e-y", cache_dir=tmp_path / "krx")
+    as_of = datetime(2026, 11, 25, 1, 0, tzinfo=UTC)                        # 11/25 10:00 KST — 오늘 치는 아직 없다
+    pts = p.fetch({"provider": "krxapi", "dataset": "idx/kospi_dd_trd", "symbol": "코스피"}, bars=20, as_of=as_of)
+    assert len(pts) == 20 and pts[-1] == (datetime(2026, 11, 24, tzinfo=UTC), 4024.5)   # 쉼표가 든 문자열 값을 그대로 읽는다
+    assert datetime(2026, 11, 13, tzinfo=UTC) not in [t for t, _ in pts]    # 빈 날은 건너뛴다(값을 만들어 넣지 않는다)
+    assert {c[0] for c in net.calls} == {"idx/kospi_dd_trd"} and {c[2] for c in net.calls} == {"k-e-y"}
+    n = len(net.calls)
+    again = p.fetch({"provider": "krxapi", "dataset": "idx/kospi_dd_trd", "symbol": "코스피 200"}, bars=20, as_of=as_of)   # 같은 서비스의 다른 지수
+    asked_again = [c[1] for c in net.calls[n:]]
+    assert len(again) == 20 and set(asked_again) <= {"20261125", "20261113"}   # 받은 날짜는 디스크에서 — 아직 없는 오늘 · 최근 빈 날만 다시 묻는다
+    assert "코스피 (외국주포함)" not in json.loads(next((tmp_path / "krx" / "idx_kospi_dd_trd").glob("20261124.json")).read_text(encoding="utf-8"))   # '-' 는 값이 아니다
+
+
+def test_krx_open_api_reports_auth_errors_and_wrong_names_instead_of_returning_nothing(tmp_path):
+    from marketpulse.adapters.market.providers import KrxOpenApiProvider
+
+    as_of = datetime(2026, 11, 25, 1, 0, tzinfo=UTC)
+    assert KrxOpenApiProvider(KrxFake({}), None).available() == (False, "KRX_API_KEY 가 없다")
+    assert KrxOpenApiProvider(KrxFake({}), None, via_proxy=True).available()[0]      # 실행 환경이 헤더를 넣어 주는 경우
+    denied = KrxOpenApiProvider(KrxFake({}, error=b'{"respMsg":"Unauthorized API Call","respCode":"401"}'), "k")
+    with pytest.raises(FetchError, match="Unauthorized API Call"):                   # 서비스 이용신청 승인이 없을 때
+        denied.fetch({"dataset": "idx/kospi_dd_trd", "symbol": "코스피"}, bars=20, as_of=as_of)
+    days = {f"{d:%Y%m%d}": krx_rows("4,000.00") for d in weekdays(date(2026, 11, 24), 10)}
+    wrong = KrxOpenApiProvider(KrxFake(days), "k")
+    with pytest.raises(FetchError, match="코스피 200"):                               # 이름이 틀리면 받은 이름을 알려 준다
+        wrong.fetch({"dataset": "idx/kospi_dd_trd", "symbol": "KOSPI"}, bars=20, as_of=as_of)
+    stock = KrxOpenApiProvider(KrxFake({f"{d:%Y%m%d}": [{"ISU_CD": "005930", "ISU_NM": "삼성전자", "TDD_CLSPRC": "189,400"}] for d in weekdays(date(2026, 11, 24), 25)}), "k")
+    pts = stock.fetch({"provider": "krxapi", "symbol": "sto/stk_bydd_trd:005930"}, bars=20, as_of=as_of)   # 종목은 "<서비스>:<코드>"
+    assert pts[-1][1] == 189400.0
+    assert availability_lag("krxapi:코스피") == timedelta(hours=9) and market_of("krxapi:코스피") == "KR"
+    assert bar_available(datetime(2026, 11, 24, tzinfo=UTC), availability_lag("krxapi:코스피"), CUT)       # 11/24 한국장 종가는 11/25 07:30 KST 에 이미 나와 있다
+
+
+def test_when_the_first_provider_leaves_the_last_bar_empty_the_next_provider_fills_it(tmp_path):
+    """2026-11-25: Yahoo 가 KOSPI 의 11/24 종가를 null 로 줬다. 다음 공급처(KRX 공식 API)가 같은 값의 이력에 그 봉까지 주면 그것으로 바꾼다."""
+    d23, d24 = weekdays(date(2026, 11, 23), 30), weekdays(date(2026, 11, 24), 31)
+    yahoo = series("KOSPI", "yahoo:^KS11", d23, hh=0, mm=0, values=[4000.0 + i for i in range(30)])
+
+    class Alt:
+        def __init__(self, values): self.values, self.asked = values, 0
+        def available(self): return True, "사용 가능"
+        def fetch(self, spec, *, bars, as_of):
+            self.asked += 1
+            return [(datetime(d.year, d.month, d.day, tzinfo=UTC), v) for d, v in zip(d24, self.values)]
+
+    specs = {"KOSPI": [{"provider": "yahoo", "symbol": "^KS11"}, {"provider": "krxapi", "dataset": "idx/kospi_dd_trd", "symbol": "코스피"}]}
+    c1, fake1, _, _ = make_collector(tmp_path, {"KOSPI": [("yahoo", yahoo)]}, specs=specs)
+    c1.run(news=False)
+    assert c1.status["input_status"]["stale"]["base"] == ["KOSPI"]
+    # 값이 다른(단위가 안 맞는) 대체 계열은 받지 않는다
+    c2, fake2, _, _ = make_collector(tmp_path, {"KOSPI": [("yahoo", yahoo)]}, specs=specs)
+    fake2.providers = {"krxapi": Alt([v * 10 for v in [4000.0 + i for i in range(31)]])}
+    c2.run(news=False)
+    assert c2.status["runs"][-1]["refetched_stale"] == [] and c2.load_group("base")["KOSPI"].meta.source == "yahoo:^KS11"
+    # 같은 값 + 11/24 봉 → 그 공급처 이력으로 통째로 바꾼다
+    c3, fake3, _, _ = make_collector(tmp_path, {"KOSPI": [("yahoo", yahoo)]}, specs=specs)
+    fake3.providers = {"krxapi": Alt([4000.0 + i for i in range(30)] + [5006.0])}
+    c3.run(news=False)
+    got = c3.load_group("base")["KOSPI"]
+    assert c3.status["runs"][-1]["refetched_stale"] == ["base:KOSPI←krxapi"]
+    assert got.meta.source == "krxapi:코스피" and got.values[-1] == 5006.0 and got.timestamps[-1].date() == date(2026, 11, 24)
+    assert c3.status["input_status"]["stale"]["base"] == [] and c3.status["series"]["base"]["KOSPI"]["alt_source"]["check"] == "OK"

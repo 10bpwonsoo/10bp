@@ -28,7 +28,7 @@ from ...models.intelligence import SourceSpec
 from ...models.market import Instrument, MarketSeries
 from ..http import FetchError, HttpClient
 from ..market.live import MIN_POINTS, FetchOutcome, load_sources
-from ..market.providers import CsvProvider, Provider, StooqProvider, TwelveDataProvider, YahooProvider
+from ..market.providers import CsvProvider, Provider, StooqProvider, TwelveDataProvider, YahooProvider, krx_open_api
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ class AltLiveAdapter:
             "yahoo": YahooProvider(self.client),
             "stooq": StooqProvider(self.client),
             "twelvedata": TwelveDataProvider(self.client, os.environ.get("TWELVEDATA_API_KEY")),
+            "krxapi": krx_open_api(self.client),  # KRX 공식 Open API — 키(KRX_API_KEY)가 있을 때만
             "csv": self.csv,
         }
         #: SqliteSnapshotRepository (선택). 없으면 매번 네트워크다.

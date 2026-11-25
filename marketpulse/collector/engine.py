@@ -93,7 +93,7 @@ def _fallback_specs(symbol: str, cfg: Mapping[str, Any]) -> list[dict]:
     for rule in (cfg.get("fallbacks") or {}).values():
         if re.match(str(rule.get("match") or "$^"), symbol):
             for s in rule.get("sources") or []:
-                out.append({"provider": s["provider"], "symbol": str(s["symbol"]).format(symbol=symbol, lower=symbol.lower())})
+                out.append({"provider": s["provider"], "symbol": str(s["symbol"]).format(symbol=symbol, lower=symbol.lower(), code=symbol.split(".")[0])})
     return out
 
 
@@ -121,7 +121,7 @@ def build_plans(settings=None, cfg: Mapping[str, Any] | None = None) -> dict[str
     for s in u.stocks:
         sources[s.id] = [SourceSpec(provider="yahoo", symbol=s.symbol)] + [SourceSpec(**f) for f in _fallback_specs(str(s.symbol), cfg)]
     uni_ins = [s.as_instrument() for s in u.stocks] + [a.as_instrument() for a in u.alternative] + shared
-    alt_providers = {"yahoo", "stooq", "twelvedata", "csv"}
+    alt_providers = {"yahoo", "stooq", "twelvedata", "krxapi", "csv"}
     uni_specs = {i.id: [s.model_dump() for s in sources[i.id]] if i.id in sources else [dict(s) for s in src_yaml.get(i.id, []) if s.get("provider") in alt_providers] for i in uni_ins}
     universe = Plan("universe", uni_ins, [], sources, settings.history_bars, uni_specs)
 
@@ -406,6 +406,19 @@ class Collector:
                 state = self.fetch_one(plan, ins, datetime.fromtimestamp(self._now(), tz=timezone.utc))
                 new_last = self._last_closed(iid, cp.read_text(encoding="utf-8")) if state == "OK" else None
                 newer = new_last is not None and (old_last is None or new_last > old_last)
+                if not newer:  # 첫 공급처가 여전히 마지막 봉 없이 답한다 — 설정된 다음 공급처에서 받아 본다
+                    alt = self._try_alternates(plan, ins, MarketSeries.model_validate_json(old_text), old_last)
+                    if alt is not None:
+                        series, info = alt
+                        _write_json(cp, json.loads(series.model_dump_json()))
+                        self.status["series"][g][iid] = {**old_row, "state": "OK", "provider": info["used"], "source": str(series.meta.source), "points": len(series.timestamps),
+                                                         "last_bar": series.timestamps[-1].isoformat(), "alt_source": info,
+                                                         "tries": int(self.status["series"][g][iid].get("tries", 0))}
+                        self._count(info["used"], "ok")
+                        done.append(f"{g}:{iid}←{info['used']}")
+                        self._beat()
+                        self._save_status()
+                        continue
                 if newer:
                     done.append(f"{g}:{iid}")
                 else:
@@ -416,6 +429,44 @@ class Collector:
         if done:
             self.log(f"마지막 봉이 빠져 있던 계열 {len(done)}개를 새로 받았다: {', '.join(done)[:300]}")
         return done
+
+    def _try_alternates(self, plan: Plan, ins, stale: MarketSeries, old_last: datetime | None):
+        """
+        첫 공급처가 마지막 봉을 비워 둔 계열을, 설정된 다음 공급처들에서 받아 본다(2026-11-25: Yahoo 가 KOSPI 의 전날 종가를 null 로 줬다).
+        받아들이는 조건은 둘 다다 — ① 같은 날 첫 공급처에서 받은 계열과 겹치는 날짜의 값이 맞고(단위 · 수정주가 대조) ② 기준 시각에 끝난 봉이 더 있다.
+        이력은 그 공급처 것으로 통째로 바꾼다(공급처를 섞어 이어 붙이지 않는다).
+        """
+        from ..adapters.http import FetchError
+        from ..models.common import DataMeta, DataMode
+
+        adapter = self.market if plan.sources is None else self.alt
+        specs = plan.specs.get(ins.id) or []
+        primary = str((specs[0] if specs else {}).get("provider") or "")
+        for spec in specs[1:]:
+            name = str(spec.get("provider") or "")
+            prov = getattr(adapter, "providers", {}).get(name)
+            if prov is None or name in ("csv", "csv_base", "github"):
+                continue
+            if not prov.available()[0]:
+                self._count(name, "unavailable")
+                continue
+            as_of = datetime.fromtimestamp(self._now(), tz=timezone.utc)
+            try:
+                pts = prov.fetch(dict(spec), bars=plan.bars, as_of=as_of)
+            except FetchError as exc:
+                self._count(name, "circuit_skipped" if "회로 열림" in str(exc) else "failed")
+                continue
+            if len(pts) < 20:
+                continue
+            series = MarketSeries(instrument_id=ins.id, timestamps=[t for t, _ in pts], values=[v for _, v in pts],
+                                  meta=DataMeta(source=f"{name}:{spec.get('symbol') or ins.id}", mode=DataMode.DELAYED, retrieved_at=as_of, as_of=pts[-1][0]))
+            verdict, note = validate_against_reference(series, stale, self.cfg)
+            last = self._last_closed(ins.id, series.model_dump_json())
+            if verdict == "REJECT" or last is None or (old_last is not None and last <= old_last):
+                self._count(name, "failed")
+                continue
+            return series, {"primary": primary, "used": name, "check": verdict, "note": note, "why": f"{primary} 응답에 마지막 봉이 없어 다음 공급처에서 받았다"}
+        return None
 
     def _last_closed(self, iid: str, text: str) -> datetime | None:
         """그날 기준 시각(07:30 KST)에 이미 끝난 마지막 봉. 진행 중인 봉(수집 시각으로 찍힌다)은 세지 않는다 — 그것이 늦어졌다고 새 봉이 생긴 것이 아니다."""

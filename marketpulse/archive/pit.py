@@ -13,6 +13,7 @@ Point-in-time 절단 — 과거 날짜 D 의 화면을 만들 때 D cutoff(기�
     yahoo 환율(=X)         전날 23:00Z 에 찍힌 하루 봉                                          → +24h
     fred                  관측일 00:00Z · H.15 금리·기대인플레는 다음 영업일 오후에 공개        → 관측일 다음 평일 22:00Z
     stooq · twelvedata    날짜만 있는 일봉(00:00Z) · 미국 종목·지수는 21:00Z 마감                → +22h (한국·일본 지수 +9h · 그 밖 +24h)
+    krxapi                KRX Open API 일봉(00:00Z) · 한국장 06:30Z 마감                          → +9h
     csv · 그 밖            일 단위 수기·수집 파일                                               → +24h
     derived               구성 계열 중 가장 늦은 것
 
@@ -80,6 +81,8 @@ def availability_lag(source: str, lags_by_id: Mapping[str, timedelta] | None = N
         if sym == "^VIX":
             return 14 * H
         return 7 * H  # 유럽(07:00Z 개장)은 bar_available 에서 +9h
+    if low.startswith("krxapi:"):
+        return 9 * H  # KRX 공식 일봉 — 날짜만(00:00Z), 한국장은 그날 06:30Z 에 끝난다
     if low.startswith("stooq:") or low.startswith("twelvedata:"):
         # 날짜만 있는 일봉(00:00Z 로 찍는다). 미국 종목 · 지수는 그날 21:00Z(여름 20:00Z)에 끝난다 → +22h.
         # 한국 · 일본 지수는 그날 07:00Z 전에 끝난다 → +9h. 그 밖(환율 · 달러 인덱스 등)은 하루가 다 지난 뒤(+24h).

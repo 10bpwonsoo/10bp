@@ -3,16 +3,16 @@
 `python -m marketpulse.collector inventory --md docs/data-sources-inventory.md` 로 다시 만든다(설정에서 생성 — 손으로 고치지 않는다).
 
 - 계열 213개(묶음 사이에 겹치는 것 포함) · 그중 Yahoo 가 첫 공급처인 계열 175개 = 서로 다른 Yahoo 심볼 136개
-- Yahoo 심볼 가운데 설정된 대체 경로가 있는 것 63개 · 없는 것 73개(막히면 결측)
+- Yahoo 심볼 가운데 설정된 대체 경로가 있는 것 101개 · 없는 것 35개(막히면 결측)
 - '공개 시각' 은 그 봉이 기준 시각(07:30 KST)에 쓸 수 있게 되는 때(archive/pit.py). 대체 공급처는 자기 규칙을 따른다.
 
 ## base (60)
 
 | 계열 | 첫 공급처 | 심볼 | 시장 | 공개 시각 | 막히면 |
 |---|---|---|---|---|---|
-| KOSPI | yahoo | `^KS11` | KR | 봉 시각 +7h | stooq:^kospi |
-| KOSPI200 | yahoo | `^KS200` | KR | 봉 시각 +7h | 없음(결측) |
-| KOSDAQ | yahoo | `^KQ11` | KR | 봉 시각 +7h | 없음(결측) |
+| KOSPI | yahoo | `^KS11` | KR | 봉 시각 +7h | krxapi:코스피, stooq:^kospi |
+| KOSPI200 | yahoo | `^KS200` | KR | 봉 시각 +7h | krxapi:코스피 200 |
+| KOSDAQ | yahoo | `^KQ11` | KR | 봉 시각 +7h | krxapi:코스닥 |
 | SPX | yahoo | `^GSPC` | US | 봉 시각 +7h | stooq:^spx |
 | NDX | yahoo | `^NDX` | US | 봉 시각 +7h | stooq:^ndq |
 | RUT | yahoo | `^RUT` | US | 봉 시각 +7h | 없음(결측) |
@@ -33,7 +33,7 @@
 | SOXX | yahoo | `SOXX` | US | 봉 시각 +7h | stooq:soxx.us |
 | ITA | yahoo | `ITA` | US | 봉 시각 +7h | stooq:ita.us |
 | JETS | yahoo | `JETS` | US | 봉 시각 +7h | stooq:jets.us |
-| KRX_SEMI | krx | `반도체` | OTHER | — | 없음(결측) |
+| KRX_SEMI | krx | `반도체` | OTHER | — | krxapi:KRX 반도체 |
 | US2Y | fred | `DGS2` | FRED | 관측일 다음 평일 22:00Z | yahoo:2YY=F |
 | US10Y | fred | `DGS10` | FRED | 관측일 다음 평일 22:00Z | yahoo:^TNX |
 | US30Y | fred | `DGS30` | FRED | 관측일 다음 평일 22:00Z | yahoo:^TYX |
@@ -56,7 +56,7 @@
 | NATGAS | yahoo | `NG=F` | US | 그 거래일 뉴욕 17:00 | fred:DHHNGSP, github:daily.csv |
 | VIX | yahoo | `^VIX` | US | 봉 시각 +14h | fred:VIXCLS, github:vix-daily.csv |
 | MOVE | yahoo | `^MOVE` | US | 봉 시각 +7h | 없음(결측) |
-| VKOSPI | krx | `코스피 200 변동성지수` | OTHER | — | 없음(결측) |
+| VKOSPI | krx | `코스피 200 변동성지수` | OTHER | — | krxapi:코스피 200 변동성지수 |
 | US_HY_OAS | fred | `BAMLH0A0HYM2` | FRED | 관측일 다음 평일 22:00Z | 없음(결측) |
 | KR_FOREIGN_NET | krx | `외국인` | OTHER | — | 없음(결측) |
 | KR_INSTITUTION_NET | krx | `기관합계` | OTHER | — | 없음(결측) |
@@ -75,42 +75,42 @@
 
 | 계열 | 첫 공급처 | 심볼 | 시장 | 공개 시각 | 막히면 |
 |---|---|---|---|---|---|
-| SAMSUNG | yahoo | `005930.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SKHYNIX | yahoo | `000660.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HANMI_SEMI | yahoo | `042700.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SAMSUNG_EM | yahoo | `009150.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LG_ENSOL | yahoo | `373220.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SAMSUNG_SDI | yahoo | `006400.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LGCHEM | yahoo | `051910.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LOTTE_CHEM | yahoo | `011170.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KUMHO_PETRO | yahoo | `011780.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| POSCO | yahoo | `005490.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HYUNDAI_STEEL | yahoo | `004020.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KOREA_ZINC | yahoo | `010130.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HYUNDAI_MOTOR | yahoo | `005380.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KIA | yahoo | `000270.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HYUNDAI_MOBIS | yahoo | `012330.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KOREAN_AIR | yahoo | `003490.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HMM | yahoo | `011200.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| PAN_OCEAN | yahoo | `028670.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HD_HHI | yahoo | `329180.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HANWHA_OCEAN | yahoo | `042660.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HANWHA_AERO | yahoo | `012450.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LIG_NEX1 | yahoo | `079550.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LS_ELECTRIC | yahoo | `010120.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HD_ELECTRIC | yahoo | `267260.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HYOSUNG_HEAVY | yahoo | `298040.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| DOOSAN_ENER | yahoo | `034020.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SOIL | yahoo | `010950.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SK_INNOVATION | yahoo | `096770.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KEPCO | yahoo | `015760.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| NAVER | yahoo | `035420.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KAKAO | yahoo | `035720.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| KB | yahoo | `105560.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SHINHAN | yahoo | `055550.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| CELLTRION | yahoo | `068270.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SAMSUNG_BIO | yahoo | `207940.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| CJ_CJ | yahoo | `097950.KS` | KR | 봉 시각 +7h | 없음(결측) |
+| SAMSUNG | yahoo | `005930.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:005930 |
+| SKHYNIX | yahoo | `000660.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:000660 |
+| HANMI_SEMI | yahoo | `042700.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:042700 |
+| SAMSUNG_EM | yahoo | `009150.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:009150 |
+| LG_ENSOL | yahoo | `373220.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:373220 |
+| SAMSUNG_SDI | yahoo | `006400.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:006400 |
+| LGCHEM | yahoo | `051910.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:051910 |
+| LOTTE_CHEM | yahoo | `011170.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:011170 |
+| KUMHO_PETRO | yahoo | `011780.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:011780 |
+| POSCO | yahoo | `005490.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:005490 |
+| HYUNDAI_STEEL | yahoo | `004020.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:004020 |
+| KOREA_ZINC | yahoo | `010130.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:010130 |
+| HYUNDAI_MOTOR | yahoo | `005380.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:005380 |
+| KIA | yahoo | `000270.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:000270 |
+| HYUNDAI_MOBIS | yahoo | `012330.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:012330 |
+| KOREAN_AIR | yahoo | `003490.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:003490 |
+| HMM | yahoo | `011200.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:011200 |
+| PAN_OCEAN | yahoo | `028670.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:028670 |
+| HD_HHI | yahoo | `329180.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:329180 |
+| HANWHA_OCEAN | yahoo | `042660.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:042660 |
+| HANWHA_AERO | yahoo | `012450.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:012450 |
+| LIG_NEX1 | yahoo | `079550.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:079550 |
+| LS_ELECTRIC | yahoo | `010120.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:010120 |
+| HD_ELECTRIC | yahoo | `267260.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:267260 |
+| HYOSUNG_HEAVY | yahoo | `298040.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:298040 |
+| DOOSAN_ENER | yahoo | `034020.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:034020 |
+| SOIL | yahoo | `010950.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:010950 |
+| SK_INNOVATION | yahoo | `096770.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:096770 |
+| KEPCO | yahoo | `015760.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:015760 |
+| NAVER | yahoo | `035420.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:035420 |
+| KAKAO | yahoo | `035720.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:035720 |
+| KB | yahoo | `105560.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:105560 |
+| SHINHAN | yahoo | `055550.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:055550 |
+| CELLTRION | yahoo | `068270.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:068270 |
+| SAMSUNG_BIO | yahoo | `207940.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:207940 |
+| CJ_CJ | yahoo | `097950.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:097950 |
 | GASOLINE | yahoo | `RB=F` | US | 그 거래일 뉴욕 17:00 | 없음(결측) |
 | DIESEL_PROXY | yahoo | `HO=F` | US | 그 거래일 뉴욕 17:00 | 없음(결측) |
 | JET_FUEL_PROXY | yahoo | `HO=F` | US | 그 거래일 뉴욕 17:00 | 없음(결측) |
@@ -160,7 +160,7 @@
 | GOLD | yahoo | `GC=F` | US | 그 거래일 뉴욕 17:00 | 없음(결측) |
 | ITA | yahoo | `ITA` | US | 봉 시각 +7h | stooq:ita.us |
 | JETS | yahoo | `JETS` | US | 봉 시각 +7h | stooq:jets.us |
-| KOSPI | yahoo | `^KS11` | KR | 봉 시각 +7h | stooq:^kospi |
+| KOSPI | yahoo | `^KS11` | KR | 봉 시각 +7h | krxapi:코스피, stooq:^kospi |
 | KR10Y | — | `—` | — | — | 없음(결측) |
 | MOVE | yahoo | `^MOVE` | US | 봉 시각 +7h | 없음(결측) |
 | NATGAS | yahoo | `NG=F` | US | 그 거래일 뉴욕 17:00 | 없음(결측) |
@@ -189,8 +189,8 @@
 | ARM | yahoo | `ARM` | US | 봉 시각 +7h | stooq:arm.us, twelvedata:ARM |
 | MU | yahoo | `MU` | US | 봉 시각 +7h | stooq:mu.us, twelvedata:MU |
 | SNDK | yahoo | `SNDK` | US | 봉 시각 +7h | stooq:sndk.us, twelvedata:SNDK |
-| SKHYNIX | yahoo | `000660.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SAMSUNG | yahoo | `005930.KS` | KR | 봉 시각 +7h | 없음(결측) |
+| SKHYNIX | yahoo | `000660.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:000660 |
+| SAMSUNG | yahoo | `005930.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:005930 |
 | GFS | yahoo | `GFS` | US | 봉 시각 +7h | stooq:gfs.us, twelvedata:GFS |
 | UMC | yahoo | `UMC` | US | 봉 시각 +7h | stooq:umc.us, twelvedata:UMC |
 | ASML | yahoo | `ASML` | US | 봉 시각 +7h | stooq:asml.us, twelvedata:ASML |
@@ -198,7 +198,7 @@
 | LRCX | yahoo | `LRCX` | US | 봉 시각 +7h | stooq:lrcx.us, twelvedata:LRCX |
 | KLAC | yahoo | `KLAC` | US | 봉 시각 +7h | stooq:klac.us, twelvedata:KLAC |
 | TEL | yahoo | `8035.T` | JP | 봉 시각 +7h | 없음(결측) |
-| HANMI_SEMI | yahoo | `042700.KS` | KR | 봉 시각 +7h | 없음(결측) |
+| HANMI_SEMI | yahoo | `042700.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:042700 |
 | AMKR | yahoo | `AMKR` | US | 봉 시각 +7h | stooq:amkr.us, twelvedata:AMKR |
 | BESI | yahoo | `BESI.AS` | EU | 봉 시각 +7h | 없음(결측) |
 | ANET | yahoo | `ANET` | US | 봉 시각 +7h | stooq:anet.us, twelvedata:ANET |
@@ -220,12 +220,12 @@
 | CEG | yahoo | `CEG` | US | 봉 시각 +7h | stooq:ceg.us, twelvedata:CEG |
 | GEV | yahoo | `GEV` | US | 봉 시각 +7h | stooq:gev.us, twelvedata:GEV |
 | NRG | yahoo | `NRG` | US | 봉 시각 +7h | stooq:nrg.us, twelvedata:NRG |
-| HD_ELECTRIC | yahoo | `267260.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| HYOSUNG_HEAVY | yahoo | `298040.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| LS_ELECTRIC | yahoo | `010120.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| DOOSAN_ENER | yahoo | `034020.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| NAVER | yahoo | `035420.KS` | KR | 봉 시각 +7h | 없음(결측) |
-| SAMSUNG_EM | yahoo | `009150.KS` | KR | 봉 시각 +7h | 없음(결측) |
+| HD_ELECTRIC | yahoo | `267260.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:267260 |
+| HYOSUNG_HEAVY | yahoo | `298040.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:298040 |
+| LS_ELECTRIC | yahoo | `010120.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:010120 |
+| DOOSAN_ENER | yahoo | `034020.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:034020 |
+| NAVER | yahoo | `035420.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:035420 |
+| SAMSUNG_EM | yahoo | `009150.KS` | KR | 봉 시각 +7h | krxapi:sto/stk_bydd_trd:009150 |
 | PLTR | yahoo | `PLTR` | US | 봉 시각 +7h | stooq:pltr.us, twelvedata:PLTR |
 | NOW | yahoo | `NOW` | US | 봉 시각 +7h | stooq:now.us, twelvedata:NOW |
 | CRM | yahoo | `CRM` | US | 봉 시각 +7h | stooq:crm.us, twelvedata:CRM |
@@ -241,5 +241,6 @@
 - **fred** — FRED(FRED_API_KEY)
 - **twelvedata** — Twelve Data(TWELVEDATA_API_KEY)
 - **krx** — KRX 정보데이터시스템(키 없음)
+- **krxapi** — KRX 공식 Open API(KRX_API_KEY · 서비스별 이용신청 승인)
 - **github** — 공개 GitHub CSV 미러(1~수 영업일 늦음)
 - **csv** — 저장소의 수기 파일

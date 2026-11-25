@@ -15,6 +15,7 @@ breaker:
 # 공급처별 요청 간격(초). 없는 공급처는 run.min_gap_sec.
 host_min_gap_sec:
   api.twelvedata.com: 8.0     # 무료 플랜 분당 8건
+  data-dbg.krx.co.kr: 1.0     # 날짜마다 한 번씩 부른다(처음 한 번은 dataset 마다 수백 번 — 받은 날짜는 상태 폴더에 남아 다시 부르지 않는다)
 
 # ── ② 한 번 실행 ─────────────────────────────────────────────────────────
 run:
@@ -33,7 +34,15 @@ fallbacks:
     sources:
       - {provider: stooq, symbol: "{lower}.us"}
       - {provider: twelvedata, symbol: "{symbol}"}
-  # 한국(.KS · .KQ) · 홍콩(.HK) · 중국(.SS · .SZ) 종목, 선물(=F), 지수(^…)는 키 없이 받을 수 있는 대체 경로가 없다 — docs/data-collection.md 참조
+  kr_kospi:                   # 유가증권 상장 종목(.KS) → KRX 공식 Open API(키 KRX_API_KEY). {code} = 종목코드 6자리
+    match: "^\\d{6}\\.KS$"
+    sources:
+      - {provider: krxapi, symbol: "sto/stk_bydd_trd:{code}"}
+  kr_kosdaq:                  # 코스닥 상장 종목(.KQ)
+    match: "^\\d{6}\\.KQ$"
+    sources:
+      - {provider: krxapi, symbol: "sto/ksq_bydd_trd:{code}"}
+  # 홍콩(.HK) · 중국(.SS · .SZ) 종목, 선물(=F), 해외 지수(^…)는 키 없이 받을 수 있는 대체 경로가 없다 — docs/data-collection.md 참조
 
 # 대체 공급처에서 받은 계열은 직전 수집분(같은 계열, 다른 날 수집)과 겹치는 날짜의 값을 대조한 뒤에만 쓴다.
 # 수정주가 기준 · 단위 · 통화가 다르면 여기서 걸린다. 걸리면 그 계열은 버린다(결측) — 값을 맞춰 고치지 않는다.

@@ -75,6 +75,8 @@ def market_of(source: str) -> str:
         return "FX"
     if prov == "twelvedata":
         return "US"
+    if prov == "krxapi":
+        return "KR"
     return "OTHER"
 
 

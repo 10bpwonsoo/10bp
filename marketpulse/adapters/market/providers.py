@@ -750,3 +750,141 @@ class TwelveDataProvider(Provider):
         if not points:
             raise FetchError("파싱된 행이 없다", kind="empty", permanent=True)
         return _clean(points, bars, as_of)
+
+
+# ══════════════════════════════════════════════════════════════
+class KrxOpenApiProvider(Provider):
+    """
+    KRX Open API(openapi.krx.co.kr) — 한국거래소 공식 일별 시세 (2026-11-25 추가).
+
+    기존 KrxProvider 는 정보데이터시스템 화면의 내려받기를 흉내 내는 비공식 경로이고 지금은 403 이다. 이것은 인증키로 부르는 공식 API 다.
+
+        GET https://data-dbg.krx.co.kr/svc/apis/<dataset>?basDd=YYYYMMDD      헤더 AUTH_KEY: <인증키>
+        응답 {"OutBlock_1": [ {...}, ... ]} — **하루치 전 종목(전 지수)** 이 한 번에 온다. 기간 조회가 없다.
+
+    그래서 계열 하나의 이력(N봉)을 만들려면 날짜마다 한 번씩 부른다. 한 번 받은 날짜는 디스크에 남겨(상태 폴더) 다시 부르지 않는다 —
+    처음 한 번은 dataset 마다 수백 번 부르고(간격을 두고 수 분), 그 뒤로는 하루에 한 번씩만 는다. 같은 dataset 을 쓰는 계열은 응답을 나눠 쓴다.
+
+    spec (sources.yaml · collection.yaml)
+        {provider: krxapi, dataset: "idx/kospi_dd_trd", symbol: "코스피"}         지수 — IDX_NM 과 정확히 같아야 한다
+        {provider: krxapi, symbol: "sto/stk_bydd_trd:005930"}                    종목 — "<dataset>:<종목코드>" (ISU_CD · ISU_SRT_CD 와 대조)
+
+    키: 환경변수 KRX_API_KEY. 실행 환경이 헤더를 대신 넣어 주는 경우(네트워크 시크릿)에는 KRX_API_VIA_PROXY=1 만 두면 된다.
+    키를 받은 뒤에도 서비스마다 포털에서 'API 이용신청' 승인이 있어야 한다(없으면 401).
+
+    주의 — 종목 종가(TDD_CLSPRC)는 **수정 전 종가**다. Yahoo 의 수정종가와 배당만큼 수준이 다를 수 있어 수집기가 대조한 뒤에만 쓴다.
+    응답 필드 이름은 공개된 예제들 기준이고, 이 저장소에서는 인증키가 없어 실제 응답으로 확인하지 못했다(2026-11-25). 이름이 맞지 않으면
+    받은 이름 목록을 오류에 실어 알려 준다 — 조용히 빈 값을 돌려주지 않는다.
+    """
+
+    name = "krxapi"
+    requires_key = "KRX_API_KEY"
+    BASE = "https://data-dbg.krx.co.kr/svc/apis/"
+    NAME_KEYS = ("IDX_NM", "ISU_CD", "ISU_SRT_CD")
+    CLOSE_KEYS = ("CLSPRC_IDX", "TDD_CLSPRC")
+    #: 응답이 비어 있는 날(휴장)을 '확정된 빈 날' 로 적어 두는 기준 — 이보다 최근이면 아직 안 올라온 것일 수 있어 적지 않는다
+    EMPTY_CACHE_AFTER_DAYS = 4
+    MAX_EMPTY_RUN = 12
+
+    def __init__(self, client: HttpClient, api_key: str | None, *, via_proxy: bool = False, cache_dir: Path | None = None) -> None:
+        self.client = client
+        self.api_key = api_key
+        self.via_proxy = via_proxy
+        self.cache_dir = cache_dir
+
+    def available(self) -> tuple[bool, str]:
+        if not self.api_key and not self.via_proxy:
+            return False, "KRX_API_KEY 가 없다"
+        return True, "사용 가능"
+
+    # ── 하루치 ────────────────────────────────────────────
+    @classmethod
+    def parse_day(cls, raw: bytes) -> dict[str, float]:
+        """하루치 응답 → {지수명 또는 종목코드: 종가}. 값이 '-' · 빈칸인 행은 뺀다(0 으로 채우지 않는다)."""
+        try:
+            doc = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise FetchError(f"JSON 이 아니다: {exc}", kind="parse", permanent=True) from exc
+        rows = doc.get("OutBlock_1") if isinstance(doc, dict) else None
+        if rows is None:
+            msg = str((doc or {}).get("respMsg") or (doc or {}).get("message") or doc)[:120] if isinstance(doc, dict) else str(doc)[:120]
+            raise FetchError(f"KRX Open API 오류: {msg}", kind="api", permanent=True)
+        out: dict[str, float] = {}
+        for row in rows:
+            close = next((row.get(k) for k in cls.CLOSE_KEYS if row.get(k) not in (None, "", "-")), None)
+            if close is None:
+                continue
+            try:
+                value = float(str(close).replace(",", ""))
+            except ValueError:
+                continue
+            for k in cls.NAME_KEYS:
+                key = str(row.get(k) or "").strip()
+                if key:
+                    out[key] = value
+        return out
+
+    def _cache_path(self, dataset: str, day) -> Path | None:
+        return None if self.cache_dir is None else self.cache_dir / dataset.replace("/", "_") / f"{day:%Y%m%d}.json"
+
+    def day(self, dataset: str, day, *, today) -> dict[str, float]:
+        """그 날짜의 {이름: 종가}. 디스크에 있으면 그것을, 없으면 한 번 부른다."""
+        path = self._cache_path(dataset, day)
+        if path is not None and path.is_file():
+            try:
+                return json.loads(path.read_text(encoding="utf-8"))
+            except ValueError:
+                pass
+        raw = self.client.get(self.BASE + dataset, params={"basDd": f"{day:%Y%m%d}"}, headers={"AUTH_KEY": self.api_key or "set-by-network-secret"})
+        got = self.parse_day(raw)
+        if path is not None and (got or (today - day).days > self.EMPTY_CACHE_AFTER_DAYS):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_name(path.name + ".tmp")
+            tmp.write_text(json.dumps(got, ensure_ascii=False), encoding="utf-8")
+            tmp.replace(path)
+        return got
+
+    # ── 계열 ──────────────────────────────────────────────
+    def fetch(self, spec: dict, *, bars: int, as_of: datetime) -> list[Point]:
+        usable, why = self.available()
+        if not usable:
+            raise FetchError(why, kind="auth", permanent=True)
+        symbol = str(spec.get("symbol") or "")
+        dataset = str(spec.get("dataset") or "")
+        if not dataset and ":" in symbol:
+            dataset, symbol = symbol.split(":", 1)
+        if not dataset or not symbol:
+            raise FetchError("dataset 과 symbol 이 필요하다", kind="config", permanent=True)
+        scale = float(spec.get("scale", 1.0))
+        today = (as_of + timedelta(hours=9)).date()  # KST 날짜
+        points: list[Point] = []
+        seen_names: set[str] = set()
+        d, tried, empty_run, days_with_data = today, 0, 0, 0
+        while len(points) < bars and tried < int(bars * CALENDAR_SLACK) + 10:
+            if d.weekday() < 5:
+                tried += 1
+                got = self.day(dataset, d, today=today)
+                if got:
+                    empty_run, days_with_data = 0, days_with_data + 1
+                    if symbol in got:
+                        points.append((datetime(d.year, d.month, d.day, tzinfo=timezone.utc), got[symbol] * scale))
+                    elif days_with_data <= 5:
+                        seen_names.update(list(got)[:40])
+                    if days_with_data == 5 and not points:
+                        raise FetchError(f"'{symbol}' 이 {dataset} 응답에 없다 — 받은 이름 예: {', '.join(sorted(seen_names)[:12])}", kind="config", permanent=True)
+                else:
+                    empty_run += 1
+                    if empty_run >= self.MAX_EMPTY_RUN:
+                        break  # 이력의 끝이거나 서비스가 열리지 않았다
+            d -= timedelta(days=1)
+        if not points:
+            raise FetchError(f"{dataset} 에서 받은 행이 없다(서비스 이용신청 승인 · 날짜를 확인)", kind="empty", permanent=True)
+        return _clean(points, bars, as_of)
+
+
+def krx_open_api(client: HttpClient) -> KrxOpenApiProvider:
+    """환경에서 키 · 상태 폴더를 읽어 만든다. 받은 날짜별 응답은 상태 폴더(.marketpulse_state/krx_openapi)에 남는다."""
+    import os
+
+    state = Path(os.environ.get("MARKETPULSE_STATE_DIR") or Path(__file__).resolve().parents[3] / ".marketpulse_state")
+    return KrxOpenApiProvider(client, os.environ.get("KRX_API_KEY") or None, via_proxy=os.environ.get("KRX_API_VIA_PROXY") == "1", cache_dir=state / "krx_openapi")

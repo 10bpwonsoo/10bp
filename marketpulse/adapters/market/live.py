@@ -40,6 +40,7 @@ from .providers import (
     StooqProvider,
     TwelveDataProvider,
     YahooProvider,
+    krx_open_api,
 )
 from .mock import derive
 
@@ -122,6 +123,7 @@ class LiveMarketAdapter(MarketAdapter):
             "krx": KrxProvider(self.client),
             # 키(TWELVEDATA_API_KEY)가 있을 때만 쓰인다 — 없으면 available() 이 거절하고 다음 공급자로 넘어간다
             "twelvedata": TwelveDataProvider(self.client, os.environ.get("TWELVEDATA_API_KEY")),
+            "krxapi": krx_open_api(self.client),  # KRX 공식 Open API — 키(KRX_API_KEY)가 있을 때만
             "github": GithubCsvProvider(self.client),
             "csv": self.csv,
         }
