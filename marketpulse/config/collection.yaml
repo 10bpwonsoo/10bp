@@ -70,6 +70,9 @@ gate:
   must: [SPX, NDX, VIX, US2Y, US10Y, KOSPI, USDKRW]
   core: [SPX, NDX, RUT, SOXX, VIX, US2Y, US10Y, US_HY_OAS, DXY, USDKRW, KOSPI, KOSDAQ, WTI, GOLD]
   min_core_ok: 0.8
+  # 묶음별 최신(OK) 비율의 하한 — 받아야 할 계열 수 대비. 평소 종목 93/101 · AI 바스켓 52/52.
+  # 기본 묶음만 받고 공급처가 막힌 날을 FULL 로 저장하지 않기 위한 것이다(2026-11-27: 기본 43/55 · 종목 8/101 · 바스켓 0/52).
+  min_group_ok: {universe: 0.75, basket: 0.8}
 market_holidays:              # 시장별 휴장일(평일인데 봉이 없는 날). 확인된 것만 적는다
   US:  ["2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15"]
   KR:  ["2026-12-25", "2026-12-31", "2027-01-01"]

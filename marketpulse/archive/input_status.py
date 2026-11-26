@@ -185,11 +185,21 @@ def assess(inputs: Path, cutoff: datetime, *, expected: Mapping[str, list[str]] 
         reasons.append("필수 핵심 계열이 최신이 아니다: " + ", ".join(f"{k}({v})" for k, v in must_bad.items()))
     if ratio < float(gate_cfg.get("min_core_ok", 0.8)):
         reasons.append(f"핵심 계열 {len(core) - len(core_bad)}/{len(core)} 만 최신 — 기준 {gate_cfg.get('min_core_ok', 0.8):.0%} 미만")
+    # 종목 · AI 바스켓 묶음도 본다 — 기본 묶음만 갖춰지고 종목이 통째로 빠진 날(공급처가 수집 도중에 막힌 날)은 화면 절반이 비므로 FULL 이 아니다
+    group_ok: dict[str, float] = {}
+    for g, need in (gate_cfg.get("min_group_ok") or {}).items():
+        rows_g = series.get(g) or {}
+        total = len((expected or {}).get(g) or rows_g)
+        if not total:
+            continue
+        group_ok[g] = round(sum(1 for r in rows_g.values() if r["status"] == "OK") / total, 3)
+        if group_ok[g] < float(need):
+            reasons.append(f"{g} 묶음 {group_ok[g]:.0%} 만 최신 — 기준 {float(need):.0%} 미만")
     drop = {g: sorted(i for i, r in series[g].items() if r["status"] == "STALE") for g in GROUPS}
     return {
         "cutoff": cutoff.isoformat(),
         "counts": counts,
-        "gate": {"verdict": "PARTIAL" if reasons else "FULL", "reasons": reasons, "must_not_ok": must_bad, "core_not_ok": core_bad, "core_ok_ratio": round(ratio, 3)},
+        "gate": {"verdict": "PARTIAL" if reasons else "FULL", "reasons": reasons, "must_not_ok": must_bad, "core_not_ok": core_bad, "core_ok_ratio": round(ratio, 3), "group_ok_ratio": group_ok},
         "closed_suspect": closed,
         "stale": drop,
         "missing": {g: sorted(i for i, r in series[g].items() if r["status"] == "MISSING") for g in GROUPS},

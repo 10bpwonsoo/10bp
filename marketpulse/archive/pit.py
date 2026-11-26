@@ -54,9 +54,29 @@ def _futures_close(ts: datetime) -> datetime:
     return datetime(d.year, d.month, d.day, 17, 0, tzinfo=_NY)
 
 
+_US_HOLIDAYS: frozenset[date] | None = None
+
+
+def us_holidays() -> frozenset[date]:
+    """미국 휴장일(config/collection.yaml market_holidays.US). FRED 는 휴일에 전날 관측을 올리지 않는다."""
+    global _US_HOLIDAYS
+    if _US_HOLIDAYS is None:
+        try:
+            import yaml
+            from pathlib import Path
+
+            cfg = yaml.safe_load((Path(__file__).resolve().parent.parent / "config" / "collection.yaml").read_text(encoding="utf-8")) or {}
+            _US_HOLIDAYS = frozenset(date.fromisoformat(str(x)) for x in ((cfg.get("market_holidays") or {}).get("US") or []))
+        except Exception:  # noqa: BLE001 — 달력을 못 읽으면 휴일 없이(예전 규칙대로)
+            _US_HOLIDAYS = frozenset()
+    return _US_HOLIDAYS
+
+
 def _next_weekday_22z(ts: datetime) -> datetime:
+    """관측일 다음 **영업일** 22:00Z. 2026-11-27~: 미국 휴장일은 건너뛴다 — 11/25(수) 관측은 추수감사절(11/26)이 아니라 11/27 에 공개된다.
+    (그 전에는 주말만 건너뛰어, 휴일 다음 날 아침 스냅샷이 아직 공개되지 않은 관측을 '나와 있어야 할 것' 으로 봤다.)"""
     d = ts.date() + timedelta(days=1)
-    while d.weekday() >= 5:
+    while d.weekday() >= 5 or d in us_holidays():
         d += timedelta(days=1)
     return datetime(d.year, d.month, d.day, 22, 0, tzinfo=ts.tzinfo)
 

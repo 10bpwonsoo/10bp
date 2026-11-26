@@ -530,3 +530,26 @@ def test_a_partial_day_can_take_series_from_a_later_collection_but_never_the_oth
     assert c_prev.status["series"]["base"]["SPX"]["adopted_from"] == "2026-11-26"
     with pytest.raises(RuntimeError, match="합치지 않는다"):
         c_next.adopt_from(c_prev.out)                                          # 앞선 날짜 수집분을 나중 날짜에 쓰는 것은 거절
+
+
+def test_fred_observation_is_not_expected_until_the_business_day_after_a_us_holiday():
+    """11/25(수) 미국채 관측은 추수감사절(11/26)이 아니라 11/27 에 공개된다 — 11/27 07:30 KST 스냅샷은 11/24 관측이 최신이다."""
+    from marketpulse.archive.pit import us_holidays
+    assert date(2026, 11, 26) in us_holidays()
+    cut27 = cutoff_for(date(2026, 11, 27))
+    assert behind_bars(datetime(2026, 11, 24, tzinfo=UTC), "fred:DGS10", cut27) == 0           # STALE 이 아니다
+    assert not bar_available(datetime(2026, 11, 25, tzinfo=UTC), availability_lag("fred:DGS10"), cut27)   # 아직 공개 전 — 나중에 받아도 이 스냅샷에는 넣지 않는다
+    assert bar_available(datetime(2026, 11, 25, tzinfo=UTC), availability_lag("fred:DGS10"), cutoff_for(date(2026, 11, 28)))
+    assert behind_bars(datetime(2026, 11, 23, tzinfo=UTC), "fred:DGS10", CUT) == 0             # 평소(휴일 없음)는 그대로
+
+
+def test_gate_is_partial_when_a_whole_group_is_mostly_missing(tmp_path):
+    d24 = weekdays(date(2026, 11, 24), 30)
+    base = {"SPX": series("SPX", "yahoo:^GSPC", d24), "VIX": series("VIX", "yahoo:^VIX", d24, hh=7, mm=0), "NDX": series("NDX", "yahoo:^NDX", d24),
+            "WTI": series("WTI", "yahoo:CL=F", d24, hh=5, mm=0), "KOSPI": series("KOSPI", "yahoo:^KS11", d24, hh=0, mm=0)}
+    uni = {"NVDA": series("NVDA", "yahoo:NVDA", d24)}
+    cfg = {**CFG, "gate": {**CFG["gate"], "min_group_ok": {"universe": 0.75}}}
+    st = assess(write_inputs(tmp_path / "a", base, uni), CUT, expected={"base": list(base), "universe": ["NVDA", "MU", "AMD", "TSM"]}, cfg=cfg)
+    assert st["gate"]["verdict"] == "PARTIAL" and st["gate"]["group_ok_ratio"] == {"universe": 0.25}    # 핵심은 다 있어도 종목이 통째로 비면 FULL 이 아니다
+    st = assess(write_inputs(tmp_path / "b", base, uni), CUT, expected={"base": list(base), "universe": ["NVDA"]}, cfg=cfg)
+    assert st["gate"]["verdict"] == "FULL"
