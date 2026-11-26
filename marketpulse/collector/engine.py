@@ -470,6 +470,47 @@ class Collector:
             return series, {"primary": primary, "used": name, "check": verdict, "note": note, "why": f"{primary} 응답에 마지막 봉이 없어 다음 공급처에서 받았다"}
         return None
 
+    def adopt_from(self, later: Path) -> list[str]:
+        """
+        PARTIAL 로 남은 날짜를 확정할 때 — **더 나중 날짜**의 수집 폴더에서, 이 날짜에 빠졌거나 마지막 봉이 빠져 있던 계열을 가져온다(2026-11-27).
+        나중에 받은 계열은 이 날짜에 받았어야 할 봉을 모두 담고 있고, 이 날짜 기준 시각 뒤의 봉은 재구성 때 잘린다(look-ahead 없음).
+        같은 계열을 두 날짜 몫으로 공급처에 두 번 묻지 않기 위한 것이다. 반대 방향(앞선 날짜 수집분 → 나중 날짜)은 거절한다.
+        """
+        later = Path(later)
+        try:
+            later_day = date.fromisoformat(json.loads((later / "collect_status.json").read_text(encoding="utf-8"))["day"])
+        except (OSError, ValueError, KeyError) as exc:
+            raise RuntimeError(f"{later} 는 수집 폴더가 아니다") from exc
+        if later_day <= self.day:
+            raise RuntimeError(f"{later_day} 수집분을 {self.day} 입력에 쓰지 않는다 — 앞선 날짜 수집분은 나중 날짜에 합치지 않는다")
+        stale = (self.status.get("input_status") or {}).get("stale") or {}
+        took: list[str] = []
+        for g, plan in self.plans.items():
+            for ins in plan.instruments:
+                src = later / "checkpoint" / g / f"{ins.id}.json"
+                if not src.is_file() or (self.have(g, ins.id) and ins.id not in (stale.get(g) or [])):
+                    continue
+                text = src.read_text(encoding="utf-8")
+                new_last = self._last_closed(ins.id, text)
+                if new_last is None:
+                    continue
+                if self.have(g, ins.id):
+                    old_last = self._last_closed(ins.id, self._cp(g, ins.id).read_text(encoding="utf-8"))
+                    if old_last is not None and new_last <= old_last:
+                        continue  # 나중 수집분에도 그 봉이 없다 — 그대로 둔다
+                series = MarketSeries.model_validate_json(text)
+                self._cp(g, ins.id).parent.mkdir(parents=True, exist_ok=True)
+                self._cp(g, ins.id).write_text(text, encoding="utf-8")
+                row = self.status["series"][g].setdefault(ins.id, {"tries": 0})
+                row.update(state="OK", provider=str(series.meta.source).split(":", 1)[0], source=str(series.meta.source), points=len(series.timestamps),
+                           last_bar=series.timestamps[-1].isoformat(), adopted_from=later_day.isoformat())
+                took.append(f"{g}:{ins.id}")
+        self.assemble()
+        self._write_input_status()
+        self.status["complete"] = not any(self.pending(pl) for pl in self.plans.values())
+        self._save_status()
+        return took
+
     def _last_closed(self, iid: str, text: str) -> datetime | None:
         """그날 기준 시각(07:30 KST)에 이미 끝난 마지막 봉. 진행 중인 봉(수집 시각으로 찍힌다)은 세지 않는다 — 그것이 늦어졌다고 새 봉이 생긴 것이 아니다."""
         from ..archive.pit import cut_series

@@ -106,6 +106,19 @@ def test_breaker_state_survives_a_restart(tmp_path):
     assert b2.allow(HOST)[0]
 
 
+def test_breaker_forgets_yesterdays_escalation(tmp_path):
+    """어제 아침에 세 번 열렸더라도 오늘 첫 실패는 다시 5분부터다 — 누적이 하루를 넘어가 1시간짜리 차단이 되지 않는다."""
+    clk = Clock()
+    b = ProviderBreaker(tmp_path / "b.json", now=clk.now)
+    for _ in range(3):
+        b.failure(HOST, kind="http_429", status=429)
+    clk.t += 301; b.allow(HOST); assert b.failure(HOST, kind="http_429", status=429)["cooldown_sec"] == 600
+    clk.t += 601; b.allow(HOST); assert b.failure(HOST, kind="http_429", status=429)["cooldown_sec"] == 1200
+    clk.t += 1200 + 23 * 3600                                  # 다음 날 아침
+    assert b.allow(HOST) == (True, "half_open")
+    assert b.failure(HOST, kind="http_429", status=429)["cooldown_sec"] == 300
+
+
 def test_breaker_ignores_request_level_failures(tmp_path):
     b = ProviderBreaker(tmp_path / "b.json")
     for _ in range(5):
@@ -495,3 +508,25 @@ def test_when_the_first_provider_leaves_the_last_bar_empty_the_next_provider_fil
     assert c3.status["runs"][-1]["refetched_stale"] == ["base:KOSPI←krxapi"]
     assert got.meta.source == "krxapi:코스피" and got.values[-1] == 5006.0 and got.timestamps[-1].date() == date(2026, 11, 24)
     assert c3.status["input_status"]["stale"]["base"] == [] and c3.status["series"]["base"]["KOSPI"]["alt_source"]["check"] == "OK"
+
+
+def test_a_partial_day_can_take_series_from_a_later_collection_but_never_the_other_way(tmp_path):
+    """PARTIAL 로 남은 날짜를 다음 날 확정할 때, 다음 날 수집분에서 빠진 계열을 가져온다. 기준 시각 뒤의 봉은 판정 · 재구성에서 잘린다."""
+    d25 = weekdays(date(2026, 11, 25), 31)                                    # 다음 날(11/26) 수집분 — 11/25 봉까지 있다
+    c_prev, _, _, _ = make_collector(tmp_path, {"SPX": ["query1.finance.yahoo.com 회로 열림 — 쉬는 중"], "VIX": [("yahoo", series("VIX", "yahoo:^VIX", D24, hh=7, mm=0))]})
+    c_prev.run(news=False)                                                     # 11/25 수집: SPX 를 못 받았다
+    assert c_prev.status["input_status"]["missing"]["base"] == ["SPX"] if "missing" in c_prev.status["input_status"] else True
+    later_dir = tmp_path / "inputs" / "2026-11-26"
+    plan = c_prev.plans
+    c_next = Collector(date(2026, 11, 26), later_dir, cfg=c_prev.cfg, plans=plan, adapters=(FakeAdapter({"SPX": [("yahoo", series("SPX", "yahoo:^GSPC", d25))], "VIX": [("yahoo", series("VIX", "yahoo:^VIX", d25, hh=7, mm=0))]}),) * 2,
+                       client=SimpleNamespace(stats={}), breaker=ProviderBreaker(tmp_path / "state" / "b2.json"), log=lambda m: None)
+    c_next.run(news=False)
+    took = c_prev.adopt_from(later_dir)
+    assert took == ["base:SPX"]                                                # 이미 최신인 VIX 는 건드리지 않는다
+    got = c_prev.load_group("base")["SPX"]
+    assert got.timestamps[-1].date() == date(2026, 11, 25)                     # 받은 그대로 — 자르는 것은 재구성이 한다
+    st = json.loads((c_prev.out / "input_status.json").read_text(encoding="utf-8"))
+    assert st["series"]["base"]["SPX"]["status"] == "OK" and st["series"]["base"]["SPX"]["last_bar"][:10] == "2026-11-24"   # 11/25 07:30 KST 기준 마지막 봉
+    assert c_prev.status["series"]["base"]["SPX"]["adopted_from"] == "2026-11-26"
+    with pytest.raises(RuntimeError, match="합치지 않는다"):
+        c_next.adopt_from(c_prev.out)                                          # 앞선 날짜 수집분을 나중 날짜에 쓰는 것은 거절

@@ -10,6 +10,7 @@ Market Pulse 입력 수집기 — Claude 없이 도는 Python 명령.
     python -m marketpulse.collector inventory [--md 파일]              수집 대상 전체와 공급처 순서 목록
     python -m marketpulse.collector breaker [--reset 호스트]           공급처 회로 상태(쉬는 중인지 · 언제 풀리는지)
     python -m marketpulse.collector pull [--date D] [--branch 가지]     다른 곳에서 올린 수집 결과를 전달 가지에서 꺼낸다
+    python -m marketpulse.collector adopt --date D --from DIR          PARTIAL 로 남은 날짜 D 에, 더 나중 날짜 수집 폴더의 계열을 가져온다(빠졌거나 마지막 봉이 빠진 것만)
 
 기본 저장 위치는 marketpulse/data/inputs/<날짜>/ (환경변수 MARKETPULSE_INPUTS_DIR 로 바꾼다).
 회로 상태는 .marketpulse_state/ (MARKETPULSE_STATE_DIR). 키는 환경변수로만 읽는다(FRED_API_KEY · TWELVEDATA_API_KEY) — 출력하지 않는다.
@@ -64,12 +65,12 @@ def _print_status(c: Collector) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="marketpulse.collector", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("cmd", choices=["run", "status", "news", "inventory", "breaker", "pull"])
+    p.add_argument("cmd", choices=["run", "status", "news", "inventory", "breaker", "pull", "adopt"])
     p.add_argument("--date"); p.add_argument("--out"); p.add_argument("--only", default="base,universe,basket,news")
     p.add_argument("--budget-min", type=float); p.add_argument("--no-wait", action="store_true")
     p.add_argument("--reference"); p.add_argument("--publish", nargs="?", const="collector-inputs")
     p.add_argument("--branch", default="collector-inputs"); p.add_argument("--remote", default="origin")
-    p.add_argument("--md"); p.add_argument("--reset"); p.add_argument("--force", action="store_true")
+    p.add_argument("--from", dest="args_from"); p.add_argument("--md"); p.add_argument("--reset"); p.add_argument("--force", action="store_true")
     p.add_argument("--retry-stale", action="store_true", help="마지막 봉이 빠진 계열을 하루 시도 상한과 상관없이 한 번 더 받는다(사람이 지금 받을 수 있다고 본 때만)")
     a = p.parse_args(argv)
 
@@ -106,6 +107,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{day} 수집 결과 {len(got)}개 파일을 {out} 에 꺼냈다: {', '.join(got)}" if got else f"전달 가지 {a.branch} 에 {day} 수집 결과가 없다")
         return 0 if got else 1
     c = Collector(day, out, reference=Path(a.reference) if a.reference else None)
+    if a.cmd == "adopt":
+        if not a.args_from:
+            print("adopt 에는 --from <더 나중 날짜의 수집 폴더> 가 필요하다", file=sys.stderr)
+            return 2
+        took = c.adopt_from(Path(a.args_from))
+        print(f"{a.args_from} 에서 {len(took)}개 계열을 가져왔다: {', '.join(took)[:400]}")
+        _print_status(c)
+        return 0
     if a.cmd == "status":
         _print_status(c)
         return 0

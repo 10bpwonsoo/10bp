@@ -38,6 +38,7 @@ DEFAULTS: dict[str, Any] = {
     "max_cooldown_sec": 3600.0,     # 2배씩 늘리는 상한
     "retry_after_cap_sec": 21600.0, # 공급처가 말한 Retry-After 를 따르되 이보다 길게는 잡지 않는다
     "close_after_successes": 5,     # 회로가 닫힌 뒤 이만큼 연속 성공하면 '몇 번 열렸는지' 를 0 으로 돌린다
+    "reset_opens_after_sec": 21600.0,  # 쉬는 시간이 끝나고 이만큼 지나도록 다시 열리지 않았으면 '몇 번 열렸는지' 를 0 으로 돌린다
     "max_events": 60,
 }
 
@@ -108,7 +109,10 @@ class ProviderBreaker:
             if now < until:
                 return False, f"회로 열림 — {_iso(until)} 까지 쉼(남은 {until - now:.0f}초) · 직전 {h.get('last_error')}"
             h["state"] = "half_open"
-            self._event(h, action="half_open")
+            # 쉬는 시간이 끝난 지 오래됐으면(기본 6시간) '몇 번 열렸는지' 를 잊는다 — 어제 아침의 누적이 오늘 첫 실패를 1시간짜리로 만들지 않게
+            if now - until > float(self.cfg["reset_opens_after_sec"]):
+                h["opens"] = 0
+            self._event(h, action="half_open", opens=h["opens"])
             self._save()
         return True, h["state"]
 

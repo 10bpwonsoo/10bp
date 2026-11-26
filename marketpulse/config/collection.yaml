@@ -12,6 +12,7 @@ breaker:
   max_cooldown_sec: 3600      # 그 상한
   retry_after_cap_sec: 21600  # 공급처가 Retry-After 를 주면 그 시간을 따른다(이보다 길게는 잡지 않는다)
   close_after_successes: 5    # 회로가 닫힌 뒤 연속 5번 성공하면 '열린 횟수' 를 0 으로 돌린다
+  reset_opens_after_sec: 21600  # 쉬는 시간이 끝난 뒤 6시간이 지나면 '열린 횟수' 를 0 으로 돌린다(전날 아침의 누적을 다음 날로 넘기지 않는다)
 # 공급처별 요청 간격(초). 없는 공급처는 run.min_gap_sec.
 host_min_gap_sec:
   api.twelvedata.com: 8.0     # 무료 플랜 분당 8건
