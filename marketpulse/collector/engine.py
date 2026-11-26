@@ -488,17 +488,24 @@ class Collector:
         for g, plan in self.plans.items():
             for ins in plan.instruments:
                 src = later / "checkpoint" / g / f"{ins.id}.json"
-                if not src.is_file() or (self.have(g, ins.id) and ins.id not in (stale.get(g) or [])):
+                if not src.is_file():
                     continue
                 text = src.read_text(encoding="utf-8")
+                series = MarketSeries.model_validate_json(text)
+                primary = str((plan.specs.get(ins.id) or [{}])[0].get("provider") or "")
+                later_is_primary = str(series.meta.source).split(":", 1)[0] == primary
+                have = self.have(g, ins.id)
+                # 가져오는 경우: ① 없다 ② 마지막 봉이 빠져 있다 ③ 그날은 첫 공급처가 막혀 대체 공급처(더 늦게 공개되는 경로)에서 받았는데 나중 수집분은 첫 공급처 것이다
+                on_fallback = have and str((self.status["series"][g].get(ins.id) or {}).get("provider") or primary) != primary
+                if have and ins.id not in (stale.get(g) or []) and not (on_fallback and later_is_primary):
+                    continue
                 new_last = self._last_closed(ins.id, text)
                 if new_last is None:
                     continue
-                if self.have(g, ins.id):
+                if have:
                     old_last = self._last_closed(ins.id, self._cp(g, ins.id).read_text(encoding="utf-8"))
-                    if old_last is not None and new_last <= old_last:
+                    if old_last is not None and (new_last < old_last or (new_last == old_last and not (on_fallback and later_is_primary))):
                         continue  # 나중 수집분에도 그 봉이 없다 — 그대로 둔다
-                series = MarketSeries.model_validate_json(text)
                 self._cp(g, ins.id).parent.mkdir(parents=True, exist_ok=True)
                 self._cp(g, ins.id).write_text(text, encoding="utf-8")
                 row = self.status["series"][g].setdefault(ins.id, {"tries": 0})

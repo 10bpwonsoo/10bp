@@ -553,3 +553,20 @@ def test_gate_is_partial_when_a_whole_group_is_mostly_missing(tmp_path):
     assert st["gate"]["verdict"] == "PARTIAL" and st["gate"]["group_ok_ratio"] == {"universe": 0.25}    # 핵심은 다 있어도 종목이 통째로 비면 FULL 이 아니다
     st = assess(write_inputs(tmp_path / "b", base, uni), CUT, expected={"base": list(base), "universe": ["NVDA"]}, cfg=cfg)
     assert st["gate"]["verdict"] == "FULL"
+
+
+def test_adopt_replaces_a_fallback_series_with_the_primary_providers_fresher_one(tmp_path):
+    """그날 첫 공급처가 막혀 더 늦게 공개되는 대체 경로(FRED)에서 받은 계열은, 나중 수집분에 첫 공급처 것이 있으면 그것으로 바꾼다."""
+    d25 = weekdays(date(2026, 11, 25), 31)
+    specs = {"VIX": [{"provider": "yahoo", "symbol": "^VIX"}, {"provider": "fred", "symbol": "VIXCLS"}]}
+    fred = series("VIX", "fred:VIXCLS", weekdays(date(2026, 11, 23), 30), hh=0, mm=0)          # 규칙상 OK 지만 하루 늦은 값
+    c_prev, _, _, _ = make_collector(tmp_path, {"VIX": [("fred", fred)]}, specs=specs)
+    c_prev.run(news=False)
+    assert c_prev.status["input_status"]["stale"]["base"] == [] and c_prev.load_group("base")["VIX"].timestamps[-1].date() == date(2026, 11, 23)
+    later_dir = tmp_path / "inputs" / "2026-11-26"
+    c_next = Collector(date(2026, 11, 26), later_dir, cfg=c_prev.cfg, plans=c_prev.plans, adapters=(FakeAdapter({"VIX": [("yahoo", series("VIX", "yahoo:^VIX", d25, hh=7, mm=0))]}),) * 2,
+                       client=SimpleNamespace(stats={}), breaker=ProviderBreaker(tmp_path / "state" / "b3.json"), log=lambda m: None)
+    c_next.run(news=False)
+    assert c_prev.adopt_from(later_dir) == ["base:VIX"]
+    st = json.loads((c_prev.out / "input_status.json").read_text(encoding="utf-8"))["series"]["base"]["VIX"]
+    assert st["source"] == "yahoo:^VIX" and st["last_bar"][:10] == "2026-11-24"                 # 11/25 07:30 KST 기준으로 하루 더 최신
