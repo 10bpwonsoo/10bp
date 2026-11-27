@@ -1,0 +1,398 @@
+{
+ "snapshot_date": "2026-11-26",
+ "market_date": "2026-11-25",
+ "cutoff": "2026-11-26T07:30:00+09:00",
+ "transition": {
+  "kind": "entry",
+  "from": "Neutral / Mixed",
+  "to": "Geopolitical",
+  "exit_streak": 0,
+  "exit_required": 1,
+  "entry_streak": 1,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-19",
+   "candidate": "Growth",
+   "official": "Growth",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-20",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-23",
+   "candidate": "Risk-On",
+   "official": "Risk-On",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-24",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-25",
+   "candidate": "Geopolitical",
+   "official": "Geopolitical",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": 0.13,
+   "today": -0.42
+  },
+  "Liquidity": {
+   "prev": 1.44,
+   "today": -0.46
+  },
+  "Rates": {
+   "prev": -0.1,
+   "today": -0.19
+  },
+  "Inflation": {
+   "prev": -0.26,
+   "today": 0.48
+  },
+  "Credit": {
+   "prev": -1.99,
+   "today": 0.95
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.7,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": -1.6,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": -1.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": -1.1,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -1.9,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "up",
+   "strength": 0.46,
+   "why": "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 1.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX",
+     "z": 0.5,
+     "display": ""
+    },
+    {
+     "label": "S&P 500",
+     "z": -0.7,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "AI / SEMI RELATIVE",
+   "direction": "down",
+   "strength": -0.69,
+   "why": "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다.",
+   "evidence": [
+    {
+     "label": "AI 바스켓 / Nasdaq 상대",
+     "z": -2.5,
+     "display": ""
+    },
+    {
+     "label": "Semiconductors",
+     "z": -1.0,
+     "display": "(5일)"
+    },
+    {
+     "label": "Semiconductor Equipment / Nasdaq 상대",
+     "z": -0.8,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "OIL",
+   "direction": "up",
+   "strength": 0.42,
+   "why": "유가 상승이 물가 기대와 에너지 주식으로 번진다.",
+   "evidence": [
+    {
+     "label": "브렌트 원유",
+     "z": 1.1,
+     "display": "+3.51%"
+    },
+    {
+     "label": "WTI 원유",
+     "z": 0.7,
+     "display": ""
+    },
+    {
+     "label": "Energy",
+     "z": 0.5,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.41,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -0.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -0.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": 0.7,
+     "display": ""
+    },
+    {
+     "label": "KOSPI",
+     "z": -2.0,
+     "display": "-6.16%"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "브렌트 원유",
+   "z": 1.1,
+   "change": "+3.51%"
+  },
+  {
+   "label": "Aerospace & Defense",
+   "z": 0.8,
+   "change": ""
+  },
+  {
+   "label": "WTI 원유",
+   "z": 0.7,
+   "change": ""
+  },
+  {
+   "label": "VIX",
+   "z": 0.5,
+   "change": ""
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -1.6,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.4,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": 0.5,
+   "arrow": "→"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": -0.9,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": 1.1,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -1.3,
+   "arrow": "↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "PARTIAL",
+   "score": -0.01
+  },
+  "kr": {
+   "status": "PARTIAL",
+   "score": -0.01
+  }
+ },
+ "selection_today": {
+  "selected": "GEOPOLITICAL_RISK",
+  "commentary": "GEOPOLITICAL RISK 의 주요 Trigger(z(BRENT) >= 1.0, 지금 +1.13)를 넘었다. 주식 확인은 미국 CONFIRMED · 한국 CONFIRMED · Global CONFIRMED 이다.",
+  "primary_reason": "GEOPOLITICAL RISK 의 주요 Trigger 와 주식 확인이 후보 중 가장 강하다."
+ },
+ "events": [
+  {
+   "date": "2026-11-25",
+   "title": "PCE",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "[속보] 코스피, 6.16% 급락해 4697.51 마감…전날 급등분 반납",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": -45,
+   "summary": "코스피 6.16% 급락해 4697.51 마감 — 전날 급등분을 모두 반납(속보, 제목)."
+  },
+  {
+   "title": "美 10월 근원 PCE 물가 3.3%…내년 추가 긴축 압박",
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "sentiment": -35,
+   "summary": "미국 10월 근원 PCE 물가가 3.3% 로 나와 내년 추가 긴축 압박이 커졌다(제목)."
+  },
+  {
+   "title": "[속보] 삼전 시총 1000조 깨지고 하이닉스 11% 급락…코스피, 하루 만에 5000서 4600대로",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": -45,
+   "summary": "삼성전자 시가총액이 1000조원 아래로 내려가고 SK하이닉스가 11% 급락 — 미국 반도체주 급락 여파로 외국인이 대거 팔았다(속보)."
+  },
+  {
+   "title": "AI 투자 불안에 극심한 변동장…나스닥 0.6% 하락 [뉴욕증시 브리핑]",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": -25,
+   "summary": "AI 투자 불안에 극심한 변동장 — 나스닥 0.6% 하락 마감(뉴욕증시 브리핑, 제목)."
+  },
+  {
+   "title": "[마감시황] 젠슨황發 상승분 모두 반납...코스피 6.16% 내린 4697.51 마감",
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": -40,
+   "summary": "젠슨 황 복귀로 오른 상승분을 모두 반납하며 코스피가 6.16% 내린 4697.51 에 마감(마감시황, 제목)."
+  },
+  {
+   "title": "AI 투자 신뢰 흔들린 월가…나스닥 4% 넘게 낙폭 확대[월가 업&다운]",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": -40,
+   "summary": "AI 투자에 대한 신뢰가 흔들리며 나스닥이 장중 4% 넘게 내렸다(제목)."
+  },
+  {
+   "title": "엔비디아 시간외 6% 급락…美 물가·관세 충격에 AI株 휘청 [월가 업&다운]",
+   "themes": [
+    "ai",
+    "inflation",
+    "rates"
+   ],
+   "sentiment": -35,
+   "summary": "미국 물가·관세 충격에 엔비디아가 시간외에서 6% 급락하고 AI 주가 흔들렸다(제목)."
+  },
+  {
+   "title": "[오후시황] 코스피 6%대 하락…외국인 2.2조 던졌다",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": -40,
+   "summary": "코스피가 6%대 하락하고 외국인이 2.2조원어치를 팔았다(오후시황, 제목)."
+  }
+ ]
+}
