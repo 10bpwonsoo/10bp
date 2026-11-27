@@ -4960,6 +4960,121 @@
     ]
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-26",
+   "tab_id": "ai_sentiment",
+   "state": "NEUTRAL",
+   "state_label": "NEUTRAL",
+   "state_label_ko": "중립적인 투자심리",
+   "state_score": 42.6,
+   "confidence": 100.0,
+   "component_scores": {
+    "narrative": 67.0,
+    "price": 21.6,
+    "breadth": 18.0,
+    "fundamentals": 55.1,
+    "macro": 59.8
+   },
+   "key_drivers": [
+    "Long-End Rates",
+    "Real Yield",
+    "HBM / Memory Fundamentals",
+    "−AI Basket 1M",
+    "−Breadth >20DMA",
+    "−Credit Stress"
+   ],
+   "data_coverage": 1.0,
+   "data_asof": "2026-11-26T22:30:00Z",
+   "missing_components": [],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-27T01:58:55.617971Z",
+   "model_version": "ai_sentiment_v0.1.0",
+   "logic_version": "rules_db9f30c3",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 43",
+   "payload": {
+    "components": {
+     "narrative": 67.0,
+     "price": 21.6,
+     "breadth": 18.0,
+     "fundamentals": 55.1,
+     "macro": 59.8
+    },
+    "component_states": {
+     "narrative": "GREED",
+     "price": "FEAR",
+     "breadth": "EXTREME_FEAR",
+     "fundamentals": "NEUTRAL",
+     "macro": "NEUTRAL"
+    },
+    "key_tension": "내러티브는 투자심리를 지지하고 있지만 가격 · 확산도는 아직 이를 확인하지 못하고 있습니다.",
+    "read": "Long-End Rates · Real Yield는 여전히 지지적입니다. 그러나 가격 · 확산도가 따라오지 않고 AI Basket 1M · Breadth >20DMA가 sentiment 를 압박하고 있습니다.",
+    "secondary": "NARRATIVE AHEAD OF PRICE",
+    "support": [
+     {
+      "id": "rates",
+      "label": "Long-End Rates",
+      "label_ko": "장기금리",
+      "component": "macro",
+      "score": 90.0,
+      "display": "-1.6σ (5일)"
+     },
+     {
+      "id": "real_yield",
+      "label": "Real Yield",
+      "label_ko": "실질금리",
+      "component": "macro",
+      "score": 78.5,
+      "display": "-1.1σ (5일)"
+     },
+     {
+      "id": "hbm",
+      "label": "HBM / Memory Fundamentals",
+      "label_ko": "HBM · 메모리 데이터",
+      "component": "fundamentals",
+      "score": 75.2,
+      "display": "+50 · STRONG"
+     }
+    ],
+    "pressure": [
+     {
+      "id": "basket_1m",
+      "label": "AI Basket 1M",
+      "label_ko": "AI 바스켓 1개월 수익",
+      "component": "price",
+      "score": 0.0,
+      "display": "-21.6%"
+     },
+     {
+      "id": "above_ma20",
+      "label": "Breadth >20DMA",
+      "label_ko": "20일선 상회 비율",
+      "component": "breadth",
+      "score": 3.0,
+      "display": "3%"
+     },
+     {
+      "id": "credit",
+      "label": "Credit Stress",
+      "label_ko": "신용 스트레스",
+      "component": "macro",
+      "score": 16.2,
+      "display": "+1.4σ (5일)"
+     }
+    ],
+    "basis": [
+     "narrative",
+     "price",
+     "breadth",
+     "fundamentals",
+     "macro"
+    ]
+   },
+   "corrections": []
   }
  ]
 }

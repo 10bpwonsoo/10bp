@@ -5155,6 +5155,95 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-26",
+   "tab_id": "market_regime",
+   "state": "NEUTRAL",
+   "state_label": "Neutral / Mixed",
+   "state_label_ko": "",
+   "state_score": -1.1914383733193445,
+   "confidence": 54.0,
+   "component_scores": {
+    "RiskAppetite": -7.459811859266235,
+    "Volatility": 11.43112893387976,
+    "Growth": 12.106292541530257,
+    "Credit": -44.1597688783516,
+    "KoreaFlow": null,
+    "news": 5.402296345768488,
+    "factor:Growth": 0.243,
+    "factor:Inflation": -0.03,
+    "factor:Rates": -0.193,
+    "factor:USD": 0.178,
+    "factor:Liquidity": -0.456,
+    "factor:RiskAppetite": -0.149,
+    "factor:Credit": 0.948,
+    "factor:Volatility": -0.23,
+    "factor:China": 1.111
+   },
+   "key_drivers": [
+    "천연가스 +2.9σ",
+    "EUR/USD +2.1σ",
+    "Euro Stoxx 50 +2.1σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-26T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-27T01:58:56.053929Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "NEUTRAL 54% · 온도 -1",
+   "payload": {
+    "date": "2026-11-26",
+    "as_of": "2026-11-26T22:30:00Z",
+    "label": "NEUTRAL",
+    "secondary_label": null,
+    "confidence": 54.0,
+    "price_temperature": -5.5872615193779,
+    "news_temperature": 5.402296345768488,
+    "composite": -1.1914383733193445,
+    "news_events": 26,
+    "thermo_confidence": 93.90104421348536,
+    "components": {
+     "RiskAppetite": -7.459811859266235,
+     "Volatility": 11.43112893387976,
+     "Growth": 12.106292541530257,
+     "Credit": -44.1597688783516,
+     "KoreaFlow": null,
+     "news": 5.402296345768488
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": 0.243,
+     "Inflation": -0.03,
+     "Rates": -0.193,
+     "USD": 0.178,
+     "Liquidity": -0.456,
+     "RiskAppetite": -0.149,
+     "Credit": 0.948,
+     "Volatility": -0.23,
+     "China": 1.111
+    },
+    "hypotheses": {},
+    "drivers": [
+     "천연가스 +2.9σ",
+     "EUR/USD +2.1σ",
+     "Euro Stoxx 50 +2.1σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

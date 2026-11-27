@@ -1,0 +1,14 @@
+{
+ "selected_regime": "NEUTRAL",
+ "regime_confidence": 54,
+ "selection_status": "NO_ELIGIBLE",
+ "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 브렌트유가 전날 급등분을 대부분 되돌려 유가 Trigger 아래로 내려왔고, 미국은 추수감사절 휴장으로 새 거래가 없었으며 한국은 소폭 반등에 그쳤다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "PARTIAL",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Geopolitical 이다. 확인 일수를 두지 않는 규칙이라, 오늘 자격 후보가 없어 NEUTRAL 을 고르면 공식 regime 은 하루 만에 Neutral / Mixed 로 돌아간다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보가 없다. 가장 가까운 것은 Liquidity Stress(Liquidity -0.46, 기준 -1.0)이고, 전날 유일한 후보였던 Geopolitical Risk 는 브렌트유가 3.04% 내려 z(BRENT) 가 -1.03 으로 돌아서며 자격을 잃었다. 금은 올랐지만 유가가 내리고 변동성도 낮아져 지정학 위험의 증거가 한 방향으로 모이지 않는다. 미국은 추수감사절 휴장이라 주식과 금리, 신용에 새 관측이 없고, 한국은 KOSPI 와 KOSDAQ 이 소폭 올랐으나 대표 종목 상승 비율이 낮아 반등의 폭이 좁다. 한국은행의 금리 인상은 미리 반영돼 시장 반응이 제한적이었다. 방향을 가리키는 새 증거가 부족해 NEUTRAL 로 두고, 확신은 정량값 수준으로 둔다.",
+ "commentary": "목요일 미국 시장은 추수감사절로 쉬었고, 전날 급등했던 브렌트유는 상승분을 대부분 되돌렸다. 한국은 한국은행의 금리 인상 속에서도 코스피와 코스닥이 소폭 반등했지만 장 막판에 상승폭을 줄였고 오른 종목도 많지 않았다. 유가 Trigger 가 풀리고 다른 환경도 기준에 닿지 않아 오늘은 중립으로 본다."
+}
