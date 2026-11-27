@@ -5,8 +5,8 @@
  "input_drop": {},
  "series": {
   "base": 47,
-  "universe": 44,
-  "basket": 9
+  "universe": 94,
+  "basket": 52
  },
  "news": {
   "rss_in_window": 137,
@@ -15,14 +15,14 @@
  },
  "market": {
   "state": "GEOPOLITICAL_RISK",
-  "confidence": 45.0,
+  "confidence": 40.0,
   "coverage": "47/60",
   "thermo": -17
  },
  "regime_select": {
   "selected": "GEOPOLITICAL_RISK",
-  "confidence": 45,
-  "source": "quant",
+  "confidence": 40,
+  "source": "session",
   "quant_label": "GEOPOLITICAL_RISK",
   "candidates": [
    "GEOPOLITICAL_RISK"
@@ -34,24 +34,24 @@
  },
  "ai": {
   "regime": "MACRO-DRAGGED AI WEAKNESS",
-  "sentiment": 29,
+  "sentiment": 34,
   "theme_view": [
-   "none",
-   "unavailable",
-   "LLM 사용 불가"
+   "session",
+   "ok",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
   ]
  },
  "rates": {
   "regime": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
   "market_read": [
-   "rule",
-   "none",
-   "LLM 사용 불가"
+   "llm",
+   "session",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
   ],
   "inflation_read": [
-   "rule",
-   "none",
-   "LLM 사용 불가"
+   "llm",
+   "session",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
   ]
  },
  "oil": {
@@ -61,14 +61,14 @@
   "now": "GEOPOLITICAL RISK"
  },
  "market_overview": [
-  "none",
-  "unavailable",
-  "LLM 사용 불가"
+  "session",
+  "ok",
+  "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
  ],
  "semiconductor_cycle": {
   "regime": "EARLY RECOVERY",
-  "composite": 22.4,
-  "market_read": "rule/none"
+  "composite": 22.1,
+  "market_read": "llm/session"
  },
  "vintage": {
   "market_series": {

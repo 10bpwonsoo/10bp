@@ -15,13 +15,13 @@
   "released_previous_official": null,
   "raw_signal": "GEOPOLITICAL_RISK",
   "transition_status": "CHANGED",
-  "selection_confidence": 45,
+  "selection_confidence": 40,
   "equity_confirmation": {
    "us": "CONFIRMED",
    "korea": "CONFIRMED",
    "global": "CONFIRMED"
   },
-  "selection_commentary": "GEOPOLITICAL RISK 의 주요 Trigger(z(BRENT) >= 1.0, 지금 +1.13)를 넘었다. 주식 확인은 미국 CONFIRMED · 한국 CONFIRMED · Global CONFIRMED 이다.",
+  "selection_commentary": "수요일에는 브렌트유가 크게 뛰며 방산과 에너지가 지수보다 강했고, 한국에서도 급락장 속에 방산 · 조선 · 정유가 버텼다. 유가 Trigger 를 넘은 유일한 후보라 지정학 위험 환경으로 보지만, 금이 내리고 변동성 반응도 작아 전형적인 위험 회피 모습은 아니다. 같은 날 시장의 중심은 AI 투자 불안과 물가 지표였던 만큼 확신은 낮다.",
   "market_read": "오늘 선택에 따라 공식 레짐이 바뀌었습니다 (Neutral / Mixed → Geopolitical).",
   "factors_today": {
    "RiskAppetite": -0.42,
@@ -97,17 +97,6 @@
    ]
   },
   {
-   "driver": "AI / SEMI RELATIVE",
-   "direction": "down",
-   "strength": -0.69,
-   "why": "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다.",
-   "evidence": [
-    "AI 바스켓 / Nasdaq 상대",
-    "Semiconductors (5일)",
-    "Semiconductor Equipment / Nasdaq 상대 (5일)"
-   ]
-  },
-  {
    "driver": "OIL",
    "direction": "up",
    "strength": 0.42,
@@ -127,6 +116,17 @@
     "S&P 500 (5일)",
     "Nasdaq 100 (5일)",
     "Russell 2000"
+   ]
+  },
+  {
+   "driver": "KOREA",
+   "direction": "down",
+   "strength": -0.61,
+   "why": "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다.",
+   "evidence": [
+    "KOSPI -6.16%",
+    "KOSDAQ",
+    "USD/KRW (5일)"
    ]
   }
  ],
@@ -600,15 +600,15 @@
    "z_1d": -0.1,
    "rel_1w": -0.3,
    "breadth": 0.0,
-   "why": "AI/장비 상대강도가 반도체 leadership 을 지지 (Semiconductor Equipment / Nasdaq 상대 -0.8σ) — 현재 확인됨",
+   "why": "AI/장비 상대강도가 반도체 leadership 을 지지 (Semiconductor Equipment / Nasdaq 상대 -0.5σ) — 현재 확인됨",
    "quality": "상승 참여 종목 확대",
    "risk": "US 10Y / AI capex slowdown",
    "key_stocks": [
     "SK하이닉스",
+    "Nvidia",
     "Tokyo Electron",
     "Applied Materials",
-    "Micron",
-    "Nvidia"
+    "Micron"
    ]
   },
   {
@@ -638,8 +638,8 @@
   "breakeven_direction": "FALLING",
   "decomposition_read": "금리 하락에 실질금리와 기대인플레이션이 비슷하게 기여.",
   "inflation_pressure": "압력이 엇갈림",
-  "inflation_read": "시장 기대인플레이션은 물가를 낮추는 방향이고 실제 물가, 에너지·원자재, 임금·서비스(대체 추정), 환율 전가는 상승 압력으로 물가 압력의 방향이 엇갈립니다. 다만 임금·서비스는 단일 원데이터가 아니라 대체 지표 조합이라 확인의 무게는 낮습니다.",
-  "market_read": "금리 하락은 기간 프리미엄·공급 쪽 신호와 맞고, 물가·Fed 쪽 신호도 같은 방향입니다.",
+  "inflation_read": "실제 물가 지표와 임금·서비스, 환율 쪽은 상승 압력을 가리키지만 시장 기대인플레이션은 크게 내려가 있어 방향이 엇갈립니다. 근원 PCE 가 예상을 웃돈 직후라, 시장 기대가 실제 지표를 따라 올라오는지가 다음 확인점입니다.",
+  "market_read": "화요일 미국채는 5년물이 5bp 내리고 30년물은 소폭 올라 중기물 중심으로만 움직였고, 지난주부터 내려온 금리 수준은 유지됐다. 하이일드 스프레드는 하루 9bp 벌어져 전날의 신용 완화가 되돌려졌다. 수요일에 나온 근원 PCE 는 예상을 웃돌았고 브렌트유가 3.51% 뛰었지만, 금리와 신용 데이터는 화요일 관측이라 물가 지표와 유가 급등에 대한 채권시장의 반응은 아직 들어 있지 않다.",
   "equity_implication": "기간 프리미엄 충격은 실질금리 상승 — 듀레이션·성장주·금에 역풍. 은행은 커브 스티프닝(순이자마진)과 신용 악화가 맞선다. 달러 강세, 원화·코스피엔 역풍."
  },
  "recent_releases_and_policy": [
@@ -727,7 +727,7 @@
  ],
  "oil": {
   "regime": "Demand — CONTRADICTED",
-  "headline": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-49, MODERATE) — 거시·유동성 (위험회피) -19 보다 30 앞선다. 상태 반박됨: driver 는 하락 압력인데 유가는 반대(+0.9σ)로 움직였다.",
+  "headline": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(-41, MODERATE) — 거시·유동성 (위험회피) -19 보다 22 앞선다. 상태 반박됨: driver 는 하락 압력인데 유가는 반대(+0.9σ)로 움직였다.",
   "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
   "brent_z": 1.1,
   "wti_z": 0.7
@@ -740,46 +740,46 @@
    "AI Relative Strength: SOFT",
    "Price: WEAK",
    "Semiconductor Confirm.: WEAK",
-   "AI Infra: MIXED",
-   "Software: –",
-   "Breadth: STABLE",
+   "AI Infra: WEAK",
+   "Software: STRONG",
+   "Breadth: NARROWING",
    "Macro: HEADWIND",
    "Fundamental Confirmation: WEAK"
   ],
-  "rel_vs_nasdaq_5d_pp": -7.5,
+  "rel_vs_nasdaq_5d_pp": -3.6,
   "fundamental_confirmation": "WEAK",
-  "theme_view_headline": "",
-  "theme_view_summary": "",
+  "theme_view_headline": "AI 바스켓 이틀째 하락, 소프트웨어만 버팀",
+  "theme_view_summary": "수요일 AI 바스켓은 메모리 정점 논쟁과 AI 투자 불안이 겹치며 이틀째 내렸고, 한 주 낙폭도 Nasdaq 보다 컸습니다. 메모리와 반도체·네트워킹이 가장 크게 뒤처졌고 중기 이동평균선을 지킨 종목이 거의 없어 약세가 넓게 퍼져 있습니다. 소프트웨어만 Nasdaq 을 앞섰지만 참여 종목이 적고, 한국에서는 삼성전자와 SK하이닉스가 전날 급등분을 모두 반납했습니다. 신용 스프레드 확대와 주식 약세가 함께 나와 AI 고유 요인보다 시장 전반의 부담으로 읽히며, 메모리 주가의 안정 여부가 다음 확인점입니다.",
   "groups": [
    {
     "group": "Semiconductors / Compute",
-    "rel_5d": null,
-    "ret_21d": null
+    "rel_5d": -7.1,
+    "ret_21d": -27.9
    },
    {
     "group": "Memory",
-    "rel_5d": -7.2,
-    "ret_21d": -23.0
+    "rel_5d": -11.6,
+    "ret_21d": -34.8
    },
    {
     "group": "Hyperscalers",
-    "rel_5d": null,
-    "ret_21d": null
+    "rel_5d": -1.0,
+    "ret_21d": -9.2
    },
    {
     "group": "Networking / Infrastructure",
-    "rel_5d": null,
-    "ret_21d": null
+    "rel_5d": -5.6,
+    "ret_21d": -28.4
    },
    {
     "group": "Power / Data Center",
-    "rel_5d": null,
-    "ret_21d": null
+    "rel_5d": -1.9,
+    "ret_21d": -13.2
    },
    {
     "group": "Software / Application",
-    "rel_5d": null,
-    "ret_21d": null
+    "rel_5d": 3.5,
+    "ret_21d": -18.4
    },
    {
     "group": "Korea AI Supply Chain",
@@ -790,7 +790,7 @@
  },
  "semiconductor_cycle": {
   "regime": "EARLY RECOVERY",
-  "composite": 22.4,
+  "composite": 22.1,
   "components": [
    {
     "component": "Memory Pricing",
@@ -822,7 +822,7 @@
    },
    {
     "component": "Equity",
-    "score": -98.0
+    "score": -100.0
    },
    {
     "component": "Supply / Inventory News",
@@ -884,13 +884,13 @@
     "evidence": [
      {
       "component": "Equity",
-      "score": -98.0
+      "score": -100.0
      }
     ],
     "unavailable": []
    }
   ],
-  "read": "범용 DRAM 현물이 계약가(Sep-2026 기준)보다 높은 STRONG PREMIUM 구간이고, 프리미엄 방향은 COMPRESSING 이다. 수출은 10월 1~20일 기준 전년 대비 증가가 이어지고 있어 가격 강세가 달러 매출로 넘어가는 신호와 맞는다. 다만 공개 계약가가 오래돼 현물 강세가 계약가로 전이됐는지는 아직 확인 전 단계다."
+  "read": "범용 DRAM 현물은 DDR4 8Gb 가 한 주 새 1.9% 더 내리고 DDR4 제품의 현물 프리미엄도 줄어 약세가 이어졌으며, DDR5 16Gb 만 소폭 올랐다. 계약가와 HBM 은 단단하나 계약가 기준월이 9월이라 최근 현물 약세가 반영되지 않았다. 주가는 한국에서 삼성전자와 SK하이닉스가 전날 급등분을 하루 만에 모두 반납해 한 달 낙폭이 다시 깊어졌고, 마이크론도 한 달 33.5% 내려 메모리 3사가 모두 현물 약세와 같은 방향이다. 낸드 가격 하락이 D램으로 번질지를 두고 사이클 논쟁도 커졌다."
  },
  "news": [
   {
@@ -1021,9 +1021,9 @@
  "displayed_elsewhere": {
   "numbers": [
    4.91,
-   -7.5,
-   45,
-   22.4
+   -3.6,
+   40,
+   22.1
   ],
   "note": "다른 칸에 이미 보이는 숫자 — 다시 나열하지 않는다"
  }

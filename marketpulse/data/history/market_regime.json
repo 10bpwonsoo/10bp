@@ -5064,6 +5064,97 @@
     "merged": []
    },
    "corrections": []
+  },
+  {
+   "snapshot_date": "2026-11-25",
+   "tab_id": "market_regime",
+   "state": "GEOPOLITICAL_RISK",
+   "state_label": "Geopolitical Risk",
+   "state_label_ko": "",
+   "state_score": -17.46553346373273,
+   "confidence": 40.0,
+   "component_scores": {
+    "RiskAppetite": -20.676735748617848,
+    "Volatility": -9.540565164975053,
+    "Growth": -5.838681202938742,
+    "Credit": -44.1597688783516,
+    "KoreaFlow": null,
+    "news": -14.498049457489374,
+    "factor:Growth": -0.117,
+    "factor:Inflation": 0.48,
+    "factor:Rates": -0.193,
+    "factor:USD": -0.519,
+    "factor:Liquidity": -0.456,
+    "factor:RiskAppetite": -0.42,
+    "factor:Credit": 0.948,
+    "factor:Volatility": 0.191,
+    "factor:China": 0.061
+   },
+   "key_drivers": [
+    "브렌트 원유 +1.1σ",
+    "Aerospace & Defense +0.8σ",
+    "WTI 원유 +0.7σ"
+   ],
+   "data_coverage": 0.7833333333333333,
+   "data_asof": "2026-11-25T22:30:00Z",
+   "missing_components": [
+    "KoreaFlow"
+   ],
+   "history_source": "RECORDED",
+   "calculated_at": "2026-11-27T01:54:37.951404Z",
+   "model_version": "market_regime_v0.1.0",
+   "logic_version": "rules_f647efd0",
+   "is_final": true,
+   "is_locked": true,
+   "is_backfilled": false,
+   "finalization": "daily_close",
+   "summary": "GEOPOLITICAL_RISK 40% · 온도 -17",
+   "payload": {
+    "date": "2026-11-25",
+    "as_of": "2026-11-25T22:30:00Z",
+    "label": "GEOPOLITICAL_RISK",
+    "secondary_label": null,
+    "confidence": 40.0,
+    "price_temperature": -19.443856134561635,
+    "news_temperature": -14.498049457489374,
+    "composite": -17.46553346373273,
+    "news_events": 37,
+    "thermo_confidence": 94.50541933229277,
+    "components": {
+     "RiskAppetite": -20.676735748617848,
+     "Volatility": -9.540565164975053,
+     "Growth": -5.838681202938742,
+     "Credit": -44.1597688783516,
+     "KoreaFlow": null,
+     "news": -14.498049457489374
+    },
+    "band": "neutral",
+    "band_label": "중립",
+    "coverage": 0.7833333333333333,
+    "factors": {
+     "Growth": -0.117,
+     "Inflation": 0.48,
+     "Rates": -0.193,
+     "USD": -0.519,
+     "Liquidity": -0.456,
+     "RiskAppetite": -0.42,
+     "Credit": 0.948,
+     "Volatility": 0.191,
+     "China": 0.061
+    },
+    "hypotheses": {
+     "GEOPOLITICAL_RISK": 0.625
+    },
+    "drivers": [
+     "브렌트 원유 +1.1σ",
+     "Aerospace & Defense +0.8σ",
+     "WTI 원유 +0.7σ"
+    ],
+    "market_date": null,
+    "storage_date": null,
+    "merged": []
+   },
+   "corrections": []
   }
  ]
 }

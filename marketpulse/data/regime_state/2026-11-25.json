@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-25",
+ "snapshot_date": "2026-11-26",
+ "logic_version": "same_day_v1",
+ "observation": {
+  "candidate": "geopolitical",
+  "candidate_state": "GEOPOLITICAL_RISK",
+  "raw_signal": "GEOPOLITICAL_RISK",
+  "factors": {
+   "Growth": -0.117,
+   "Inflation": 0.48,
+   "Rates": -0.193,
+   "USD": -0.519,
+   "Liquidity": -0.456,
+   "RiskAppetite": -0.42,
+   "Credit": 0.948,
+   "Volatility": 0.191,
+   "China": 0.061
+  },
+  "equity_broad": {
+   "us": -0.015,
+   "kr": -0.005
+  }
+ },
+ "state": {
+  "logic_version": "same_day_v1",
+  "snapshot_date": "2026-11-26",
+  "date": "2026-11-25",
+  "official": "geopolitical",
+  "previous_official": "neutral",
+  "candidate": "geopolitical",
+  "candidate_state": "GEOPOLITICAL_RISK",
+  "raw_signal": "GEOPOLITICAL_RISK",
+  "support": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 1,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "geopolitical",
+  "entry_streak": 1,
+  "entry_required": 1,
+  "entry_confirmed": true,
+  "changed": true,
+  "change_kind": "entry",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "수요일 브렌트유가 3.51% 뛰어 유가 Trigger 를 넘었고 방산과 에너지가 지수보다 강해, 어제 자격 후보가 없던 자리에 지정학 위험이 유일한 후보로 들어왔습니다. 같은 날 하이일드 스프레드가 벌어지고 코스피가 6.16% 급락해 신용과 위험선호 factor 도 함께 나빠졌습니다. 금이 내리고 변동성 반응이 작아 확신은 낮지만, 오늘 선택에 따라 공식 레짐은 Neutral / Mixed 에서 Geopolitical 로 바뀌었습니다.",
+  "source": "session",
+  "generated_at": "2026-11-27T01:54:37.998278+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-27T01:54:37.998326+00:00"
+}

@@ -99,7 +99,7 @@
   {
    "key": "equity",
    "label": "Equity",
-   "score": -98.0,
+   "score": -100.0,
    "weight": 0.6,
    "side": "constraint",
    "what": "메모리 3사(SK hynix · Samsung Electronics · Micron) 1개월 주가 수익률의 평균 — 주가의 방향과 크기"
@@ -140,8 +140,8 @@
    },
    {
     "name": "Micron",
-    "ret_1m_pct": null,
-    "confirmation": "NO DATA"
+    "ret_1m_pct": -33.5,
+    "confirmation": "CONFIRMED"
    }
   ]
  },
@@ -261,18 +261,13 @@
    "item": "EPS Revision",
    "status": "UNAVAILABLE",
    "last": ""
-  },
-  {
-   "item": "Micron 주가",
-   "status": "UNAVAILABLE",
-   "last": ""
   }
  ],
  "path": {
   "note": "국면은 composite 구간으로 정한다 — 같은 EARLY RECOVERY 라도 아래에서 올라온 것과 위에서 내려온 것은 다르다",
   "previous_state": "Upswing",
   "days_in_current_state": 1,
-  "composite_change_1w": -3.0,
+  "composite_change_1w": -3.3,
   "recent": [
    {
     "date": "2026-11-19",

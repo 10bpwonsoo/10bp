@@ -122,29 +122,6 @@
    ]
   },
   {
-   "label": "AI / SEMI RELATIVE",
-   "direction": "down",
-   "strength": -0.69,
-   "why": "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다.",
-   "evidence": [
-    {
-     "label": "AI 바스켓 / Nasdaq 상대",
-     "z": -2.5,
-     "display": ""
-    },
-    {
-     "label": "Semiconductors",
-     "z": -1.0,
-     "display": "(5일)"
-    },
-    {
-     "label": "Semiconductor Equipment / Nasdaq 상대",
-     "z": -0.8,
-     "display": "(5일)"
-    }
-   ]
-  },
-  {
    "label": "OIL",
    "direction": "up",
    "strength": 0.42,
@@ -192,6 +169,29 @@
      "label": "KOSPI",
      "z": -2.0,
      "display": "-6.16%"
+    }
+   ]
+  },
+  {
+   "label": "KOREA",
+   "direction": "down",
+   "strength": -0.61,
+   "why": "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다.",
+   "evidence": [
+    {
+     "label": "KOSPI",
+     "z": -2.0,
+     "display": "-6.16%"
+    },
+    {
+     "label": "KOSDAQ",
+     "z": -0.7,
+     "display": ""
+    },
+    {
+     "label": "USD/KRW",
+     "z": 0.5,
+     "display": "(5일)"
     }
    ]
   }
@@ -274,8 +274,8 @@
  },
  "selection_today": {
   "selected": "GEOPOLITICAL_RISK",
-  "commentary": "GEOPOLITICAL RISK 의 주요 Trigger(z(BRENT) >= 1.0, 지금 +1.13)를 넘었다. 주식 확인은 미국 CONFIRMED · 한국 CONFIRMED · Global CONFIRMED 이다.",
-  "primary_reason": "GEOPOLITICAL RISK 의 주요 Trigger 와 주식 확인이 후보 중 가장 강하다."
+  "commentary": "수요일에는 브렌트유가 크게 뛰며 방산과 에너지가 지수보다 강했고, 한국에서도 급락장 속에 방산 · 조선 · 정유가 버텼다. 유가 Trigger 를 넘은 유일한 후보라 지정학 위험 환경으로 보지만, 금이 내리고 변동성 반응도 작아 전형적인 위험 회피 모습은 아니다. 같은 날 시장의 중심은 AI 투자 불안과 물가 지표였던 만큼 확신은 낮다.",
+  "primary_reason": "브렌트유가 하루 3.51% 뛰어 유가 Trigger 를 근소하게 넘었고, 미국과 한국 모두 방산 · 에너지가 지수보다 강해 주식은 같은 방향이다. 다만 금은 내렸고 변동성 · 항공 조건은 통과하지 못해 보조 증거가 약하다."
  },
  "events": [
   {
