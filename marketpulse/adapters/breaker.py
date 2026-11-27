@@ -33,6 +33,7 @@ OUTAGE_KINDS = frozenset({"network", "timeout"})
 
 DEFAULTS: dict[str, Any] = {
     "threshold": 3,                 # 연속 실패가 이만큼 쌓이면 회로를 연다
+    "half_open_failures": 1,        # 쉬는 시간이 끝난 뒤 시험 요청이 이만큼 연속 실패하면 다시 연다(쉬는 시간 2배)
     "backoff_sec": [10.0, 20.0],    # 회로를 열기 전, 연속 실패 1 · 2번째 뒤에 공급처 전체가 쉬는 시간
     "base_cooldown_sec": 300.0,     # 회로를 처음 열 때 쉬는 시간
     "max_cooldown_sec": 3600.0,     # 2배씩 늘리는 상한
@@ -109,6 +110,7 @@ class ProviderBreaker:
             if now < until:
                 return False, f"회로 열림 — {_iso(until)} 까지 쉼(남은 {until - now:.0f}초) · 직전 {h.get('last_error')}"
             h["state"] = "half_open"
+            h["consecutive"] = 0  # 시험 요청의 연속 실패는 새로 센다
             # 쉬는 시간이 끝난 지 오래됐으면(기본 6시간) '몇 번 열렸는지' 를 잊는다 — 어제 아침의 누적이 오늘 첫 실패를 1시간짜리로 만들지 않게
             if now - until > float(self.cfg["reset_opens_after_sec"]):
                 h["opens"] = 0
@@ -152,7 +154,9 @@ class ProviderBreaker:
         h["successes"] = 0
         h["last_error"] = message or kind
         h["last_status"], h["last_retry_after"], h["last_body"] = status, retry_after, (body or "")[:120] or None
-        probing = h["state"] == "half_open"
+        # 쉬는 시간이 끝난 뒤의 시험 요청(half-open)은 half_open_failures 번까지 봐준다 — 요청의 절반쯤이 429 인 날에는
+        # 시험 요청 하나가 우연히 막힌 것만으로 쉬는 시간이 2배가 되기 때문이다(2026-11-27)
+        probing = h["state"] == "half_open" and h["consecutive"] >= int(self.cfg["half_open_failures"])
         # 공급처가 쉬라고 말했으면(Retry-After) 그 말을 따른다 — 임계를 기다리지 않고 바로 연다
         if asked is not None or probing or h["consecutive"] >= int(self.cfg["threshold"]):
             h["opens"] = int(h.get("opens") or 0) + 1

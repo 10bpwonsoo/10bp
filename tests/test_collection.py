@@ -570,3 +570,21 @@ def test_adopt_replaces_a_fallback_series_with_the_primary_providers_fresher_one
     assert c_prev.adopt_from(later_dir) == ["base:VIX"]
     st = json.loads((c_prev.out / "input_status.json").read_text(encoding="utf-8"))["series"]["base"]["VIX"]
     assert st["source"] == "yahoo:^VIX" and st["last_bar"][:10] == "2026-11-24"                 # 11/25 07:30 KST 기준으로 하루 더 최신
+
+
+def test_half_open_probe_gets_a_second_chance_when_configured(tmp_path):
+    """요청의 절반쯤이 429 인 날: 시험 요청 하나가 막힌 것만으로 쉬는 시간이 2배가 되지 않는다. 두 번 연속 막히면 다시 연다."""
+    clk = Clock()
+    b = ProviderBreaker(tmp_path / "b.json", config={"threshold": 3, "backoff_sec": [10, 20], "half_open_failures": 2}, now=clk.now)
+    for _ in range(3):
+        b.failure(HOST, kind="http_429", status=429)
+    clk.t += 301
+    assert b.allow(HOST) == (True, "half_open")
+    assert b.failure(HOST, kind="http_429", status=429) == {"opened": False, "pause_sec": 10.0}    # 한 번은 봐준다
+    b.success(HOST)
+    assert b.snapshot()[HOST]["state"] == "closed"
+    for _ in range(3):
+        b.failure(HOST, kind="http_429", status=429)
+    clk.t += 601; b.allow(HOST)
+    b.failure(HOST, kind="http_429", status=429)
+    assert b.failure(HOST, kind="http_429", status=429)["opened"]                                 # 두 번 연속이면 다시 연다
