@@ -397,8 +397,11 @@ class Collector:
                 ins, row = by_id.get(iid), self.status["series"][g].get(iid) or {}
                 if ins is None or not self.have(g, iid) or (int(row.get("tries", 0)) >= mx and not force) or self._now() - t0 > budget:
                     continue
-                if str(row.get("provider")) in ("csv", "csv_base", "github"):
-                    continue  # 원래 늦는 경로 — 다시 받아도 같다
+                specs = plan.specs.get(iid) or []
+                first = str((specs[0] if specs else {}).get("provider") or "")
+                if str(row.get("provider")) in ("csv", "csv_base", "github") and str(row.get("provider")) == first:
+                    continue  # 원래 늦는 경로가 첫 공급처다 — 다시 받아도 같다
+                # 늦는 경로가 대체로 쓰인 것이면(첫 공급처가 막혀 건너뛴 날 — 2026-11-28 환율 4개가 11/20 치로 남았다) 첫 공급처부터 다시 받는다
                 cp = self._cp(g, iid)
                 old_text, old_row = cp.read_text(encoding="utf-8"), dict(row)
                 old_last = self._last_closed(iid, old_text)

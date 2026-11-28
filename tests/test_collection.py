@@ -572,6 +572,26 @@ def test_adopt_replaces_a_fallback_series_with_the_primary_providers_fresher_one
     assert st["source"] == "yahoo:^VIX" and st["last_bar"][:10] == "2026-11-24"                 # 11/25 07:30 KST 기준으로 하루 더 최신
 
 
+def test_a_slow_fallback_taken_while_the_first_provider_was_blocked_is_refetched_from_the_first_provider(tmp_path):
+    """2026-11-28: Yahoo 가 막힌 아침에 환율이 며칠 늦는 GitHub 경로로 들어왔고, 낮에 다시 돌려도 '원래 늦는 경로' 라며 건너뛰었다. 첫 공급처가 따로 있으면 다시 받는다."""
+    late = series("FX", "github:exchange-rates/daily.csv[South Korea]", weekdays(date(2026, 11, 18), 30), hh=0, mm=0)
+    fresh = series("FX", "yahoo:KRW=X", weekdays(date(2026, 11, 24), 30), hh=0, mm=0)
+    specs = {"FX": [{"provider": "yahoo", "symbol": "KRW=X"}, {"provider": "github", "path": "exchange-rates/daily.csv"}]}
+    c1, _, _, _ = make_collector(tmp_path, {"FX": [("github", late)]}, specs=specs)
+    c1.run(news=False)
+    assert c1.status["input_status"]["stale"]["base"] == ["FX"] and c1.status["series"]["base"]["FX"]["provider"] == "github"
+    c2, _, _, _ = make_collector(tmp_path, {"FX": [("yahoo", fresh)]}, specs=specs)
+    c2.run(news=False)
+    assert c2.status["runs"][-1]["refetched_stale"] == ["base:FX"] and c2.load_group("base")["FX"].meta.source == "yahoo:KRW=X"
+    assert c2.status["input_status"]["stale"]["base"] == []
+    # 늦는 경로가 첫 공급처인 계열은 그대로 건너뛴다
+    c3, fake3, _, _ = make_collector(tmp_path / "x", {"FX": [("github", late)]}, specs={"FX": [{"provider": "github", "path": "exchange-rates/daily.csv"}]})
+    c3.run(news=False); n = len(fake3.calls)
+    c4, fake4, _, _ = make_collector(tmp_path / "x", {"FX": [("github", late)]}, specs={"FX": [{"provider": "github", "path": "exchange-rates/daily.csv"}]})
+    c4.run(news=False)
+    assert fake4.calls == [] and n == 1
+
+
 def test_half_open_probe_gets_a_second_chance_when_configured(tmp_path):
     """요청의 절반쯤이 429 인 날: 시험 요청 하나가 막힌 것만으로 쉬는 시간이 2배가 되지 않는다. 두 번 연속 막히면 다시 연다."""
     clk = Clock()
