@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-13",
+ "snapshot_date": "2026-11-16",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "policy",
+  "candidate_state": "POLICY_DRIVEN",
+  "raw_signal": "POLICY_DRIVEN",
+  "factors": {
+   "Growth": -0.465,
+   "Inflation": 0.173,
+   "Rates": 2.08,
+   "USD": 0.233,
+   "Liquidity": 1.028,
+   "RiskAppetite": -0.183,
+   "Credit": -1.637,
+   "Volatility": 0.251,
+   "China": -0.974
+  },
+  "equity_broad": {
+   "us": -0.024,
+   "kr": 0.157
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-16",
+  "date": "2026-11-13",
+  "official": "policy",
+  "previous_official": "neutral",
+  "candidate": "policy",
+  "candidate_state": "POLICY_DRIVEN",
+  "raw_signal": "POLICY_DRIVEN",
+  "support": "NA",
+  "support_reasons": [
+   "Neutral / Mixed 는 해제할 방향이 없다 — 새 후보의 진입 확인만 본다"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 2,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "policy",
+  "entry_streak": 2,
+  "entry_required": 2,
+  "entry_confirmed": true,
+  "changed": true,
+  "change_kind": "entry",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "목요일 미국채 5년물과 10년물이 하루 2σ 넘게 뛰고 기대인플레이션도 함께 올라 금리 factor 가 이틀째 기준을 크게 웃돌았습니다. 금요일 미국 주식은 성장주·기술주가 약하고 금융주가 버텨 금리 상승에 맞는 rotation 이 확인됐고, 신용 스프레드와 변동성은 안정적이라 위험 회피가 아니라 정책·금리 재평가가 시장을 이끄는 환경으로 봤습니다. Policy Driven 이 서로 다른 거래일 2일 연속 선택돼 공식 레짐을 Neutral / Mixed 에서 Policy Driven 으로 바꿨습니다.",
+  "source": "session",
+  "generated_at": "2026-11-15T22:57:40.397533+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-15T22:57:40.397574+00:00"
+}

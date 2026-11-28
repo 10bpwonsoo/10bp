@@ -1,0 +1,397 @@
+{
+ "snapshot_date": "2026-11-21",
+ "market_date": "2026-11-20",
+ "cutoff": "2026-11-21T07:30:00+09:00",
+ "transition": {
+  "kind": "entry",
+  "from": "Growth",
+  "to": "Liquidity Stress / Risk-Off",
+  "exit_streak": 0,
+  "exit_required": 1,
+  "entry_streak": 1,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-16",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Policy Driven",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-17",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "WEAKENING"
+  },
+  {
+   "date": "2026-11-18",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-19",
+   "candidate": "Growth",
+   "official": "Growth",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-20",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": -1.34,
+   "today": -2.47
+  },
+  "Liquidity": {
+   "prev": -0.05,
+   "today": -1.05
+  },
+  "Rates": {
+   "prev": -0.45,
+   "today": -0.7
+  },
+  "Inflation": {
+   "prev": -1.34,
+   "today": -0.31
+  },
+  "Credit": {
+   "prev": 0.4,
+   "today": 0.53
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "CREDIT STRESS",
+   "direction": "up",
+   "strength": 0.97,
+   "why": "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 1.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX",
+     "z": 3.8,
+     "display": "+26.20% (5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": -4.0,
+     "display": "-3.70% (5일)"
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.97,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -4.0,
+     "display": "-3.70% (5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -3.6,
+     "display": "-5.61%"
+    },
+    {
+     "label": "Russell 2000",
+     "z": -3.7,
+     "display": "-2.76% (5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": -1.8,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "up",
+   "strength": 0.98,
+   "why": "주식·채권 변동성이 같이 오른다 — 포지션 축소 압력이 자산군을 넘어 번진다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": 3.8,
+     "display": "+26.20% (5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": 1.9,
+     "display": "+10.69%"
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": 2.2,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "AI / SEMI RELATIVE",
+   "direction": "down",
+   "strength": -0.83,
+   "why": "AI 가 시장보다 더 빠진다 — 베타가 아니라 AI 고유 요인을 의심한다.",
+   "evidence": [
+    {
+     "label": "AI 바스켓 / Nasdaq 상대",
+     "z": -2.0,
+     "display": ""
+    },
+    {
+     "label": "Semiconductors",
+     "z": -3.1,
+     "display": "-10.55%"
+    },
+    {
+     "label": "Semiconductor Equipment / Nasdaq 상대",
+     "z": -0.8,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "KOREA",
+   "direction": "down",
+   "strength": -0.64,
+   "why": "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다.",
+   "evidence": [
+    {
+     "label": "KOSPI",
+     "z": -1.8,
+     "display": ""
+    },
+    {
+     "label": "KOSDAQ",
+     "z": -2.0,
+     "display": "-5.71%"
+    },
+    {
+     "label": "USD/KRW",
+     "z": -0.2,
+     "display": ""
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "S&P 500",
+   "z": -3.6,
+   "change": "-3.70%"
+  },
+  {
+   "label": "Nasdaq 100",
+   "z": -3.6,
+   "change": "-5.61%"
+  },
+  {
+   "label": "VIX",
+   "z": 2.1,
+   "change": "+26.20%"
+  },
+  {
+   "label": "KOSPI",
+   "z": -1.8,
+   "change": ""
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -4.0,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.9,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": 3.8,
+   "arrow": "↑↑"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 0.5,
+   "arrow": "→"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -0.6,
+   "arrow": "→"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -1.5,
+   "arrow": "↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "CONTRADICTED",
+   "score": -0.73
+  },
+  "kr": {
+   "status": "CONTRADICTED",
+   "score": -0.51
+  }
+ },
+ "selection_today": {
+  "selected": "RISK_OFF",
+  "commentary": "금요일 미국 주식은 AI · 반도체 투매가 이어지며 3대 지수와 소형주가 모두 급락했고 주식과 채권 변동성이 함께 뛰었다. 한국도 반도체 대형주 급락과 외국인 이탈로 코스피와 코스닥이 나란히 5%대 내렸다. 두 시장에서 주식 약세가 넓고 강하게 확인돼 위험 회피 환경으로 보며, 성장 우려보다 위험선호 붕괴가 앞선 날이다.",
+  "primary_reason": "위험선호 factor 가 기준을 크게 밑돌고 변동성과 신용 조건이 함께 통과했다. 미국과 한국에서 지수가 동반 급락하고 방어 업종이 상대 강세라 broad equity weakness 가 두 시장에서 강하게 확인된다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "\"믿었던 AI마저\"…기술주 투매에 나스닥 5% 급락 [뉴욕증시 브리핑]",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -45,
+   "summary": "기술주 투매로 나스닥이 5% 급락(뉴욕증시 브리핑, 제목)."
+  },
+  {
+   "title": "‘검은 금요일’ 코스피·코스닥 나란히 5%대 급락…3거래일 만 ‘5천피’ 붕괴",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": -40,
+   "summary": "코스피·코스닥이 나란히 5%대 급락해 사흘 만에 5000선이 무너짐 — 외국인·기관이 유가증권시장에서 2조원 넘게 순유출, 반도체 대형주 약세(요약)."
+  },
+  {
+   "title": "앤트로픽 잔칫날, 증시는 '검은 금요일'",
+   "themes": [
+    "rates",
+    "semiconductor",
+    "ai"
+   ],
+   "sentiment": -35,
+   "summary": "앤트로픽 상장일에 미국 통화긴축 우려가 다시 떠오르고 반도체 수출 통제 이슈가 겹쳐 아시아 증시가 급락(요약)."
+  },
+  {
+   "title": "[마감시황]코스피 4869 마감…외국인 1조2682억원 순매도, 양 시장 매도 사이드카",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": -35,
+   "summary": "코스피 4869 마감 — 외국인 1조2682억원 순유출, 두 시장에서 프로그램 호가 효력정지(사이드카) 발동(마감시황, 제목)."
+  },
+  {
+   "title": "“이런 블랙프라이데이 최악입니다”…비트코인·금까지 죄다 추락",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": -35,
+   "summary": "미국 추가 금리 인상 가능성이 부상해 비트코인이 8300만원대로 내려가고 금값은 14개월 만에 최저(요약)."
+  },
+  {
+   "title": "앤트로픽 쏠림·대중규제 우려 … 반도체株 곤두박질",
+   "themes": [
+    "semiconductor",
+    "ai",
+    "china"
+   ],
+   "sentiment": -35,
+   "summary": "AI 투자 회의론에 미국 추가 금리 인상 우려와 대중 규제 우려가 더해져 반도체주 급락(요약)."
+  },
+  {
+   "title": "코스피 이어 코스닥도 매도 사이드카…삼성전자·하이닉스 6%대 급락",
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "sentiment": -35,
+   "summary": "코스닥에도 사이드카 발동 — 삼성전자·SK하이닉스 6%대 급락(제목)."
+  },
+  {
+   "title": "엔비디아 이어 AMD까지…\"AI서버 중국으로 넘어가\" 공매도 보고서 발칵",
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "sentiment": -30,
+   "summary": "AMD 의 AI 서버가 중국으로 넘어갔다는 하락 베팅 투자사의 보고서가 나옴(제목)."
+  }
+ ]
+}

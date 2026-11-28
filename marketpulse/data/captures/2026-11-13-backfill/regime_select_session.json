@@ -1,0 +1,14 @@
+{
+ "selected_regime": "POLICY_DRIVEN",
+ "regime_confidence": 55,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "10월 물가 발표 뒤 2년물이 앞장선 금리 급등으로 금리 factor 가 기준을 크게 넘었고 달러도 강해졌지만, 주식의 금리 민감 rotation 은 미국 · 한국 모두 부분적으로만 확인된다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "PARTIAL",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "공식 regime 은 Neutral / Mixed 이고 직전 Daily Snapshot 의 진입 후보는 Risk-On 1/2 였다. 오늘 Policy Driven 이 선택돼 Risk-On 진입은 끊기고 Policy Driven 진입 확인 1일째다.",
+ "data_coverage": 89,
+ "selection_rationale": "자격 후보는 Policy Driven(Rates +2.27, 기준 1.2) 하나다. 달러 강세 · 변동성 상승 · 물가 factor 안정이 support 를 주지만 성장 factor 가 조용하지 않아 보조 조건 하나가 빠졌다. 미국은 은행 상대강도가 약하고 유틸리티가 밀려 금리 상승 rotation 이 엇갈리고, 한국은 인터넷 · 성장주가 약한 점만 금리 상승과 맞는다. 미국채는 11/10 관측이라 수요일 주식과 같은 날 반응이 아니고, 엔비디아 CEO 해임 사태가 같은 날 주식을 흔들어 금리 요인만으로 주식 움직임을 설명하기 어렵다. 그래서 확신은 정량값보다 낮게 둔다.",
+ "commentary": "10월 물가가 예상보다 높게 나온 날 미국채는 2년물이 크게 뛰며 연준 정책 경로를 다시 긴축 쪽으로 매겼고, 달러도 강해졌다. 수요일 미국 주식은 엔비디아 CEO 해임 사태 속에 소폭 밀리고 소형주가 더 약했으며 한국도 반등이 멈췄다. 정책 · 금리가 시장을 이끄는 환경이 가장 자연스럽지만, 주식 쪽 확인은 아직 부분적이다."
+}

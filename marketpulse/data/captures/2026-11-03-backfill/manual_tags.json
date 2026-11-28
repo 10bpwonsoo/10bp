@@ -1,0 +1,463 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/03 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/02 00:50Z · 11/03 수집분을 합쳤다.",
+ "tags": {
+  "3544335220a3c990": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 5
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 10월 16% 하락 — 증권가 '매도세 정점 근접'(제목)."
+  },
+  "2374501727d3d52d": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "KB: SK하이닉스 4분기 영업이익 사상 첫 100조 원 돌파 전망(제목)."
+  },
+  "9e145dc52957f770": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 5,
+    "shareholder_return": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "키움: 반도체 자사주 매입은 하단 지지 효과, 반등은 외국인 수급이 관건(제목)."
+  },
+  "033d8d355292c342": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 15
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "바이낸스 63억 달러 해킹 뒤 재개장 — 출금 급증(제목)."
+  },
+  "12b8a941ed0089cf": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 1.62% 하락 출발, 코스닥도 하락(속보 제목)."
+  },
+  "a7385c301e51cf7f": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'인텔 쇼크'에 삼성전자·기아 약세, 한화오션·로봇주 반등(장 초반 제목)."
+  },
+  "0b066011d6851060": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 5
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 주가지수 선물, 10월 급락 뒤 소폭 상승 — 실적·선거 주목(제목)."
+  },
+  "a3c2accc0cdbb002": {
+   "themes": [
+    "shareholder_return",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 30,
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "SK스퀘어 역대 최대 주주환원 — 장중 5.8% 급등(제목)."
+  },
+  "abb3000bf0053767": {
+   "themes": [
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "ai": 20,
+    "korea_governance": 5
+   },
+   "theme_direction": {
+    "ai": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "long",
+   "event_type": "policy",
+   "reason": "한국 2027년 예산 820.9조 원(+12.8%), 소버린 AI 에 21.3조 원(요약)."
+  },
+  "39235dc6bb7cc055": {
+   "themes": [
+    "rates",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "rates": 10,
+    "ai": -10
+   },
+   "theme_direction": {
+    "rates": "up",
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "Warsh 의장 발언으로 본 금리와 AI 투자의 연결(제목)."
+  },
+  "d6673ff604a2472d": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 30,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 2%대 상승 마감, 5800선 탈환(속보 제목)."
+  },
+  "6b65b85b178ce187": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'검은 월요일' 없었다 — 코스피 상승 전환(제목)."
+  },
+  "be67edd1c9a621a2": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "ai": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "인텔 실적 평가가 달라지며 코스피 2% 반등(제목)."
+  },
+  "5c750208735fc793": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30,
+    "shareholder_return": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "KB증권: SK하이닉스 사상 최대 주주환원이 역사적 저평가 해소 전환점 — 목표주가 350만 원(요약)."
+  },
+  "bd463410ac9f6b4f": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 15,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "저PBR 명단 공개 첫날 해당 종목 70% 이상 상승 마감(제목)."
+  },
+  "150fe837c4bf6cae": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 50,
+   "horizon": "long",
+   "event_type": "regulation",
+   "reason": "증권 결제주기 2028년 T+2→T+1 단축 로드맵 공개(요약)."
+  },
+  "c3470aad0002bd93": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 미국 IPO 에서 일본 투자자 대상 4.7조 원 조달 — 해외기업 역대 최대(제목)."
+  },
+  "2ff0ecd9871e96b0": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스 급반등 뒤 전망(제목)."
+  },
+  "326ecc660e52f20a": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 30,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 인텔 쇼크 딛고 2% 상승 — 하락 출발 뒤 반등, 삼성전자·SK하이닉스 동반 강세(요약)."
+  },
+  "fc63d4f98d70fe5f": {
+   "themes": [
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 30
+   },
+   "theme_direction": {
+    "shareholder_return": "up"
+   },
+   "sentiment": 20,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "SK스퀘어 4.3조 원 주주환원 — SK하이닉스 배당 수입 70% 환원(요약)."
+  },
+  "1659f97222184681": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "연기금 이틀간 1조 원 넘게 순매수, 인텔 쇼크에도 코스피 반등(요약)."
+  },
+  "8076f7a47f100327": {
+   "themes": [
+    "ai",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "consumer": 15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "consumer": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "애플 분기 매출 154조 원 — 아이폰 호조로 예상 상회(제목)."
+  },
+  "8690a60267ad4fb2": {
+   "themes": [
+    "ai",
+    "oil"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "oil": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "oil": "down"
+   },
+   "sentiment": -20,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "국제유가 급락에도 기술주 매도 지속 — 나스닥 1.07% 하락(제목)."
+  },
+  "6754479f10464ce8": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽, 일본에서 최대 35억 달러 공모 — 스페이스X IPO 상회(요약)."
+  },
+  "f7d04870b894df0a": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "전문가 8인 11월 전망 — 코스피 전망치 대폭 하향, 중간선거 뒤 반등론(요약)."
+  }
+ }
+}

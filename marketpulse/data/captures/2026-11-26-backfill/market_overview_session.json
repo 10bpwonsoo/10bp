@@ -1,0 +1,226 @@
+{
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/26 07:30 KST 기준) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. (입력이 모자라 11/26 아침에는 PARTIAL 로 저장했고, 11/27 에 입력을 채운 뒤 같은 기준 시각으로 확정했다.) EXCLUDED 데이터는 근거로 쓰지 않았다.",
+ "headline": "유가 급등에 지정학 레짐, 한국은 반도체 급락",
+ "market_view": "수요일 미국 주식은 근원 PCE 물가가 예상을 웃돌고 AI 투자 불안이 이어지면서 장중 크게 흔들린 끝에 대형주와 기술주가 소폭 내렸고, 소형주와 금융, 방산만 올랐습니다. 한국은 전날 미국 반도체 급락을 뒤늦게 반영해 코스피가 6.16% 급락했고, 삼성전자와 SK하이닉스가 전날 급등분을 모두 되돌렸습니다. 브렌트유가 크게 뛰어 방산과 에너지가 지수보다 강했고, 하이일드 스프레드가 벌어져 신용 부담도 다시 커졌습니다. 유가 Trigger 를 넘은 지정학 위험이 유일한 후보라 공식 레짐은 Neutral / Mixed 에서 Geopolitical 로 바뀌었지만, 금이 내리고 변동성 반응이 작아 확신은 낮습니다.",
+ "labels": {
+  "regime": "Geopolitical",
+  "equity": "Weak",
+  "macro": "Headwind",
+  "risk": "Elevated"
+ },
+ "state_summary": "유가발 지정학 레짐, 확신은 낮고 주식은 약세",
+ "regime_read": "브렌트유 급등으로 지정학 위험이 유일한 자격 후보가 되어 공식 레짐이 Neutral / Mixed 에서 Geopolitical 로 바뀌었습니다. 방산과 에너지는 같은 방향이지만 금이 내리고 변동성 반응이 작아, 전형적인 위험 회피라기보다 유가와 신용 부담이 겹친 약세장에 가깝습니다.",
+ "key_drivers": [
+  {
+   "name": "유가 급등",
+   "direction": "NEGATIVE",
+   "strength": "STRONG",
+   "read": "브렌트유가 하루 만에 크게 뛰어 물가 부담과 에너지·방산 강세로 이어졌다"
+  },
+  {
+   "name": "한국 반도체 급락",
+   "direction": "NEGATIVE",
+   "strength": "STRONG",
+   "read": "코스피가 전날 급등분을 모두 반납했고 반도체 대형주가 낙폭을 이끌었다"
+  },
+  {
+   "name": "신용 스프레드 확대",
+   "direction": "NEGATIVE",
+   "strength": "MODERATE",
+   "read": "하이일드 스프레드가 다시 벌어져 주식 약세가 금융여건 악화와 함께 나왔다"
+  },
+  {
+   "name": "물가 지표 상회",
+   "direction": "NEGATIVE",
+   "strength": "MODERATE",
+   "read": "근원 PCE 물가가 예상을 웃돌아 내년 정책 경로에 대한 부담이 커졌다"
+  },
+  {
+   "name": "장기금리 하락",
+   "direction": "POSITIVE",
+   "strength": "MODERATE",
+   "read": "장기금리는 한 주 동안 내려와 있지만 화요일 관측이라 물가 지표는 아직 반영되지 않았다"
+  }
+ ],
+ "equity_view": {
+  "global_read": "미국은 대형주와 기술주가 소폭 내리고 소형주와 금융, 방산이 올라 지수 안에서 방향이 갈렸습니다. 한국은 반도체 대형주가 급락해 코스피가 크게 밀렸고 방산과 헬스케어만 올랐습니다. 두 시장 모두 방산이 지수보다 강해 지정학 레짐과 같은 방향이지만, 지수 약세의 중심은 반도체와 AI 입니다.",
+  "us": {
+   "headline": "대형 기술주 약세, 소형주와 방산은 강세",
+   "why": "방산과 에너지가 지수보다 강해 지정학 레짐과 같은 방향이지만 대형 기술주는 약합니다.",
+   "leadership": [
+    "Financials",
+    "Defense"
+   ]
+  },
+  "korea": {
+   "headline": "반도체 급락, 방산과 헬스케어만 상승",
+   "why": "방산이 급락장에서도 올라 지정학 레짐과 같은 방향이고, 지수 낙폭은 반도체 대형주에 몰렸습니다.",
+   "leadership": [
+    "Defense",
+    "Healthcare"
+   ]
+  },
+  "divergence_label": "US > KOREA",
+  "divergence": "미국은 소폭 하락에 그쳤고 한국은 급락해 낙폭 차이가 컸습니다. 한국의 급락은 전날 미국 반도체 급락을 하루 늦게 반영한 부분이 큽니다."
+ },
+ "rates_view": {
+  "headline": "장기금리는 내려와 있고 물가 지표는 반영 전",
+  "summary": "미국채는 화요일까지 장기물이 한 주 동안 내려와 있고, 실질금리와 기대인플레이션이 비슷하게 기여했습니다.",
+  "equity_impact": "NEUTRAL",
+  "equity_impact_read": "낮아진 장기금리는 할인율 부담을 덜어 주지만 예상을 웃돈 물가 지표가 아직 반영되지 않아, 오늘 주식 방향은 금리보다 유가와 반도체가 정했습니다."
+ },
+ "cross_asset_view": {
+  "headline": "유가는 뛰고 신용은 벌어지고 금은 내림",
+  "summary": "유가 상승과 신용 스프레드 확대가 부담이고, 금리와 달러는 내려 위험자산을 일부 받칩니다.",
+  "support": [
+   "Rates",
+   "USD"
+  ],
+  "risk": [
+   "Oil",
+   "Credit",
+   "Equity"
+  ],
+  "read": "유가와 신용이 부담 쪽이고 금리와 달러가 받치는 쪽이며, 금이 내려 안전자산 쏠림은 확인되지 않습니다."
+ },
+ "ai_semiconductor_view": {
+  "headline": "AI 는 이틀째 약세, 반도체 사이클은 한 단계 내려옴",
+  "summary": "AI 바스켓은 메모리와 반도체가 이끈 약세가 이어졌고, 반도체 사이클은 HBM·수출이 강한데 현물 가격과 주가 축이 약해 EARLY RECOVERY 로 내려왔습니다.",
+  "ai": {
+   "headline": "메모리발 약세, 참여는 매우 좁음",
+   "why": "뉴스와 가격이 함께 식었고 중기 추세를 지킨 종목이 거의 없습니다.",
+   "leadership": [
+    "Software / Application"
+   ]
+  },
+  "semiconductor": {
+   "headline": "HBM·수출 강세, 현물과 주가는 약세"
+  },
+  "confirmation": {
+   "status": "WEAK",
+   "relation": "FUNDAMENTALS > PRICE",
+   "read": "HBM·수출과 현물 프리미엄은 사이클을 지지하지만, 범용 현물 가격이 약하고 메모리 대형주가 크게 내려 가격 쪽 확인이 없습니다."
+  },
+  "equity_implication": {
+   "stance": "NEUTRAL",
+   "read": "메모리 정점 논쟁으로 주가가 먼저 내려온 구간이라, 현물 가격과 메모리 주가의 안정이 확인되기 전에는 방향을 정하기 이릅니다."
+  }
+ },
+ "leadership_view": "1주 상대강도 리더는 금융·방산·유틸리티이고 에너지가 뒤따르며, 중국과 반도체가 뒤처져 기술주보다 방어적이고 유가에 민감한 업종이 앞선다",
+ "style_view": [
+  {
+   "style": "Growth",
+   "view": "NEGATIVE",
+   "read": "기술주와 반도체가 내려 Nasdaq 이 지수 가운데 약했다"
+  },
+  {
+   "style": "High Beta",
+   "view": "NEGATIVE",
+   "read": "AI 와 메모리 고베타 종목의 낙폭이 이어졌다"
+  },
+  {
+   "style": "Cyclical",
+   "view": "NEUTRAL",
+   "read": "소형주와 금융, 에너지는 올랐지만 경기민감 대 방어 비율은 방어 쪽이 앞섰다"
+  },
+  {
+   "style": "Defensive",
+   "view": "IMPROVING",
+   "read": "유틸리티와 방산이 지수 대비 강했다"
+  }
+ ],
+ "sector_view": {
+  "positive": [
+   "Defense",
+   "Financials",
+   "Energy"
+  ],
+  "watch": [
+   "Utilities",
+   "Oil",
+   "Software / Application"
+  ],
+  "negative": [
+   "Semiconductor",
+   "Memory",
+   "Korea AI Supply Chain"
+  ],
+  "read": "방산·금융·에너지가 지수보다 강했고 유틸리티와 소프트웨어는 상대적으로 버텼으며, 반도체·메모리·한국 AI 공급망이 낙폭을 이끌었다"
+ },
+ "top_risks": [
+  {
+   "risk": "반도체·메모리 변동성",
+   "level": "HIGH",
+   "read": "급등과 급락이 하루 간격으로 이어지고 메모리 정점 논쟁까지 겹쳐 지수 방향을 흔들고 있다"
+  },
+  {
+   "risk": "유가 상승과 물가",
+   "level": "ELEVATED",
+   "read": "유가가 뛰는 가운데 근원 물가가 예상을 웃돌아 물가 부담이 다시 커졌다"
+  },
+  {
+   "risk": "신용 스프레드 확대",
+   "level": "ELEVATED",
+   "read": "하이일드 스프레드가 벌어져 주식 약세가 금융여건 악화로 번질 수 있다"
+  },
+  {
+   "risk": "한국 증시 자금 이탈",
+   "level": "ELEVATED",
+   "read": "외국인이 대거 팔며 코스피가 급락했고 원화도 약해 국내 부담이 겹쳤다"
+  },
+  {
+   "risk": "한국 금리 결정",
+   "level": "MODERATE",
+   "read": "증시 급변동과 원화 약세 속에 금통위가 열려 국내 금리 방향이 변수다"
+  }
+ ],
+ "catalysts": [
+  {
+   "date": "2026-11-26",
+   "event": "BOK 금통위",
+   "why": "원화 약세와 증시 급변동 속 한국 금리 방향",
+   "sensitivity": "MEDIUM"
+  },
+  {
+   "date": "2026-12-09",
+   "event": "FOMC",
+   "why": "예상을 웃돈 물가 뒤의 점도표로 정책 경로가 드러난다",
+   "sensitivity": "HIGH"
+  },
+  {
+   "date": "2026-12-17",
+   "event": "ECB 통화정책회의",
+   "why": "유가 상승 속 유럽 정책 방향",
+   "sensitivity": "MEDIUM"
+  }
+ ],
+ "what_matters_next": [
+  {
+   "title": "지정학 레짐의 지속",
+   "condition": "유가가 Trigger 위에 머물고 방산·에너지 강세가 이어지는지",
+   "implication": "그날 선택이 곧 공식 레짐이라, 유가가 되돌아가면 다음 거래일에 바로 바뀔 수 있다"
+  },
+  {
+   "title": "금과 변동성의 반응",
+   "condition": "금이 오르고 변동성이 커지는지",
+   "implication": "둘이 따라오면 지정학 위험 환경의 보조 증거가 채워지고, 아니면 유가 단독 신호에 그친다"
+  },
+  {
+   "title": "메모리 주가의 안정",
+   "condition": "삼성전자와 SK하이닉스, 마이크론의 낙폭이 멈추는지",
+   "implication": "멈추면 한국 지수와 AI 바스켓의 부담이 줄어든다"
+  },
+  {
+   "title": "물가 지표의 금리 반영",
+   "condition": "예상을 웃돈 근원 물가가 장기금리에 얼마나 반영되는지",
+   "implication": "금리가 되오르면 내려온 할인율이 주는 지지가 약해진다"
+  }
+ ],
+ "portfolio_implication": {
+  "equity_stance": "Neutral, 유가와 신용 부담이 겹쳐 방어적으로 기우는 구간",
+  "style": "Growth · High Beta 는 Watch, Defensive 는 개선, Cyclical 은 Neutral",
+  "sector": "방산 · 에너지 · 금융 개선, 반도체 · 메모리 · 한국 AI 공급망 Watch",
+  "risk_control": "하루 변동폭이 큰 구간이라 AI·반도체 집중도와 한국 대형주 노출 관리",
+  "hedge_watch": "브렌트유 · 하이일드 스프레드 · VIX · 원/달러"
+ }
+}

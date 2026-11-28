@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-23",
+ "snapshot_date": "2026-11-24",
+ "logic_version": "same_day_v1",
+ "observation": {
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "factors": {
+   "Growth": 1.219,
+   "Inflation": -0.237,
+   "Rates": -2.246,
+   "USD": -0.065,
+   "Liquidity": -1.607,
+   "RiskAppetite": 2.289,
+   "Credit": 3.248,
+   "Volatility": -1.342,
+   "China": -0.525
+  },
+  "equity_broad": {
+   "us": 0.765,
+   "kr": -0.311
+  }
+ },
+ "state": {
+  "logic_version": "same_day_v1",
+  "snapshot_date": "2026-11-24",
+  "date": "2026-11-23",
+  "official": "risk_on",
+  "previous_official": "liquidity_stress",
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "support": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 1,
+  "exit_confirmed": false,
+  "exited_regime": "liquidity_stress",
+  "entry_regime": "risk_on",
+  "entry_streak": 1,
+  "entry_required": 1,
+  "entry_confirmed": true,
+  "changed": true,
+  "change_kind": "entry",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "월요일 미국 주식이 엔비디아 최고경영자 복귀 소식에 급반등하면서 위험선호 factor 가 -2.47 에서 2.29 로 하루 만에 뒤집혔습니다. S&P 500 과 Nasdaq 100, 반도체가 함께 크게 오르고 VIX 가 급락해 시장의 중심이 위험 회피에서 위험 선호로 옮겨 갔습니다. 오늘 선택이 Risk-On 으로 바뀌어 공식 레짐이 Liquidity Stress / Risk-Off 에서 Risk-On 으로 전환됐고, 한국 주식과 신용은 아직 이를 확인하지 않았습니다.",
+  "source": "session",
+  "generated_at": "2026-11-24T02:47:29.176295+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-24T02:47:29.176339+00:00"
+}

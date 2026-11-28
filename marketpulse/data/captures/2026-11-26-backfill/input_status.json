@@ -1,0 +1,1509 @@
+{
+ "cutoff": "2026-11-26T07:30:00+09:00",
+ "counts": {
+  "base": {
+   "OK": 47,
+   "STALE": 0,
+   "MISSING": 13
+  },
+  "universe": {
+   "OK": 94,
+   "STALE": 0,
+   "MISSING": 7
+  },
+  "basket": {
+   "OK": 52,
+   "STALE": 0,
+   "MISSING": 0
+  }
+ },
+ "gate": {
+  "verdict": "FULL",
+  "reasons": [],
+  "must_not_ok": {},
+  "core_not_ok": {},
+  "core_ok_ratio": 1.0,
+  "group_ok_ratio": {
+   "universe": 0.931,
+   "basket": 1.0
+  }
+ },
+ "closed_suspect": {},
+ "stale": {
+  "base": [],
+  "universe": [],
+  "basket": []
+ },
+ "missing": {
+  "base": [
+   "KOSPI200",
+   "KOSPI_ADV_RATIO",
+   "KOSPI_NHNL",
+   "KR10Y",
+   "KR3Y",
+   "KRX_SEMI",
+   "KR_FOREIGN_NET",
+   "KR_INSTITUTION_NET",
+   "KR_RETAIL_NET",
+   "KR_TRADING_VALUE",
+   "SPX_ADV_RATIO",
+   "VKOSPI",
+   "VKOSPI_RV_KOSPI"
+  ],
+  "universe": [
+   "CHINA_PMI",
+   "COAL_PROXY",
+   "KR10Y",
+   "NAPHTHA_PROXY",
+   "NICKEL_PROXY",
+   "SCFI",
+   "ZINC_PROXY"
+  ],
+  "basket": []
+ },
+ "series": {
+  "base": {
+   "BE10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:T10YIE",
+    "market": "FRED"
+   },
+   "BE5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:T5YIE",
+    "market": "FRED"
+   },
+   "BRENT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:BZ=F",
+    "market": "US"
+   },
+   "CHINEXT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:159915.SZ",
+    "market": "CN"
+   },
+   "COPPER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:HG=F",
+    "market": "US"
+   },
+   "CSI300_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:510300.SS",
+    "market": "CN"
+   },
+   "DXY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:DX-Y.NYB",
+    "market": "US"
+   },
+   "EURUSD": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:EURUSD=X",
+    "market": "FX"
+   },
+   "GOLD": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:GC=F",
+    "market": "US"
+   },
+   "HANGSENG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^HSI",
+    "market": "HK"
+   },
+   "HSCEI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^HSCE",
+    "market": "HK"
+   },
+   "HSTECH": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:3033.HK",
+    "market": "HK"
+   },
+   "ITA": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ITA",
+    "market": "US"
+   },
+   "JETS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:JETS",
+    "market": "US"
+   },
+   "KOSDAQ": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^KQ11",
+    "market": "KR"
+   },
+   "KOSPI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^KS11",
+    "market": "KR"
+   },
+   "MOVE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^MOVE",
+    "market": "US"
+   },
+   "NATGAS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NG=F",
+    "market": "US"
+   },
+   "NDX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^NDX",
+    "market": "US"
+   },
+   "NIKKEI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^N225",
+    "market": "JP"
+   },
+   "RUT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^RUT",
+    "market": "US"
+   },
+   "SHCOMP": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:000001.SS",
+    "market": "CN"
+   },
+   "SOXX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SOXX",
+    "market": "US"
+   },
+   "SPX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^GSPC",
+    "market": "US"
+   },
+   "SX5E": {
+    "status": "OK",
+    "last_bar": "2026-11-25T08:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^STOXX50E",
+    "market": "EU"
+   },
+   "SZCOMP": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:399001.SZ",
+    "market": "CN"
+   },
+   "TIPS10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DFII10",
+    "market": "FRED"
+   },
+   "TIPS5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DFII5",
+    "market": "FRED"
+   },
+   "US10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS10",
+    "market": "FRED"
+   },
+   "US2Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS2",
+    "market": "FRED"
+   },
+   "US30Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS30",
+    "market": "FRED"
+   },
+   "US5Y": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:DGS5",
+    "market": "FRED"
+   },
+   "USDCNH": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CNY=X",
+    "market": "FX"
+   },
+   "USDJPY": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:JPY=X",
+    "market": "FX"
+   },
+   "USDKRW": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:KRW=X",
+    "market": "FX"
+   },
+   "US_HY_OAS": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "fred:BAMLH0A0HYM2",
+    "market": "FRED"
+   },
+   "VIX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T08:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^VIX",
+    "market": "US"
+   },
+   "WTI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CL=F",
+    "market": "US"
+   },
+   "XLE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLE",
+    "market": "US"
+   },
+   "XLF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLF",
+    "market": "US"
+   },
+   "XLK": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLK",
+    "market": "US"
+   },
+   "XLU": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLU",
+    "market": "US"
+   },
+   "XLY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLY",
+    "market": "US"
+   },
+   "CYC_DEF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "derived:ratio(XLY,XLU)",
+    "market": "DERIVED"
+   },
+   "CURVE_2S10S": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "derived:spread(US10Y,US2Y)",
+    "market": "DERIVED"
+   },
+   "COPPER_GOLD": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "derived:ratio(COPPER,GOLD)",
+    "market": "DERIVED"
+   },
+   "VIX_RV_SPX": {
+    "status": "OK",
+    "last_bar": "2026-11-24T14:30:00+00:00",
+    "behind": 0,
+    "source": "derived:vol_premium(VIX,SPX)",
+    "market": "DERIVED"
+   },
+   "KOSPI200": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KRX_SEMI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR3Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR10Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VKOSPI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_FOREIGN_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_INSTITUTION_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_RETAIL_NET": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR_TRADING_VALUE": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KOSPI_ADV_RATIO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KOSPI_NHNL": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SPX_ADV_RATIO": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "VKOSPI_RV_KOSPI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   }
+  },
+  "universe": {
+   "ALUMINUM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ALI=F",
+    "market": "US"
+   },
+   "AMAT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMAT",
+    "market": "US"
+   },
+   "AMD": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMD",
+    "market": "US"
+   },
+   "ASML": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ASML",
+    "market": "US"
+   },
+   "AVGO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AVGO",
+    "market": "US"
+   },
+   "BRENT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:BZ=F",
+    "market": "US"
+   },
+   "CELLTRION": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:068270.KS",
+    "market": "KR"
+   },
+   "CJ_CJ": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:097950.KS",
+    "market": "KR"
+   },
+   "COFFEE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:KC=F",
+    "market": "US"
+   },
+   "COPPER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:HG=F",
+    "market": "US"
+   },
+   "CORN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ZC=F",
+    "market": "US"
+   },
+   "COTTON": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CT=F",
+    "market": "US"
+   },
+   "CSI300": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ASHR",
+    "market": "US"
+   },
+   "DDR5_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DDR5_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "DIESEL_PROXY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:HO=F",
+    "market": "US"
+   },
+   "DOOSAN_ENER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:034020.KS",
+    "market": "KR"
+   },
+   "DRAM_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DRAM_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "DRY_BULK_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:BDRY",
+    "market": "US"
+   },
+   "DXI": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:DXI",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "DXY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:DX-Y.NYB",
+    "market": "US"
+   },
+   "GASOLINE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:RB=F",
+    "market": "US"
+   },
+   "GOLD": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:GC=F",
+    "market": "US"
+   },
+   "HANMI_SEMI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:042700.KS",
+    "market": "KR"
+   },
+   "HANWHA_AERO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:012450.KS",
+    "market": "KR"
+   },
+   "HANWHA_OCEAN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:042660.KS",
+    "market": "KR"
+   },
+   "HBM3E_CONTRACT": {
+    "status": "OK",
+    "last_bar": "2026-07-28T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:HBM3E_CONTRACT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "HBM4_CONTRACT": {
+    "status": "OK",
+    "last_bar": "2026-10-01T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:HBM4_CONTRACT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "HD_ELECTRIC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:267260.KS",
+    "market": "KR"
+   },
+   "HD_HHI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:329180.KS",
+    "market": "KR"
+   },
+   "HMM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:011200.KS",
+    "market": "KR"
+   },
+   "HSI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T01:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^HSI",
+    "market": "HK"
+   },
+   "HYOSUNG_HEAVY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:298040.KS",
+    "market": "KR"
+   },
+   "HYUNDAI_MOBIS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:012330.KS",
+    "market": "KR"
+   },
+   "HYUNDAI_MOTOR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:005380",
+    "market": "KR"
+   },
+   "HYUNDAI_STEEL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:004020",
+    "market": "KR"
+   },
+   "IRON_ORE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:TIO=F",
+    "market": "US"
+   },
+   "ITA": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ITA",
+    "market": "US"
+   },
+   "JETS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:JETS",
+    "market": "US"
+   },
+   "JET_FUEL_PROXY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:HO=F",
+    "market": "US"
+   },
+   "KAKAO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:035720",
+    "market": "KR"
+   },
+   "KB": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:105560",
+    "market": "KR"
+   },
+   "KEPCO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:015760",
+    "market": "KR"
+   },
+   "KIA": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:000270",
+    "market": "KR"
+   },
+   "KOREAN_AIR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:003490",
+    "market": "KR"
+   },
+   "KOREA_ZINC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:010130",
+    "market": "KR"
+   },
+   "KOSPI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:코스피",
+    "market": "KR"
+   },
+   "KUMHO_PETRO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:011780",
+    "market": "KR"
+   },
+   "LGCHEM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:051910",
+    "market": "KR"
+   },
+   "LG_ENSOL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:373220",
+    "market": "KR"
+   },
+   "LIG_NEX1": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:079550",
+    "market": "KR"
+   },
+   "LITHIUM_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:LIT",
+    "market": "US"
+   },
+   "LOTTE_CHEM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:011170",
+    "market": "KR"
+   },
+   "LRCX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:LRCX",
+    "market": "US"
+   },
+   "LS_ELECTRIC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:010120",
+    "market": "KR"
+   },
+   "METALS_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:PICK",
+    "market": "US"
+   },
+   "MOVE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^MOVE",
+    "market": "US"
+   },
+   "MU": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:MU",
+    "market": "US"
+   },
+   "NAND_SPOT": {
+    "status": "OK",
+    "last_bar": "2026-10-07T00:00:00+00:00",
+    "behind": null,
+    "source": "csv:NAND_SPOT",
+    "market": "OTHER",
+    "note": "수기 · 자체 주기 계열 — 최신 여부를 여기서 판정하지 않는다(엔진이 자기 규칙으로 본다)"
+   },
+   "NATGAS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NG=F",
+    "market": "US"
+   },
+   "NAVER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:035420",
+    "market": "KR"
+   },
+   "NDX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^NDX",
+    "market": "US"
+   },
+   "NVDA": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NVDA",
+    "market": "US"
+   },
+   "PAN_OCEAN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:028670",
+    "market": "KR"
+   },
+   "PLATINUM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:PL=F",
+    "market": "US"
+   },
+   "POSCO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:005490",
+    "market": "KR"
+   },
+   "SAMSUNG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:005930.KS",
+    "market": "KR"
+   },
+   "SAMSUNG_BIO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:207940",
+    "market": "KR"
+   },
+   "SAMSUNG_EM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:009150",
+    "market": "KR"
+   },
+   "SAMSUNG_SDI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:006400",
+    "market": "KR"
+   },
+   "SHINHAN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:055550",
+    "market": "KR"
+   },
+   "SILVER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SI=F",
+    "market": "US"
+   },
+   "SKHYNIX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:000660.KS",
+    "market": "KR"
+   },
+   "SK_INNOVATION": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:096770",
+    "market": "KR"
+   },
+   "SMH": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SMH",
+    "market": "US"
+   },
+   "SOIL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:010950",
+    "market": "KR"
+   },
+   "SOX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^SOX",
+    "market": "US"
+   },
+   "SOYBEAN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ZS=F",
+    "market": "US"
+   },
+   "SPX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^GSPC",
+    "market": "US"
+   },
+   "STEEL_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SLX",
+    "market": "US"
+   },
+   "SUGAR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SB=F",
+    "market": "US"
+   },
+   "TEL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:8035.T",
+    "market": "JP"
+   },
+   "TSM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:TSM",
+    "market": "US"
+   },
+   "URANIUM_ETF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:URA",
+    "market": "US"
+   },
+   "US10Y": {
+    "status": "OK",
+    "last_bar": "2026-11-25T13:20:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^TNX",
+    "market": "US"
+   },
+   "US2Y": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:2YY=F",
+    "market": "US"
+   },
+   "USDCNH": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CNY=X",
+    "market": "FX"
+   },
+   "USDJPY": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:JPY=X",
+    "market": "FX"
+   },
+   "USDKRW": {
+    "status": "OK",
+    "last_bar": "2026-11-24T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:KRW=X",
+    "market": "FX"
+   },
+   "VIX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T08:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:^VIX",
+    "market": "US"
+   },
+   "WHEAT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ZW=F",
+    "market": "US"
+   },
+   "WTI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T05:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CL=F",
+    "market": "US"
+   },
+   "XLE": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLE",
+    "market": "US"
+   },
+   "XLF": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLF",
+    "market": "US"
+   },
+   "XLU": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:XLU",
+    "market": "US"
+   },
+   "COAL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NICKEL_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "ZINC_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "NAPHTHA_PROXY": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "SCFI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "CHINA_PMI": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   },
+   "KR10Y": {
+    "status": "MISSING",
+    "reason": "받지 못했다"
+   }
+  },
+  "basket": {
+   "AMAT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMAT",
+    "market": "US"
+   },
+   "AMD": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMD",
+    "market": "US"
+   },
+   "AMKR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMKR",
+    "market": "US"
+   },
+   "AMZN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AMZN",
+    "market": "US"
+   },
+   "ANET": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ANET",
+    "market": "US"
+   },
+   "APP": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:APP",
+    "market": "US"
+   },
+   "ARM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ARM",
+    "market": "US"
+   },
+   "ASML": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ASML",
+    "market": "US"
+   },
+   "AVGO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:AVGO",
+    "market": "US"
+   },
+   "BESI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T08:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:BESI.AS",
+    "market": "EU"
+   },
+   "CEG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CEG",
+    "market": "US"
+   },
+   "CIEN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CIEN",
+    "market": "US"
+   },
+   "CRDO": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CRDO",
+    "market": "US"
+   },
+   "CRM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:CRM",
+    "market": "US"
+   },
+   "DDOG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:DDOG",
+    "market": "US"
+   },
+   "DELL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:DELL",
+    "market": "US"
+   },
+   "DLR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:DLR",
+    "market": "US"
+   },
+   "DOOSAN_ENER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:034020",
+    "market": "KR"
+   },
+   "EQIX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:EQIX",
+    "market": "US"
+   },
+   "ETN": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ETN",
+    "market": "US"
+   },
+   "GEV": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:GEV",
+    "market": "US"
+   },
+   "GFS": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:GFS",
+    "market": "US"
+   },
+   "GOOGL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:GOOGL",
+    "market": "US"
+   },
+   "HANMI_SEMI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:042700",
+    "market": "KR"
+   },
+   "HD_ELECTRIC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:267260",
+    "market": "KR"
+   },
+   "HYOSUNG_HEAVY": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:298040",
+    "market": "KR"
+   },
+   "KLAC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:KLAC",
+    "market": "US"
+   },
+   "LRCX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:LRCX",
+    "market": "US"
+   },
+   "LS_ELECTRIC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:010120",
+    "market": "KR"
+   },
+   "META": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:META",
+    "market": "US"
+   },
+   "MRVL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:MRVL",
+    "market": "US"
+   },
+   "MSFT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:MSFT",
+    "market": "US"
+   },
+   "MU": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:MU",
+    "market": "US"
+   },
+   "NAVER": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:035420",
+    "market": "KR"
+   },
+   "NET": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NET",
+    "market": "US"
+   },
+   "NOW": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NOW",
+    "market": "US"
+   },
+   "NRG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NRG",
+    "market": "US"
+   },
+   "NVDA": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:NVDA",
+    "market": "US"
+   },
+   "ORCL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:ORCL",
+    "market": "US"
+   },
+   "PLTR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:PLTR",
+    "market": "US"
+   },
+   "PWR": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:PWR",
+    "market": "US"
+   },
+   "SAMSUNG": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:005930",
+    "market": "KR"
+   },
+   "SAMSUNG_EM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:009150",
+    "market": "KR"
+   },
+   "SKHYNIX": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "krxapi:sto/stk_bydd_trd:000660",
+    "market": "KR"
+   },
+   "SMCI": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SMCI",
+    "market": "US"
+   },
+   "SNDK": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SNDK",
+    "market": "US"
+   },
+   "SNOW": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:SNOW",
+    "market": "US"
+   },
+   "TEL": {
+    "status": "OK",
+    "last_bar": "2026-11-25T00:00:00+00:00",
+    "behind": 0,
+    "source": "yahoo:8035.T",
+    "market": "JP"
+   },
+   "TSM": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:TSM",
+    "market": "US"
+   },
+   "UMC": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:UMC",
+    "market": "US"
+   },
+   "VRT": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:VRT",
+    "market": "US"
+   },
+   "VST": {
+    "status": "OK",
+    "last_bar": "2026-11-25T14:30:00+00:00",
+    "behind": 0,
+    "source": "yahoo:VST",
+    "market": "US"
+   }
+  }
+ }
+}

@@ -1,0 +1,122 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다.",
+ "tags": {
+  "b615ea4822e610f6": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "IMF 2026 세계 성장 전망 3.1% 로 상향 — AI 투자 붐이 전쟁 충격을 상쇄, 다만 에너지 제약·재정 위험으로 회복력이 한계에 가깝다고 경고(RSS 요약)."
+  },
+  "3fa593b624651b43": {
+   "themes": [
+    "china",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "china": 5,
+    "geopolitical_risk": -5
+   },
+   "theme_direction": {
+    "china": "up",
+    "geopolitical_risk": "down"
+   },
+   "sentiment": 5,
+   "impact": 20,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "중국, 미국과의 무역합의 만료와 무관하게 EU 로 희토류 공급을 이어가겠다는 신호(RSS 제목·요약)."
+  },
+  "8650bb6900eabcc5": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 5
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -5,
+   "impact": 15,
+   "novelty": 20,
+   "horizon": "long",
+   "event_type": "macro",
+   "reason": "프랑스 2027 예산 논의 — 높은 적자·부채 부담(차트 해설, RSS 요약)."
+  },
+  "5820b78bc3cd0b6c": {
+   "themes": [
+    "rates",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "rates": 10,
+    "usd": 5
+   },
+   "theme_direction": {
+    "rates": "up",
+    "usd": "up"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "미 재무부가 IMF 부채 경고를 일축 — 미국 부채 40조달러 초과, 10년물 5% 위(RSS 요약)."
+  },
+  "3f9c550942dd9fd5": {
+   "themes": [
+    "inflation",
+    "rates",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "inflation": 30,
+    "rates": 25,
+    "usd": 10
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up",
+    "usd": "up"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "이코노미스트: 뜨거운 9월 PPI 는 연준의 일이 끝나지 않았다는 뜻 — '2주 뒤 추가 인상 위험이 실재한다'(RSS 요약)."
+  },
+  "bf93176dc4bef60c": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 40,
+    "rates": 20
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -35,
+   "impact": 70,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "9월 생산자물가 전년 +6.3% — 2022년 이후 최대. 다우존스 컨센서스는 전월 +0.6%·전년 +5.5%(CNBC, RSS 요약)."
+  }
+ }
+}

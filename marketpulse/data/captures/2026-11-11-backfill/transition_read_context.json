@@ -1,0 +1,391 @@
+{
+ "snapshot_date": "2026-11-11",
+ "market_date": "2026-11-10",
+ "cutoff": "2026-11-11T07:30:00+09:00",
+ "transition": {
+  "kind": "exit",
+  "from": "Liquidity Stress / Risk-Off",
+  "to": "Neutral / Mixed",
+  "exit_streak": 2,
+  "exit_required": 2,
+  "entry_streak": 0,
+  "entry_required": 2,
+  "support_today": "BROKEN",
+  "support_reasons": [
+   "핵심 조건: Liquidity ≤ -1.0 미충족(지금 +0.37) · RiskAppetite ≤ -0.8 미충족(지금 +0.14)",
+   "주식 확인(Liquidity Stress / Risk-Off 기준): US PARTIAL · KOREA CONTRADICTED · GLOBAL PARTIAL",
+   "오늘 후보는 Neutral / Mixed"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-04",
+   "candidate": "Risk-On",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-05",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-06",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "SUPPORTED"
+  },
+  {
+   "date": "2026-11-09",
+   "candidate": "Risk-On",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-10",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "BROKEN"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": 2.17,
+   "today": 0.14
+  },
+  "Liquidity": {
+   "prev": 1.3,
+   "today": 0.37
+  },
+  "Rates": {
+   "prev": 0.54,
+   "today": 0.52
+  },
+  "Inflation": {
+   "prev": -0.15,
+   "today": -0.98
+  },
+  "Credit": {
+   "prev": -1.12,
+   "today": -1.41
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "OIL",
+   "direction": "down",
+   "strength": -0.94,
+   "why": "유가 하락 — 항공·운송에 순풍, 에너지·정유에 역풍. 기대인플레이션 전이는 따로 본다.",
+   "evidence": [
+    {
+     "label": "브렌트 원유",
+     "z": -2.1,
+     "display": "-5.85%"
+    },
+    {
+     "label": "WTI 원유",
+     "z": -1.7,
+     "display": "-4.38% (5일)"
+    },
+    {
+     "label": "Energy",
+     "z": -1.9,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "KOREA",
+   "direction": "down",
+   "strength": -1.0,
+   "why": "국내 지수 약세 — 외국인 매도와 원화 약세가 겹치면 자금 이탈 성격이다.",
+   "evidence": [
+    {
+     "label": "KOSPI",
+     "z": -2.2,
+     "display": "(5일)"
+    },
+    {
+     "label": "KOSDAQ",
+     "z": -2.1,
+     "display": "(5일)"
+    },
+    {
+     "label": "USD/KRW",
+     "z": 2.5,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "down",
+   "strength": -0.38,
+   "why": "신용여건 완화가 위험자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": -1.4,
+     "display": "-8.0bp"
+    },
+    {
+     "label": "VIX",
+     "z": -0.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": -0.4,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "FED PATH / FRONT END",
+   "direction": "up",
+   "strength": 0.39,
+   "why": "단기금리가 오르며 인하 기대가 밀린다.",
+   "evidence": [
+    {
+     "label": "US 2Y Yield",
+     "z": 0.8,
+     "display": ""
+    },
+    {
+     "label": "US 2s10s Curve",
+     "z": -0.8,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.29,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -0.4,
+     "display": ""
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -0.3,
+     "display": "(5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": 0.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": -2.2,
+     "display": "(5일)"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "VIX − S&P 실현변동성",
+   "z": -4.0,
+   "change": "-7.75"
+  },
+  {
+   "label": "천연가스",
+   "z": 2.5,
+   "change": "+7.34%"
+  },
+  {
+   "label": "EUR/USD",
+   "z": -2.5,
+   "change": "-0.72%"
+  },
+  {
+   "label": "달러 인덱스",
+   "z": -2.2,
+   "change": "-0.64%"
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -0.4,
+   "arrow": "→"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -0.4,
+   "arrow": "→"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": -1.4,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -0.9,
+   "arrow": "↓"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": -2.2,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -2.1,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": 1.7,
+   "arrow": "↑"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "PARTIAL",
+   "score": -0.06
+  },
+  "kr": {
+   "status": "CONFIRMED",
+   "score": 0.26
+  }
+ },
+ "selection_today": {
+  "selected": "NEUTRAL",
+  "commentary": "화요일 10월 물가가 예상보다 높게 나오며 미국 주식은 소폭 밀렸고 금리 변동성이 올라, 전날의 강한 반등은 하루 만에 숨을 골랐다. 한국은 지수 일봉이 비어 있어 확인이 불완전하고, 어느 regime 도 주요 Trigger 를 넘지 않아 지금은 Neutral / Mixed 로 보는 것이 가장 자연스럽다.",
+  "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았고, 미국 주식은 물가 발표 뒤 소폭 밀리고 한국은 지수 일봉이 비어 확인이 갈린다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "美 물가 예상 웃돌자 국채금리 급등…12월 '빅스텝' 부상 [월가 업&다운]",
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "sentiment": -30,
+   "summary": "미 10월 물가 예상 상회에 국채금리 급등 · 12월 0.5%p 인상 거론(제목)."
+  },
+  {
+   "title": "물가, Fed, 엔비디아 '3연타' 맞은 뉴욕 증시…코어위브는 '기대 이상' 실적 [월가 업&다운]",
+   "themes": [
+    "inflation",
+    "rates",
+    "ai"
+   ],
+   "sentiment": -25,
+   "summary": "물가 · 연준 · 엔비디아 악재가 겹친 뉴욕 증시, 코어위브는 기대 이상 실적(제목)."
+  },
+  {
+   "title": "[속보] 코스피·코스닥, 4%대 급등 마감…4거래일만 반등",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 35,
+   "summary": "코스피 4.39% 오른 5239.13 마감 · 4거래일 만에 반등(본문)."
+  },
+  {
+   "title": "코스피·코스닥, 4%대 급등 마감…4거래일 만에 반등",
+   "themes": [
+    "korea_governance"
+   ],
+   "sentiment": 35,
+   "summary": "코스피·코스닥 4%대 급등 마감 · 4거래일 만에 반등(제목)."
+  },
+  {
+   "title": "[속보] 코스피, 9거래일 만에 '매수 사이드카'…지수 5.23%↑",
+   "themes": [
+    "korea_governance"
+   ],
+   "sentiment": 40,
+   "summary": "코스피 9거래일 만에 매수 사이드카 · 지수 5.23% 상승(속보 제목)."
+  },
+  {
+   "title": "반도체 일단 반등했지만 … 증시 D.N.A 공포는 여전",
+   "themes": [
+    "oil",
+    "geopolitical_risk",
+    "semiconductor"
+   ],
+   "sentiment": 20,
+   "summary": "미국·이란 종전 협상 기대에 국제유가 하락 · 반도체 저가 매수로 증시 반등(본문)."
+  },
+  {
+   "title": "[속보] 반도체주 강세…삼전닉스 5~8% 급등",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 35,
+   "summary": "반도체주 강세 · 삼성전자·SK하이닉스 5~8% 급등(속보 제목)."
+  },
+  {
+   "title": "[속보] 코스피·코스닥, 4%대 급등 출발",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 35,
+   "summary": "코스피·코스닥 4%대 급등 출발(속보 제목)."
+  }
+ ]
+}

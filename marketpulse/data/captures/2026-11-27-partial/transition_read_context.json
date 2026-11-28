@@ -1,0 +1,391 @@
+{
+ "snapshot_date": "2026-11-27",
+ "market_date": "2026-11-26",
+ "cutoff": "2026-11-27T07:30:00+09:00",
+ "transition": {
+  "kind": "exit",
+  "from": "Geopolitical",
+  "to": "Neutral / Mixed",
+  "exit_streak": 1,
+  "exit_required": 1,
+  "entry_streak": 0,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-20",
+   "candidate": "Liquidity Stress / Risk-Off",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-23",
+   "candidate": "Risk-On",
+   "official": "Risk-On",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-24",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-25",
+   "candidate": "Geopolitical",
+   "official": "Geopolitical",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-26",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": -0.42,
+   "today": -0.15
+  },
+  "Liquidity": {
+   "prev": -0.46,
+   "today": -0.46
+  },
+  "Rates": {
+   "prev": -0.64,
+   "today": -0.64
+  },
+  "Inflation": {
+   "prev": 0.48,
+   "today": -0.03
+  },
+  "Credit": {
+   "prev": 0.95,
+   "today": 0.95
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.76,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": -1.8,
+     "display": "-5.6bp (5일)"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": -1.6,
+     "display": "-5.7bp (5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": -1.1,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -1.9,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "up",
+   "strength": 0.29,
+   "why": "주식 약세가 단순 차익실현이 아니라 금융여건 악화와 동반되고 있다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 1.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX",
+     "z": -0.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": -0.7,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "down",
+   "strength": -0.31,
+   "why": "변동성이 가라앉으며 위험 감수 여력이 회복된다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": -0.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": -0.4,
+     "display": ""
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": -1.1,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "down",
+   "strength": -0.28,
+   "why": "미국·한국 지수가 같이 밀린다 — 개별 요인이 아니라 베타다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": -0.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": -0.9,
+     "display": "(5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": 0.7,
+     "display": ""
+    },
+    {
+     "label": "KOSPI",
+     "z": -0.9,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "FED PATH / FRONT END",
+   "direction": "down",
+   "strength": -0.34,
+   "why": "단기금리 하락 — 시장이 완화 경로를 당겨 잡는다. 장기물과 갈리면 커브 스티프닝이다.",
+   "evidence": [
+    {
+     "label": "US 2Y Yield",
+     "z": -1.5,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 2s10s Curve",
+     "z": -0.3,
+     "display": ""
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "천연가스",
+   "z": 2.9,
+   "change": "+10.09%"
+  },
+  {
+   "label": "EUR/USD",
+   "z": 2.1,
+   "change": "+0.50%"
+  },
+  {
+   "label": "Euro Stoxx 50",
+   "z": 2.1,
+   "change": "+2.04%"
+  },
+  {
+   "label": "Hang Seng China",
+   "z": 1.5,
+   "change": "+1.47%"
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -1.8,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.4,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": -0.7,
+   "arrow": "→"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -1.0,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": 1.3,
+   "arrow": "↑"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": null,
+   "score": null
+  },
+  "kr": {
+   "status": null,
+   "score": null
+  }
+ },
+ "selection_today": {
+  "selected": null,
+  "commentary": null,
+  "primary_reason": null
+ },
+ "events": [
+  {
+   "date": "2026-11-25",
+   "title": "PCE",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-11-26",
+   "bank": "BOK",
+   "decision": "HIKE",
+   "tone": "HAWKISH"
+  }
+ ],
+ "news": [
+  {
+   "title": "한은 금리 인상은 선반영…금융지주 주가 일제히 하락",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": -15,
+   "summary": "한국은행이 기준금리를 연 3.25% 로 0.25%p 인상 — 인상은 미리 반영돼 금융지주 주가는 일제히 하락."
+  },
+  {
+   "title": "[마감시황] 장 막판 상승폭 반납한 코스피…0.29% 오른 4711.21 마감",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 10,
+   "summary": "코스피가 장 막판 상승폭을 반납하고 0.29% 오른 4711.21 에 마감(마감시황, 제목)."
+  },
+  {
+   "title": "후티 사우디 정유시설 공격에 뛴 국제 유가…정유주, 동반 상승 [종목+]",
+   "themes": [
+    "oil",
+    "geopolitical_risk",
+    "energy"
+   ],
+   "sentiment": -20,
+   "summary": "후티의 사우디 정유시설 공격으로 국제유가가 뛰고 정유주가 동반 상승(제목)."
+  },
+  {
+   "title": "삼성SDI도 1.4조원 자사주 전량 소각",
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "sentiment": 40,
+   "summary": "삼성SDI 가 1조4000억원 규모 자사주를 전량 소각 — 삼성 계열사들이 이틀 연속 조 단위 소각을 결정."
+  },
+  {
+   "title": "'전강후약' 코스피, 4700선 가까스로 사수…외국인 또 '팔자'",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": -10,
+   "summary": "'전강후약' 코스피가 4700선을 가까스로 지켰고 외국인은 또 팔았다(제목)."
+  },
+  {
+   "title": "마이클 버리가 살렸다…나스닥 –4.6%에서 -0.6%로 [김현석의 월스트리트나우]",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": 10,
+   "summary": "마이클 버리의 발언 뒤 나스닥이 장중 -4.6% 에서 -0.6% 로 낙폭을 줄였다(제목)."
+  },
+  {
+   "title": "금리 올렸는데 은행주 왜 파래요…한발 먼저 가는 주식 ‘선반영’ 해석",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": -15,
+   "summary": "한은 기준금리 인상에도 은행주가 일제히 내렸다 — 미리 반영됐다는 해석."
+  },
+  {
+   "title": "민간 자본시장 개혁기구 출범…위원장에 메리츠 김용범 부회장",
+   "themes": [
+    "korea_governance",
+    "shareholder_return"
+   ],
+   "sentiment": 30,
+   "summary": "정부가 자본시장 개혁 전담 민간 기구를 출범 — 위원장에 메리츠 김용범 부회장, 주주가치 제고와 코스닥 재설계를 논의."
+  }
+ ]
+}

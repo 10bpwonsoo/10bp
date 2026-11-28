@@ -1,0 +1,23 @@
+{
+ "selected_regime": "RISK_ON",
+ "regime_confidence": 62,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "위험선호 factor 가 기준을 크게 웃돌고 변동성 · 성장 조건이 함께 통과했다. 미국에서는 대형주 · 기술주 · 소형주 · 반도체가 모두 급반등해 주식 확인이 강하지만, 한국은 그 반등 전에 급락 마감해 방향이 반대다.",
+ "alternative_candidates": [
+  {
+   "regime": "LIQUIDITY_STRESS",
+   "reason": "유동성 factor 가 기준 아래이고 신용 조건도 통과했지만, 변동성과 위험선호 조건이 반대 방향이고 미국 지수가 급반등해 미국 주식 확인이 부분적이다."
+  },
+  {
+   "regime": "POLICY_DRIVEN",
+   "reason": "금리 factor 의 움직임은 크지만 금요일 관측이고, 달러 · 성장 · 변동성 보조 조건이 대부분 통과하지 못했다."
+  }
+ ],
+ "us_equity_confirmation": "STRONG",
+ "korea_equity_confirmation": "CONTRADICTED",
+ "global_equity_confirmation": "MIXED",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Liquidity Stress / Risk-Off 다. 확인 일수를 두지 않는 규칙이라 오늘 선택한 Risk-On 이 곧 공식 regime 이 되어, 한 거래일 만에 반대 방향으로 바뀐다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보는 Risk-On(RiskAppetite +2.29, 기준 +0.8), Policy-Driven(|Rates| 2.25, 기준 1.2), Liquidity Stress(Liquidity -1.61, 기준 -1.0)다. Risk-On 은 trigger 여유가 가장 크고 변동성 · 성장 조건을 통과했으며 미국 주식 확인이 강하다. 다만 신용 조건은 통과하지 못했는데, 하이일드 스프레드와 미국채가 11/20 관측이라 월요일 반등이 아직 들어 있지 않다. 한국은 KOSPI · KOSDAQ 이 미국 반등 전에 급락 마감해 Risk-On 과 반대이고, 글로벌 확인은 엇갈린다. 급락 뒤 하루 반등이고 한국 · 신용 확인이 없어 확신은 정량값보다 낮게, 상태는 잠정으로 둔다. Liquidity Stress 는 신용 조건만 맞고 변동성 · 위험선호가 반대이며, Policy-Driven 은 금요일 금리 움직임에 기대고 있어 고르지 않았다.",
+ "commentary": "월요일 미국 주식은 엔비디아 최고경영자 복귀 소식에 3대 지수와 소형주, 반도체가 모두 급반등하고 변동성이 크게 내려 위험선호가 하루 만에 되살아났다. 반면 한국은 이 반등 전에 열린 장에서 코스피와 코스닥이 다시 급락해 방향이 반대였고, 신용과 금리 데이터는 아직 금요일 값이다. 미국 쪽 확인만으로 위험 선호 환경을 고르되, 급락 뒤 첫 반등이라 잠정으로 본다."
+}

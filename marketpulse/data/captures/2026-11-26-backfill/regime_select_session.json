@@ -1,0 +1,14 @@
+{
+ "selected_regime": "GEOPOLITICAL_RISK",
+ "regime_confidence": 40,
+ "selection_status": "LOW_CONFIDENCE",
+ "primary_reason": "브렌트유가 하루 3.51% 뛰어 유가 Trigger 를 근소하게 넘었고, 미국과 한국 모두 방산 · 에너지가 지수보다 강해 주식은 같은 방향이다. 다만 금은 내렸고 변동성 · 항공 조건은 통과하지 못해 보조 증거가 약하다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "CONFIRMED",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "CONFIRMED",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Neutral / Mixed 다. 확인 일수를 두지 않는 규칙이라 오늘 선택한 Geopolitical Risk 가 곧 공식 regime 이 된다. Trigger 여유가 작아 유가가 되돌려지면 다음 날 바로 바뀔 수 있다.",
+ "data_coverage": 89,
+ "selection_rationale": "자격 후보는 Geopolitical Risk 하나다(z(BRENT) +1.13, 기준 1.0). 보조 조건 넷 가운데 방산 상대강도만 통과했고, 금은 오히려 내렸으며 변동성과 항공은 기준에 못 미친다. 주식은 미국에서 방산 · 에너지가 S&P 500 보다 강했고 한국에서도 방산 · 조선 · 정유가 급락한 KOSPI 를 크게 앞서 후보와 같은 방향이다. 그러나 기준 시각까지의 기사에는 유가 급등의 원인이 확인되지 않고, 같은 날 시장의 큰 줄기는 AI 투자 불안과 예상을 웃돈 근원 PCE, 한국 반도체 급락이었다. 유일한 자격 후보라 이를 고르되, Trigger 여유가 작고 보조 증거가 넷 중 하나뿐이라 확신은 정량값보다 낮게, 상태는 낮은 확신으로 둔다.",
+ "commentary": "수요일에는 브렌트유가 크게 뛰며 방산과 에너지가 지수보다 강했고, 한국에서도 급락장 속에 방산 · 조선 · 정유가 버텼다. 유가 Trigger 를 넘은 유일한 후보라 지정학 위험 환경으로 보지만, 금이 내리고 변동성 반응도 작아 전형적인 위험 회피 모습은 아니다. 같은 날 시장의 중심은 AI 투자 불안과 물가 지표였던 만큼 확신은 낮다."
+}

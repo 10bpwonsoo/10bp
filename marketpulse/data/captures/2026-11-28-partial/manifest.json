@@ -1,0 +1,138 @@
+{
+ "day": "2026-11-28",
+ "cutoff": "2026-11-28T07:30:00+09:00",
+ "origin": "partial_snapshot",
+ "input_drop": {
+  "base": [
+   "BRENT",
+   "EURUSD",
+   "USDCNH",
+   "USDJPY",
+   "USDKRW"
+  ],
+  "universe": [
+   "CELLTRION",
+   "CJ_CJ",
+   "DOOSAN_ENER",
+   "HANMI_SEMI",
+   "HANWHA_AERO",
+   "HANWHA_OCEAN",
+   "HD_ELECTRIC",
+   "HD_HHI",
+   "HMM",
+   "HYOSUNG_HEAVY",
+   "HYUNDAI_MOBIS",
+   "HYUNDAI_MOTOR",
+   "HYUNDAI_STEEL",
+   "KAKAO",
+   "KB",
+   "KEPCO",
+   "KIA",
+   "KOREAN_AIR",
+   "KOREA_ZINC",
+   "KOSPI",
+   "KUMHO_PETRO",
+   "LGCHEM",
+   "LG_ENSOL",
+   "LIG_NEX1",
+   "LOTTE_CHEM",
+   "LS_ELECTRIC",
+   "NAVER",
+   "PAN_OCEAN",
+   "POSCO",
+   "SAMSUNG",
+   "SAMSUNG_BIO",
+   "SAMSUNG_EM",
+   "SAMSUNG_SDI",
+   "SHINHAN",
+   "SKHYNIX",
+   "SK_INNOVATION",
+   "SOIL"
+  ],
+  "basket": [
+   "DOOSAN_ENER",
+   "HANMI_SEMI",
+   "HD_ELECTRIC",
+   "HYOSUNG_HEAVY",
+   "LS_ELECTRIC",
+   "NAVER",
+   "SAMSUNG",
+   "SAMSUNG_EM",
+   "SKHYNIX"
+  ]
+ },
+ "series": {
+  "base": 25,
+  "universe": 6,
+  "basket": 0
+ },
+ "news": {
+  "rss_in_window": 93,
+  "web_extra": 0,
+  "tagged_events": 34
+ },
+ "market": {
+  "state": "RISK_ON",
+  "confidence": 86.1,
+  "coverage": "25/60",
+  "thermo": 25
+ },
+ "regime_select": null,
+ "ai": {
+  "regime": "UNKNOWN",
+  "sentiment": 77,
+  "theme_view": [
+   "none",
+   "unavailable",
+   "LLM 사용 불가"
+  ]
+ },
+ "rates": {
+  "regime": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+  "market_read": [
+   "rule",
+   "none",
+   "API 인증 실패"
+  ],
+  "inflation_read": [
+   "rule",
+   "none",
+   "LLM 사용 불가"
+  ]
+ },
+ "oil": {
+  "regime": "Demand — UNCONFIRMED"
+ },
+ "cockpit": {
+  "now": "RISK-ON"
+ },
+ "market_overview": [
+  "none",
+  "unavailable",
+  "LLM 사용 불가"
+ ],
+ "semiconductor_cycle": {
+  "regime": "UPSWING",
+  "composite": 36.5,
+  "market_read": "rule/none"
+ },
+ "vintage": {
+  "market_series": {
+   "data_vintage": "CURRENT_SERIES",
+   "vintage_guaranteed": false,
+   "note": "Yahoo 일봉(수정종가)·FRED 시장금리를 지금 받아 cutoff 에 이미 끝난 봉만 남겼다 — 사후 수정은 드물지만 vintage 가 보장되지는 않는다"
+  },
+  "macro_releases": {
+   "data_vintage": "FRED_REALTIME_AT_CUTOFF",
+   "vintage_guaranteed": true,
+   "note": "CPI·PCE·임금 등은 FRED realtime(그날 vintage)으로 받았다 — 나중 개정치를 쓰지 않는다"
+  },
+  "news": {
+   "timestamp_rule": "published_at <= cutoff",
+   "rss_window_since": "2026-11-26T22:30:00+00:00"
+  },
+  "analyst_views": {
+   "rule": "수기 확인 파일 날짜 <= 그 날짜"
+  }
+ }
+}

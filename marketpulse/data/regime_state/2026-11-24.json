@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-24",
+ "snapshot_date": "2026-11-25",
+ "logic_version": "same_day_v1",
+ "observation": {
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "factors": {
+   "Growth": 0.059,
+   "Inflation": -0.263,
+   "Rates": -0.097,
+   "USD": -0.533,
+   "Liquidity": 1.44,
+   "RiskAppetite": 0.128,
+   "Credit": -1.994,
+   "Volatility": -1.026,
+   "China": -1.603
+  },
+  "equity_broad": {
+   "us": -0.094,
+   "kr": 0.537
+  }
+ },
+ "state": {
+  "logic_version": "same_day_v1",
+  "snapshot_date": "2026-11-25",
+  "date": "2026-11-24",
+  "official": "neutral",
+  "previous_official": "risk_on",
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "support": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ],
+  "equity": null,
+  "exit_streak": 1,
+  "exit_required": 1,
+  "exit_confirmed": true,
+  "exited_regime": "risk_on",
+  "entry_regime": null,
+  "entry_streak": 0,
+  "entry_required": 1,
+  "entry_confirmed": false,
+  "changed": true,
+  "change_kind": "exit",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "화요일 미국에서 반도체가 8.27% 급락하며 전날 반등이 꺾여 위험선호 factor 가 2.29 에서 0.13 으로 내려왔습니다. 한국은 KOSPI 가 6.32% 급등했지만 미국은 약해 두 시장의 방향이 갈렸고, 어느 레짐도 Trigger 를 넘지 못했습니다. 오늘 선택이 NEUTRAL 이 되어 공식 레짐은 Risk-On 에서 Neutral / Mixed 로 돌아갔습니다.",
+  "source": "session",
+  "generated_at": "2026-11-25T02:09:51.605190+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-25T02:09:51.605256+00:00"
+}

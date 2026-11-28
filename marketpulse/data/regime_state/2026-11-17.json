@@ -1,0 +1,60 @@
+{
+ "date": "2026-11-17",
+ "snapshot_date": "2026-11-18",
+ "logic_version": "exit_entry_v2",
+ "observation": {
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "factors": {
+   "Growth": -0.436,
+   "Inflation": -1.252,
+   "Rates": -0.804,
+   "USD": 0.136,
+   "Liquidity": -0.934,
+   "RiskAppetite": -0.702,
+   "Credit": 1.494,
+   "Volatility": 0.816,
+   "China": -0.698
+  },
+  "equity_broad": {
+   "us": -0.439,
+   "kr": -0.367
+  }
+ },
+ "state": {
+  "logic_version": "exit_entry_v2",
+  "snapshot_date": "2026-11-18",
+  "date": "2026-11-17",
+  "official": "neutral",
+  "previous_official": "policy",
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "support": "WEAKENING",
+  "support_reasons": [
+   "핵심 조건: |Rates| ≥ +1.2 미충족(지금 +0.80)",
+   "주식 확인: 그날 주식 판독이 없어 핵심 조건으로만 본다",
+   "오늘 후보는 Neutral / Mixed"
+  ],
+  "equity": null,
+  "exit_streak": 2,
+  "exit_required": 2,
+  "exit_confirmed": true,
+  "exited_regime": "policy",
+  "entry_regime": null,
+  "entry_streak": 0,
+  "entry_required": 2,
+  "entry_confirmed": false,
+  "changed": true,
+  "change_kind": "exit",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "월요일 미국채 금리가 기대인플레이션 하락과 함께 되돌려지며 금리 factor 가 기준 아래에 머물러 Policy Driven 의 핵심 조건이 이틀째 채워지지 않았습니다. 그 사이 하이일드 스프레드가 11bp 벌어지고 변동성이 올라 시장의 중심은 금리에서 위험 회피 쪽으로 옮겨 갔지만, 위험선호와 유동성 신호는 기준 직전에서 멈춰 새 레짐의 자격을 채우지 못했습니다. 그래서 Policy Driven 을 공식 레짐에서 해제했고, 새 방향이 확정되지 않아 공식 레짐은 Neutral / Mixed 입니다.",
+  "source": "session",
+  "generated_at": "2026-11-17T23:07:33.040332+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-17T23:07:33.040365+00:00"
+}

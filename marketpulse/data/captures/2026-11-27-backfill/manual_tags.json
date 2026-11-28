@@ -1,0 +1,468 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/27 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/26 합본 · 07:00 수집분 · 07:30 이후 재수집분을 id 로 합쳤다(창: 11/26 07:30 ~ 11/27 07:30 KST, 109건 중 시장 관련 26건). 11/26 은 미국 추수감사절 휴장.",
+ "tags": {
+  "9eaeba44a8ad5a4b": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 70,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 장 막판 상승폭을 반납하고 0.29% 오른 4711.21 에 마감(마감시황, 제목)."
+  },
+  "d20d76edc3bd3f48": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'전강후약' 코스피가 4700선을 가까스로 지켰고 외국인은 또 팔았다(제목)."
+  },
+  "170b5169fdde54e6": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스가 일제히 반등(제목)."
+  },
+  "2b443e497aa5c88e": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 장 초반 4750선을 회복 — 전날 급락을 이끈 삼성전자·SK하이닉스가 함께 반등."
+  },
+  "b426c13f6e0540f3": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 35
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 75,
+   "novelty": 75,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "한국은행이 기준금리를 연 3.25% 로 0.25%p 인상 — 인상은 미리 반영돼 금융지주 주가는 일제히 하락."
+  },
+  "799147cb325f0184": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 30
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "한은 기준금리 인상에도 은행주가 일제히 내렸다 — 미리 반영됐다는 해석."
+  },
+  "a24f6b228afe13ee": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "한은 총재가 삼성전자·SK하이닉스의 이익 규모에 비해 주가가 이해하기 어렵다고 언급(제목)."
+  },
+  "0a976191afc4d9b9": {
+   "themes": [
+    "oil",
+    "geopolitical_risk",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "oil": 45,
+    "geopolitical_risk": 45,
+    "energy": 25
+   },
+   "theme_direction": {
+    "oil": "up",
+    "geopolitical_risk": "up",
+    "energy": "up"
+   },
+   "sentiment": -20,
+   "impact": 70,
+   "novelty": 80,
+   "horizon": "short",
+   "event_type": "geopolitical",
+   "reason": "후티의 사우디 정유시설 공격으로 국제유가가 뛰고 정유주가 동반 상승(제목)."
+  },
+  "9ce0b6852df83a05": {
+   "themes": [
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "china": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "삼성전자·SK하이닉스 주가의 변수로 중국 메모리 수요 감소와 미국 규제 강화가 꼽혔다(제목)."
+  },
+  "30d3ccf838154fca": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "반도체 초호황에 대한 의문이 커지며 3년 만의 이례적 현상이 나타났다(제목)."
+  },
+  "8101bf7e3d807141": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "삼성전자·SK하이닉스 '정점론' 에 코스피가 하루 6.16% 급락해 열 달 만에 4600선으로 밀린 배경 분석."
+  },
+  "1c89d4fa3d7ac353": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "ai": 15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "up"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "일본 키옥시아가 엔비디아와 AI 서버용 SSD 실증에 나서 한국 HBM 일부 대체를 노린다."
+  },
+  "d4b78978645b8c4e": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 25,
+    "ai": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "주문 뒤 1년을 기다려야 할 만큼 수급이 빡빡해 가격 협상력이 커진 기판주가 강세(제목)."
+  },
+  "c64ca9a5577bd14f": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 55,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "마이클 버리의 발언 뒤 나스닥이 장중 -4.6% 에서 -0.6% 로 낙폭을 줄였다(제목)."
+  },
+  "310cd221dda881a9": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'빅쇼트' 버리가 엔비디아는 지금 하락에 걸 때가 아니라고 말했다(제목)."
+  },
+  "d9b220653d063776": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "마이클 버리가 나스닥 하락 포지션을 모두 청산했다고 밝혔다."
+  },
+  "78187e1d94bb4437": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "월가의 큰 변동 다음 날인 추수감사절에 미국 주가지수 선물이 상승(제목)."
+  },
+  "869f41ecb3d882d9": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -15
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "월가 금융기관들이 최근 주가 조정을 반영해 내년 미국 주식에 대한 눈높이를 낮췄다."
+  },
+  "6b43574d392b37b0": {
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 45,
+    "korea_governance": 25
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 40,
+   "impact": 55,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "삼성SDI 가 1조4000억원 규모 자사주를 전량 소각 — 삼성 계열사들이 이틀 연속 조 단위 소각을 결정."
+  },
+  "edc5e8723c2bec1f": {
+   "themes": [
+    "korea_governance",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 35,
+    "shareholder_return": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 30,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "long",
+   "event_type": "policy",
+   "reason": "정부가 자본시장 개혁 전담 민간 기구를 출범 — 위원장에 메리츠 김용범 부회장, 주주가치 제고와 코스닥 재설계를 논의."
+  },
+  "6a69a068c93c730b": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "외국인이 이달에만 15조원을 판 가운데 10조원대 증시안정펀드 확대가 논의되고 산업은행이 추가 출자 여력을 파악."
+  },
+  "cfbe2b41ec4f4d49": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "증시안정펀드 확대 논의 — 코스피200·코스닥150 에 투입하는 방안이 유력(제목)."
+  },
+  "b95ef21a613ab0f8": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 25
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "금감원이 일반주주 보호를 위해 주식 공개 인수 신고서 심사를 강화한다(단독)."
+  },
+  "c20c88b53a6784f0": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 20
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -30,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "은행권 신용대출 등 부실채권비율이 12년 만에 가장 나빠졌다 — 고금리 지속에 따른 신용위험 확대."
+  },
+  "3b63a72dbd0085e3": {
+   "themes": [
+    "defense"
+   ],
+   "theme_sentiment": {
+    "defense": 25
+   },
+   "theme_direction": {
+    "defense": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "미국이 스페이스X 의 위성 100만기 배치를 승인해 우주항공주가 강세(제목)."
+  },
+  "ab80703e8cf6356d": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 30
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 25,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "블랙프라이데이 판매 호조로 화장품주가 연일 강세(제목)."
+  }
+ }
+}

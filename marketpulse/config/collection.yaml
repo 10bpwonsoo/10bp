@@ -1,0 +1,87 @@
+# 입력 수집(marketpulse.collector) · 입력 상태 판정(marketpulse.archive.input_status) 설정 — 2026-11-25.
+#
+# 배경: 2026-11-25 아침 Yahoo 가 07:09 KST 부터 429 를 줬고, 수집이 Yahoo 전체 성공을 기다리는 구조라 Daily Snapshot 이 통째로 멈췄다.
+# 여기서 정하는 것은 셋이다 — ① 공급처가 막혔을 때 얼마나 쉬는가(breaker) ② 한 번 실행이 얼마나 오래 도는가(run)
+# ③ 무엇이 빠지면 그날 스냅샷을 PARTIAL 로 돌리는가(gate). regime 계산식 · 가중치 · 임계는 여기 없다(바꾸지 않는다).
+
+# ── ① 공급처 Circuit Breaker (adapters/breaker.py) ─────────────────────────
+breaker:
+  # 2026-11-27 조정: 연속 3번 → 6번, 그 사이 쉬는 시간을 10 · 20 · 40 · 60 · 90초로(Exponential Backoff).
+  # Yahoo 는 같은 요청의 절반쯤을 429 로 돌려주는 날이 있다(11/25 10번 중 6번). 그런 날 '연속 3번' 은 우연히도 금방 걸려
+  # 10여 건마다 회로가 열리고(5 → 10 → 20 → 40분) 받을 수 있는 계열을 못 받았다(11/27: 36건 · 2건 · 12건씩만 받음).
+  # 정말 막힌 날에는 220초(10+20+40+60+90) 동안 6번 물어 보고 회로를 연다 — 그 뒤로는 요청을 보내지 않는다.
+  threshold: 6                # 같은 공급처에서 연속 6번 막히면(429 · 503 · 연결 실패) 회로를 연다
+  backoff_sec: [10, 20, 40, 60, 90]   # 회로를 열기 전, 연속 실패 뒤 공급처 전체가 쉬는 시간
+  half_open_failures: 2       # 쉬는 시간이 끝난 뒤 시험 요청이 연속 2번 막히면 다시 연다(한 번은 우연일 수 있다)
+  base_cooldown_sec: 300      # 회로를 처음 열 때 쉬는 시간. 다시 열릴 때마다 2배(300 → 600 → 1200 → …)
+  max_cooldown_sec: 3600      # 그 상한
+  retry_after_cap_sec: 21600  # 공급처가 Retry-After 를 주면 그 시간을 따른다(이보다 길게는 잡지 않는다)
+  close_after_successes: 5    # 회로가 닫힌 뒤 연속 5번 성공하면 '열린 횟수' 를 0 으로 돌린다
+  reset_opens_after_sec: 21600  # 쉬는 시간이 끝난 뒤 6시간이 지나면 '열린 횟수' 를 0 으로 돌린다(전날 아침의 누적을 다음 날로 넘기지 않는다)
+# 공급처별 요청 간격(초). 없는 공급처는 run.min_gap_sec.
+host_min_gap_sec:
+  api.twelvedata.com: 8.0     # 무료 플랜 분당 8건
+  data-dbg.krx.co.kr: 1.0     # 날짜마다 한 번씩 부른다(처음 한 번은 dataset 마다 수백 번 — 받은 날짜는 상태 폴더에 남아 다시 부르지 않는다)
+
+# 공급처별 인증 방식
+providers:
+  krxapi:
+    # KRX Open API 인증키(AUTH_KEY 헤더)를 실행 환경이 대신 넣어 준다(클라우드 환경의 네트워크 시크릿, 2026-11-25 등록).
+    # 그래서 KRX_API_KEY 변수가 없어도 부른다. PC · 서버에서는 KRX_API_KEY 환경변수를 두면 코드가 헤더를 직접 보낸다.
+    # 어느 쪽도 없으면 첫 요청이 401(Unauthorized Key)로 끝나고 그 실행에서는 다시 부르지 않는다. 끄려면 KRX_API_VIA_PROXY=0
+    key_via_network_secret: true
+
+# ── ② 한 번 실행 ─────────────────────────────────────────────────────────
+run:
+  min_gap_sec: 2.0            # 같은 공급처 요청 사이 간격
+  budget_min: 25              # 한 번 실행이 쓰는 최대 시간(분). 넘으면 받은 데까지 저장하고 끝낸다(다음 실행이 이어 받는다)
+  wait_for_breaker: true      # 회로가 열렸을 때, 풀리는 시각이 남은 예산 안이면 그때까지만 기다렸다 이어 받는다. 예산 밖이면 기다리지 않고 끝낸다
+  max_tries_per_series: 4     # 같은 계열을 하루에 이 횟수 넘게 요청하지 않는다(회로가 열려 못 보낸 것은 세지 않는다)
+  keep_days: 4                # 수집 폴더(data/inputs/<날짜>)를 이만큼만 남긴다 — 대조 기준으로 직전 수집분이 필요하다
+
+# ── 대체 경로 ────────────────────────────────────────────────────────────
+# 기본 계열(instruments.yaml)의 공급처 순서는 sources.yaml 그대로다. 아래는 종목 · AI 바스켓(코드에서 yahoo 하나로 잡던 것)에
+# 붙는 뒤 순서다. {lower} · {symbol} 은 Yahoo 심볼에서 만든다. 키가 없거나 닿지 않는 공급처는 건너뛴다(결측으로 남는다).
+fallbacks:
+  us_ticker:                  # Yahoo 심볼이 미국 상장 종목 · ETF 꼴(영문 1~5자)일 때
+    match: "^[A-Z]{1,5}$"
+    sources:
+      - {provider: stooq, symbol: "{lower}.us"}
+      - {provider: twelvedata, symbol: "{symbol}"}
+  kr_kospi:                   # 유가증권 상장 종목(.KS) → KRX 공식 Open API(키 KRX_API_KEY). {code} = 종목코드 6자리
+    match: "^\\d{6}\\.KS$"
+    sources:
+      - {provider: krxapi, symbol: "sto/stk_bydd_trd:{code}"}
+  kr_kosdaq:                  # 코스닥 상장 종목(.KQ)
+    match: "^\\d{6}\\.KQ$"
+    sources:
+      - {provider: krxapi, symbol: "sto/ksq_bydd_trd:{code}"}
+  # 홍콩(.HK) · 중국(.SS · .SZ) 종목, 선물(=F), 해외 지수(^…)는 키 없이 받을 수 있는 대체 경로가 없다 — docs/data-collection.md 참조
+
+# 대체 공급처에서 받은 계열은 직전 수집분(같은 계열, 다른 날 수집)과 겹치는 날짜의 값을 대조한 뒤에만 쓴다.
+# 수정주가 기준 · 단위 · 통화가 다르면 여기서 걸린다. 걸리면 그 계열은 버린다(결측) — 값을 맞춰 고치지 않는다.
+validate:
+  overlap_bars: 20            # 겹치는 최근 봉 수
+  min_overlap: 5              # 이보다 적게 겹치면 판단하지 않는다(NO_REFERENCE 로 표시하고 쓴다)
+  max_median_rel_diff: 0.02   # 겹치는 봉의 |a/b - 1| 중앙값이 이보다 크면 버린다
+
+# ── ③ 입력 상태 · PARTIAL 판정 ────────────────────────────────────────────
+# 계열 상태: OK(기준 시각에 나와 있어야 할 마지막 봉까지 있음) · STALE(받았지만 마지막 봉이 그보다 오래됨) · MISSING(못 받음).
+# STALE 은 '전날 값을 오늘 값처럼 쓰는 것' 을 막는 표시다. 휴장일은 아래 달력으로 가린다 — 달력에 없는 휴장일은 STALE 로 보이므로
+# (안전한 쪽으로 틀린다) 그날 확인하고 여기에 한 줄 더한다.
+gate:
+  # 핵심 계열 — 시장 regime 판정의 뼈대. must 가 하나라도 OK 가 아니거나, core 의 OK 비율이 min_core_ok 아래면
+  # 그날은 PARTIAL: 별도 저장(archive/partial) · 공식 regime 판정 보류 · history 와 regime 상태 로그는 쓰지 않는다.
+  must: [SPX, NDX, VIX, US2Y, US10Y, KOSPI, USDKRW]
+  core: [SPX, NDX, RUT, SOXX, VIX, US2Y, US10Y, US_HY_OAS, DXY, USDKRW, KOSPI, KOSDAQ, WTI, GOLD]
+  min_core_ok: 0.8
+  # 묶음별 최신(OK) 비율의 하한 — 받아야 할 계열 수 대비. 평소 종목 93/101 · AI 바스켓 52/52.
+  # 기본 묶음만 받고 공급처가 막힌 날을 FULL 로 저장하지 않기 위한 것이다(2026-11-27: 기본 43/55 · 종목 8/101 · 바스켓 0/52).
+  min_group_ok: {universe: 0.75, basket: 0.8}
+market_holidays:              # 시장별 휴장일(평일인데 봉이 없는 날). 확인된 것만 적는다
+  US:  ["2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15"]
+  KR:  ["2026-12-25", "2026-12-31", "2027-01-01"]
+  JP:  ["2026-11-23", "2026-12-31", "2027-01-01", "2027-01-11"]
+  HK:  ["2026-12-25", "2027-01-01"]
+  CN:  ["2027-01-01"]
+  EU:  ["2026-12-24", "2026-12-25", "2026-12-31", "2027-01-01"]

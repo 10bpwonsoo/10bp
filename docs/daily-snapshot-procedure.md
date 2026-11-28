@@ -1,0 +1,80 @@
+# Daily Snapshot 매일 절차 (화~토 07:30 KST 기준)
+
+한국 **화~토** 아침마다(2026-11-21~, 그 전은 월~금) 그날 07:30 KST cutoff 의 대시보드 전체를 만들어 저장(archive · history 행)하고 정적 배포본을 갱신한다.
+화~토인 이유: 한국 화~토 07:30 이 미국 월~금 종가 직후다. 월요일 아침에는 새 미국 종가가 없다. 저장 요일은 `config/archive.yaml` 의 `snapshot_weekdays` 가 정한다
+(화면 달력 `ArchiveControl.tsx` 의 `SCHEDULE` · `.github/workflows/daily-archive.yml` 의 cron 과 같은 규칙). 토요일 스냅샷의 history 행 날짜는 금요일(미국 시장 날짜)이다.
+예약 작업은 **07:00 KST** 에 시작한다(2026-11-25~, 그 전은 07:31). 기준 시각은 07:30 그대로다 — 가격은 07:00 에 받고(미국 주식 06:00 · 선물 07:00 KST 마감, 07:00~07:30 에 새로 닫히는 봉이 없다),
+기사만 07:30 이 지난 뒤 한 번 더 받아 창의 끝까지 채운다(순서 3 · 5).
+도구는 `tools/daily_snapshot/`, 저장소 루트에서 실행한다. 이 문서의 규칙은 지금까지(10/12~11/10) 손으로 한 절차를 그대로 옮긴 것이다.
+
+## 지킬 것
+
+- 데이터가 없으면 비워 둔다(0 아님). 보간 · 앞값 채우기 · 단위 보정 금지. Yahoo 에 그날 일봉이 없으면 결측 그대로.
+- Yahoo 전체 수집은 스냅샷의 전제가 아니다(2026-11-25~). 마지막 봉이 빠진 계열은 STALE 로 빼고, 핵심 계열이 모자라면 PARTIAL 로 따로 저장하고 regime 판정을 보류한다 — 전날 값을 오늘 값처럼 쓰지 않는다.
+- cutoff 이후 봉 · 기사는 쓰지 않는다(재구성 코드가 자르지만, extra_news 를 더할 때는 직접 확인).
+- 저장본 · 잠긴 history 행은 고치지 않는다. 고칠 일이 생기면 사용자 승인 뒤 `archive correct` 로만(이전 파일은 superseded/).
+- 화면 · 문장에 '확률' · '매수' · '매도' · '전망' 을 쓰지 않는다. API 키 값은 출력하지 않는다.
+- 해석 4종(금리 MARKET READ · 물가 해석 · 반도체 MARKET READ · REGIME v2 선택)은 API 가 되면 파이프라인이 만든다. API 가 안 되면(지금까지 계속 401) 이 세션이 **같은 컨텍스트 · 같은 프롬프트 · 같은 검증**으로 `*_session.json` 을 쓴다 — 검증을 통과해야만 쓰이고 화면에 '세션 생성' 으로 표시된다.
+- 다른 탭 화면 코드는 건드리지 않는다. 오류를 발견하면 고치되, 그날 보고에 무엇을 왜 바꿨는지 적는다.
+
+## 순서 (D = 오늘 KST 날짜, P = 작업 폴더 — 세션 scratchpad 의 pit/)
+
+1. 브랜치 `claude/market-pulse-ai-design-r7pmsm` 최신으로. `.venv` 없으면 `python3 -m venv .venv && .venv/bin/pip install -q -e .`, `frontend/node_modules` 없으면 `cd frontend && npm ci`.
+   `python -m marketpulse.archive plan` 으로 D 가 MISSING 인지 확인(일 · 월 · 이미 저장된 날이면 하지 않는다).
+2. 메모리 가격: `python -m marketpulse.scripts.collect_memory_prices --only semi` · `python -m marketpulse.scripts.collect_memory_history daily-express --latest` → 바뀐 CSV 를 커밋.
+3. 입력 수집(2026-11-25~ — [docs/data-collection.md](data-collection.md)): **I = `marketpulse/data/inputs/D`** 가 그날 입력 폴더다.
+   1) 다른 기기가 올려 둔 것이 있으면 먼저 꺼낸다: `python -m marketpulse.collector pull --date D`(없으면 '없다' 고 나온다 — 다른 날짜 것으로 대신하지 않는다).
+   2) `python -m marketpulse.collector run --date D` — 받은 계열은 건너뛰고 빠진 것만 받는다. 계열 하나마다 저장하므로 끊겨도 다시 부르면 이어 받는다.
+      공급처가 막히면(429 · 연결 실패) 그 공급처 회로를 열고 다음 공급처로 넘어간다 — 회로 상태는 `.marketpulse_state/` 에 남아 재시작 뒤에도 이어진다.
+      한 번 실행은 25분까지만 돈다. 종료 코드 75 면 일부가 남은 것이다 — 출력된 '다음 시도 가능 시각' 뒤에 **같은 명령을 한 번 더** 부른다.
+   3) `python tools/daily_snapshot/build_day.py D I status` 로 입력 상태를 본다 — 계열마다 OK · STALE(마지막 봉이 빠짐 — 계산에서 뺀다) · MISSING, 그리고 FULL / PARTIAL 판정.
+      - **FULL** 이면 아래 순서대로 간다.
+      - **PARTIAL**(핵심 계열 부족)이면 **기다리지 않는다.** 수집을 한 번 더 불러 보고(회로가 풀렸으면 이어 받는다) 그래도 PARTIAL 이면 순서 5 의 기사 태깅까지 한 뒤
+        `build_day.py D I partial` 로 따로 저장하고(공식 regime 판정 보류 · history 와 regime 상태 로그는 쓰지 않는다) 그 사실을 보고한다.
+        화면(배포본)은 직전 확정 스냅샷 그대로 둔다. 나중에 정상 입력을 받으면 순서 6 부터 `full` 로 확정본을 만든다(PARTIAL 파일은 superseded/ 로 옮겨 남는다).
+   Yahoo 가 풀리기를 몇 시간씩 기다리는 대기 작업 · 재확인 예약은 걸지 않는다(2026-11-25 사용자 요청). **전날 수집분은 합치지 않는다** — 직전 수집분은 대체 공급처 값의 대조에만 쓰인다.
+   `휴장으로 본 시장(확인 필요)` 이 나오면 그 시장이 실제로 쉬었는지 기사로 확인하고, 쉬었으면 `config/collection.yaml` 의 `market_holidays` 에 그 날짜를 더한다.
+   (예전 경로 `archive fetch-inputs` · `fetch_missing.py` · `merge_inputs.py` 는 남아 있지만 쓰지 않는다.)
+   **PARTIAL 로 남은 날짜 확정하기** — `python -m marketpulse.archive plan` 에 지난 저장일이 MISSING 이고 `data/archive/partial/` 에 그 날짜 파일이 있으면, 오늘 것보다 먼저 한다(history 는 과거 → 미래 순서).
+   `python -m marketpulse.collector run --date <그 날짜>` 를 다시 부르면 그 날짜 폴더의 빠진 계열 · 마지막 봉이 빠졌던 계열만 다시 받는다(폴더가 없어졌으면 처음부터 받는다 —
+   지금 받은 계열이라도 그 날짜 07:30 KST 뒤의 봉은 재구성 때 잘린다). `build_day.py <그 날짜> <inputs> status` 가 FULL 이면 순서 6 부터 그 날짜로 진행한다. 확정본이 저장되면 PARTIAL 파일은 superseded/ 로 옮겨진다.
+   그 날짜가 여전히 PARTIAL 이면 그 뒤 날짜도 확정하지 않는다(PARTIAL 로만 저장) — 앞 날짜의 history 행 없이 뒤 날짜 행을 쓰면 지속 · 전환 계산이 어긋난다.
+4. `tools/daily_snapshot/scan_units.py I` — 단위 불연속(분할 조정 혼재 등)이 있으면 그 계열을 빼고 이유를 캡처 폴더 `input_merge_report.json` 에 남긴다. VIX 처럼 실제로 큰 움직임은 기사로 확인하고 둔다.
+5. 뉴스: **07:30 KST 가 지난 뒤** `python -m marketpulse.collector news --date D` 로 RSS 를 한 번 더 받아 I/news_rss.json 에 id 로 합친다(07:00 수집에는 07:00~07:30 기사가 없다).
+   화요일처럼 창이 길면 전날 합친 RSS 도 `fetch_news.py I/news_rss.json <전날 합친 RSS> I/news_rss.json` 로 더한다. 07:30 전이면 기다린다 — 그동안 순서 4 를 한다. 창(직전 스냅샷 07:30 ~ D 07:30 KST — 화요일은 토요일 07:30 부터라 일 · 월 기사 포함)의 기사를 읽고
+   시장 관련 기사만 `marketpulse/data/captures/D-backfill/manual_tags.json` 에 수기 태깅(themes 는 config/themes.yaml 의 id, theme_direction 은 up/down 만 — 0 은 테마에서 뺀다). 커밋.
+6. `python tools/daily_snapshot/build_day.py D I context` → 캡처 폴더의 `rates_read_context.json` · `semiconductor_read_context.json` · `regime_select_context.json`(물가 해석은 rates 컨텍스트의 inflation_map).
+   각 컨텍스트만 읽고 세션본을 쓴 뒤 검증한다:
+   `ai.rates_read.check_output(normalize_output(..))` · `ai.inflation_read.check(read, ctx['inflation_map'])` · `ai.semi_read.check_output(..)` · `engines.regime_select.check_output(..)` — 모두 빈 목록이어야 한다.
+   지난 세션본(예: `captures/2026-11-10-backfill/*_session.json`)의 형식 · 어조를 따른다. 숫자는 컨텍스트 값만, displayed_elsewhere 숫자는 쓰지 않는다.
+   공식 regime 규칙: 2026-11-20 스냅샷부터 **그날 선택이 곧 공식**이다(`cockpit.yaml` `state_machine.same_day_from`, logic `same_day_v1`) — 확인 일수(진입 2일 · 이탈 2일)를 세지 않고,
+   후보가 없어 NEUTRAL 을 고르면 공식은 Neutral / Mixed 다. 그래서 선택이 전날 공식과 다르면 그날 바로 전환이고, persistence_assessment 에는 그 결과(오늘 전환 · 유지)를 쓴다(11/09~11/19 는 Exit/Entry 규칙 그대로).
+   공식 regime 이 바뀌는 날은 컨텍스트 단계에서 `transition_read_context.json` 도 생긴다 — 그것만 읽고 `transition_read_session.json`({"why": …})을 쓰고
+   `ai.transition_read.check(why, ctx)` 가 빈 목록이어야 한다(1~3문장 · 컨텍스트 숫자만 · Exit 이면 Neutral / Mixed 로 간 것을 적는다). 이 파일이 없으면 전환 이유는 화면이 저장 데이터로 고른 문장이 된다.
+   반도체 CYCLE READ(반도체 사이클 탭 맨 위, 2026-11-24~): 컨텍스트 단계에서 생기는 `semiconductor_cycle_read_context.json` 만 읽고 `semiconductor_cycle_read_session.json`
+   ({read 2~3문장(…습니다) · verdict 한 줄 · support/constraint [{key, note}] 각 2~4개})을 쓴다 — `ai.semi_cycle_read.check_output(normalize_output(..), ctx, cfg['cycle_read'])` 가 빈 목록이어야 한다.
+   '왜 지금 이 국면인가' 만 쓴다(어떤 증거가 지지하고 무엇이 막는지 · 신뢰도가 왜 그 수준인지 · path 로 올라온 것인지 내려온 것인지). 시장 해석 · 시나리오는 MARKET READ 몫이라 반복하지 않는다.
+   support 는 factors 의 side 가 support 인 key 만, constraint 는 constraint 인 key 만. Equity Confirm(현물과 같은 방향인가)을 주가 강세로 쓰지 않는다. 없으면 그날 CYCLE READ 는 비워 둔다(고정 문장 없음).
+   AI THEME VIEW(AI 센티 탭 맨 위): 컨텍스트 단계에서 생기는 `ai_theme_view_context.json` 만 읽고 `ai_theme_view_session.json`
+   ({headline, summary, driver, strength, weak_point, next_watch})을 쓴다 — `ai.ai_theme_view.check(out, ctx)` 가 빈 목록이어야 한다.
+   고정 문구 없이 그날 데이터의 관계를 해석한다(주도 · 확인 · 반대 증거 · 다음 확인점, 미국 · 한국). missing 의 데이터로 결론을 만들지 않는다. AI REGIME READ 문장을 반복하지 않는다.
+   이 파일이 없고 API 도 안 되면 그날 AI THEME VIEW 는 '생성되지 않음' 으로 남는다(규칙 문장으로 채우지 않는다).
+   MARKET OVERVIEW(시장 종합 탭): `market_overview_context.json` 만 읽고 `market_overview_session.json`(headline · market_view · labels · state_summary · regime_read · key_drivers ·
+   equity_view{global_read 2~3문장 · us/korea{headline ≤28자 · why 한 문장(확인 상태의 이유) · leadership 0~2개(leadership_names 만)} · divergence_label US > KOREA|KOREA > US|US ≈ KOREA · divergence} ·
+   rates_view{headline ≤40자(원인 + 주식 영향) · summary 한 문장 · equity_impact POSITIVE|NEGATIVE|MIXED|NEUTRAL · equity_impact_read ≤110자} ·
+   cross_asset_view{headline ≤40자 · summary 한 문장 · support/risk(cross_asset 자산 이름, 각 0~3 · 합 2~5) · read ≤120자} ·
+   ai_semiconductor_view{headline ≤40자 · summary 1~2문장 · ai{headline ≤28자 · why · leadership(ai_theme.groups 이름 0~2)} · semiconductor{headline} ·
+   confirmation{status STRONG|PARTIAL|WEAK|DIVERGING · relation · read ≤110자} · equity_implication{stance · read ≤110자}} · leadership_view · style_view · sector_view · top_risks · catalysts · what_matters_next ·
+   portfolio_implication)을 쓴다 — `ai.market_overview.check(out, ctx)` 가 빈 목록이어야 한다. catalysts 는 upcoming_events(그 날짜 이후)만, 섹터 이름은 sector_names 만,
+   매매 지시 대신 Overweight bias · Neutral · Underweight bias · Watch. 없으면 그날 종합은 '저장되지 않음'(숫자 칸은 그대로 보인다).
+   REGIME v2: 자격 후보(또는 NEUTRAL)만 고른다. confidence 는 정량값을 그대로 옮기지 말고 근거(데이터 지연 · 한국 결측 · 하루짜리 이벤트)를 따져 정하고, 이유를 selection_rationale 에 쓴다.
+7. `python tools/daily_snapshot/build_day.py D I full` → `python -m marketpulse.archive validate D`(COMPLETE). 입력 판정이 PARTIAL 이면 full 은 거절된다(종료 코드 3) — 순서 3 의 PARTIAL 경로로 간다.
+   저장본 meta 의 `input_status` 에 그날 STALE · MISSING 계열과 판정이 남는다(계열별 전체 표는 캡처 폴더 `input_status.json`).
+   history 7개 파일이 **새 행 1개씩만** 늘었는지(기존 행 변화 0) 확인한다 — 아니면 커밋하지 말고 원인부터.
+   공식 regime 상태 로그 `marketpulse/data/regime_state/<행 날짜>.json` 이 1개 생겼는지도 본다(한 번 쓰고 덮지 않는다 — 이미 있으면 그대로 둔다).
+8. `.venv/bin/python -m pytest -q -p no:warnings` 전부 통과.
+9. 배포본: `cd frontend && npm run build`, `python tools/daily_snapshot/build_bundle.py marketpulse/data/captures/D-backfill "D Daily Snapshot (07:30 KST) · 미국 <전 영업일> 종가 기준" P/dash/index.html`,
+   `python3 -m http.server` 로 띄워 `node tools/daily_snapshot/check_screen.cjs <url> marketpulse/data/archive/screenshots/D.jpg` — 오류 0 · 가로 스크롤 없음 · 금리 탭 '수집 D'.
+10. `docs/01-session-summary-2026-09-16.md` 에 그날 절(입력 · 결측 · 결과 · history) 추가 → 커밋 · push(네트워크 오류는 2·4·8·16초 재시도).
+11. 배포: Artifact 를 **https://claude.ai/artifact/3ERLmXjNkcrbGmfdjwbHzS** 로만 갱신(다른 주소에 올리지 않는다).
+12. 한국어로 짧게 보고: 입력 커버리지 · 결측, 오늘 regime(선택 · 공식 · 전환), 탭별 판정 한 줄씩, 고친 것, 커밋 · 배포 버전.

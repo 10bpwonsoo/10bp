@@ -1,0 +1,29 @@
+{
+  "note": "2026-09-30 수기 확인. 섹터/테마 단위 외부 view. 기관·발행일·URL·요약이 확인된 것만. 애널리스트 이름은 확인된 경우에만 적고 아니면 기관만. 요약은 원문 복사가 아니라 '무엇을 핵심 driver 로 보는가' 한두 줄.",
+  "views": [
+    {"themes": ["semiconductor", "SOXX"], "institution": "JPMorgan", "analyst": "Harlan Sur", "published_date": "2026-09-18", "source_url": "https://www.kucoin.com/news/flash/jpmorgan-semiconductor-industry-fundamentals-strengthen-cloud-capital-expenditure-reaches-954-billion", "source_title": "JPMorgan Fall 2026 U.S. Semiconductor & Semi Equipment Outlook (보도)",
+     "quote": "Semiconductor industry fundamentals are strengthening and recent sector corrections are constructive.",
+     "summary": "AI 클라우드 capex(2026년 $954B → 2027년 $1.41T)와 공급 규율을 반도체 실적의 핵심 driver 로 보고, 최근 조정은 건설적이라고 평가. WFE 2026년 +31% · 2027년 +38% 전망.",
+     "stance": "constructive", "key_variables": ["cloud capex", "supply discipline", "WFE cycle"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"},
+    {"themes": ["semiconductor", "SOXX", "ai"], "institution": "UBS", "analyst": "", "published_date": "2026-09-19", "source_url": "https://www.investing.com/news/stock-market-news/ubs-now-expects-ai-capex-to-reach-nearly-1tn-this-year-and-around-14tn-by-2027-4908051", "source_title": "UBS now expects AI capex to reach nearly $1tn this year and around $1.4tn by 2027 (Investing.com)",
+     "quote": "Memory spending will climb from $71 billion in 2025 to $367 billion this year and $923 billion in 2027.",
+     "summary": "AI capex 를 2026년 약 $1T · 2027년 약 $1.45T 로 올리며, 증가분의 대부분이 메모리 가격·지출(2027년 capex 의 64%)이라고 본다 — 이익이 아시아 메모리 제조사로 이전.",
+     "stance": "constructive", "key_variables": ["AI capex", "memory pricing", "memory share of capex"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"},
+    {"themes": ["semiconductor", "SOXX"], "institution": "DS투자증권", "analyst": "이수림", "published_date": "2026-09-29", "source_url": "https://www.etoday.co.kr/news/view/2630110", "source_title": "DS證 “반도체, 환율 쇼크는 이미 알려진 악재⋯2027년 HBM 가격 주목” (이투데이)",
+     "quote": "환율 하락으로 3분기 실적 기대치는 이미 낮아졌다 … 4분기 HBM4 매출 기여 확대와 2027년 HBM ASP 의 추가 상승 가능성에 주목할 시점",
+     "summary": "환율 하락에 따른 3분기 실적 하향은 이미 알려진 악재이고, 주가의 핵심 변수는 4분기 HBM4 매출 확대와 2027년 HBM 평균판매가(+121%)라고 본다.",
+     "stance": "constructive", "key_variables": ["HBM4 매출", "2027 HBM ASP", "USD/KRW"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"},
+    {"themes": ["ai"], "institution": "Goldman Sachs", "analyst": "Ryan Hammond", "published_date": "2026-09-25", "source_url": "https://www.bloomberg.com/news/articles/2026-09-25/goldman-sees-hyperscaler-ai-capex-rising-50-to-1-2-trillion", "source_title": "Goldman Sees Hyperscaler AI Capex Rising 50% to $1.2 Trillion (Bloomberg)",
+     "quote": "Spending on AI infrastructure by the five largest US hyperscalers is set to increase by more than half next year to $1.2 trillion.",
+     "summary": "5대 하이퍼스케일러 AI 인프라 capex 가 2027년 $1.2T(컨센서스 $1.1T 상회)로 늘고 2028년 $2T 까지 간다고 본다. 다만 손익분기에는 연 약 $300B 의 AI 매출이 필요 — capex 지속과 수익화 격차를 함께 짚음.",
+     "stance": "mixed", "key_variables": ["hyperscaler capex", "AI revenue break-even", "capex growth deceleration"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"},
+    {"themes": ["JETS", "airlines"], "institution": "Deutsche Bank", "analyst": "", "published_date": "2026-09-18", "source_url": "https://www.investing.com/news/stock-market-news/airline-oil-exposure-winners-and-losers-as-jet-fuel-costs-surge-93CH-4906676", "source_title": "Airline oil exposure: winners and losers as jet fuel costs surge (Investing.com)",
+     "quote": "While crude rose ~50% YTD, jet fuel climbed 100–125%.",
+     "summary": "항공주 비용의 핵심은 원유가 아니라 제트유 크랙 스프레드(정제 병목)라고 본다 — 원유 대비 두 배로 오른 제트유가 마진을 눌렀고, 유가·크랙 완화가 실적 회복의 조건. 부채 많은 캐리어(AAL·JBLU·ULCC)가 가장 민감.",
+     "stance": "cautious", "key_variables": ["jet fuel crack spread", "fuel cost per gallon", "leverage"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"},
+    {"themes": ["oil", "energy", "XLE"], "institution": "JPMorgan", "analyst": "Matthew Lofting", "published_date": "2026-09-23", "source_url": "https://www.investing.com/news/stock-market-news/jpmorgan-upgrades-bp-downgrades-totalenergies-in-oil-sector-reshuffle-4912301", "source_title": "JPMorgan upgrades BP, downgrades TotalEnergies in oil sector reshuffle (Investing.com)",
+     "quote": "Base-case Brent pricing at $75/barrel through 2027, with refining margins roughly three times above regular mid-cycle levels.",
+     "summary": "유가는 중동 분쟁 이후 +20% 올랐지만 기본 가정은 2027년까지 브렌트 $75 — 정제 마진(중간 사이클의 약 3배)과 중동 자산 노출·호르무즈 리스크를 종목 선별의 핵심 변수로 본다. Overweight: Shell · BP · Eni · Galp.",
+     "stance": "mixed", "key_variables": ["Brent base case", "refining margin", "Middle East exposure"], "retrieved_at": "2026-09-30T00:20:00Z", "retrieved_by": "manual"}
+  ]
+}

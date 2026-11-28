@@ -1,0 +1,101 @@
+{
+ "fetched_at": "2026-11-10T00:41:59.640089+00:00",
+ "base": {
+  "got": 47,
+  "of": 60,
+  "failed": [
+   [
+    "KOSPI200",
+    "yahoo 1개뿐 — 최소 20개 필요"
+   ],
+   [
+    "KRX_SEMI",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR3Y",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR10Y",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "VKOSPI",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR_FOREIGN_NET",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR_INSTITUTION_NET",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR_RETAIL_NET",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KR_TRADING_VALUE",
+    "krx HTTP 403 Forbidden"
+   ],
+   [
+    "KOSPI_ADV_RATIO",
+    "공급자가 설정되지 않았다"
+   ],
+   [
+    "KOSPI_NHNL",
+    "공급자가 설정되지 않았다"
+   ],
+   [
+    "SPX_ADV_RATIO",
+    "공급자가 설정되지 않았다"
+   ],
+   [
+    "VKOSPI_RV_KOSPI",
+    "derived 기초 자산 누락: VKOSPI"
+   ]
+  ]
+ },
+ "universe": {
+  "got": 94,
+  "of": 101,
+  "failed": [
+   [
+    "COAL_PROXY",
+    "csv COAL_PROXY.csv 이 없다"
+   ],
+   [
+    "NICKEL_PROXY",
+    "csv NICKEL_PROXY.csv 이 없다"
+   ],
+   [
+    "ZINC_PROXY",
+    "csv ZINC_PROXY.csv 이 없다"
+   ],
+   [
+    "NAPHTHA_PROXY",
+    "csv NAPHTHA_PROXY.csv 이 없다"
+   ],
+   [
+    "SCFI",
+    "csv SCFI.csv 이 없다"
+   ],
+   [
+    "CHINA_PMI",
+    "csv CHINA_PMI.csv 이 없다"
+   ],
+   [
+    "KR10Y",
+    "공급자가 설정되지 않았다"
+   ]
+  ]
+ },
+ "basket": {
+  "got": 52,
+  "of": 52,
+  "failed": []
+ },
+ "news": 133
+}

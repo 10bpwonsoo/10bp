@@ -1,0 +1,395 @@
+{
+ "snapshot_date": "2026-11-16",
+ "market_date": "2026-11-13",
+ "cutoff": "2026-11-16T07:30:00+09:00",
+ "transition": {
+  "kind": "entry",
+  "from": "Neutral / Mixed",
+  "to": "Policy Driven",
+  "exit_streak": 0,
+  "exit_required": 2,
+  "entry_streak": 2,
+  "entry_required": 2,
+  "support_today": "NA",
+  "support_reasons": [
+   "Neutral / Mixed 는 해제할 방향이 없다 — 새 후보의 진입 확인만 본다"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-09",
+   "candidate": "Risk-On",
+   "official": "Liquidity Stress / Risk-Off",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-10",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "BROKEN"
+  },
+  {
+   "date": "2026-11-11",
+   "candidate": "Risk-On",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-12",
+   "candidate": "Policy Driven",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-13",
+   "candidate": "Policy Driven",
+   "official": "Policy Driven",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": -0.21,
+   "today": -0.18
+  },
+  "Liquidity": {
+   "prev": 0.05,
+   "today": 1.03
+  },
+  "Rates": {
+   "prev": 2.27,
+   "today": 2.08
+  },
+  "Inflation": {
+   "prev": 0.15,
+   "today": 0.17
+  },
+  "Credit": {
+   "prev": -0.76,
+   "today": -1.64
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "up",
+   "strength": 0.92,
+   "why": "기대인플레이션이 같이 올라 물가 리프라이싱 성격의 금리 상승이다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": 2.2,
+     "display": "+12.0bp"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": 1.6,
+     "display": "+8.0bp"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": 1.9,
+     "display": "+8.0bp (5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": 2.0,
+     "display": "+4.0bp"
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "down",
+   "strength": -0.92,
+   "why": "신용여건 완화가 위험자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": -1.6,
+     "display": "-10.0bp"
+    },
+    {
+     "label": "VIX",
+     "z": -2.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": 2.0,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "up",
+   "strength": 0.72,
+   "why": "지수가 넓게 오른다 — 위험선호가 주식으로 들어온다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": 2.0,
+     "display": "(5일)"
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": 1.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "Russell 2000",
+     "z": 1.2,
+     "display": "(5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": 0.9,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "down",
+   "strength": -0.62,
+   "why": "변동성이 가라앉으며 위험 감수 여력이 회복된다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": -2.4,
+     "display": "(5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": -0.1,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": -2.2,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "FED PATH / FRONT END",
+   "direction": "up",
+   "strength": 0.74,
+   "why": "단기금리가 오르며 인하 기대가 밀린다.",
+   "evidence": [
+    {
+     "label": "US 2Y Yield",
+     "z": 2.1,
+     "display": "+13.0bp (5일)"
+    },
+    {
+     "label": "US 2s10s Curve",
+     "z": -0.8,
+     "display": "(5일)"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "US 5Y Yield",
+   "z": 2.3,
+   "change": "+14.0bp"
+  },
+  {
+   "label": "US 10Y Yield",
+   "z": 2.2,
+   "change": "+12.0bp"
+  },
+  {
+   "label": "US 5Y Breakeven",
+   "z": 2.0,
+   "change": "+6.0bp"
+  },
+  {
+   "label": "US 10Y Breakeven",
+   "z": 2.0,
+   "change": "+4.0bp"
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": 2.0,
+   "arrow": "↑↑"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": 2.2,
+   "arrow": "↑↑"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": -1.6,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -2.4,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 1.3,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -0.4,
+   "arrow": "→"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": -1.4,
+   "arrow": "↓"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "PARTIAL",
+   "score": -0.02
+  },
+  "kr": {
+   "status": "PARTIAL",
+   "score": 0.16
+  }
+ },
+ "selection_today": {
+  "selected": "POLICY_DRIVEN",
+  "commentary": "목요일 미국채는 2년물과 5년물이 크게 뛰며 정책 경로와 물가를 함께 다시 매겼다. 금요일 미국 주식은 나스닥과 반도체가 밀리고 금융주가 버텨 금리 상승에 맞는 rotation 이 나타났고, 한국은 은행 강세만 뚜렷했다. 정책 · 금리가 시장을 이끄는 환경이 이틀째 이어져 공식 regime 전환 요건을 채운다.",
+  "primary_reason": "미국채 전 구간이 2년물 주도로 다시 뛰어 금리 factor 가 이틀째 기준을 크게 넘었고, 미국 주식은 성장주·기술주 약세와 금융주 강세로 금리 상승 rotation 을 확인했다. 한국은 은행 강세만 뚜렷해 부분 확인에 그친다."
+ },
+ "events": [
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "FOMC",
+   "result": "NEUTRAL HOLD"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-22",
+   "bank": "BOK",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  }
+ ],
+ "news": [
+  {
+   "title": "Jensen Huang discusses comeback as Nvidia CEO with allies, FT reports",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": 25,
+   "summary": "젠슨 황이 측근들과 엔비디아 CEO 복귀를 논의(FT 보도, 제목)."
+  },
+  {
+   "title": "Wholesale prices rose 0.3% in October, putting annual rate at 6.5%, the highest in nearly four years",
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "sentiment": -15,
+   "summary": "미국 10월 생산자물가 전월 대비 0.3% 상승(예상 0.4%), 연율 6.5% 로 약 4년 만에 최고(CNBC)."
+  },
+  {
+   "title": "Bessent blames Lutnick’s Commerce as he slams Nvidia chip ‘leakage’ to China",
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "sentiment": -25,
+   "summary": "베선트 재무장관, 엔비디아 칩의 중국 유출을 비판하며 상무부 책임 지적(CNBC)."
+  },
+  {
+   "title": "돈 녹는 속도, 유례가 없었다…단 5주 만에 2400조원 증발한 엔비디아",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -30,
+   "summary": "엔비디아 시가총액이 최근 고점에서 5주 만에 1.8조달러 줄어듦 — AI 투자비·수익성 의문(요약)."
+  },
+  {
+   "title": "Jensen Huang may return as Nvidia chief executive - report",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": 20,
+   "summary": "젠슨 황이 엔비디아 최고경영자로 돌아올 수 있다는 보도(제목)."
+  },
+  {
+   "title": "AI risks are the biggest threat to the financial system, Fed survey finds",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": -20,
+   "summary": "연준 설문 — AI 관련 위험이 금융 시스템의 가장 큰 위협으로 꼽힘(CNBC)."
+  },
+  {
+   "title": "Analysis: Nvidia’s leadership crisis tests the chipmaker’s role as the ‘central bank of AI’",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -25,
+   "summary": "엔비디아 리더십 위기가 'AI 의 중앙은행' 역할을 시험 — 다른 기업과 얽힌 관계가 부담(CNBC, 요약)."
+  },
+  {
+   "title": "Bessent says Nvidia needs \"dramatic\" leadership shakeup",
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "sentiment": -15,
+   "summary": "베선트 재무장관, 엔비디아에 '극적인' 경영진 교체가 필요하다고 발언(제목)."
+  }
+ ]
+}

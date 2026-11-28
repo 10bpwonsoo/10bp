@@ -1,0 +1,14 @@
+{
+ "selected_regime": "NEUTRAL",
+ "regime_confidence": 40,
+ "selection_status": "NO_ELIGIBLE",
+ "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 위험선호 factor 가 전날 급등에서 기준 아래로 내려왔고, 미국은 반도체 급락으로 다시 밀린 반면 한국은 전날 미국 반등을 뒤늦게 반영해 급등하면서 두 시장의 방향이 갈렸다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Risk-On 이다. 확인 일수를 두지 않는 규칙이라, 오늘 자격 후보가 없어 NEUTRAL 을 고르면 공식 regime 은 하루 만에 Neutral / Mixed 로 돌아간다.",
+ "data_coverage": 80,
+ "selection_rationale": "자격 후보가 없다. 가장 가까운 것은 Geopolitical Risk(z(BRENT) +0.74, 기준 1.0)이고 Risk-On 은 RiskAppetite +0.13 으로 기준 +0.8 에 한참 못 미친다. 전날 Risk-On 을 만든 반도체 급등은 화요일 급락으로 상당 부분 되돌려졌고, Nasdaq 100 과 S&P 500 이 내렸다. 반면 한국은 KOSPI 와 KOSDAQ 이 큰 폭으로 올라 방향이 반대인데, 이는 전날 미국 급등을 하루 늦게 반영한 움직임이라 오늘의 위험선호 근거로 보기 어렵다. 신용은 스프레드가 좁혀졌지만 월요일 관측이고, 변동성은 큰 변화가 없다. 방향을 가리키는 증거가 서로 상쇄돼 NEUTRAL 로 두고, 확신은 정량값 수준으로 낮게 둔다.",
+ "commentary": "화요일 미국 주식은 엔비디아와 반도체지수가 하루 만에 급반락하면서 전날 반등의 상당 부분을 되돌렸고, 소형주와 금융만 올랐다. 한국은 전날 미국 급등을 뒤늦게 반영해 코스피가 5000선을 회복했지만, 이는 하루 시차의 반영이라 방향 신호로 읽기 어렵다. 어느 환경도 뚜렷한 Trigger 를 넘지 못해 오늘은 중립으로 본다."
+}

@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-26",
+ "snapshot_date": "2026-11-27",
+ "logic_version": "same_day_v1",
+ "observation": {
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "factors": {
+   "Growth": 0.243,
+   "Inflation": -0.03,
+   "Rates": -0.193,
+   "USD": 0.178,
+   "Liquidity": -0.456,
+   "RiskAppetite": -0.149,
+   "Credit": 0.948,
+   "Volatility": -0.23,
+   "China": 1.111
+  },
+  "equity_broad": {
+   "us": -0.015,
+   "kr": -0.163
+  }
+ },
+ "state": {
+  "logic_version": "same_day_v1",
+  "snapshot_date": "2026-11-27",
+  "date": "2026-11-26",
+  "official": "neutral",
+  "previous_official": "geopolitical",
+  "candidate": "neutral",
+  "candidate_state": "NEUTRAL",
+  "raw_signal": "NEUTRAL",
+  "support": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ],
+  "equity": null,
+  "exit_streak": 1,
+  "exit_required": 1,
+  "exit_confirmed": true,
+  "exited_regime": "geopolitical",
+  "entry_regime": null,
+  "entry_streak": 0,
+  "entry_required": 1,
+  "entry_confirmed": false,
+  "changed": true,
+  "change_kind": "exit",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "목요일 브렌트유가 크게 내려 전날 급등분을 대부분 되돌리면서, 수요일에 유일한 자격 후보였던 지정학 위험이 유가 Trigger 아래로 내려왔습니다. 미국은 추수감사절 휴장으로 새 거래가 없었고 한국은 소폭 반등에 그쳐, 어느 레짐도 Trigger 를 넘지 못했습니다. 오늘 선택이 NEUTRAL 이 되어 공식 레짐은 Geopolitical 에서 하루 만에 Neutral / Mixed 로 돌아갔습니다.",
+  "source": "session",
+  "generated_at": "2026-11-27T01:58:56.100355+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-27T01:58:56.100403+00:00"
+}

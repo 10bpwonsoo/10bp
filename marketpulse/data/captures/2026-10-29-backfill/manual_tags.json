@@ -1,0 +1,59 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(10/29 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. RSS 는 11/02 수집분 — 피드에 남은 창 기사가 3건뿐이라, 웹 검색으로 찾은 10/28(KST) 기사 2건을 extra_news 로 더했다(원문 사이트는 이 세션에서 열리지 않아 발행 시각 미확인 → DATE_ONLY, 그날 KST 마지막 시각으로 보수적으로 둠, 수치는 시장 계열과 대조).",
+ "tags": {
+  "f7bb3c5ba9ba8010": {
+   "themes": [
+    "energy",
+    "defense"
+   ],
+   "theme_sentiment": {
+    "energy": -10,
+    "defense": 15
+   },
+   "theme_direction": {
+    "energy": "down",
+    "defense": "up"
+   },
+   "sentiment": 0,
+   "impact": 20,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "영국 예산: 가계 에너지 요금 인하·은행 증세·국방 증액(요약)."
+  },
+  "b6892be0ee924bc1": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 20
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "베선트 재무장관, 연준이 다시 인상해도 '반드시' 실수는 아니라고 발언(요약)."
+  },
+  "4d7894b94d830822": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 15
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -10,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "10/28 FOMC 금리 동결 — Warsh 의장 기자회견에서 예상 밖 신호(CNBC 요약)."
+  }
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "selected_regime": "NEUTRAL",
+ "regime_confidence": 50,
+ "selection_status": "NO_ELIGIBLE",
+ "primary_reason": "어느 regime 도 주요 Trigger 를 넘지 않았다. 위험선호와 변동성 factor 가 중립으로 돌아왔고 금리 factor 도 기준의 절반 수준이라 뚜렷한 환경이 없다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "PARTIAL",
+ "korea_equity_confirmation": "PARTIAL",
+ "global_equity_confirmation": "PARTIAL",
+ "persistence_assessment": "공식 regime 은 Neutral / Mixed 이고 직전 Daily Snapshot 에서 Policy Driven 이 이탈 2/2 로 해제됐다. 오늘도 Neutral / Mixed 가 선택돼 진입 확인 중인 후보는 없다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보가 없다. 가장 가까운 것은 Policy Driven(Rates -0.56, 기준 1.2)과 Liquidity Stress(Liquidity -0.40, 기준 -1.0)로 둘 다 기준과 거리가 있다. 미국은 S&P 500 이 소폭 내렸지만 Nasdaq 100 과 Russell 2000, 경기민감 업종이 반등해 엇갈리고, 한국은 KOSPI · KOSDAQ 이 함께 올랐으나 대표 종목 중앙값이 지수에 못 미쳐 대형주 중심 반등이다. 신용 factor 는 여전히 높아 하이일드 스프레드 확대가 이어지는 점이 걸리고, 미국채 · 신용은 11/17 관측이다. 엔비디아 호실적에도 미국 반도체 반등 폭이 작아 위험선호 회복으로 보기는 이르다.",
+ "commentary": "수요일 미국 주식은 엔비디아 호실적에도 반도체 반등이 소폭에 그치고 금융주가 밀려 지수가 제자리였고, 한국은 반도체 주도로 코스피가 5000선을 되찾았다. 미국채 금리는 이틀째 되돌려졌지만 하이일드 스프레드는 더 벌어졌다. 위험 회피 신호는 물러났으나 새 방향을 가리키는 신호도 없어 Neutral / Mixed 로 본다."
+}

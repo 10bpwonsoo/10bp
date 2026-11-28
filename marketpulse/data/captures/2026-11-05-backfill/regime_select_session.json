@@ -1,0 +1,14 @@
+{
+ "selected_regime": "RISK_ON",
+ "regime_confidence": 78,
+ "selection_status": "CONFIRMED",
+ "primary_reason": "위험선호가 Trigger 를 크게 넘었고 미국 지수 · 소형주 · 경기민감주와 한국 대표 종목 상승 비율이 함께 확인한다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "CONFIRMED",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "CONFIRMED",
+ "persistence_assessment": "공식 regime 은 Liquidity Stress / Risk-Off 이고 직전 거래일 raw 는 Neutral 이었다. 오늘 Risk-On 이 처음 나와 다음 거래일에도 이어지면 공식 regime 이 바뀌는 전환 후보 상태다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보는 Risk-On 하나(Risk Appetite +2.28, 기준 +0.8)다. 미국은 S&P · Russell 이 크게 오르고 경기민감 대 방어가 넓게 앞섰으며 VIX · MOVE 가 크게 내려 확인이 강하다. 한국은 KOSPI 는 보합권이지만 대표 종목 대부분이 올라 확산은 확인된다. 다만 반도체와 Nasdaq 은 시장을 따라가지 못했고 하이일드 스프레드 · 원자재 · 환율은 11/03 관측이라 선거 결과 반응이 빠져 있어, 하루짜리 정치 이벤트 반응인지는 아직 가릴 수 없다. 그래서 정량 신뢰도보다 조금 낮게 둔다.",
+ "commentary": "미국 중간선거 민주당 압승과 트럼프 대통령의 패배 인정 뒤 미국 주식이 은행 · 소형주 · 경기민감주 중심으로 넓게 올랐고 변동성은 크게 내려 위험 선호가 분명해졌다. 한국도 지수는 보합권이었지만 대표 종목 대부분이 올라 확산은 확인된다. 반면 AI 데이터센터 규제 우려로 반도체가 밀려 성장주가 시장을 따라가지 못한 점은 남아 있다. 지금은 Risk-On 이 가장 자연스럽지만, 하루짜리 이벤트 반응인지 다음 거래일 확인이 필요하다."
+}

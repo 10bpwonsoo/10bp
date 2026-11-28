@@ -1,0 +1,469 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/02 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/02 00:50Z 수집분(10/30 낮 KST 기사는 피드에서 빠져 없다 — 메우지 않음).",
+ "tags": {
+  "b25dfec27635279d": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -5
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "유로존 3분기 성장률 0.4%로 둔화, 프랑스 역성장(요약)."
+  },
+  "6197dfa59ac275d9": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 25,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "키움증권 3분기 어닝쇼크 — 자회사 부진, 주가 7% 넘게 급락(요약)."
+  },
+  "b1c2d9e9b7a54399": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": -10
+   },
+   "theme_direction": {
+    "consumer": "down"
+   },
+   "sentiment": -10,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "기아 3분기 최대 판매에도 영업이익 기대 하회(요약)."
+  },
+  "ece0bb71e714a4b0": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -40,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 60,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'AI 쇼크'에 미국 기술주 폭락 — 다음 주 중간선거가 변수(제목)."
+  },
+  "0de0846f3f1b3c85": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -45,
+    "ai": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -45,
+   "impact": 70,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "인텔 실적 가이던스 실망에 주가 29% 폭락 — 52년 만의 최악의 하루, 시총 183조 원 증발(요약)."
+  },
+  "4c8de83b2decc5b7": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "메모리 업황은 과거와 다르다며 삼성전자·SK하이닉스 저가 매수론(요약)."
+  },
+  "7f0b19933aa207b8": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -40,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "나스닥100 10월 5.8% 넘게 하락, 시총 약 2670조 원 감소 — AI 투자 대비 실적 미달(요약)."
+  },
+  "f4d7975359445a14": {
+   "themes": [
+    "semiconductor",
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 0,
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "semiconductor": "neutral",
+    "geopolitical_risk": "up"
+   },
+   "sentiment": -5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 중간선거 뒤 변동성 확대 가능성, SK하이닉스 완충 역할 주목(주간전망 제목)."
+  },
+  "9f610fa6e973f036": {
+   "themes": [
+    "ai",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "ai": 10,
+    "usd": 5
+   },
+   "theme_direction": {
+    "ai": "up",
+    "usd": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "빅테크, AI 투자금 조달 위해 엔화 자금 22조 원 차입(제목)."
+  },
+  "41f7ef3b2fa7ee53": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "한국거래소 저PBR 상장사 151곳 첫 공표(제목)."
+  },
+  "d2870b419229b1c9": {
+   "themes": [
+    "geopolitical_risk"
+   ],
+   "theme_sentiment": {
+    "geopolitical_risk": 10
+   },
+   "theme_direction": {
+    "geopolitical_risk": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 중간선거 D-2 — 결과별 코스피 영향(제목)."
+  },
+  "6dfc5df80fc3ef03": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "서학개미 SOXL 4조 원 넘게 매수에도 한 달 새 30% 하락, 외국인 10월 코스피 18조 원 순매도·3개월 50조 원(요약)."
+  },
+  "3dab49d49d19afb6": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "앤트로픽 나스닥 상장 신고 — 공모 규모·가격 미정, 성장성·수익성 검증 본격화(요약)."
+  },
+  "f7afcdc964faeb88": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 0,
+    "semiconductor": 0
+   },
+   "theme_direction": {
+    "ai": "neutral",
+    "semiconductor": "neutral"
+   },
+   "sentiment": 0,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "이번 주 애플·팰런티어·AMD 실적 주목(제목)."
+  },
+  "5196847c32fcfa7e": {
+   "themes": [
+    "usd",
+    "oil"
+   ],
+   "theme_sentiment": {
+    "usd": 0,
+    "oil": 15
+   },
+   "theme_direction": {
+    "usd": "neutral",
+    "oil": "up"
+   },
+   "sentiment": 0,
+   "impact": 25,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "원/달러: 무역 흑자 vs 고유가 줄다리기(제목)."
+  },
+  "af8d6bd949fb12ac": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 25,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "증시 급락 뒤 '조정 마무리 단계' 바닥론(제목)."
+  },
+  "17f674460b176a63": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "3배 레버리지 ETF 가 기술주 쇼크를 키웠다는 분석(제목)."
+  },
+  "7bcfb93f950ab6b7": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "의무공개매수 재도입 — 금융위 '50%+1주' 국회 합의안 존중(요약)."
+  },
+  "a9283d0a83f2ec5a": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -35
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "AI 기업 자금 조달 압박 현실화 — 오픈AI 투자유치 목표 하향, AI 회의론 확산(요약)."
+  },
+  "3e52caa7027b8c75": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 30,
+   "novelty": 40,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "국민연금 삼성전자·SK하이닉스 평가손 131조 원 — 리밸런싱 유예 책임론 제기(요약)."
+  },
+  "54823160e6527244": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 25,
+   "novelty": 45,
+   "horizon": "long",
+   "event_type": "other",
+   "reason": "한국투자·일본 SBI, 1조 엔 AI 인프라(데이터센터) 펀드 추진(요약)."
+  },
+  "5ab389c9e5747134": {
+   "themes": [
+    "korea_governance",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20,
+    "ai": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 10월 16% 급락, 6000선도 버거움 — 이번 주 중간선거·AI 실적 주목(요약)."
+  },
+  "f661cf4703a2a8cd": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -40,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "AI 업계 자금줄 경색 — 오픈AI 목표 하향, 메타 신용등급 전망 하향, 앤트로픽 조달 경고(요약)."
+  },
+  "4fb2c064c077f25c": {
+   "themes": [
+    "semiconductor",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "shareholder_return": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "shareholder_return": "down"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자 107조 원 이익에도 주주환원 실망 — 개인투자자 분통(제목)."
+  },
+  "6ed29f18618bcd8f": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 5
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 0,
+   "impact": 20,
+   "novelty": 25,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "연말까지 큰 이벤트 연속 — 소비·헬스케어·코스닥 분산 제안(제목)."
+  }
+ }
+}

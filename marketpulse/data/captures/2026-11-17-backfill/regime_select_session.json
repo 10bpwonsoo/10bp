@@ -1,0 +1,14 @@
+{
+ "selected_regime": "RISK_OFF",
+ "regime_confidence": 60,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "미국 3대 지수와 소형주가 함께 크게 밀리고 변동성이 뛰어 위험선호 factor 가 기준을 크게 밑돌았고, 한국도 코스피 · 코스닥이 동반 급락해 broad equity weakness 가 두 시장에서 확인된다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "STRONG",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "STRONG",
+ "persistence_assessment": "공식 regime 은 Policy Driven 이고 직전 Daily Snapshot 에서 진입 2/2 로 막 확정됐다. 오늘 Risk-Off 가 선택돼 Risk-Off 진입 확인 1일째이며, 금리 factor 가 기준 아래로 내려와 Policy Driven 의 근거는 약해졌다.",
+ "data_coverage": 80,
+ "selection_rationale": "자격 후보는 Risk-Off(RiskAppetite -1.51, 기준 -0.8) 하나다. 변동성 조건은 통과했지만 신용 스프레드와 달러는 기준에 못 미쳤고 한국 수급 데이터는 없어 보조 조건은 절반에 못 미친다. 미국은 S&P 500 · Nasdaq 100 · Russell 2000 이 모두 약하고 유틸리티가 상대 강세라 방어적 rotation 이 뚜렷하며, 한국은 지수 급락과 방어 업종 상대 강세가 맞지만 대표 종목 확산 지표는 엇갈린다. 급락의 직접 계기가 엔비디아 이사회 발표라는 하루짜리 이벤트이고, 신용 스프레드는 11/13 관측이라 월요일 반응이 아직 없다. 그래서 확신은 정량값보다 낮게 둔다.",
+ "commentary": "월요일 미국 주식은 엔비디아 이사회가 젠슨 황 복귀를 검토하지 않는다고 밝힌 뒤 AI · 반도체 투매가 지수 전반으로 번지며 3대 지수와 소형주가 함께 크게 밀렸고 변동성이 뛰었다. 한국도 반도체 투매와 외국인 이탈로 코스피와 코스닥이 동반 급락했다. 두 시장에서 주식 약세가 넓게 확인돼 위험 회피 환경으로 보지만, 신용 스프레드의 확인은 아직 없다."
+}

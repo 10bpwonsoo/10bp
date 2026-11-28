@@ -1,0 +1,15 @@
+{
+ "selected_regime": "RISK_ON",
+ "regime_confidence": 52,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "위험 선호 factor 가 기준을 넘었고 미국은 반도체 · Nasdaq, 한국은 KOSDAQ 이 크게 오르며 두 시장 주식이 모두 확인했지만 보조 조건은 대부분 못 미친다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "CONFIRMED",
+ "korea_equity_confirmation": "CONFIRMED",
+ "global_equity_confirmation": "CONFIRMED",
+ "persistence_assessment": "공식 regime 은 직전 Daily Snapshot 에서 Liquidity Stress 가 해제된 Neutral / Mixed 다. 오늘 Risk-On 이 선택돼 진입 확인 1일째이고, 다음 거래일에도 Risk-On 이 선택되면 공식 regime 이 된다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보는 Risk-On(RiskAppetite +1.13, 기준 +0.8) 하나다. 하이일드 스프레드 축소가 support 를 주고 미국 · 한국 주식 확인이 모두 CONFIRMED 지만, 변동성과 성장 보조 조건은 기준에 조금 못 미치고 한국 수급 신호는 없다. 미국 상승은 반도체에 쏠려 있고 경기민감 대비 방어 업종은 오히려 약해, 넓은 위험 선호라기보다 하루짜리 반등 성격이 섞여 있다. 미국채는 11/09 관측이고 수요일은 채권시장 휴장이라 금리 쪽 확인이 빠져 있고, 엔비디아 시간외 하락 보도도 있어 확신은 정량값보다 높이지 않는다.",
+ "commentary": "수요일 코어위브 실적이 AI 수요 우려를 덜며 미국은 반도체를 앞세워 크게 반등했고, 한국도 코스피 · 코스닥이 함께 급등해 두 시장에서 위험 선호가 확인됐다. 다만 상승이 반도체에 쏠려 있고 연준 인사들의 매파 발언이 이어져, Risk-On 은 아직 하루짜리 후보로 보는 것이 자연스럽다.",
+ "_note_persistence": "2026-11-12 사용자 요청 — 공식 regime Exit / Entry 규칙(exit_entry_v2, 2026-11-09~)으로 persistence 문장만 다시 썼다(같은 날 컨텍스트 · 같은 검증). 선택 · 확신 · 근거는 그대로."
+}

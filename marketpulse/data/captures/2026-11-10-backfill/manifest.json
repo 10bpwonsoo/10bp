@@ -1,0 +1,81 @@
+{
+ "day": "2026-11-10",
+ "cutoff": "2026-11-10T07:30:00+09:00",
+ "origin": "historical_backfill",
+ "series": {
+  "base": 47,
+  "universe": 94,
+  "basket": 52
+ },
+ "news": {
+  "rss_in_window": 104,
+  "web_extra": 0,
+  "tagged_events": 27
+ },
+ "market": {
+  "state": "RISK_ON",
+  "confidence": 72.0,
+  "coverage": "47/60",
+  "thermo": 44
+ },
+ "regime_select": {
+  "selected": "RISK_ON",
+  "confidence": 72,
+  "source": "session",
+  "quant_label": "RISK_ON",
+  "candidates": [
+   "RISK_ON"
+  ],
+  "us": "STRONG",
+  "kr": "CONTRADICTED",
+  "global": "MIXED",
+  "coverage": 81
+ },
+ "ai": {
+  "regime": "LEADERSHIP NARROWING",
+  "sentiment": 54
+ },
+ "rates": {
+  "regime": "INFLATION REPRICING — Inflation Repricing Not Confirmed",
+  "market_read": [
+   "llm",
+   "session",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+  ],
+  "inflation_read": [
+   "llm",
+   "session",
+   "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+  ]
+ },
+ "oil": {
+  "regime": "Macro / Liquidity — UNCONFIRMED"
+ },
+ "cockpit": {
+  "now": "LIQUIDITY STRESS"
+ },
+ "semiconductor_cycle": {
+  "regime": "UPSWING",
+  "composite": 32.3,
+  "market_read": "llm/session"
+ },
+ "vintage": {
+  "market_series": {
+   "data_vintage": "CURRENT_SERIES",
+   "vintage_guaranteed": false,
+   "note": "Yahoo 일봉(수정종가)·FRED 시장금리를 지금 받아 cutoff 에 이미 끝난 봉만 남겼다 — 사후 수정은 드물지만 vintage 가 보장되지는 않는다"
+  },
+  "macro_releases": {
+   "data_vintage": "FRED_REALTIME_AT_CUTOFF",
+   "vintage_guaranteed": true,
+   "note": "CPI·PCE·임금 등은 FRED realtime(그날 vintage)으로 받았다 — 나중 개정치를 쓰지 않는다"
+  },
+  "news": {
+   "timestamp_rule": "published_at <= cutoff",
+   "rss_window_since": "2026-11-08T22:30:00+00:00"
+  },
+  "analyst_views": {
+   "rule": "수기 확인 파일 날짜 <= 그 날짜"
+  }
+ }
+}

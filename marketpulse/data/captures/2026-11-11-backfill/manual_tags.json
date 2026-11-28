@@ -1,0 +1,478 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/11 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/10 · 11/11 수집분을 합쳤다.",
+ "tags": {
+  "ff1b5e10dd523085": {
+   "themes": [
+    "semiconductor",
+    "china",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "china": -15,
+    "ai": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "down",
+    "ai": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "엔비디아만 급락 · 젠슨 황 스캔들이 미·중 반도체 갈등으로 번질 우려(제목)."
+  },
+  "90aee2f7bcb4de67": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "엔비디아 · 젠슨 황, 중국 스파이 의혹 관련 공시로 소송(제목)."
+  },
+  "d73f182989acf6a9": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 30,
+    "semiconductor": 30
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 35,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피·코스닥 4%대 급등 출발(속보 제목)."
+  },
+  "e0f90468e1212764": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 35
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 40,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 9거래일 만에 매수 사이드카 · 지수 5.23% 상승(속보 제목)."
+  },
+  "bba4a1f6204c7a4b": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 35,
+   "impact": 50,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "반도체주 강세 · 삼성전자·SK하이닉스 5~8% 급등(속보 제목)."
+  },
+  "25b702adb7ef6197": {
+   "themes": [
+    "semiconductor",
+    "consumer",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30,
+    "consumer": 15,
+    "energy": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "consumer": "up",
+    "energy": "up"
+   },
+   "sentiment": 30,
+   "impact": 45,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "미국 반도체 급반등에 삼성전자·SK하이닉스 강세 · 자동차·배터리로 반등 확산(제목)."
+  },
+  "99abb4814d135013": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 35
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 35,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피·코스닥 4%대 급등 마감 · 4거래일 만에 반등(제목)."
+  },
+  "fb5fca635dc1b696": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "모건스탠리, 삼성전자·SK하이닉스 목표가 대폭 하향(제목)."
+  },
+  "231a4361be321dcd": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "long",
+   "event_type": "supply",
+   "reason": "모건스탠리: 2028년 이후 메모리 공급 확대로 수익성 하락 가능 — SK하이닉스 목표가 38%·삼성전자 19% 하향(본문)."
+  },
+  "3ce0dab894d1d9bc": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "앤트로픽 상장 앞두고 기업가치 반토막(제목)."
+  },
+  "e908c6285d2115d4": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "앤트로픽 기업가치 1조 달러 목표 · 최대 904억 달러 조달(제목)."
+  },
+  "b95be3b27e9792ca": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 30,
+    "ai": 20
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "TSMC 10월 매출 60% 급증 · 사상 최대(제목)."
+  },
+  "4b0de78f49811c0c": {
+   "themes": [
+    "oil",
+    "geopolitical_risk",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "oil": -30,
+    "geopolitical_risk": -25,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "oil": "down",
+    "geopolitical_risk": "down",
+    "semiconductor": "up"
+   },
+   "sentiment": 20,
+   "impact": 50,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "geopolitical",
+   "reason": "미국·이란 종전 협상 기대에 국제유가 하락 · 반도체 저가 매수로 증시 반등(본문)."
+  },
+  "c724d2a8312f2574": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 20
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "프랑스 재정위기 우려 · 프랑스 국채선도발 담보 불안이 국내 증권가로(제목)."
+  },
+  "5a6b7d8eccf75408": {
+   "themes": [
+    "china"
+   ],
+   "theme_sentiment": {
+    "china": 15
+   },
+   "theme_direction": {
+    "china": "up"
+   },
+   "sentiment": 0,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "중국 상품 무역흑자 2년 연속 1조 달러 돌파(요약)."
+  },
+  "b17b0596e7392fee": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "증시 급락에 개인 주식 하루 380억 원 반대매매(제목)."
+  },
+  "88bd05aeb38d9582": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -15,
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "up"
+   },
+   "sentiment": 0,
+   "impact": 35,
+   "novelty": 30,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 시총 260조 원 감소 · 삼성전자·SK하이닉스는 반등(제목)."
+  },
+  "44576afa5806a200": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 35,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "'반도체 이익 확장의 끝이 보인다'는 경고(제목)."
+  },
+  "6bf4244da1deb81a": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 35,
+    "semiconductor": 30
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 35,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 4.39% 오른 5239.13 마감 · 4거래일 만에 반등(본문)."
+  },
+  "e8639a4955e780e5": {
+   "themes": [
+    "inflation",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "inflation": 40,
+    "rates": 45
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미 10월 물가 예상 상회에 국채금리 급등 · 12월 0.5%p 인상 거론(제목)."
+  },
+  "d6bd3214087a3ead": {
+   "themes": [
+    "inflation",
+    "rates",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "inflation": 30,
+    "rates": 30,
+    "ai": -15
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "rates": "up",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "물가 · 연준 · 엔비디아 악재가 겹친 뉴욕 증시, 코어위브는 기대 이상 실적(제목)."
+  },
+  "f5cafc894197e8c7": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "삼성전자·SK하이닉스 바닥 여부 · 반등 변수 분석(제목)."
+  },
+  "ed6f21d8c76fcd29": {
+   "themes": [
+    "ai",
+    "energy"
+   ],
+   "theme_sentiment": {
+    "ai": 20,
+    "energy": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "energy": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "long",
+   "event_type": "supply",
+   "reason": "스페이스X, 텍사스에 32조 원 규모 가스발전·데이터센터 건설 추진(제목)."
+  },
+  "53d986e27cca8cc5": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -10,
+   "impact": 30,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "금융보안원도 해킹 · 정보 유출(제목)."
+  },
+  "b94af9e7563a19dc": {
+   "themes": [
+    "inflation"
+   ],
+   "theme_sentiment": {
+    "inflation": 10
+   },
+   "theme_direction": {
+    "inflation": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 25,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "기술주 반등 뒤 미국 선물 안정 · CPI 주목(제목)."
+  }
+ }
+}

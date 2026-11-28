@@ -1,0 +1,182 @@
+# MARKET REGIME v2 — 주식 투자자 관점의 regime 선택 (2026-11-04)
+#
+# 구조: RAW DATA → FACTORS → REGIME CANDIDATES(주요 Trigger = 자격) → US / KOREA EQUITY CONFIRMATION
+#       → CROSS-ASSET · HISTORY · DATA QUALITY → LLM 선택(자격 있는 후보 또는 NEUTRAL / MIXED 중에서) → 2거래일 persistence → OFFICIAL
+#
+# 원칙
+#  - 주요 Trigger(state_rules.yaml 의 require)가 regime 의 '자격' 이다. 주식이 올랐다고 RISK-ON 후보를 만들지 않는다.
+#  - 주식 확인은 해석 · confidence · 선택에 쓴다(자격을 만들지 않는다).
+#  - 데이터 없음 = EXCLUDED. 0 · 음수 · 미확인으로 보지 않는다 — 분모에서 빼고 coverage 에만 남긴다.
+#  - confidence(그 판단이 얼마나 확실한가)와 coverage(데이터가 얼마나 있나)는 따로 보인다.
+
+display:
+  RISK_ON:           {en: "RISK-ON",           ko: "위험선호"}
+  RISK_OFF:          {en: "RISK-OFF",          ko: "위험회피"}
+  LIQUIDITY_STRESS:  {en: "LIQUIDITY STRESS",  ko: "유동성 경색"}
+  INFLATION_SHOCK:   {en: "INFLATION SHOCK",   ko: "물가 충격"}
+  GROWTH_SHOCK:      {en: "GROWTH SHOCK",      ko: "성장 충격"}
+  GEOPOLITICAL_RISK: {en: "GEOPOLITICAL RISK", ko: "지정학 위험"}
+  POLICY_DRIVEN:     {en: "POLICY DRIVEN",     ko: "정책 주도"}
+  NEUTRAL:           {en: "NEUTRAL / MIXED",   ko: "혼재"}
+
+# 주식 해석 — 그 regime 에서 자연스러운 주식 내부 움직임(state_rules 의 정의 문장과 같은 뜻, 주식 쪽 말로)
+interpretation:
+  RISK_ON: "미국과 한국에서 broad equity strength 와 위험 선호가 확인되는 환경"
+  RISK_OFF: "미국과 한국에서 broad equity weakness 와 위험 회피가 확인되는 환경"
+  LIQUIDITY_STRESS: "신용 · 변동성 스트레스가 미국과 한국 주식시장으로 번지는 환경"
+  INFLATION_SHOCK: "물가 · 금리 충격이 미국과 한국 주식 valuation 에 부담을 주는 환경"
+  GROWTH_SHOCK: "성장 둔화가 미국과 한국의 경기민감주와 주식 전반을 약하게 하는 환경"
+  GEOPOLITICAL_RISK: "지정학 충격이 방산 · 에너지 · 항공 · 위험자산에 함께 반영되는 환경"
+  POLICY_DRIVEN: "정책 · 금리 재평가가 미국과 한국 주식의 rotation 을 이끄는 환경"
+  NEUTRAL: "미국과 한국 주식 신호가 섞여 있거나 지배적인 주식 환경이 없는 상태"
+
+# 한국 업종 바스켓 — universe.yaml 의 sector 대표 종목(지수가 아니다 → PARTIAL)
+kr_baskets:
+  semis: [semiconductor]
+  battery: [battery]
+  chemicals: [chemicals]
+  steel: [steel, metals]
+  autos: [auto]
+  industrials: [electrical]
+  shipbuilding: [shipbuilding]
+  defense: [defense]
+  banks: [financials]
+  healthcare: [healthcare]
+  utilities: [utilities]
+  energy: [energy]
+  airlines: [transport_air]
+  growth_internet: [internet]
+# transport 섹터는 항공 · 해운이 섞여 있다 — 항공은 종목으로 따로 본다
+kr_basket_members:
+  transport_air: [KOREAN_AIR]
+
+# 주식 확인 신호. kind:
+#   abs  = 그 자산의 하루 z(5일 z 와 7:3 혼합)
+#   rel  = 자산 z − 기준 z (상대강도)
+#   basket_rel = 한국 업종 바스켓 평균 z − KOSPI z
+#   breadth = 한국 대표 종목 중 하루 상승 비율(0.5 기준, PARTIAL — 시장 전체 breadth 가 아니다)
+#   broad = 한국 대표 종목 중앙값 z − KOSPI z (+ 면 지수보다 넓게, − 면 일부 대형주 쏠림)
+# sign: 그 regime 에서 기대하는 방향. weight: 상대 비중. 없는 신호는 EXCLUDED(분모에서 뺀다).
+equity_signals:
+  RISK_ON:
+    us:
+      - {key: spx,  kind: abs, id: SPX, sign: 1, weight: 1.0, label: "S&P 500"}
+      - {key: ndx,  kind: abs, id: NDX, sign: 1, weight: 1.0, label: "Nasdaq 100"}
+      - {key: rut,  kind: abs, id: RUT, sign: 1, weight: 1.0, label: "Russell 2000"}
+      - {key: small_rel, kind: rel, id: RUT, base: SPX, sign: 1, weight: 0.8, label: "Small Cap 상대강도"}
+      - {key: cyc_def, kind: abs, id: CYC_DEF, sign: 1, weight: 0.8, label: "Cyclicals / Defensives"}
+      - {key: semis, kind: abs, id: SOXX, sign: 1, weight: 0.6, label: "Semiconductors"}
+      - {key: breadth_us, kind: abs, id: SPX_ADV_RATIO, sign: 1, weight: 1.0, label: "US Breadth"}
+    kr:
+      - {key: kospi, kind: abs, id: KOSPI, sign: 1, weight: 1.0, label: "KOSPI"}
+      - {key: kosdaq, kind: abs, id: KOSDAQ, sign: 1, weight: 1.0, label: "KOSDAQ"}
+      - {key: kosdaq_rel, kind: rel, id: KOSDAQ, base: KOSPI, sign: 1, weight: 0.6, label: "KOSDAQ / KOSPI 상대"}
+      - {key: breadth_kr, kind: breadth, sign: 1, weight: 1.0, label: "한국 대표 종목 상승 비율"}
+      - {key: broad_kr, kind: broad, sign: 1, weight: 0.8, label: "지수 대비 확산(대형주 쏠림 아님)"}
+      - {key: cyc_kr, kind: basket_rel, baskets: [autos, industrials, shipbuilding, chemicals], sign: 1, weight: 0.6, label: "한국 경기민감 업종"}
+      - {key: breadth_kospi, kind: abs, id: KOSPI_ADV_RATIO, sign: 1, weight: 1.0, label: "KOSPI 상승종목 비율"}
+  RISK_OFF:
+    us:
+      - {key: spx,  kind: abs, id: SPX, sign: -1, weight: 1.0, label: "S&P 500"}
+      - {key: ndx,  kind: abs, id: NDX, sign: -1, weight: 1.0, label: "Nasdaq 100"}
+      - {key: rut,  kind: abs, id: RUT, sign: -1, weight: 1.0, label: "Russell 2000"}
+      - {key: small_rel, kind: rel, id: RUT, base: SPX, sign: -1, weight: 0.8, label: "Small Cap 상대강도"}
+      - {key: defensive_rel, kind: rel, id: XLU, base: SPX, sign: 1, weight: 0.8, label: "Defensive(Utilities) 상대강도"}
+      - {key: cyc_def, kind: abs, id: CYC_DEF, sign: -1, weight: 0.8, label: "Cyclicals / Defensives"}
+      - {key: breadth_us, kind: abs, id: SPX_ADV_RATIO, sign: -1, weight: 1.0, label: "US Breadth"}
+    kr:
+      - {key: kospi, kind: abs, id: KOSPI, sign: -1, weight: 1.0, label: "KOSPI"}
+      - {key: kosdaq, kind: abs, id: KOSDAQ, sign: -1, weight: 1.0, label: "KOSDAQ"}
+      - {key: kosdaq_rel, kind: rel, id: KOSDAQ, base: KOSPI, sign: -1, weight: 0.6, label: "KOSDAQ / KOSPI 상대"}
+      - {key: breadth_kr, kind: breadth, sign: -1, weight: 1.0, label: "한국 대표 종목 상승 비율"}
+      - {key: defensive_kr, kind: basket_rel, baskets: [utilities, healthcare], sign: 1, weight: 0.6, label: "한국 방어 업종 상대강도"}
+      - {key: breadth_kospi, kind: abs, id: KOSPI_ADV_RATIO, sign: -1, weight: 1.0, label: "KOSPI 상승종목 비율"}
+  LIQUIDITY_STRESS:
+    us:
+      - {key: spx,  kind: abs, id: SPX, sign: -1, weight: 0.8, label: "S&P 500"}
+      - {key: rut,  kind: abs, id: RUT, sign: -1, weight: 1.0, label: "Russell 2000"}
+      - {key: banks, kind: rel, id: XLF, base: SPX, sign: -1, weight: 1.0, label: "Financials(Banks) 상대강도"}
+      - {key: small_rel, kind: rel, id: RUT, base: SPX, sign: -1, weight: 0.8, label: "Small Cap 상대강도"}
+      - {key: breadth_us, kind: abs, id: SPX_ADV_RATIO, sign: -1, weight: 1.0, label: "US Breadth"}
+    kr:
+      - {key: kosdaq, kind: abs, id: KOSDAQ, sign: -1, weight: 1.0, label: "KOSDAQ"}
+      - {key: kosdaq_rel, kind: rel, id: KOSDAQ, base: KOSPI, sign: -1, weight: 0.8, label: "KOSDAQ / KOSPI 상대"}
+      - {key: banks_kr, kind: basket_rel, baskets: [banks], sign: -1, weight: 1.0, label: "한국 은행 상대강도"}
+      - {key: breadth_kr, kind: breadth, sign: -1, weight: 1.0, label: "한국 대표 종목 상승 비율"}
+      - {key: kospi, kind: abs, id: KOSPI, sign: -1, weight: 0.6, label: "KOSPI"}
+  INFLATION_SHOCK:
+    us:
+      - {key: ndx,  kind: abs, id: NDX, sign: -1, weight: 1.0, label: "Nasdaq 100"}
+      - {key: growth_rel, kind: rel, id: NDX, base: SPX, sign: -1, weight: 1.0, label: "Growth(Nasdaq) / S&P 상대"}
+      - {key: energy_rel, kind: rel, id: XLE, base: SPX, sign: 1, weight: 0.8, label: "Energy 상대강도"}
+      - {key: semis, kind: abs, id: SOXX, sign: -1, weight: 0.6, label: "Semiconductors"}
+      - {key: spx,  kind: abs, id: SPX, sign: -1, weight: 0.6, label: "S&P 500"}
+    kr:
+      - {key: kosdaq, kind: abs, id: KOSDAQ, sign: -1, weight: 1.0, label: "KOSDAQ"}
+      - {key: battery_kr, kind: basket_rel, baskets: [battery], sign: -1, weight: 0.8, label: "2차전지 상대강도"}
+      - {key: growth_kr, kind: basket_rel, baskets: [growth_internet], sign: -1, weight: 0.6, label: "인터넷 · 성장주 상대강도"}
+      - {key: energy_kr, kind: basket_rel, baskets: [energy], sign: 1, weight: 0.6, label: "정유 · 에너지 상대강도"}
+      - {key: kospi, kind: abs, id: KOSPI, sign: -1, weight: 0.6, label: "KOSPI"}
+  GROWTH_SHOCK:
+    us:
+      - {key: rut,  kind: abs, id: RUT, sign: -1, weight: 1.0, label: "Russell 2000"}
+      - {key: cyc_def, kind: abs, id: CYC_DEF, sign: -1, weight: 1.0, label: "Cyclicals / Defensives"}
+      - {key: consumer, kind: rel, id: XLY, base: SPX, sign: -1, weight: 0.8, label: "Consumer Discretionary 상대강도"}
+      - {key: defensive_rel, kind: rel, id: XLU, base: SPX, sign: 1, weight: 0.6, label: "Defensive(Utilities) 상대강도"}
+      - {key: spx,  kind: abs, id: SPX, sign: -1, weight: 0.6, label: "S&P 500"}
+      - {key: breadth_us, kind: abs, id: SPX_ADV_RATIO, sign: -1, weight: 1.0, label: "US Breadth"}
+    kr:
+      - {key: cyc_kr, kind: basket_rel, baskets: [autos, chemicals, steel, industrials], sign: -1, weight: 1.0, label: "자동차 · 화학 · 철강 · 산업재"}
+      - {key: kosdaq, kind: abs, id: KOSDAQ, sign: -1, weight: 0.8, label: "KOSDAQ"}
+      - {key: breadth_kr, kind: breadth, sign: -1, weight: 0.8, label: "한국 대표 종목 상승 비율"}
+      - {key: defensive_kr, kind: basket_rel, baskets: [utilities, healthcare], sign: 1, weight: 0.6, label: "한국 방어 업종 상대강도"}
+      - {key: kospi, kind: abs, id: KOSPI, sign: -1, weight: 0.6, label: "KOSPI"}
+  # 유가가 올랐다는 것만으로는 지정학이 아니다 — 방산 · 항공으로 번지는지가 핵심(가중 크게), 에너지 · 지수는 보조
+  GEOPOLITICAL_RISK:
+    us:
+      - {key: defense, kind: rel, id: ITA, base: SPX, sign: 1, weight: 1.2, label: "Defense(ITA) 상대강도"}
+      - {key: airlines, kind: rel, id: JETS, base: SPX, sign: -1, weight: 1.0, label: "Airlines(JETS) 상대강도"}
+      - {key: energy_rel, kind: rel, id: XLE, base: SPX, sign: 1, weight: 0.4, label: "Energy 상대강도"}
+      - {key: spx,  kind: abs, id: SPX, sign: -1, weight: 0.3, label: "S&P 500"}
+    kr:
+      - {key: defense_kr, kind: basket_rel, baskets: [defense], sign: 1, weight: 1.2, label: "한국 방산 상대강도"}
+      - {key: air_kr, kind: basket_rel, baskets: [airlines], sign: -1, weight: 1.0, label: "한국 항공 상대강도"}
+      - {key: ship_kr, kind: basket_rel, baskets: [shipbuilding], sign: 1, weight: 0.4, label: "한국 조선 상대강도"}
+      - {key: energy_kr, kind: basket_rel, baskets: [energy], sign: 1, weight: 0.4, label: "정유 · 에너지 상대강도"}
+      - {key: kospi, kind: abs, id: KOSPI, sign: -1, weight: 0.3, label: "KOSPI"}
+  # 정책 주도는 금리 방향에 따라 기대 rotation 이 뒤집힌다 — sign 은 '금리 상승' 기준, 금리 하락이면 엔진이 뒤집는다
+  POLICY_DRIVEN:
+    us:
+      - {key: growth_rel, kind: rel, id: NDX, base: SPX, sign: -1, weight: 1.0, label: "Growth(Nasdaq) / S&P 상대(duration)"}
+      - {key: banks, kind: rel, id: XLF, base: SPX, sign: 1, weight: 0.8, label: "Financials(Banks) 상대강도"}
+      - {key: util_rel, kind: rel, id: XLU, base: SPX, sign: -1, weight: 0.6, label: "Utilities(금리 민감) 상대강도"}
+      - {key: tech_rel, kind: rel, id: XLK, base: SPX, sign: -1, weight: 0.6, label: "Tech 상대강도"}
+    kr:
+      - {key: kosdaq_rel, kind: rel, id: KOSDAQ, base: KOSPI, sign: -1, weight: 1.0, label: "KOSDAQ / KOSPI 상대"}
+      - {key: banks_kr, kind: basket_rel, baskets: [banks], sign: 1, weight: 0.8, label: "한국 은행 상대강도"}
+      - {key: battery_kr, kind: basket_rel, baskets: [battery], sign: -1, weight: 0.6, label: "2차전지 상대강도"}
+      - {key: growth_kr, kind: basket_rel, baskets: [growth_internet], sign: -1, weight: 0.6, label: "인터넷 · 성장주 상대강도"}
+
+# 신호 하나의 점수 = clip(sign × value / scale, −1, 1). 시장 점수 = 가중 평균(있는 신호만)
+signal_scale: 1.5
+blend_5d: 0.3          # abs · rel 신호의 5일 z 비중(지속성)
+breadth_scale: 0.25    # 상승 비율 0.5 ± 0.25 → ±1
+status:
+  strong: 0.6
+  confirmed: 0.25
+  contradicted: -0.25  # 이보다 낮으면 CONTRADICTED, 사이면 PARTIAL
+min_market_coverage: 0.4  # 한 시장에서 있는 신호 비중이 이보다 낮으면 그 시장은 판정하지 않는다(UNAVAILABLE)
+
+# 정량 confidence(LLM 이 없을 때의 선택 · LLM 에게 주는 참고값). coverage 는 넣지 않는다 — 따로 보인다
+quant_confidence:
+  # Trigger 를 넘었다는 것만으로 확신이 커지지 않게 — 보조 확인과 주식 확인이 더 무겁다
+  weights: {trigger: 0.20, support: 0.25, equity: 0.35, cross_asset: 0.10, separation: 0.10}
+  trigger_full_margin: 1.0   # threshold 를 이만큼 넘으면 trigger 강도 1
+  neutral_floor: 40          # 후보가 없을 때 NEUTRAL confidence 의 바닥
+  min_select: 45             # 정량 대체 선택: 최고 후보가 이보다 낮거나 Global 주식이 반박이면 NEUTRAL / MIXED
+
+llm:
+  effort: high
+  max_tokens: 16000
+  timeout_sec: 150
+  retries_on_invalid: 1

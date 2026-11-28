@@ -1,0 +1,304 @@
+{
+  "name": "ai_sentiment",
+  "title": "AI 센티 — 뉴스는 뜨거운데 가격이 따라오지 않는다",
+  "description": "수급 신호를 끈 설정에서의 요구 7 예시다. AI 관련 뉴스 톤은 강하게 긍정적인데 반도체·AI 자산 가격은 제자리다. DivergenceEngine 이 NEWS_VS_PRICE(무반응)를 잡고, 온도계가 '뉴스가 가격보다 뜨겁다' 를 표시하는지 확인한다. 시장 전체는 조용해 상태 판정은 서지 않는다.",
+  "seed": 20260915,
+  "bars": 180,
+  "class_defaults": {
+    "equity": {
+      "vol": 0.0105,
+      "mean_reversion": 0.02
+    },
+    "rate": {
+      "vol": 0.045,
+      "mean_reversion": 0.05,
+      "floor": 0.05
+    },
+    "fx": {
+      "vol": 0.0045,
+      "mean_reversion": 0.03
+    },
+    "commodity": {
+      "vol": 0.0155,
+      "mean_reversion": 0.02
+    },
+    "volatility": {
+      "vol": 0.055,
+      "mean_reversion": 0.1,
+      "floor": 8.0
+    },
+    "credit": {
+      "vol": 6.0,
+      "mean_reversion": 0.06,
+      "floor": 120.0
+    },
+    "flow": {
+      "vol": 420.0,
+      "mean_reversion": 0.35
+    },
+    "breadth": {
+      "vol": 0.085,
+      "mean_reversion": 0.4
+    }
+  },
+  "regimes": {
+    "KOSPI": {
+      "base": 2684.0
+    },
+    "KOSPI200": {
+      "base": 358.4
+    },
+    "KOSDAQ": {
+      "base": 762.0,
+      "vol": 0.0135
+    },
+    "SPX": {
+      "base": 5847.0,
+      "vol": 0.0092
+    },
+    "NDX": {
+      "base": 20830.0,
+      "vol": 0.0121
+    },
+    "RUT": {
+      "base": 2312.0,
+      "vol": 0.0128
+    },
+    "HSCEI": {
+      "base": 7248.0,
+      "vol": 0.0142
+    },
+    "NIKKEI": {
+      "base": 39820.0,
+      "vol": 0.0118
+    },
+    "SX5E": {
+      "base": 5012.0,
+      "vol": 0.0098
+    },
+    "XLK": {
+      "base": 245.6,
+      "vol": 0.0124
+    },
+    "XLE": {
+      "base": 91.8,
+      "vol": 0.0131
+    },
+    "XLF": {
+      "base": 48.3,
+      "vol": 0.0096
+    },
+    "XLU": {
+      "base": 79.4,
+      "vol": 0.0089
+    },
+    "XLY": {
+      "base": 205.1,
+      "vol": 0.0112
+    },
+    "SOXX": {
+      "base": 246.2,
+      "vol": 0.0178
+    },
+    "ITA": {
+      "base": 148.3,
+      "vol": 0.0105
+    },
+    "JETS": {
+      "base": 24.1,
+      "vol": 0.0152
+    },
+    "KRX_SEMI": {
+      "base": 4118.0,
+      "vol": 0.0165
+    },
+    "US2Y": {
+      "base": 3.85,
+      "vol": 0.042
+    },
+    "US10Y": {
+      "base": 4.22,
+      "vol": 0.048
+    },
+    "US30Y": {
+      "base": 4.54,
+      "vol": 0.05
+    },
+    "KR3Y": {
+      "base": 2.94,
+      "vol": 0.03
+    },
+    "KR10Y": {
+      "base": 3.17,
+      "vol": 0.034
+    },
+    "BE10Y": {
+      "base": 2.31,
+      "vol": 0.021
+    },
+    "USDKRW": {
+      "base": 1362.0,
+      "vol": 0.0041
+    },
+    "DXY": {
+      "base": 103.4,
+      "vol": 0.0032
+    },
+    "USDJPY": {
+      "base": 148.2,
+      "vol": 0.0048
+    },
+    "EURUSD": {
+      "base": 1.0863,
+      "vol": 0.0035
+    },
+    "USDCNH": {
+      "base": 7.213,
+      "vol": 0.0026
+    },
+    "WTI": {
+      "base": 78.4,
+      "vol": 0.0172,
+      "floor": 20.0
+    },
+    "BRENT": {
+      "base": 82.1,
+      "vol": 0.0168,
+      "floor": 20.0
+    },
+    "GOLD": {
+      "base": 2412.0,
+      "vol": 0.0094,
+      "floor": 800.0
+    },
+    "COPPER": {
+      "base": 4.28,
+      "vol": 0.0131,
+      "floor": 1.0
+    },
+    "NATGAS": {
+      "base": 2.95,
+      "vol": 0.031,
+      "floor": 0.5
+    },
+    "VIX": {
+      "base": 14.8,
+      "vol": 0.058,
+      "floor": 9.0,
+      "cap": 80.0
+    },
+    "MOVE": {
+      "base": 98.0,
+      "vol": 0.036,
+      "floor": 40.0,
+      "cap": 250.0
+    },
+    "VKOSPI": {
+      "base": 16.2,
+      "vol": 0.05,
+      "floor": 9.0,
+      "cap": 70.0
+    },
+    "US_HY_OAS": {
+      "base": 318.0,
+      "vol": 5.6
+    },
+    "KR_FOREIGN_NET": {
+      "base": 0.0,
+      "vol": 430.0,
+      "mean_reversion": 0.38
+    },
+    "KR_INSTITUTION_NET": {
+      "base": 0.0,
+      "vol": 360.0,
+      "mean_reversion": 0.42
+    },
+    "KR_RETAIL_NET": {
+      "base": 0.0,
+      "vol": 390.0,
+      "mean_reversion": 0.4
+    },
+    "KR_TRADING_VALUE": {
+      "base": 11500.0,
+      "vol": 880.0,
+      "mean_reversion": 0.3,
+      "floor": 3000.0
+    },
+    "KOSPI_ADV_RATIO": {
+      "base": 0.5,
+      "vol": 0.082,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "SPX_ADV_RATIO": {
+      "base": 0.52,
+      "vol": 0.078,
+      "floor": 0.02,
+      "cap": 0.98
+    },
+    "KOSPI_NHNL": {
+      "base": 4.0,
+      "vol": 26.0,
+      "mean_reversion": 0.35
+    }
+  },
+  "quiet_z": 0.7,
+  "shocks": {
+    "SOXX": 0.05,
+    "NDX": 0.0,
+    "XLK": 0.05,
+    "KRX_SEMI": 0.1,
+    "KOSPI": 0.05,
+    "KOSPI200": 0.05,
+    "SPX": 0.1,
+    "VIX": -0.1,
+    "BRENT": 0.1,
+    "US10Y": 0.05,
+    "DXY": 0.05,
+    "GOLD": 0.0
+  },
+  "news": [
+    {
+      "id": "mock-ais-001",
+      "hours_ago": 0.8,
+      "publisher": "Mock Newswire",
+      "title": "AI 데이터센터 증설 수주 급증… 반도체 업황 호황, 실적 전망 상향",
+      "body": "AI 데이터센터 증설 수주가 급증하며 반도체 업황이 호황 국면에 진입했다. 주요 업체의 수주 잔고가 최대 실적 기대를 키우고 증권가는 실적 전망을 상향했다."
+    },
+    {
+      "id": "mock-ais-002",
+      "hours_ago": 1.6,
+      "publisher": "Mock Newswire",
+      "title": "HBM 공급 계약 확대에 메모리 가격 급등… 인공지능 관련주 강세 전망",
+      "body": "HBM 공급 계약 확대로 메모리 가격이 급등했다. 증권가는 인공지능 관련 업체의 실적 개선과 강세를 전망하며 목표가를 상향했다."
+    },
+    {
+      "id": "mock-ais-003",
+      "hours_ago": 2.5,
+      "publisher": "Mock Newswire",
+      "title": "AI 추론 수요 낙관론 확산… GPU 투자 호조, 데이터센터 확대 기대",
+      "body": "AI 추론 수요 낙관론이 확산되고 있다. GPU 투자가 호조를 보이고 데이터센터 확대 기대가 커지며 관련 산업의 개선 흐름이 이어진다."
+    },
+    {
+      "id": "mock-ais-004",
+      "hours_ago": 4.0,
+      "publisher": "Mock Newswire",
+      "title": "엔비디아, 차세대 GPU 수주 호조… 사상 최대 실적 기대에 AI 생태계 확대",
+      "body": "엔비디아의 차세대 GPU 수주가 호조를 보이며 사상 최대 실적 기대가 커졌다. AI 생태계 확대와 관련 업체의 실적 개선 전망이 잇따른다."
+    },
+    {
+      "id": "mock-ais-005",
+      "hours_ago": 6.0,
+      "publisher": "Mock Newswire",
+      "title": "국내 AI 반도체 스타트업 대형 수주… 인공지능 붐 수혜 확대 기대",
+      "body": "국내 AI 반도체 스타트업이 대형 수주에 성공했다. 인공지능 붐의 수혜가 국내로 확산되며 관련 업체의 실적 개선 기대가 커진다."
+    },
+    {
+      "id": "mock-ais-006",
+      "hours_ago": 8.0,
+      "publisher": "Mock Newswire",
+      "title": "AI 서버 전력 수요 급증 전망… 데이터센터 인프라 수주 확대 기대",
+      "body": "AI 서버 확산으로 전력 수요가 급증할 것이라는 전망이다. 데이터센터 인프라 수주 확대 기대가 커지며 관련주 강세 전망이 나온다."
+    }
+  ]
+}

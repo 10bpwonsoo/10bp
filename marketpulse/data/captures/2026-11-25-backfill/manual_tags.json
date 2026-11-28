@@ -1,0 +1,612 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/25 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/24 합본 · 07:00 수집분 · 07:30 이후 재수집분을 id 로 합쳤다(창: 11/24 07:30 ~ 11/25 07:30 KST, 154건 중 시장 관련 32건).",
+ "tags": {
+  "eb17a9a795cde21c": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40,
+    "ai": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -40,
+   "impact": 80,
+   "novelty": 75,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "필라델피아 반도체지수 7.8% 하락 — 젠슨 황 복귀 랠리가 하루 만에 꺾임(속보, 제목)."
+  },
+  "8788cb7a2ec033cc": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -35,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 75,
+   "novelty": 75,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 5.86% 급락 — 전날 31% 급등 하루 만에 반락(속보, 제목)."
+  },
+  "b76100c78ed223ad": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -40
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 70,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "'젠슨 황 효과' 의문에 반도체지수 8% 급반락, 마이크론 11% 하락(제목)."
+  },
+  "61b8665d9863cb81": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 주가가 23년여 만의 최대 상승 다음 날 6% 가까이 하락(제목)."
+  },
+  "064b9df85a9438d4": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -30
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 6.54% 급락 — 상장 4거래일 만에 공모가 아래로(속보, 제목)."
+  },
+  "8ac45212ad70d85d": {
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -30,
+    "china": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -30,
+   "impact": 65,
+   "novelty": 80,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "슈머 상원의원이 엔비디아 CEO 가 미국 수출통제법을 위반했다고 비판(제목)."
+  },
+  "12a15bc7148f40cc": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 35,
+    "semiconductor": 20
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 35,
+   "impact": 60,
+   "novelty": 70,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "델이 AI 서버 수요 급증으로 분기 최대 실적을 내고 연간 가이던스를 상향(제목)."
+  },
+  "bc21d5526b2595ab": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -25,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아가 개장 전 거래에서 반락, 나스닥 선물 2.1% 하락(제목)."
+  },
+  "f81fe83d8b037d93": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25,
+    "ai": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "삼성전자·SK하이닉스 상승 폭이 절반으로 줄고 엔비디아는 6% 하락 출발 — 복귀 효과가 하루 만에 약해짐(제목)."
+  },
+  "4c5ec948c2da37dd": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 45,
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 45,
+   "impact": 80,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 6.32% 급등해 5000선 회복, 코스닥도 4.79% 상승(속보, 제목)."
+  },
+  "02cefdbf45a0a88e": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 40,
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 70,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 3거래일 만에 5000선을 회복하며 마감(마감시황, 제목)."
+  },
+  "882813c08180ec39": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 30
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 30,
+   "impact": 55,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 급등으로 상승 방향 사이드카(프로그램 매매 일시 정지) 발동(속보, 제목)."
+  },
+  "e7bb59c054e20dc1": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 25
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피에 이어 코스닥에서도 상승 방향 사이드카 발동(제목)."
+  },
+  "42da0429f98c8ea8": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35,
+    "ai": 30
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 35,
+   "impact": 55,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 복귀에 국내 반도체·기판·전력기기가 전방위 랠리(제목)."
+  },
+  "a704d11dda44dfa5": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 25
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 25,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 훈풍이 로봇주로 번져 현대오토에버·휴림로봇 상한가(제목)."
+  },
+  "6a248000e49bb731": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40,
+    "ai": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 40,
+   "impact": 60,
+   "novelty": 35,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 복귀에 미국 반도체지수가 14% 급등해 역대 최대 상승(전날 장, 제목)."
+  },
+  "71827102c03dd4b8": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 30,
+    "semiconductor": 25
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 30,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "글로벌 IB 들이 우려가 해소됐다며 엔비디아 평가를 잇달아 상향(제목)."
+  },
+  "21e473ae8e12a6c2": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 35,
+   "impact": 55,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "대만 가권지수 8.99% 급등 마감(제목)."
+  },
+  "1950c78dd0252b67": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "트럼프 경고로 급락했던 데이터센터 관련주 반등 — 증권가는 우려가 과도하다고 평가(제목)."
+  },
+  "3883653b802f72f9": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "ai": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "급반등으로 하락에 베팅한 쪽이 하루 사이 16조원 손실(제목)."
+  },
+  "df93def79e236557": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -10,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "젠슨 황 복귀로 급등한 AI 반도체주에 여전히 남은 위험 요인들(제목)."
+  },
+  "3c3d640ff1edea98": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "SK하이닉스 이익이 2028년에 급감할 수 있다는 약세론자의 경고(제목)."
+  },
+  "ac7829078f99706f": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "폭락을 맞췄던 BNK 가 SK하이닉스 100만원선도 위태롭다고 경고(제목)."
+  },
+  "11b04122d52177f9": {
+   "themes": [
+    "china",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "china": -20,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "china": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "중국 CXMT 주가가 자사주 매입에도 최저치(제목)."
+  },
+  "360f3749b3171eda": {
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 20,
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "policy",
+   "reason": "오늘부터 상장사 자사주 하루 주문 한도 완화 시행 — 과거 유사 조치 때 증시 영향은 제한적(요약)."
+  },
+  "ed80f895160dc914": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "금감원·거래소가 불법 하락 베팅 거래 합동 TF 가동 — 주가 급락 종목 집중 점검, 의심 거래 즉시 조사(요약)."
+  },
+  "0f7d900ecfdd888b": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "국민연금 때문에 증시 수급이 꼬였고 10조원 증안펀드로는 부족하다는 지적(제목)."
+  },
+  "cc1d64d424956797": {
+   "themes": [
+    "rates",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "rates": 20,
+    "usd": -15
+   },
+   "theme_direction": {
+    "rates": "up",
+    "usd": "down"
+   },
+   "sentiment": -10,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "골드만삭스가 내년 한은 기준금리 상단을 3.5%, 원/달러를 1280원으로 제시(제목)."
+  },
+  "386dfcd7b13c0533": {
+   "themes": [
+    "semiconductor",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "consumer": -15
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "consumer": "down"
+   },
+   "sentiment": 5,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "골드만삭스: 한국은 내년 3%대 성장하겠지만 반도체만 뜨겁고 내수는 냉랭(제목)."
+  },
+  "469a282c51620c48": {
+   "themes": [
+    "energy"
+   ],
+   "theme_sentiment": {
+    "energy": -25
+   },
+   "theme_direction": {
+    "energy": "down"
+   },
+   "sentiment": -25,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "국제유가 급락으로 SK이노베이션 투자심리 악화 — iM증권이 평가 하향(제목)."
+  },
+  "6cee9cfd6853048b": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": 20,
+    "consumer": 20
+   },
+   "theme_direction": {
+    "china": "up",
+    "consumer": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "중국 자금 유입 기대로 폭락장에서도 관련주가 줄줄이 급등(제목)."
+  },
+  "1dd753fe11d243b3": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": 20,
+    "consumer": 20
+   },
+   "theme_direction": {
+    "china": "up",
+    "consumer": "up"
+   },
+   "sentiment": 20,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "CJ ENM 이 실적 개선과 한한령 해제 수혜 기대로 강세(제목)."
+  }
+ }
+}

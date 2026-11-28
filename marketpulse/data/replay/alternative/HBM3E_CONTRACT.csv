@@ -1,0 +1,4 @@
+date,close,low,high,series,data_type,confidence,source,source_date,period
+2025-06-30,15.0,14,16,hbm3e-contract,Estimate,Medium,Silicon Analysts seed series (carried),carried seed,H1 2025
+2025-12-31,13.0,12,14,hbm3e-contract,Estimate,Medium,Silicon Analysts seed series (carried),carried seed,H2 2025
+2026-07-28,15.6,13,18,hbm3e-contract,Estimate,Low,Silicon Analysts model (hike: Chosun Biz via TrendForce Dec 2025; base: this series H2 2025),Jul 2026,2026 (≈+20% renewals)

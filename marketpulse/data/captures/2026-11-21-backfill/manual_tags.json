@@ -1,0 +1,516 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/21 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/20 합본과 11/21 수집분을 합쳤다(창: 11/20 07:30 ~ 11/21 07:30 KST, 88건 중 시장 관련 26건). 저장 요일이 화~토로 바뀐 첫날이라 수집은 11/21 14:16 KST 에 했고, cutoff 뒤 기사 12건은 쓰지 않았다.",
+ "tags": {
+  "8a55ce58c8577078": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": -45,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -45,
+   "impact": 80,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "기술주 투매로 나스닥이 5% 급락(뉴욕증시 브리핑, 제목)."
+  },
+  "43a4ef8416ab6aa3": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 75,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피·코스닥이 나란히 5%대 급락해 사흘 만에 5000선이 무너짐 — 외국인·기관이 유가증권시장에서 2조원 넘게 순유출, 반도체 대형주 약세(요약)."
+  },
+  "50901d68acea2260": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -35,
+    "semiconductor": -30
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -35,
+   "impact": 65,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 4869 마감 — 외국인 1조2682억원 순유출, 두 시장에서 프로그램 호가 효력정지(사이드카) 발동(마감시황, 제목)."
+  },
+  "5206425d193e8eaa": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -35
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -35,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 장중 5.4% 급락 — 코스피·코스닥에서 사이드카가 잇달아 발동(오후 시황, 제목)."
+  },
+  "6d5ea59f74eface4": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "korea_governance": -30
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스닥에도 사이드카 발동 — 삼성전자·SK하이닉스 6%대 급락(제목)."
+  },
+  "5f81f4b233ec8fd9": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "ai": -25
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 40,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 미국 빅테크 급락에 4%대 하락 출발해 5000선 붕괴 — 앤트로픽 IPO 흥행에도 엔비디아 등 기술주에서 자금 이탈(요약)."
+  },
+  "4359871b4571972d": {
+   "themes": [
+    "rates",
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "rates": 20,
+    "semiconductor": -30,
+    "ai": -20
+   },
+   "theme_direction": {
+    "rates": "up",
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 65,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "앤트로픽 상장일에 미국 통화긴축 우려가 다시 떠오르고 반도체 수출 통제 이슈가 겹쳐 아시아 증시가 급락(요약)."
+  },
+  "a5fa51c5d2817f80": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -35,
+    "ai": -25,
+    "china": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down",
+    "china": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "AI 투자 회의론에 미국 추가 금리 인상 우려와 대중 규제 우려가 더해져 반도체주 급락(요약)."
+  },
+  "670f4d7fc49fd212": {
+   "themes": [
+    "semiconductor",
+    "ai",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -30,
+    "ai": -25,
+    "china": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down",
+    "china": "down"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "엔비디아에 이어 AMD 에도 중국 관련 위험이 불거져 삼성전자·SK하이닉스가 다시 급락(제목)."
+  },
+  "ef6de8ec5d12dade": {
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "semiconductor": -25,
+    "china": -20
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -30,
+   "impact": 60,
+   "novelty": 70,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "AMD 의 AI 서버가 중국으로 넘어갔다는 하락 베팅 투자사의 보고서가 나옴(제목)."
+  },
+  "88a1778f84d65273": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": 25
+   },
+   "theme_direction": {
+    "rates": "up"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "미국 추가 금리 인상 가능성이 부상해 비트코인이 8300만원대로 내려가고 금값은 14개월 만에 최저(요약)."
+  },
+  "b22f289b3ab2538b": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -30
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -30,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장에도 AI 기대가 꺼져 소프트뱅크가 장중 16% 급락(제목)."
+  },
+  "dce409a3ac116943": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "앤트로픽 상장은 성공했지만 시장 전체의 투자심리를 돌리지는 못했다는 평가(요약)."
+  },
+  "3492af6d97a18741": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "FT 가 앤트로픽 상장을 AI 랠리의 '마지막 불꽃놀이'로 경고(제목)."
+  },
+  "c66a6720d344c25f": {
+   "themes": [
+    "ai",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": 15,
+    "china": 15
+   },
+   "theme_direction": {
+    "ai": "up",
+    "china": "up"
+   },
+   "sentiment": 15,
+   "impact": 45,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "트럼프가 자신과 시진핑 모두 온건한 AI 규칙을 원한다고 발언(제목)."
+  },
+  "b9e3ebee65681878": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -30,
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "외국인이 두 달 동안 한국 주식에서 45조원 순유출 — 지난달 25조9780억원, 이달도 반도체 대형주 중심(요약)."
+  },
+  "40bb6a15338cc640": {
+   "themes": [
+    "korea_governance",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -20,
+    "rates": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "rates": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "외국인이 한국 주식은 대거 팔면서 국내 채권은 7.4조원 사들임(제목·요약)."
+  },
+  "1cefd73cfac854cd": {
+   "themes": [
+    "shareholder_return",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 15,
+    "rates": 10
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "rates": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 급락에도 금융지주는 선방 — 고금리와 주주환원 기대(제목)."
+  },
+  "00feea9e75fe5c3c": {
+   "themes": [
+    "korea_governance",
+    "shareholder_return"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15,
+    "shareholder_return": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up",
+    "shareholder_return": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "주가 누르기 방지법이 '하위 25%' 대신 'PBR 0.8배' 기준으로 가닥(제목)."
+  },
+  "8150d625563fae61": {
+   "themes": [
+    "ai",
+    "rates"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "rates": 15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "rates": "up"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "자문·운용사 CEO 10명 중 6명이 내년 최대 위험으로 AI·기술주 고평가 조정을 꼽음, 75% 는 기준금리 인상을 예상(요약)."
+  },
+  "b592d83b27996b3d": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -15,
+    "semiconductor": -10
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "골드만삭스가 한 달 새 코스피 목표치를 1만2000에서 7500으로 낮춤 — 모건스탠리는 3~5년 안 1만 돌파 견해 유지(요약)."
+  },
+  "e8356a153da5a81d": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15
+   },
+   "theme_direction": {
+    "semiconductor": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "supply",
+   "reason": "인텔이 1.8나노급 파운드리 수주(제목)."
+  },
+  "9a6320b9771ee78f": {
+   "themes": [
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "consumer": 5
+   },
+   "theme_direction": {
+    "consumer": "up"
+   },
+   "sentiment": 5,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "earnings",
+   "reason": "갭이 예상치를 낮췄지만 올드 네이비 회복 조짐에 주가 상승(제목)."
+  },
+  "2e7cd16b07e1d204": {
+   "themes": [
+    "inflation",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "inflation": 15,
+    "consumer": -10
+   },
+   "theme_direction": {
+    "inflation": "up",
+    "consumer": "down"
+   },
+   "sentiment": -10,
+   "impact": 35,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "earnings",
+   "reason": "P&G 가 비용 부담이 쌓이자 최대 100억달러 생산성 절감 목표를 제시(제목)."
+  },
+  "49334bf9725a9511": {
+   "themes": [
+    "china",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "china": -20,
+    "semiconductor": -15
+   },
+   "theme_direction": {
+    "china": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "중국 반도체주도 고점 대비 절반 수준으로 하락(제목)."
+  },
+  "a17365566d06106d": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "korea_governance": -10
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "삼성전자·SK하이닉스가 PER 2배 수준의 극단적 저평가 — 이익 규모를 시장이 믿지 못한다는 분석(제목)."
+  }
+ }
+}

@@ -1,0 +1,541 @@
+{
+ "note": "수기 태깅(extractor=manual) — 이 세션의 Claude 가 cutoff(11/24 07:30 KST) 이전 발행 기사만 읽고 태깅했다. API 호출 아님. 본문이 비면 제목·RSS 요약에서 확인되는 것만 적었다. RSS 는 11/21 합본과 11/24 아침 수집분을 합쳤다(창: 11/21 07:30 ~ 11/24 07:30 KST — 저장 요일이 화~토라 주말 · 월요일 포함, 117건 중 시장 관련 28건). 토요일 오후 ~ 월요일 오전 발행분은 RSS 피드에 남아 있지 않아 받지 못했다(11/21 13:52 ~ 11/23 12:31 KST 사이 0건) — 만들어 채우지 않았다.",
+ "tags": {
+  "78d894e2149c8c4c": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 45,
+    "semiconductor": 40
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 45,
+   "impact": 85,
+   "novelty": 90,
+   "horizon": "short",
+   "event_type": "other",
+   "reason": "젠슨 황이 엔비디아 CEO 로 전격 복귀 — 이사회 만장일치 결정(제목)."
+  },
+  "f6948873a25aceaf": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 45,
+    "semiconductor": 40
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 45,
+   "impact": 85,
+   "novelty": 75,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "뉴욕증시에서 나스닥이 6%대 급등 마감, 엔비디아 31.5% 상승(속보, 제목)."
+  },
+  "35dbbe4a02cc39f9": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 40,
+    "semiconductor": 35
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 75,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 31% 급등에 미국 증시 급반등 — 다우 1448포인트 상승(제목)."
+  },
+  "660b7ae545258fbd": {
+   "themes": [
+    "ai",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "ai": 40,
+    "semiconductor": 40
+   },
+   "theme_direction": {
+    "ai": "up",
+    "semiconductor": "up"
+   },
+   "sentiment": 40,
+   "impact": 70,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "엔비디아 주가가 젠슨 황 복귀로 23년여 만에 가장 큰 하루 상승(제목)."
+  },
+  "31a09daf22ffe8a5": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 40,
+    "ai": 35
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 40,
+   "impact": 70,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 복귀에 반도체주가 13% 급등하며 AI 투자심리가 반전(제목)."
+  },
+  "1b3c436480fa16ec": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 35,
+    "ai": 25
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "ai": "up"
+   },
+   "sentiment": 35,
+   "impact": 60,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 복귀 뒤 SK하이닉스가 미국 시장에서 20% 반등(제목)."
+  },
+  "11568e4181bd6bc6": {
+   "themes": [
+    "ai",
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "ai": -20,
+    "semiconductor": -20,
+    "china": -15
+   },
+   "theme_direction": {
+    "ai": "down",
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -20,
+   "impact": 55,
+   "novelty": 70,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "젠슨 황 복귀에 미 의회가 반발 — 엔비디아 중국 수출 조사를 압박(제목)."
+  },
+  "8088c3918acc83d9": {
+   "themes": [
+    "semiconductor",
+    "china"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -15,
+    "china": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "china": "down"
+   },
+   "sentiment": -15,
+   "impact": 45,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "미국이 엔비디아 관련 의혹에 연루된 칩 업체 메가스피드를 수출 제한 명단에 올림(제목)."
+  },
+  "8e1364fb2da0c21c": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 20
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 20,
+   "impact": 40,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "젠슨 황 복귀를 월가 투자자들이 반겼고 앤트로픽은 1%대 하락(제목)."
+  },
+  "5c39dd51714601bd": {
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40,
+    "semiconductor": -35
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "semiconductor": "down"
+   },
+   "sentiment": -40,
+   "impact": 75,
+   "novelty": 55,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피가 장중 5.8% 급락해 4600선 아래로 밀렸다가 4700선을 겨우 지킴 — 미국 AI 반도체주 급락 여파, 이틀 연속 사이드카(요약)."
+  },
+  "a803624be34e3f59": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -40
+   },
+   "theme_direction": {
+    "korea_governance": "down"
+   },
+   "sentiment": -40,
+   "impact": 70,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "flow",
+   "reason": "6월 9000선을 넘었던 코스피가 5개월 만에 고점의 절반 수준으로 — 외환위기 이후 역대 네 번째(요약)."
+  },
+  "231ca6ec8da42e86": {
+   "themes": [
+    "korea_governance",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -35,
+    "ai": -25
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "AI 회의론 속 코스피가 4700선을 겨우 지키고 코스닥은 연중 최저(제목)."
+  },
+  "2cc8a4e645509bc5": {
+   "themes": [
+    "ai",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "ai": -30,
+    "korea_governance": -25
+   },
+   "theme_direction": {
+    "ai": "down",
+    "korea_governance": "down"
+   },
+   "sentiment": -30,
+   "impact": 55,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "코스피 4700선 사수 — 미국 AI 충격에 데이터센터주 급락(마감시황, 제목)."
+  },
+  "90d6baeeaa465425": {
+   "themes": [
+    "korea_governance",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "korea_governance": -35,
+    "ai": -20
+   },
+   "theme_direction": {
+    "korea_governance": "down",
+    "ai": "down"
+   },
+   "sentiment": -35,
+   "impact": 60,
+   "novelty": 60,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "외국인 매물을 받아내던 개인투자자마저 주식을 내던지며 낙폭이 깊어짐(요약)."
+  },
+  "a9607855727be842": {
+   "themes": [
+    "semiconductor"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20
+   },
+   "theme_direction": {
+    "semiconductor": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "골드만삭스가 HBM 시장은 더 커진다면서도 삼성전자·SK하이닉스 목표주가를 낮춤(제목)."
+  },
+  "cd3e2b66349ff428": {
+   "themes": [
+    "semiconductor",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "semiconductor": -20,
+    "ai": -15
+   },
+   "theme_direction": {
+    "semiconductor": "down",
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "강세론자 야데니가 S&P500 목표치를 7900에서 7500으로 낮춤 — 반도체 수출통제 강화에 따른 실적 악화 우려(요약)."
+  },
+  "5c76294aab07ee5d": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 15
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 15,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "골드만삭스 트레이딩 데스크가 지난주 미국 주식 급락으로 매력적인 진입 기회가 생겼다고 분석(요약)."
+  },
+  "05526b914fbedddb": {
+   "themes": [
+    "shareholder_return",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "shareholder_return": 25,
+    "korea_governance": 20
+   },
+   "theme_direction": {
+    "shareholder_return": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 20,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "금융위가 상장사 자사주 하루 취득 한도를 3개월간 확대(제목)."
+  },
+  "62918a8972e0ae5c": {
+   "themes": [
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "korea_governance": 15
+   },
+   "theme_direction": {
+    "korea_governance": "up"
+   },
+   "sentiment": 5,
+   "impact": 50,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "정부가 10조원 규모 증권시장안정펀드 가동을 준비 — 증액 요구와 실효성 논란이 함께 나옴(요약)."
+  },
+  "429c960510a20ea6": {
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "theme_sentiment": {
+    "semiconductor": 15,
+    "korea_governance": 10
+   },
+   "theme_direction": {
+    "semiconductor": "up",
+    "korea_governance": "up"
+   },
+   "sentiment": 10,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "청와대 재정기획보좌관이 증시 충격은 일시적일 수 있고 반도체 업황을 비관적으로 보지 않는다고 발언(요약)."
+  },
+  "3958f4b1e9c5dca8": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -25
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -25,
+   "impact": 50,
+   "novelty": 65,
+   "horizon": "short",
+   "event_type": "regulation",
+   "reason": "미국발 데이터센터 규제 충격에 IT 서비스주가 하락 — 삼성SDS 15% 급락(요약)."
+  },
+  "d8ce742eccb7bd27": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": -20
+   },
+   "theme_direction": {
+    "ai": "down"
+   },
+   "sentiment": -20,
+   "impact": 45,
+   "novelty": 65,
+   "horizon": "medium",
+   "event_type": "regulation",
+   "reason": "트럼프의 '해외 데이터센터 과세' 경고에 건설주가 급락(제목)."
+  },
+  "fe8539e2f1b8c065": {
+   "themes": [
+    "rates",
+    "usd"
+   ],
+   "theme_sentiment": {
+    "rates": 20,
+    "usd": 15
+   },
+   "theme_direction": {
+    "rates": "up",
+    "usd": "up"
+   },
+   "sentiment": -20,
+   "impact": 50,
+   "novelty": 55,
+   "horizon": "medium",
+   "event_type": "macro",
+   "reason": "국제 금값이 연중 최저 수준, 고점 대비 36% 하락 — 강달러와 미국 금리 인상 우려(요약)."
+  },
+  "8beb47f3ddb7fa3d": {
+   "themes": [
+    "rates"
+   ],
+   "theme_sentiment": {
+    "rates": -15
+   },
+   "theme_direction": {
+    "rates": "down"
+   },
+   "sentiment": 10,
+   "impact": 45,
+   "novelty": 60,
+   "horizon": "medium",
+   "event_type": "policy",
+   "reason": "미국 연준이 다음 달 금리를 동결할 가능성이 거론됨(제목)."
+  },
+  "f614c069eb749086": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": 25,
+    "consumer": 25
+   },
+   "theme_direction": {
+    "china": "up",
+    "consumer": "up"
+   },
+   "sentiment": 25,
+   "impact": 45,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "flow",
+   "reason": "한중 관계 해빙으로 중국향 매출 기대가 커지며 화장품주 강세(요약)."
+  },
+  "6b9f3cbbb00a675d": {
+   "themes": [
+    "china",
+    "consumer"
+   ],
+   "theme_sentiment": {
+    "china": -15,
+    "consumer": -15
+   },
+   "theme_direction": {
+    "china": "down",
+    "consumer": "down"
+   },
+   "sentiment": -20,
+   "impact": 40,
+   "novelty": 50,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "현대차 주가가 올해 고점 대비 3분의 1 수준 — 중국 업체 공세로 판매가 줄고 로봇사업 기대가 꺾임(요약)."
+  },
+  "3e640469b8bda2b1": {
+   "themes": [
+    "consumer",
+    "ai"
+   ],
+   "theme_sentiment": {
+    "consumer": 10,
+    "ai": -10
+   },
+   "theme_direction": {
+    "consumer": "up",
+    "ai": "down"
+   },
+   "sentiment": -5,
+   "impact": 35,
+   "novelty": 45,
+   "horizon": "short",
+   "event_type": "macro",
+   "reason": "AI 충격을 받은 시장에서 블랙프라이데이를 앞두고 소비 지출이 관심사로(제목)."
+  },
+  "282c4fd9b656a4db": {
+   "themes": [
+    "ai"
+   ],
+   "theme_sentiment": {
+    "ai": 10
+   },
+   "theme_direction": {
+    "ai": "up"
+   },
+   "sentiment": 10,
+   "impact": 30,
+   "novelty": 45,
+   "horizon": "medium",
+   "event_type": "other",
+   "reason": "앤트로픽·스페이스X IPO 로 월가 은행들이 10억달러 수수료를 거둠(분석, 제목)."
+  }
+ }
+}

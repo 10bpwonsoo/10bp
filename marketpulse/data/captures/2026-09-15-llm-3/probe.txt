@@ -1,0 +1,17 @@
+LLM 검색 실패 (timeout): Request timed out or interrupted. This could be due to a network timeout, dropped connection, or request cancellation. See https://docs.anthropic.com/en/api/errors#long-requests for more details.
+DATA PROBE  ·  모드 DELAYED
+────────────────────────────────────────────────────────────────────────
+공급자
+  OK   yahoo   사용 가능
+  OK   stooq   사용 가능
+  불가  fred    FRED_API_KEY 가 없다. https://fred.stlouisfed.org/docs/api/api_key.html
+  OK   krx     사용 가능
+  OK   github  사용 가능
+  불가  csv     /home/user/10bp/marketpulse/data/replay 가 비어 있다
+
+LLM
+  ok      모델 claude-opus-5  뉴스 검색 정책 auto
+
+LLM 검색  0건
+  LLM 검색       실패(timeout): Request timed out or interrupted. This could be due to a network timeout, dropped connection, or request cancellation. See https://docs.anthropic.com/en/api/errors#long-requests for more details.
+
