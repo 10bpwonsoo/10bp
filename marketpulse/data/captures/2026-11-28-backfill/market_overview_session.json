@@ -1,0 +1,227 @@
+{
+ "_note": "API 호출 실패(인증 401) — 같은 컨텍스트(market_overview_context.json, 11/28 07:30 KST 기준) · 같은 프롬프트 · 같은 검증으로 세션에서 생성. 그 시점 이후 정보는 쓰지 않았다. (입력이 모자라 11/28 아침에는 PARTIAL 로 저장했고, 같은 날 낮에 입력을 채운 뒤 같은 기준 시각으로 확정했다.) EXCLUDED 데이터는 근거로 쓰지 않았다.",
+ "headline": "미국과 한국 동반 반등, 레짐은 Risk-On 으로",
+ "market_view": "금요일 미국 주식은 블랙프라이데이 단축 거래일에 기술주와 반도체가 반등하며 대형주와 소형주가 함께 올랐고, 변동성도 크게 내렸습니다. 한국은 외국인 자금이 돌아오고 증시안정펀드 기대가 겹쳐 코스피가 4.3% 오르며 4900선을 회복했고, 코스닥은 그보다 훨씬 크게 급등했습니다. 금과 구리가 함께 급등하고 브렌트유는 다시 내렸으며, 장기금리는 수요일까지 실질금리가 이끈 하락을 이어 갔습니다. 위험선호 Trigger 를 넘고 두 시장의 주식 확인이 모두 강해 공식 레짐은 Neutral / Mixed 에서 Risk-On 으로 바뀌었지만, 변동이 컸던 한 주 끝의 하루 반등이고 신용 확인이 없어 잠정입니다.",
+ "labels": {
+  "regime": "Risk-On",
+  "equity": "Improving",
+  "macro": "Neutral",
+  "risk": "Elevated"
+ },
+ "state_summary": "두 시장 동반 반등으로 Risk-On, 하루 반등이라 잠정",
+ "regime_read": "위험선호 factor 가 기준을 넘고 미국과 한국 주식이 함께 올라 공식 레짐이 Neutral / Mixed 에서 Risk-On 으로 바뀌었습니다. 이번 주에는 공식 레짐이 매일 바뀌었고 신용 확인이 아직 없어, 다음 거래일에도 반등이 이어지는지가 중요합니다.",
+ "key_drivers": [
+  {
+   "name": "미국 기술주·반도체 반등",
+   "direction": "POSITIVE",
+   "strength": "STRONG",
+   "read": "단축 거래일에 기술주와 반도체가 이끌어 대형주와 소형주가 함께 올랐다"
+  },
+  {
+   "name": "한국 증시 급반등",
+   "direction": "POSITIVE",
+   "strength": "STRONG",
+   "read": "외국인 자금 유입과 증시안정펀드 기대로 코스피와 코스닥이 큰 폭으로 올랐다"
+  },
+  {
+   "name": "변동성 하락",
+   "direction": "POSITIVE",
+   "strength": "STRONG",
+   "read": "변동성 지수가 한 주 동안 크게 내려 위험 감수 여력이 회복됐다"
+  },
+  {
+   "name": "장기금리 하락",
+   "direction": "POSITIVE",
+   "strength": "MODERATE",
+   "read": "실질금리가 이끈 장기금리 하락이 할인율 부담을 덜었지만 수요일 관측이다"
+  },
+  {
+   "name": "금 급등과 신용 미확인",
+   "direction": "MIXED",
+   "strength": "MODERATE",
+   "read": "금이 함께 급등하고 하이일드 스프레드는 한 주 전보다 넓어 안전자산 수요가 남아 있다"
+  }
+ ],
+ "equity_view": {
+  "global_read": "미국과 한국이 같은 날 함께 올라 이번 주 들어 처음으로 두 시장의 방향이 일치했습니다. 미국은 대형주와 소형주, 경기민감 업종이 고르게 올랐고, 한국은 대표 종목 대부분이 오르며 코스닥이 코스피보다 더 강했습니다. 다만 미국은 단축 거래일이었고 한국에는 정책 기대가 섞여 있어, 반등의 지속은 다음 거래일에 확인됩니다.",
+  "us": {
+   "headline": "대형주와 소형주 동반 반등, 경기민감 우위",
+   "why": "대형주·기술주·소형주·반도체가 모두 오르고 경기민감 업종이 방어 업종을 앞서 위험선호 방향과 일치합니다.",
+   "leadership": [
+    "Consumer Discretionary",
+    "Financials"
+   ]
+  },
+  "korea": {
+   "headline": "코스닥 급등, 대표 종목 대부분 상승",
+   "why": "코스피와 코스닥이 함께 크게 오르고 상승 참여율이 높아 위험선호 방향과 일치합니다.",
+   "leadership": [
+    "Defense",
+    "Battery"
+   ]
+  },
+  "divergence_label": "US ≈ KOREA",
+  "divergence": "두 시장이 같은 날 함께 올라 방향 차이가 없습니다. 상승 폭은 한국이 더 컸는데, 증시안정펀드 기대라는 국내 요인이 더해진 결과입니다."
+ },
+ "rates_view": {
+  "headline": "실질금리가 이끈 장기금리 하락, 금요일 반응은 아직",
+  "summary": "미국채는 수요일까지 장기물 중심으로 내렸고 기대인플레이션보다 실질금리가 하락을 이끌었습니다.",
+  "equity_impact": "POSITIVE",
+  "equity_impact_read": "실질금리 하락은 성장주의 할인율 부담을 덜어 주지만, 금요일 주식 반등에 대한 채권시장의 반응은 아직 관측되지 않았습니다."
+ },
+ "cross_asset_view": {
+  "headline": "주식과 변동성은 위험선호, 금은 급등",
+  "summary": "주식이 오르고 변동성과 금리가 내려 위험자산에 우호적이지만, 금이 급등하고 신용 스프레드는 한 주 전보다 넓습니다.",
+  "support": [
+   "Equity",
+   "Volatility",
+   "Rates"
+  ],
+  "risk": [
+   "Credit",
+   "Gold"
+  ],
+  "read": "주식·변동성·금리는 위험선호 쪽이고 신용과 금은 아직 경계 쪽이어서, 위험선호가 모든 자산에서 확인된 것은 아닙니다."
+ },
+ "ai_semiconductor_view": {
+  "headline": "AI 는 넓게 반등, 반도체 사이클은 현물 약세로 제자리",
+  "summary": "AI 바스켓은 거의 모든 종목이 오르며 한 주 성과가 Nasdaq 과 비슷해졌지만 중기 추세 회복은 아직이고, 반도체 사이클은 범용 현물 약세가 깊어져 EARLY RECOVERY 에 머뭅니다.",
+  "ai": {
+   "headline": "하루 참여는 넓고 중기 추세 회복은 소수",
+   "why": "뉴스와 가격이 함께 돌아섰지만 중기 이동평균선 위 종목은 아직 적습니다.",
+   "leadership": [
+    "Software / Application",
+    "Korea AI Supply Chain"
+   ]
+  },
+  "semiconductor": {
+   "headline": "HBM·수출 강세, 범용 현물 약세 심화"
+  },
+  "confirmation": {
+   "status": "WEAK",
+   "relation": "FUNDAMENTALS > PRICE",
+   "read": "HBM·수출과 현물 프리미엄은 사이클을 지지하지만, 범용 현물 가격이 더 약해졌고 메모리 대형주의 한 달 낙폭이 커 가격 쪽 확인이 없습니다."
+  },
+  "equity_implication": {
+   "stance": "NEUTRAL",
+   "read": "반도체 주가가 반등했지만 현물 가격이 따라오지 않아, 현물 약세가 멈추는지 확인되기 전에는 추세 전환으로 보기 이릅니다."
+  }
+ },
+ "leadership_view": "1주 상대강도 리더는 중국·소비재·방산이고 반도체와 AI, 기술주가 뒤처져, 지수 반등에도 한 주 기준 주도권은 기술주 밖에 있다",
+ "style_view": [
+  {
+   "style": "Growth",
+   "view": "IMPROVING",
+   "read": "기술주와 반도체가 반등했지만 한 주 상대강도는 아직 뒤처져 있다"
+  },
+  {
+   "style": "High Beta",
+   "view": "IMPROVING",
+   "read": "AI 와 반도체 고베타 종목이 넓게 반등했다"
+  },
+  {
+   "style": "Cyclical",
+   "view": "POSITIVE",
+   "read": "소형주와 경기민감 업종이 방어 업종을 앞섰다"
+  },
+  {
+   "style": "Defensive",
+   "view": "NEUTRAL",
+   "read": "유틸리티의 한 주 상대강도가 약해졌다"
+  }
+ ],
+ "sector_view": {
+  "positive": [
+   "China",
+   "Consumer",
+   "Defense"
+  ],
+  "watch": [
+   "Semiconductor",
+   "AI",
+   "Financials"
+  ],
+  "negative": [
+   "Memory",
+   "Oil",
+   "Energy"
+  ],
+  "read": "중국·소비재·방산이 한 주 상대강도를 이끌었고, 반도체와 AI 는 반등의 지속을, 금융은 금리 방향을 지켜볼 구간이며, 메모리와 유가·에너지는 한 주 기준으로 뒤처졌다"
+ },
+ "top_risks": [
+  {
+   "risk": "하루 반등의 지속성",
+   "level": "ELEVATED",
+   "read": "공식 레짐이 이번 주 매일 바뀌었고 오늘 반등은 단축 거래일에 나와 다음 거래일의 확인이 필요하다"
+  },
+  {
+   "risk": "반도체·메모리 변동성",
+   "level": "HIGH",
+   "read": "급등과 급락이 이어졌고 범용 메모리 현물 가격은 계속 내려 주가 반등의 근거가 약하다"
+  },
+  {
+   "risk": "신용 스프레드",
+   "level": "ELEVATED",
+   "read": "하이일드 스프레드가 한 주 전보다 넓은 채여서 주식 반등이 신용으로 확인되지 않았다"
+  },
+  {
+   "risk": "물가와 정책 경로",
+   "level": "ELEVATED",
+   "read": "근원 물가가 예상을 웃돈 뒤 금리는 오히려 내렸는데, 정책 경로에 대한 재평가가 남아 있다"
+  },
+  {
+   "risk": "한국 정책 기대의 되돌림",
+   "level": "MODERATE",
+   "read": "코스닥 급등에 증시안정펀드 기대가 섞여 있어 실제 내용에 따라 되돌려질 수 있다"
+  }
+ ],
+ "catalysts": [
+  {
+   "date": "2026-12-09",
+   "event": "FOMC",
+   "why": "예상을 웃돈 물가 뒤의 점도표로 정책 경로가 드러난다",
+   "sensitivity": "HIGH"
+  },
+  {
+   "date": "2026-12-17",
+   "event": "ECB 통화정책회의",
+   "why": "유럽 정책 방향과 스태프 경제 추정",
+   "sensitivity": "MEDIUM"
+  },
+  {
+   "date": "2026-12-23",
+   "event": "US PCE (11월) · GDP 3분기 확정치",
+   "why": "근원 물가가 다시 예상을 웃도는지 확인된다",
+   "sensitivity": "HIGH"
+  }
+ ],
+ "what_matters_next": [
+  {
+   "title": "Risk-On 의 지속",
+   "condition": "다음 거래일에도 위험선호 Trigger 가 유지되는지",
+   "implication": "그날 선택이 곧 공식 레짐이라, 반등이 되돌려지면 바로 중립으로 돌아간다"
+  },
+  {
+   "title": "신용의 확인",
+   "condition": "하이일드 스프레드가 좁혀지는지",
+   "implication": "좁혀지면 Risk-On 의 보조 증거가 채워지고 잠정 상태가 풀린다"
+  },
+  {
+   "title": "메모리 현물 가격",
+   "condition": "범용 DRAM 현물의 낙폭이 멈추는지",
+   "implication": "멈추면 반도체 주가 반등이 사이클로 뒷받침된다"
+  },
+  {
+   "title": "금리의 주식 반응 반영",
+   "condition": "금요일 주식 반등 뒤 장기금리가 어떻게 움직였는지",
+   "implication": "금리가 되오르면 할인율이 주는 지지가 약해진다"
+  }
+ ],
+ "portfolio_implication": {
+  "equity_stance": "Neutral 에서 Cautious Positive 로, 다만 하루 반등이라 확인을 기다리는 구간",
+  "style": "Cyclical 은 Positive, Growth · High Beta 는 개선, Defensive 는 Neutral",
+  "sector": "중국 · 소비재 · 방산 개선, 반도체 · AI Watch, 메모리 Underweight bias",
+  "risk_control": "한 주 변동폭이 컸던 만큼 AI·반도체 집중도와 한국 중소형주 노출 관리",
+  "hedge_watch": "하이일드 스프레드 · VIX · 금 · 원/달러"
+ }
+}

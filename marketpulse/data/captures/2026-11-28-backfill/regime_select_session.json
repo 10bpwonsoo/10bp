@@ -1,0 +1,14 @@
+{
+ "selected_regime": "RISK_ON",
+ "regime_confidence": 66,
+ "selection_status": "TENTATIVE",
+ "primary_reason": "위험선호 factor 가 기준을 넘었고 변동성 · 성장 조건이 함께 통과했다. 미국에서는 대형주 · 기술주 · 소형주 · 반도체가 모두 올랐고 한국도 코스피와 코스닥이 급등해 두 시장의 주식 확인이 모두 강하다.",
+ "alternative_candidates": [],
+ "us_equity_confirmation": "STRONG",
+ "korea_equity_confirmation": "STRONG",
+ "global_equity_confirmation": "STRONG",
+ "persistence_assessment": "직전 Daily Snapshot 의 공식 regime 은 Neutral / Mixed 다. 확인 일수를 두지 않는 규칙이라 오늘 선택한 Risk-On 이 곧 공식 regime 이 된다. 이번 주에만 공식 regime 이 매일 바뀌었고 오늘도 하루 반등에 따른 선택이라 지속 여부는 다음 거래일에 다시 본다.",
+ "data_coverage": 81,
+ "selection_rationale": "자격 후보는 Risk-On 하나다(RiskAppetite +1.13, 기준 +0.8). 보조 조건 가운데 변동성과 성장은 통과했고 신용은 통과하지 못했는데, 하이일드 스프레드가 11/26 관측이라 금요일 반등이 아직 들어 있지 않다. 주식은 미국에서 S&P 500 · Nasdaq 100 · Russell 2000 · 반도체가 모두 올랐고, 한국은 KOSPI 와 KOSDAQ 이 급등하며 대표 종목 대부분이 올라 두 시장 모두 후보와 같은 방향이다. 다만 미국은 블랙프라이데이 단축 거래일이었고, 한국의 급등에는 증시안정펀드 기대라는 정책 요인이 섞여 있으며, 금이 함께 급등해 안전자산 수요도 남아 있다. 변동이 컸던 한 주의 끝에 나온 하루 반등이고 신용 확인이 없어, 확신은 정량값보다 조금 낮게, 상태는 잠정으로 둔다.",
+ "commentary": "금요일 미국 주식은 단축 거래일에 기술주와 반도체가 반등하며 3대 지수와 소형주가 모두 올랐고 변동성도 크게 내렸다. 한국은 외국인 자금이 돌아오고 증시안정펀드 기대가 겹쳐 코스피가 4900선을 회복하고 코스닥이 급등했다. 두 시장이 함께 올라 위험 선호 환경으로 보지만, 변동이 컸던 한 주 끝의 하루 반등이고 신용 확인이 아직 없어 잠정으로 본다."
+}

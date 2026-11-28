@@ -1,0 +1,1040 @@
+{
+ "snapshot_date": "2026-11-28",
+ "as_of_utc": "2026-11-27T22:30:00Z",
+ "market_regime": {
+  "official": "RISK-ON",
+  "candidate": "Risk-On",
+  "official_support": "NA",
+  "exit": null,
+  "entry": null,
+  "official_rule": "그날 선택이 곧 공식 regime 이다(확인 일수 없음)",
+  "changed_today": {
+   "from": "Neutral / Mixed",
+   "to": "Risk-On"
+  },
+  "released_previous_official": null,
+  "raw_signal": "RISK_ON",
+  "transition_status": "CHANGED",
+  "selection_confidence": 66,
+  "equity_confirmation": {
+   "us": "STRONG",
+   "korea": "STRONG",
+   "global": "STRONG"
+  },
+  "selection_commentary": "금요일 미국 주식은 단축 거래일에 기술주와 반도체가 반등하며 3대 지수와 소형주가 모두 올랐고 변동성도 크게 내렸다. 한국은 외국인 자금이 돌아오고 증시안정펀드 기대가 겹쳐 코스피가 4900선을 회복하고 코스닥이 급등했다. 두 시장이 함께 올라 위험 선호 환경으로 보지만, 변동이 컸던 한 주 끝의 하루 반등이고 신용 확인이 아직 없어 잠정으로 본다.",
+  "market_read": "오늘 선택에 따라 공식 레짐이 바뀌었습니다 (Neutral / Mixed → Risk-On).",
+  "factors_today": {
+   "RiskAppetite": 1.13,
+   "Liquidity": 0.35,
+   "Rates": -0.83,
+   "Inflation": 0.12,
+   "Credit": -0.24
+  },
+  "recent_official_vs_candidate": [
+   {
+    "date": "2026-11-18",
+    "official": "Neutral / Mixed",
+    "candidate": "Neutral / Mixed"
+   },
+   {
+    "date": "2026-11-19",
+    "official": "Growth",
+    "candidate": "Growth"
+   },
+   {
+    "date": "2026-11-20",
+    "official": "Liquidity Stress / Risk-Off",
+    "candidate": "Liquidity Stress / Risk-Off"
+   },
+   {
+    "date": "2026-11-23",
+    "official": "Risk-On",
+    "candidate": "Risk-On"
+   },
+   {
+    "date": "2026-11-24",
+    "official": "Neutral / Mixed",
+    "candidate": "Neutral / Mixed"
+   },
+   {
+    "date": "2026-11-25",
+    "official": "Geopolitical",
+    "candidate": "Geopolitical"
+   },
+   {
+    "date": "2026-11-26",
+    "official": "Neutral / Mixed",
+    "candidate": "Neutral / Mixed"
+   },
+   {
+    "date": "2026-11-27",
+    "official": "Risk-On",
+    "candidate": "Risk-On"
+   }
+  ]
+ },
+ "market_drivers": [
+  {
+   "driver": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.8,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    "US 10Y Yield (5일)",
+    "US 30Y Yield (5일)",
+    "US 10Y Real Yield (TIPS) (5일)"
+   ]
+  },
+  {
+   "driver": "EQUITY DIRECTION",
+   "direction": "up",
+   "strength": 0.77,
+   "why": "지수가 넓게 오른다 — 위험선호가 주식으로 들어온다.",
+   "evidence": [
+    "S&P 500",
+    "Nasdaq 100",
+    "Russell 2000 (5일)"
+   ]
+  },
+  {
+   "driver": "VOLATILITY",
+   "direction": "down",
+   "strength": -0.62,
+   "why": "변동성이 가라앉으며 위험 감수 여력이 회복된다.",
+   "evidence": [
+    "VIX (5일)",
+    "MOVE 채권변동성",
+    "VIX − S&P 실현변동성 (5일)"
+   ]
+  },
+  {
+   "driver": "CREDIT STRESS",
+   "direction": "down",
+   "strength": -0.26,
+   "why": "신용여건 완화가 위험자산을 지지한다.",
+   "evidence": [
+    "US HY OAS (5일)",
+    "VIX (5일)",
+    "S&P 500"
+   ]
+  },
+  {
+   "driver": "LITHIUM",
+   "direction": "up",
+   "strength": 1.0,
+   "why": "리튬 반등 — 배터리 체인 원가·심리.",
+   "evidence": [
+    "리튬 (LIT ETF 대리) +4.6%"
+   ]
+  }
+ ],
+ "market_tone": {
+  "state": "RISK_ON",
+  "read": "위험선호·성장이 시장을 위험선호 쪽으로 끌고 있고 뚜렷한 부담 요인은 없습니다. 지난주보다 톤이 개선돼 위험선호가 굳어지는 단계입니다."
+ },
+ "us_equity_signals": [
+  {
+   "signal": "S&P 500",
+   "value_riskon_basis": 1.28,
+   "note": ""
+  },
+  {
+   "signal": "Nasdaq 100",
+   "value_riskon_basis": 1.15,
+   "note": ""
+  },
+  {
+   "signal": "Russell 2000",
+   "value_riskon_basis": 1.64,
+   "note": ""
+  },
+  {
+   "signal": "Small Cap 상대강도",
+   "value_riskon_basis": 0.36,
+   "note": ""
+  },
+  {
+   "signal": "Cyclicals / Defensives",
+   "value_riskon_basis": 1.23,
+   "note": ""
+  },
+  {
+   "signal": "Semiconductors",
+   "value_riskon_basis": 0.82,
+   "note": ""
+  }
+ ],
+ "korea_equity_signals": [
+  {
+   "signal": "KOSPI",
+   "value_riskon_basis": 1.3,
+   "note": ""
+  },
+  {
+   "signal": "KOSDAQ",
+   "value_riskon_basis": 2.6,
+   "note": ""
+  },
+  {
+   "signal": "KOSDAQ / KOSPI 상대",
+   "value_riskon_basis": 1.31,
+   "note": ""
+  },
+  {
+   "signal": "한국 대표 종목 상승 비율",
+   "value_riskon_basis": 0.92,
+   "note": "대표 종목 36개 중 상승 비율(시장 전체 breadth 아님)"
+  },
+  {
+   "signal": "지수 대비 확산(대형주 쏠림 아님)",
+   "value_riskon_basis": -0.35,
+   "note": "대표 종목 중앙값 − KOSPI(− 면 일부 대형주 쏠림)"
+  },
+  {
+   "signal": "한국 경기민감 업종",
+   "value_riskon_basis": -0.06,
+   "note": "대표 종목 11개 평균(업종 지수 아님)"
+  }
+ ],
+ "equity_terms": {
+  "us": {
+   "trend": "POSITIVE",
+   "breadth": "UNAVAILABLE",
+   "breadth_basis": "상승종목 비율 데이터 없음",
+   "style": [
+    "SMALL ≈ LARGE",
+    "CYCLICAL > DEFENSIVE"
+   ],
+   "confirmation": "STRONG"
+  },
+  "korea": {
+   "trend": "STRONG",
+   "breadth": "BROAD",
+   "breadth_basis": "상승 참여율 92% (대표 종목 기준)",
+   "participation_pct": 92,
+   "style": [
+    "KOSDAQ > KOSPI",
+    "CYCLICAL ≈ INDEX"
+   ],
+   "confirmation": "STRONG"
+  }
+ },
+ "korea_sector_moves": [
+  {
+   "sector": "Defense",
+   "stocks": 2,
+   "avg_ret_5d_pct": 14.9,
+   "up_1d": 2,
+   "top": [
+    "LIG넥스원",
+    "한화에어로스페이스"
+   ]
+  },
+  {
+   "sector": "Battery",
+   "stocks": 2,
+   "avg_ret_5d_pct": 9.0,
+   "up_1d": 2,
+   "top": [
+    "삼성SDI",
+    "LG에너지솔루션"
+   ]
+  },
+  {
+   "sector": "Metals",
+   "stocks": 1,
+   "avg_ret_5d_pct": 8.9,
+   "up_1d": 1,
+   "top": [
+    "고려아연"
+   ]
+  },
+  {
+   "sector": "Electrical",
+   "stocks": 3,
+   "avg_ret_5d_pct": 7.3,
+   "up_1d": 3,
+   "top": [
+    "LS ELECTRIC",
+    "HD현대일렉트릭"
+   ]
+  },
+  {
+   "sector": "Auto",
+   "stocks": 3,
+   "avg_ret_5d_pct": 6.3,
+   "up_1d": 3,
+   "top": [
+    "기아",
+    "현대차"
+   ]
+  },
+  {
+   "sector": "Chemicals",
+   "stocks": 3,
+   "avg_ret_5d_pct": 4.5,
+   "up_1d": 3,
+   "top": [
+    "LG화학",
+    "금호석유"
+   ]
+  },
+  {
+   "sector": "Energy",
+   "stocks": 3,
+   "avg_ret_5d_pct": 4.0,
+   "up_1d": 3,
+   "top": [
+    "두산에너빌리티",
+    "S-Oil"
+   ]
+  },
+  {
+   "sector": "Consumer",
+   "stocks": 1,
+   "avg_ret_5d_pct": 3.9,
+   "up_1d": 0,
+   "top": [
+    "CJ제일제당"
+   ]
+  },
+  {
+   "sector": "Shipbuilding",
+   "stocks": 2,
+   "avg_ret_5d_pct": 3.7,
+   "up_1d": 2,
+   "top": [
+    "한화오션",
+    "HD현대중공업"
+   ]
+  },
+  {
+   "sector": "Semiconductor",
+   "stocks": 4,
+   "avg_ret_5d_pct": 2.6,
+   "up_1d": 4,
+   "top": [
+    "삼성전기",
+    "한미반도체"
+   ]
+  },
+  {
+   "sector": "Utilities",
+   "stocks": 1,
+   "avg_ret_5d_pct": 2.3,
+   "up_1d": 1,
+   "top": [
+    "한국전력"
+   ]
+  },
+  {
+   "sector": "Healthcare",
+   "stocks": 2,
+   "avg_ret_5d_pct": 1.7,
+   "up_1d": 2,
+   "top": [
+    "셀트리온",
+    "삼성바이오로직스"
+   ]
+  },
+  {
+   "sector": "Steel",
+   "stocks": 2,
+   "avg_ret_5d_pct": 0.9,
+   "up_1d": 2,
+   "top": [
+    "POSCO홀딩스",
+    "현대제철"
+   ]
+  },
+  {
+   "sector": "Internet",
+   "stocks": 2,
+   "avg_ret_5d_pct": 0.6,
+   "up_1d": 2,
+   "top": [
+    "NAVER",
+    "카카오"
+   ]
+  },
+  {
+   "sector": "Transport",
+   "stocks": 3,
+   "avg_ret_5d_pct": -1.0,
+   "up_1d": 3,
+   "top": [
+    "HMM",
+    "팬오션"
+   ]
+  },
+  {
+   "sector": "Financials",
+   "stocks": 2,
+   "avg_ret_5d_pct": -3.8,
+   "up_1d": 0,
+   "top": [
+    "신한지주",
+    "KB금융"
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "KOSPI",
+   "z": 1.6,
+   "change": ""
+  },
+  {
+   "label": "Nasdaq 100",
+   "z": 1.4,
+   "change": ""
+  },
+  {
+   "label": "Russell 2000",
+   "z": 1.4,
+   "change": ""
+  },
+  {
+   "label": "S&P 500",
+   "z": 1.3,
+   "change": ""
+  }
+ ],
+ "cross_asset": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": 1.3,
+   "arrow": "↑",
+   "state": "FIRM"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -1.8,
+   "arrow": "↓",
+   "state": "FALLING"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.0,
+   "arrow": "↑",
+   "state": "WIDENING"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -2.7,
+   "arrow": "↓↓",
+   "state": "CALMING"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 0.8,
+   "arrow": "↑",
+   "state": "STRONG"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -1.4,
+   "arrow": "↓",
+   "state": "FALLING"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": 2.6,
+   "arrow": "↑↑",
+   "state": "RISING"
+  }
+ ],
+ "divergences": [
+  "금 / 브렌트 원유: 금 ↔ 브렌트 원유의 사전 정의 관계는 +75인데 최근 실측 상관은 -50으로 부호가 반대다. 이 관계를 전제로 한 영향 경로는 보류해야 한다",
+  "금 / VIX: 금 ↔ VIX의 사전 정의 관계는 +70인데 최근 실측 상관은 -42로 부호가 반대다. 이 관계를 전제로 한 영향 경로는 보류해야 한다"
+ ],
+ "leadership_themes": [
+  {
+   "theme": "China",
+   "role": "leader",
+   "arrow": "↑",
+   "z_1d": 3.3,
+   "rel_1w": 0.8,
+   "breadth": 43.0,
+   "why": "S&P 500 대비 1주 상대수익 +0.8σ — 시장보다 강하다",
+   "quality": "가격이 펀더멘털보다 선행",
+   "risk": "시장 베타 반전",
+   "key_stocks": []
+  },
+  {
+   "theme": "Consumer",
+   "role": "leader",
+   "arrow": "↑",
+   "z_1d": 1.7,
+   "rel_1w": 0.6,
+   "breadth": 67.0,
+   "why": "S&P 500 대비 1주 상대수익 +0.6σ — 시장보다 강하다",
+   "quality": "breadth 또는 confirmation 부족",
+   "risk": "시장 베타 반전",
+   "key_stocks": []
+  },
+  {
+   "theme": "Geopolitical Risk",
+   "role": "leader",
+   "arrow": "→",
+   "z_1d": 1.6,
+   "rel_1w": 0.4,
+   "breadth": 100.0,
+   "why": "S&P 500 대비 1주 상대수익 +0.4σ — 시장보다 강하다",
+   "quality": "breadth 또는 confirmation 부족",
+   "risk": "시장 베타 반전",
+   "key_stocks": []
+  },
+  {
+   "theme": "Defense",
+   "role": "leader",
+   "arrow": "→",
+   "z_1d": 1.6,
+   "rel_1w": 0.4,
+   "breadth": 100.0,
+   "why": "방산 지수 (Aerospace & Defense +1.6σ) — 현재 확인됨",
+   "quality": "breadth 또는 confirmation 부족",
+   "risk": "지정학 완화",
+   "key_stocks": [
+    "LIG넥스원",
+    "한화에어로스페이스"
+   ]
+  },
+  {
+   "theme": "Consumer Discretionary",
+   "role": "",
+   "arrow": "→",
+   "z_1d": 1.4,
+   "rel_1w": 0.4,
+   "breadth": 100.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Financials",
+   "role": "",
+   "arrow": "→",
+   "z_1d": 1.0,
+   "rel_1w": 0.2,
+   "breadth": 0.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Utilities",
+   "role": "",
+   "arrow": "↓",
+   "z_1d": 0.2,
+   "rel_1w": -0.5,
+   "breadth": 100.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Airlines",
+   "role": "",
+   "arrow": "↓",
+   "z_1d": 0.9,
+   "rel_1w": -0.5,
+   "breadth": 100.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Energy",
+   "role": "",
+   "arrow": "↓",
+   "z_1d": 0.7,
+   "rel_1w": -0.7,
+   "breadth": 50.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Oil",
+   "role": "",
+   "arrow": "↓",
+   "z_1d": 0.8,
+   "rel_1w": -0.8,
+   "breadth": 0.0,
+   "why": "",
+   "quality": null,
+   "risk": null,
+   "key_stocks": []
+  },
+  {
+   "theme": "Information Technology",
+   "role": "laggard",
+   "arrow": "↓",
+   "z_1d": 1.2,
+   "rel_1w": -0.9,
+   "breadth": 0.0,
+   "why": "S&P 500 대비 1주 상대수익 -0.9σ — 시장보다 약하다",
+   "quality": "breadth 또는 confirmation 부족",
+   "risk": "US 10Y 상승 · 대형 기술주 밸류에이션",
+   "key_stocks": [
+    "Salesforce",
+    "Nvidia",
+    "Microsoft",
+    "Oracle",
+    "Broadcom"
+   ]
+  },
+  {
+   "theme": "AI",
+   "role": "laggard",
+   "arrow": "↓",
+   "z_1d": 1.3,
+   "rel_1w": -0.9,
+   "breadth": 0.0,
+   "why": "AI 장비 세그먼트 상대강도 (Semiconductor Equipment / Nasdaq 상대 -0.3σ) — 현재 확인됨",
+   "quality": "상승 참여 종목 확대",
+   "risk": "US 10Y / AI capex slowdown / 수익화 격차",
+   "key_stocks": [
+    "Nvidia",
+    "TSMC",
+    "Microsoft",
+    "Super Micro",
+    "Broadcom"
+   ]
+  },
+  {
+   "theme": "Semiconductor",
+   "role": "laggard",
+   "arrow": "↓↓",
+   "z_1d": 1.2,
+   "rel_1w": -1.1,
+   "breadth": 0.0,
+   "why": "AI/장비 상대강도가 반도체 leadership 을 지지 (Semiconductor Equipment / Nasdaq 상대 -0.3σ) — 현재 확인됨",
+   "quality": "상승 참여 종목 확대",
+   "risk": "US 10Y / AI capex slowdown",
+   "key_stocks": [
+    "SK하이닉스",
+    "Nvidia",
+    "Tokyo Electron",
+    "Applied Materials",
+    "Micron"
+   ]
+  }
+ ],
+ "rates": {
+  "regime": "LONG-END RATE / TERM PREMIUM SHOCK — Inflation Repricing Not Confirmed",
+  "headline": "금리를 움직이는 증거는 기간 프리미엄·공급 쪽이 가장 크다(-50, STRONG) — 물가 리프라이싱 -37 보다 13 앞선다. 물가 리프라이싱은 미확인(-37). 상태: driver 방향(하락)과 10년 금리(-1.8σ)가 같다.",
+  "direction": "FALLING",
+  "primary_driver": "Term Premium / Supply",
+  "us10y_level": 4.85,
+  "us10y_5d_bp": -22.0,
+  "curve_shape": "BULL FLATTENING",
+  "us10y_5d_real_bp": -15.0,
+  "us10y_5d_breakeven_bp": -7.0,
+  "real_yield_direction": "FALLING",
+  "breakeven_direction": "FALLING",
+  "decomposition_read": "금리 하락은 실질금리 하락이 주도하고 기대인플레이션도 같은 방향.",
+  "inflation_pressure": "압력이 엇갈림",
+  "inflation_read": "실제 물가 지표와 임금·서비스 쪽은 상승 압력을 가리키고 시장 기대인플레이션은 여전히 내려가 있어 방향이 엇갈립니다. 브렌트유가 다시 내리고 구리는 급등해 에너지·원자재 쪽은 중립이며, 환율 쪽 압력은 약한 수준입니다.",
+  "market_read": "수요일 미국채는 근원 PCE 가 예상을 웃돈 날에도 10년물과 30년물이 6bp 씩 내렸고, 기대인플레이션은 그대로인 채 실질금리가 하락을 이끌었다. 2년물은 2bp 내리는 데 그쳐 장기물이 더 내린 강세 평탄화였다. 금요일에는 주식이 크게 반등하고 금과 구리가 급등했지만, 금리 데이터는 수요일 관측이라 이 움직임에 대한 채권시장의 반응은 아직 들어 있지 않다.",
+  "equity_implication": "기간 프리미엄 충격은 실질금리 상승 — 듀레이션·성장주·금에 역풍. 은행은 커브 스티프닝(순이자마진)과 신용 악화가 맞선다. 달러 강세, 원화·코스피엔 역풍."
+ },
+ "recent_releases_and_policy": [
+  {
+   "date": "2026-11-25",
+   "release": "PCE",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-10",
+   "release": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "release": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "release": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-11-26",
+   "bank": "BOK",
+   "decision": "HIKE",
+   "tone": "HAWKISH"
+  }
+ ],
+ "upcoming_events": [
+  {
+   "date": "2026-12-09",
+   "event": "FOMC",
+   "importance": "HIGH",
+   "note": "SEP·점도표 발표 회의",
+   "days_ahead": 12
+  },
+  {
+   "date": "2026-12-17",
+   "event": "ECB 통화정책회의",
+   "importance": "MED",
+   "note": "스태프 전망 발표",
+   "days_ahead": 20
+  },
+  {
+   "date": "2026-12-18",
+   "event": "BOJ 금융정책결정회의",
+   "importance": "MED",
+   "note": "",
+   "days_ahead": 21
+  },
+  {
+   "date": "2026-12-23",
+   "event": "US PCE (11월) · GDP 3분기 확정치",
+   "importance": "HIGH",
+   "note": "",
+   "days_ahead": 26
+  },
+  {
+   "date": "2027-01-14",
+   "event": "BOK 금통위",
+   "importance": "MED",
+   "note": "2027년 첫 회의",
+   "days_ahead": 48
+  }
+ ],
+ "oil": {
+  "regime": "Demand — CONTRADICTED",
+  "headline": "지금 유가는 수요 (경기) 쪽 증거가 가장 크다(+79, STRONG) — 지정학 프리미엄 +56 보다 23 앞선다. 상태 반박됨: driver 는 상승 압력인데 유가는 반대(-0.8σ)로 움직였다.",
+  "implication": "유가는 실물 수요 신호(구리·경기민감주·중국·운임)와 같이 움직인다 — 경기 지표가 다음 방향을 정한다.",
+  "brent_z": -1.4,
+  "wti_z": -0.2
+ },
+ "ai_theme": {
+  "regime": "LEADERSHIP NARROWING",
+  "subtitle": "LEADERSHIP NARROWING / FUNDAMENTALS WEAK",
+  "status": [
+   "Narrative: POSITIVE",
+   "AI Relative Strength: NEUTRAL",
+   "Price: STRONG",
+   "Semiconductor Confirm.: WEAK",
+   "AI Infra: WEAK",
+   "Software: STRONG",
+   "Breadth: STABLE",
+   "Macro: TAILWIND",
+   "Fundamental Confirmation: WEAK"
+  ],
+  "rel_vs_nasdaq_5d_pp": -1.9,
+  "fundamental_confirmation": "WEAK",
+  "theme_view_headline": "AI 바스켓 넓게 반등, 중기 추세 회복은 아직",
+  "theme_view_summary": "금요일 AI 바스켓은 미국 단축 거래일에 기술주와 반도체가 반등하면서 거의 모든 종목이 올랐고, 한 주 성과도 Nasdaq 과 비슷한 수준까지 회복했습니다. 다만 중기 이동평균선 위로 올라온 종목은 여전히 소수이고, 메모리는 한 주 기준으로 가장 크게 뒤처져 반등이 추세로 확인되지는 않았습니다. 소프트웨어와 한국 AI 공급망이 Nasdaq 을 앞섰고, 한국에서는 전력기기가 반등을 이끌었습니다. 뉴스와 가격이 같은 방향으로 돌아선 만큼, 중기 이동평균선 위 종목이 늘어나는지가 다음 확인점입니다.",
+  "groups": [
+   {
+    "group": "Semiconductors / Compute",
+    "rel_5d": -4.2,
+    "ret_21d": -26.3
+   },
+   {
+    "group": "Memory",
+    "rel_5d": -10.2,
+    "ret_21d": -35.5
+   },
+   {
+    "group": "Hyperscalers",
+    "rel_5d": -0.5,
+    "ret_21d": -9.2
+   },
+   {
+    "group": "Networking / Infrastructure",
+    "rel_5d": -3.0,
+    "ret_21d": -27.5
+   },
+   {
+    "group": "Power / Data Center",
+    "rel_5d": -3.0,
+    "ret_21d": -11.4
+   },
+   {
+    "group": "Software / Application",
+    "rel_5d": 4.7,
+    "ret_21d": -15.0
+   },
+   {
+    "group": "Korea AI Supply Chain",
+    "rel_5d": 3.3,
+    "ret_21d": -18.3
+   }
+  ]
+ },
+ "semiconductor_cycle": {
+  "regime": "EARLY RECOVERY",
+  "composite": 21.0,
+  "components": [
+   {
+    "component": "Memory Pricing",
+    "score": -30.0
+   },
+   {
+    "component": "Spot Premium",
+    "score": 85.0
+   },
+   {
+    "component": "Contract Price",
+    "score": 27.0
+   },
+   {
+    "component": "Breadth",
+    "score": -33.0
+   },
+   {
+    "component": "HBM",
+    "score": 100.0
+   },
+   {
+    "component": "Export Nowcast",
+    "score": 69.0
+   },
+   {
+    "component": "EPS Revision",
+    "score": null
+   },
+   {
+    "component": "Equity",
+    "score": -100.0
+   },
+   {
+    "component": "Supply / Inventory News",
+    "score": null
+   }
+  ],
+  "axes": [
+   {
+    "axis": "PRICING",
+    "state": "MIXED",
+    "evidence": [
+     {
+      "component": "Memory Pricing",
+      "score": -30.0
+     },
+     {
+      "component": "Spot Premium",
+      "score": 85.0
+     },
+     {
+      "component": "Contract Price",
+      "score": 27.0
+     },
+     {
+      "component": "Breadth",
+      "score": -33.0
+     }
+    ],
+    "unavailable": []
+   },
+   {
+    "axis": "AI MEMORY",
+    "state": "STRONG",
+    "evidence": [
+     {
+      "component": "HBM",
+      "score": 100.0
+     }
+    ],
+    "unavailable": []
+   },
+   {
+    "axis": "FUNDAMENTAL",
+    "state": "STRONG",
+    "evidence": [
+     {
+      "component": "Export Nowcast",
+      "score": 69.0
+     }
+    ],
+    "unavailable": [
+     "EPS Revision",
+     "Supply / Inventory News"
+    ]
+   },
+   {
+    "axis": "EQUITY",
+    "state": "WEAK",
+    "evidence": [
+     {
+      "component": "Equity",
+      "score": -100.0
+     }
+    ],
+    "unavailable": []
+   }
+  ],
+  "read": "범용 DRAM 현물은 DDR4 8Gb 가 한 주 새 2.4% 내려 낙폭이 커졌고 DDR5 16Gb 도 소폭 약세로 돌아섰으며, DDR4 제품의 현물 프리미엄은 계속 줄고 있다. 계약가와 HBM 은 단단하나 계약가 기준월이 9월이라 최근 현물 약세가 반영되지 않았다. 주가는 금요일 한국에서 삼성전자와 SK하이닉스가 4%대 올랐고 미국 반도체도 반등했지만, 메모리 3사의 한 달 낙폭은 여전히 커 현물 약세와 같은 방향이다."
+ },
+ "news": [
+  {
+   "headline": "[마감시황] 외국인 1조원 넘게 샀다…코스피 4900선 회복·코스닥 8% 급등 마감",
+   "tag": "Semiconductor / Korea Corporate Governance",
+   "impact": "Semiconductor ↑ · Korea Corporate Governance ↑",
+   "why": "외국인이 1조원 넘게 사들이며 코스피가 4900선을 회복하고 코스닥이 8% 급등 마감(마감시황, 제목)."
+  },
+  {
+   "headline": "AI 투자 우려 속 기술주 반등…나스닥 2.3% 상승 [뉴욕증시]",
+   "tag": "AI",
+   "impact": "AI ↑",
+   "why": "AI 투자 우려 속에 기술주가 반등해 나스닥이 2.3% 상승(뉴욕증시, 제목)."
+  },
+  {
+   "headline": "Wall Street ends higher as battered AI stocks gain in volatile week",
+   "tag": "AI",
+   "impact": "AI ↑",
+   "why": "변동성이 컸던 한 주의 끝에 낙폭이 컸던 AI 주가 오르며 월가가 상승 마감(제목)."
+  },
+  {
+   "headline": "'증안펀드 증액 기대감'… 하루 8% 튀어 오른 코스닥",
+   "tag": "Korea Corporate Governance / Semiconductor",
+   "impact": "Korea Corporate Governance ↑ · Semiconductor ↑",
+   "why": "증시안정펀드 가동 기대와 조 단위 외국인 자금 유입으로 코스닥이 하루 8% 뛰고 코스피는 4900선을 회복해 주간 기준 상승으로 돌아섰다."
+  },
+  {
+   "headline": "외국인·기관 쌍끌이 매수에 코스피 4.3% 급등…4900선 탈환",
+   "tag": "Semiconductor",
+   "impact": "Semiconductor ↑",
+   "why": "외국인과 기관이 함께 사들여 코스피가 4.3% 급등하며 4900선을 되찾았다(제목)."
+  },
+  {
+   "headline": "증안펀드 기대에 코스닥 8.13% 급등…바이오·로봇이 이끌고 2차전지·반도체가 밀었다",
+   "tag": "Korea Corporate Governance",
+   "impact": "Korea Corporate Governance ↑",
+   "why": "증시안정펀드 기대에 코스닥이 8.13% 급등 — 바이오·로봇이 이끌고 2차전지·반도체가 밀었다(제목)."
+  },
+  {
+   "headline": "중동 긴장 고조에 방산주 강세…한화시스템 10% 급등",
+   "tag": "Defense / Geopolitical Risk",
+   "impact": "Defense ↑ · Geopolitical Risk ↑",
+   "why": "중동 긴장 고조에 방산주가 강세 — 한화시스템 10% 급등(제목)."
+  },
+  {
+   "headline": "[속보] 코스닥 5%대 급등에 매수 사이드카 발동",
+   "tag": "Korea Corporate Governance",
+   "impact": "Korea Corporate Governance ↑",
+   "why": "코스닥이 장중 5% 넘게 오르며 프로그램 호가 효력을 5분간 멈추는 사이드카가 발동됐다(속보)."
+  }
+ ],
+ "sector_names": [
+  "AI",
+  "Airlines",
+  "Banks",
+  "China",
+  "Consumer",
+  "Consumer Discretionary",
+  "Defense",
+  "Duration (장기채)",
+  "Energy",
+  "Financials",
+  "Geopolitical Risk",
+  "Gold",
+  "Growth / Tech",
+  "Hyperscalers",
+  "Information Technology",
+  "KOSPI",
+  "KRW",
+  "Korea AI Supply Chain",
+  "Memory",
+  "Networking / Infrastructure",
+  "Oil",
+  "Power / Data Center",
+  "Semiconductor",
+  "Semiconductors / Compute",
+  "Software / Application",
+  "USD",
+  "Utilities"
+ ],
+ "leadership_names": [
+  "AI",
+  "Airlines",
+  "Auto",
+  "Banks",
+  "Battery",
+  "Chemicals",
+  "China",
+  "Consumer",
+  "Consumer Discretionary",
+  "Defense",
+  "Duration (장기채)",
+  "Electrical",
+  "Energy",
+  "Financials",
+  "Geopolitical Risk",
+  "Gold",
+  "Growth / Tech",
+  "Healthcare",
+  "Hyperscalers",
+  "Information Technology",
+  "Internet",
+  "KOSPI",
+  "KRW",
+  "Korea AI Supply Chain",
+  "Memory",
+  "Metals",
+  "Networking / Infrastructure",
+  "Oil",
+  "Power / Data Center",
+  "Semiconductor",
+  "Semiconductors / Compute",
+  "Shipbuilding",
+  "Software / Application",
+  "Steel",
+  "Transport",
+  "USD",
+  "Utilities"
+ ],
+ "missing": [
+  "KOSPI 상승종목 비율 (KR) 데이터 없음",
+  "KOSPI 상승종목 비율 — EXCLUDED",
+  "US Breadth (US) 데이터 없음",
+  "US Breadth — EXCLUDED",
+  "반도체 사이클 EPS Revision 데이터 없음",
+  "반도체 사이클 Supply / Inventory News 데이터 없음"
+ ],
+ "displayed_elsewhere": {
+  "numbers": [
+   4.85,
+   -1.9,
+   66,
+   21.0
+  ],
+  "note": "다른 칸에 이미 보이는 숫자 — 다시 나열하지 않는다"
+ }
+}

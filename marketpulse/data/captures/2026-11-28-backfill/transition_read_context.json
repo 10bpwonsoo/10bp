@@ -1,0 +1,384 @@
+{
+ "snapshot_date": "2026-11-28",
+ "market_date": "2026-11-27",
+ "cutoff": "2026-11-28T07:30:00+09:00",
+ "transition": {
+  "kind": "entry",
+  "from": "Neutral / Mixed",
+  "to": "Risk-On",
+  "exit_streak": 0,
+  "exit_required": 1,
+  "entry_streak": 1,
+  "entry_required": 1,
+  "support_today": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ]
+ },
+ "recent_daily_states": [
+  {
+   "date": "2026-11-23",
+   "candidate": "Risk-On",
+   "official": "Risk-On",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-24",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-25",
+   "candidate": "Geopolitical",
+   "official": "Geopolitical",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-26",
+   "candidate": "Neutral / Mixed",
+   "official": "Neutral / Mixed",
+   "support": "NA"
+  },
+  {
+   "date": "2026-11-27",
+   "candidate": "Risk-On",
+   "official": "Risk-On",
+   "support": "NA"
+  }
+ ],
+ "factors_prev_vs_today": {
+  "RiskAppetite": {
+   "prev": -0.15,
+   "today": 1.13
+  },
+  "Liquidity": {
+   "prev": -0.46,
+   "today": 0.35
+  },
+  "Rates": {
+   "prev": -0.19,
+   "today": -0.83
+  },
+  "Inflation": {
+   "prev": -0.03,
+   "today": 0.12
+  },
+  "Credit": {
+   "prev": 0.95,
+   "today": -0.24
+  }
+ },
+ "today_drivers": [
+  {
+   "label": "LONG-END RATES",
+   "direction": "down",
+   "strength": -0.8,
+   "why": "장기금리 하락이 듀레이션 자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US 10Y Yield",
+     "z": -1.8,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 30Y Yield",
+     "z": -1.5,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Real Yield (TIPS)",
+     "z": -1.5,
+     "display": "(5일)"
+    },
+    {
+     "label": "US 10Y Breakeven",
+     "z": -1.3,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "EQUITY DIRECTION",
+   "direction": "up",
+   "strength": 0.77,
+   "why": "지수가 넓게 오른다 — 위험선호가 주식으로 들어온다.",
+   "evidence": [
+    {
+     "label": "S&P 500",
+     "z": 1.3,
+     "display": ""
+    },
+    {
+     "label": "Nasdaq 100",
+     "z": 1.4,
+     "display": ""
+    },
+    {
+     "label": "Russell 2000",
+     "z": 2.2,
+     "display": "(5일)"
+    },
+    {
+     "label": "KOSPI",
+     "z": 1.6,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "VOLATILITY",
+   "direction": "down",
+   "strength": -0.62,
+   "why": "변동성이 가라앉으며 위험 감수 여력이 회복된다.",
+   "evidence": [
+    {
+     "label": "VIX",
+     "z": -2.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "MOVE 채권변동성",
+     "z": -0.6,
+     "display": ""
+    },
+    {
+     "label": "VIX − S&P 실현변동성",
+     "z": -1.1,
+     "display": "(5일)"
+    }
+   ]
+  },
+  {
+   "label": "CREDIT STRESS",
+   "direction": "down",
+   "strength": -0.26,
+   "why": "신용여건 완화가 위험자산을 지지한다.",
+   "evidence": [
+    {
+     "label": "US HY OAS",
+     "z": 1.0,
+     "display": "(5일)"
+    },
+    {
+     "label": "VIX",
+     "z": -2.7,
+     "display": "(5일)"
+    },
+    {
+     "label": "S&P 500",
+     "z": 1.3,
+     "display": ""
+    }
+   ]
+  },
+  {
+   "label": "LITHIUM",
+   "direction": "up",
+   "strength": 1.0,
+   "why": "리튬 반등 — 배터리 체인 원가·심리.",
+   "evidence": [
+    {
+     "label": "리튬 (LIT ETF 대리)",
+     "z": 2.9,
+     "display": "+4.6%"
+    }
+   ]
+  }
+ ],
+ "key_variables": [
+  {
+   "label": "KOSPI",
+   "z": 1.6,
+   "change": ""
+  },
+  {
+   "label": "Nasdaq 100",
+   "z": 1.4,
+   "change": ""
+  },
+  {
+   "label": "Russell 2000",
+   "z": 1.4,
+   "change": ""
+  },
+  {
+   "label": "S&P 500",
+   "z": 1.3,
+   "change": ""
+  }
+ ],
+ "cross_asset_z": [
+  {
+   "asset": "Equity",
+   "instrument": "S&P 500",
+   "z": 1.3,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Rates",
+   "instrument": "US 10Y Yield",
+   "z": -1.8,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Credit",
+   "instrument": "US HY OAS",
+   "z": 1.0,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Volatility",
+   "instrument": "VIX",
+   "z": -2.7,
+   "arrow": "↓↓"
+  },
+  {
+   "asset": "USD",
+   "instrument": "달러 인덱스",
+   "z": 0.8,
+   "arrow": "↑"
+  },
+  {
+   "asset": "Oil",
+   "instrument": "브렌트 원유",
+   "z": -1.4,
+   "arrow": "↓"
+  },
+  {
+   "asset": "Gold",
+   "instrument": "금",
+   "z": 2.6,
+   "arrow": "↑↑"
+  }
+ ],
+ "equity_broad_risk_on_basis": {
+  "us": {
+   "status": "STRONG",
+   "score": 0.73
+  },
+  "kr": {
+   "status": "STRONG",
+   "score": 0.64
+  }
+ },
+ "selection_today": {
+  "selected": "RISK_ON",
+  "commentary": "금요일 미국 주식은 단축 거래일에 기술주와 반도체가 반등하며 3대 지수와 소형주가 모두 올랐고 변동성도 크게 내렸다. 한국은 외국인 자금이 돌아오고 증시안정펀드 기대가 겹쳐 코스피가 4900선을 회복하고 코스닥이 급등했다. 두 시장이 함께 올라 위험 선호 환경으로 보지만, 변동이 컸던 한 주 끝의 하루 반등이고 신용 확인이 아직 없어 잠정으로 본다.",
+  "primary_reason": "위험선호 factor 가 기준을 넘었고 변동성 · 성장 조건이 함께 통과했다. 미국에서는 대형주 · 기술주 · 소형주 · 반도체가 모두 올랐고 한국도 코스피와 코스닥이 급등해 두 시장의 주식 확인이 모두 강하다."
+ },
+ "events": [
+  {
+   "date": "2026-11-25",
+   "title": "PCE",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "CPI",
+   "result": "HOT"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "NFP",
+   "result": "STRONG"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "PCE",
+   "result": "COOL"
+  },
+  {
+   "date": "2026-10-28",
+   "bank": "FED",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-29",
+   "bank": "ECB",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-10-30",
+   "bank": "BOJ",
+   "decision": "HOLD",
+   "tone": "NEUTRAL"
+  },
+  {
+   "date": "2026-11-26",
+   "bank": "BOK",
+   "decision": "HIKE",
+   "tone": "HAWKISH"
+  }
+ ],
+ "news": [
+  {
+   "title": "[마감시황] 외국인 1조원 넘게 샀다…코스피 4900선 회복·코스닥 8% 급등 마감",
+   "themes": [
+    "semiconductor",
+    "korea_governance"
+   ],
+   "sentiment": 45,
+   "summary": "외국인이 1조원 넘게 사들이며 코스피가 4900선을 회복하고 코스닥이 8% 급등 마감(마감시황, 제목)."
+  },
+  {
+   "title": "AI 투자 우려 속 기술주 반등…나스닥 2.3% 상승 [뉴욕증시]",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": 40,
+   "summary": "AI 투자 우려 속에 기술주가 반등해 나스닥이 2.3% 상승(뉴욕증시, 제목)."
+  },
+  {
+   "title": "Wall Street ends higher as battered AI stocks gain in volatile week",
+   "themes": [
+    "ai"
+   ],
+   "sentiment": 40,
+   "summary": "변동성이 컸던 한 주의 끝에 낙폭이 컸던 AI 주가 오르며 월가가 상승 마감(제목)."
+  },
+  {
+   "title": "증시 ‘들었다 놨다’ 외국인 “하루 만에 1조 넘게 샀다”…코스피 4900선 회복",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 45,
+   "summary": "외국인이 하루 만에 1조원 넘게 사들여 코스피가 4900선을 회복 — 삼성전자와 SK하이닉스가 나란히 4% 넘게 올랐다."
+  },
+  {
+   "title": "코스피 4.3% 상승 4900 회복…코스닥 8%대 올라 700 탈환",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 45,
+   "summary": "코스피가 4.3% 올라 4900 을 회복하고 코스닥은 8%대 올라 700 을 되찾았다(제목)."
+  },
+  {
+   "title": "'증안펀드 증액 기대감'… 하루 8% 튀어 오른 코스닥",
+   "themes": [
+    "korea_governance",
+    "semiconductor"
+   ],
+   "sentiment": 40,
+   "summary": "증시안정펀드 가동 기대와 조 단위 외국인 자금 유입으로 코스닥이 하루 8% 뛰고 코스피는 4900선을 회복해 주간 기준 상승으로 돌아섰다."
+  },
+  {
+   "title": "외국인·기관 쌍끌이 매수에 코스피 4.3% 급등…4900선 탈환",
+   "themes": [
+    "semiconductor"
+   ],
+   "sentiment": 40,
+   "summary": "외국인과 기관이 함께 사들여 코스피가 4.3% 급등하며 4900선을 되찾았다(제목)."
+  },
+  {
+   "title": "한은 기준금리 올린 날 무슨 일이?…국고채 만기별로 희비 엇갈린 이유",
+   "themes": [
+    "rates"
+   ],
+   "sentiment": -10,
+   "summary": "한국은행이 기준금리를 3.25% 로 올린 날 추가 인상 신호에 국고채 3·10년물 금리는 오르고 30년물은 0.9bp 내렸다."
+  }
+ ]
+}

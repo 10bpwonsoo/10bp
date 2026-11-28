@@ -1,0 +1,58 @@
+{
+ "date": "2026-11-27",
+ "snapshot_date": "2026-11-28",
+ "logic_version": "same_day_v1",
+ "observation": {
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "factors": {
+   "Growth": 0.637,
+   "Inflation": 0.118,
+   "Rates": -0.827,
+   "USD": 0.54,
+   "Liquidity": 0.353,
+   "RiskAppetite": 1.13,
+   "Credit": -0.237,
+   "Volatility": -0.57,
+   "China": 1.837
+  },
+  "equity_broad": {
+   "us": 0.73,
+   "kr": 0.635
+  }
+ },
+ "state": {
+  "logic_version": "same_day_v1",
+  "snapshot_date": "2026-11-28",
+  "date": "2026-11-27",
+  "official": "risk_on",
+  "previous_official": "neutral",
+  "candidate": "risk_on",
+  "candidate_state": "RISK_ON",
+  "raw_signal": "RISK_ON",
+  "support": "NA",
+  "support_reasons": [
+   "그날 선택이 곧 공식 regime 이다 — 이탈 · 진입 확인 일수를 두지 않는다(2026-11-20 Daily Snapshot~)"
+  ],
+  "equity": null,
+  "exit_streak": 0,
+  "exit_required": 1,
+  "exit_confirmed": false,
+  "exited_regime": null,
+  "entry_regime": "risk_on",
+  "entry_streak": 1,
+  "entry_required": 1,
+  "entry_confirmed": true,
+  "changed": true,
+  "change_kind": "entry",
+  "counted": true
+ },
+ "transition_comment": {
+  "text": "금요일 미국에서 대형주와 기술주, 소형주가 함께 오르고 한국도 코스피와 코스닥이 급등하면서 위험선호 factor 가 -0.15 에서 1.13 으로 올라 Risk-On Trigger 를 넘었습니다. 변동성이 크게 내리고 성장 조건도 통과했으며, 두 시장의 주식 확인이 모두 강했습니다. 신용 확인은 아직 없어 잠정이지만, 오늘 선택에 따라 공식 레짐은 Neutral / Mixed 에서 Risk-On 으로 바뀌었습니다.",
+  "source": "session",
+  "generated_at": "2026-11-28T04:36:23.384255+00:00",
+  "reason": "API 호출 실패(LLM 사용 불가) — 같은 컨텍스트·프롬프트·검증으로 세션 생성"
+ },
+ "written_at": "2026-11-28T04:36:23.384296+00:00"
+}
