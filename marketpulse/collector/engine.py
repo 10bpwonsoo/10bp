@@ -429,8 +429,37 @@ class Collector:
                     self.status["series"][g][iid] = {**old_row, "tries": int(self.status["series"][g][iid].get("tries", 0)), "refetch": "새 봉 없음 — 앞서 받은 것을 둔다"}
                 self._beat()
                 self._save_status()
+        # 첫 공급처가 막혀 대체 공급처에서 받아 둔 계열 — 그 공급처 기준으로는 STALE 이 아니어도 첫 공급처에는 더 새 봉이 있을 수 있다
+        # (2026-11-28 VIX: 아침에 FRED 로 받은 것은 11/26 치, Yahoo 에는 11/27 종가가 있었다). 첫 공급처가 답하고 봉이 뒤로 가지 않을 때만 바꾼다.
+        for g in groups:
+            plan = self.plans[g]
+            by_id = {i.id: i for i in plan.instruments}
+            for iid, row in list(self.status["series"][g].items()):
+                specs = plan.specs.get(iid) or []
+                first = str((specs[0] if specs else {}).get("provider") or "")
+                used = str(row.get("provider") or "")
+                ins = by_id.get(iid)
+                if not first or used in ("", first) or row.get("state") != "OK" or ins is None or not self.have(g, iid):
+                    continue
+                if (int(row.get("tries", 0)) >= mx and not force) or self._now() - t0 > budget:
+                    continue
+                cp = self._cp(g, iid)
+                old_text, old_row = cp.read_text(encoding="utf-8"), dict(row)
+                old_last = self._last_closed(iid, old_text)
+                cp.unlink()
+                state = self.fetch_one(plan, ins, datetime.fromtimestamp(self._now(), tz=timezone.utc))
+                now_row = self.status["series"][g].get(iid) or {}
+                new_last = self._last_closed(iid, cp.read_text(encoding="utf-8")) if state == "OK" and cp.is_file() else None
+                if state == "OK" and str(now_row.get("provider")) == first and new_last is not None and (old_last is None or new_last >= old_last):
+                    now_row.pop("alt_source", None)
+                    done.append(f"{g}:{iid}←{first}")
+                else:
+                    cp.write_text(old_text, encoding="utf-8")
+                    self.status["series"][g][iid] = {**old_row, "tries": int(now_row.get("tries", 0)), "refetch": "첫 공급처에서 받지 못했다 — 대체 공급처 것을 둔다"}
+                self._beat()
+                self._save_status()
         if done:
-            self.log(f"마지막 봉이 빠져 있던 계열 {len(done)}개를 새로 받았다: {', '.join(done)[:300]}")
+            self.log(f"마지막 봉이 빠져 있던 계열 · 대체 공급처로 받아 둔 계열 {len(done)}개를 새로 받았다: {', '.join(done)[:300]}")
         return done
 
     def _try_alternates(self, plan: Plan, ins, stale: MarketSeries, old_last: datetime | None):

@@ -592,6 +592,25 @@ def test_a_slow_fallback_taken_while_the_first_provider_was_blocked_is_refetched
     assert fake4.calls == [] and n == 1
 
 
+def test_a_series_held_from_a_fallback_is_swapped_for_the_first_providers_when_it_answers_again(tmp_path):
+    """2026-11-28 VIX: 아침에 Yahoo 가 막혀 FRED 로 받았다(FRED 기준으로는 최신 — STALE 아님). 낮에 Yahoo 가 답하면 그쪽 것으로 바꾼다. 못 받으면 그대로 둔다."""
+    d24 = weekdays(date(2026, 11, 24), 30)
+    fred = series("V", "fred:VIXCLS", d24[:-1], hh=0, mm=0)          # 11/23 까지 — FRED 는 하루 늦게 공개한다
+    yahoo = series("V", "yahoo:^VIX", d24, hh=14, mm=30)             # 11/24 종가까지
+    specs = {"V": [{"provider": "yahoo", "symbol": "^VIX"}, {"provider": "fred", "symbol": "VIXCLS"}]}
+    c1, _, _, _ = make_collector(tmp_path, {"V": [("fred", fred)]}, specs=specs)
+    c1.run(news=False)
+    assert c1.status["series"]["base"]["V"]["provider"] == "fred" and c1.status["input_status"]["stale"]["base"] == []
+    c2, _, _, _ = make_collector(tmp_path, {"V": ["HTTP 429 Too Many Requests"]}, specs=specs)   # Yahoo 가 여전히 막혀 있다
+    c2.run(news=False)
+    assert c2.load_group("base")["V"].meta.source == "fred:VIXCLS" and c2.status["runs"][-1]["refetched_stale"] == []
+    c3, _, _, _ = make_collector(tmp_path, {"V": [("yahoo", yahoo)]}, specs=specs)
+    c3.run(news=False)
+    got = c3.load_group("base")["V"]
+    assert c3.status["runs"][-1]["refetched_stale"] == ["base:V←yahoo"] and got.meta.source == "yahoo:^VIX" and got.timestamps[-1].date() == date(2026, 11, 24)
+    assert "alt_source" not in c3.status["series"]["base"]["V"]
+
+
 def test_half_open_probe_gets_a_second_chance_when_configured(tmp_path):
     """요청의 절반쯤이 429 인 날: 시험 요청 하나가 막힌 것만으로 쉬는 시간이 2배가 되지 않는다. 두 번 연속 막히면 다시 연다."""
     clk = Clock()
